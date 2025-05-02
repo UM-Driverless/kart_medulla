@@ -1,25 +1,85 @@
-### 
-pio pkg install AS5600
+# STM32 Blue Pill + AS5600 Angle Sensor
 
-### to use daplink add in platformio.ini
+## Hardware Used
+
+* **Microcontroller:** STM32F103C6 (Blue Pill)
+* **Sensor:** AS5600 Magnetic Angle Sensor
+* **Debugger & Serial Interface:** DAPLink (CMSIS-DAP)
+
+## Wiring Connections
+
+### STM32 Blue Pill to DAPLink
+
+| DAPLink Pin | STM32 Blue Pill Pin |
+| ----------- | ------------------- |
+| SWDIO       | PA13 (SWDIO)        |
+| SWCLK       | PA14 (SWCLK)        |
+| UART\_TX    | PA10 (USART1\_RX)   |
+| UART\_RX    | PA9 (USART1\_TX)    |
+| 3.3V        | 3.3V                |
+| GND         | GND                 |
+
+### STM32 Blue Pill to AS5600
+
+| AS5600 Pin | STM32 Blue Pill Pin |
+| ---------- | ------------------- |
+| SCL        | PB6 (I2C1\_SCL)     |
+| SDA        | PB7 (I2C1\_SDA)     |
+| VCC        | 3.3V                |
+| GND        | GND                 |
+
+## Software Setup
+
+### PlatformIO Configuration (`platformio.ini`)
+
 ```ini
-upload_protocol = cmsis-dap   ; <— ADD THIS LINE
-debug_tool = cmsis-dap        ; <— optional, enables debugging
+[env:bluepill_f103c6]
+platform = ststm32
+board = bluepill_f103c6
+framework = arduino
+
+upload_protocol = cmsis-dap
+debug_tool = cmsis-dap
 monitor_speed = 115200
 ```
 
-### Wiring
-SCL → PB6 (default STM32 I2C1 SCL)
+### Install AS5600 Arduino Library
 
-SDA → PB7 (default STM32 I2C1 SDA)
+```bash
+pio pkg install AS5600
+```
 
-VCC → 3.3V (Blue Pill operates at 3.3V)
+## Flashing and Running
 
-GND → GND
+### Upload and run serial monitor
 
-### Program
-platformio run --target upload
+```bash
+platformio run --target upload && platformio device monitor
+```
 
-## stuff
---- Terminal on /dev/ttyACM0 | 115200 8-N-1
+Serial output will be available at **115200 baud** via the virtual COM port provided by DAPLink.
 
+Example serial monitor output:
+
+```
+Angle: 90.1°
+Angle: 91.7°
+...
+```
+
+Ensure your wiring is correct and your DAPLink's serial port is recognized (e.g., `/dev/ttyACM0`).
+
+## Chip Information
+
+* **STM32F103C6**
+
+  * ARM Cortex-M3
+  * 32KB Flash, 10KB RAM
+  * Operating Voltage: 3.3V
+
+* **AS5600**
+
+  * 12-bit Magnetic Angle Sensor
+  * I²C Interface (address: `0x36`)
+
+This guide provides all necessary information to set up and verify the functionality of the AS5600 angle sensor with an STM32 Blue Pill.
