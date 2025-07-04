@@ -51,13 +51,7 @@ pio pkg install AS5600
 
 ## Flashing and Running
 
-To flash and run the code, navigate to the `bluepill-angle-arduino` directory:
-
-```bash
-cd bluepill-angle-arduino
-```
-
-Then, you can use the following commands:
+To flash and run the code from the root directory of this repository, use the `-d` flag to specify the project directory:
 
 ### Upload and run serial monitor
 
