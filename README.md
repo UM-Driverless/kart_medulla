@@ -1,5 +1,7 @@
 # STM32 Blue Pill + AS5600 Angle Sensor
 
+A8 is PWM and A9 is DIR.
+
 ## Hardware Used
 
 * **Microcontroller:** STM32F103C6 (Blue Pill)
