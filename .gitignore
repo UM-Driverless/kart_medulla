@@ -1,2 +1,4 @@
 # ignore files in .pio folder
 .pio
+# ignore files in .vscode folder
+.vscode
