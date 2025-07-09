@@ -15,7 +15,7 @@ float kp = 1.0;
 float ki = 0.0;
 float kd = 0.1;
 
-float setpoint = 20.0;     // Valor deseado
+float setpoint = 3000.0;     // Valor deseado
 float input = 0.0;          // Valor leído del sensor
 float output = 0.0;         // Señal de control que vas a aplicar (PWM, DAC, etc.)
 
@@ -69,9 +69,9 @@ void aplicarSalida(float pid_output) {
   int pwm_value = constrain(abs(pid_output), 0, 255);
 
   if (pid_output > 0) {
-    digitalWrite(DIR_PIN, HIGH); // Set direction for positive output
+    digitalWrite(DIR_PIN, LOW); // Set direction for positive output
   } else {
-    digitalWrite(DIR_PIN, LOW);  // Set direction for negative output
+    digitalWrite(DIR_PIN, HIGH);  // Set direction for negative output
   }
   
   analogWrite(PWM_PIN, pwm_value);
@@ -80,7 +80,13 @@ void aplicarSalida(float pid_output) {
 int readAngle() {
   Wire.beginTransmission(AS5600_ADDR);
   Wire.write(AS5600_ANGLE_MSB);  // Send the address of the angle MSB register
-  Wire.endTransmission();
+  byte error = Wire.endTransmission();
+  
+  if (error != 0) {
+    Serial.print("Error during I2C transmission: ");
+    Serial.println(error);
+    return -1; // Return -1 on transmission error
+  }
   
   Wire.requestFrom(AS5600_ADDR, 2);  // Request 2 bytes of data (MSB and LSB)
   
@@ -93,6 +99,7 @@ int readAngle() {
     
     return angle;
   } else {
+    Serial.println("Error: Did not receive 2 bytes from sensor");
     return -1;  // Return -1 if data is not available
   }
 }
@@ -108,8 +115,11 @@ void PID() {
     if (input == -1) {
       // Error reading sensor, stop the motor as a safety measure
       aplicarSalida(0);
-      Serial.println("Error reading sensor");
-      return; // Skip PID calculation
+      Serial.println("Error reading sensor. Restarting I2C communication.");
+      Wire.end();
+      delay(10); // Small delay before re-initializing
+      Wire.begin();
+      return; // Skip PID calculation for this cycle
     }
 
     float error = setpoint - input;
