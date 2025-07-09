@@ -1,162 +1,211 @@
-#include <Wire.h> // Include the Wire library for I2C communication
-#include <Arduino.h>
+/*
+ * Pill Kart Steering Control
+ *
+ * This program controls the steering of a go-kart using a PID controller.
+ *
+ * Coordinate System:
+ * - Angles are measured in radians.
+ * - The center position (straight) is 0 radians.
+ * - Positive values correspond to a left turn.
+ * - Negative values correspond to a right turn.
+ */
 
-#define AS5600_ADDR 0x36 // Default I2C address for AS5600 (check your wiring)
+#include <Arduino.h>
+#include <Wire.h>
+
+// Pin Definitions
+#define PWM_PIN PA0
+#define DIR_PIN PA1
+#define LED_PIN LED_BUILTIN
+
+// I2C Address for AS5600
+#define AS5600_ADDR 0x36
 
 // AS5600 Registers
-#define AS5600_ANGLE_LSB 0x0D // Low byte of the angle register
-#define AS5600_ANGLE_MSB 0x0C // High byte of the angle register
+#define AS5600_ANGLE_MSB 0x0C
+#define AS5600_ANGLE_LSB 0x0D
 
-#define PWM_PIN PA0 // PWM
-#define DIR_PIN PA1 // Sentido de giro
+// Sensor & Angle Constants
+const int SENSOR_MIN = 0;
+const int SENSOR_MAX = 4095;
+const int SENSOR_CENTER = 2048;
+const float MAX_RAD = PI; // The steering shaft can turn PI radians (180 degrees) in each direction
+const float PWM_LIMIT = 0.5; // Limit the maximum PWM output (0.0 to 1.0)
 
-// Parámetros del PID
-float kp = 1000000000;
-float ki = 0.0;
-float kd = 0.0;
+// PID Controller State
+struct PIDController {
+    float kp, ki, kd;
+    float integral;
+    float lastError;
+    unsigned long lastTime;
+};
 
-float setpoint = 2048.0; // Valor deseado
-float input = 0.0;       // Valor leído del sensor
-float output = 0.0;      // Señal de control que vas a aplicar (PWM, DAC, etc.)
+// Global PID instance
+PIDController pid = {1.0, 0.1, 0.01, 0.0, 0.0, 0};
 
-// Internos del PID
-float lastError = 0.0;
-float integral = 0.0;
-unsigned long lastTime = 0;
+// Function Prototypes
+void setupHardware();
+void blinkLed();
+void printDiagnostics(float target, float actual, float pid_output);
 
-int pwm = 0;
+float getTargetAngle();
+float getActualAngle();
+float calculatePID(float target, float actual, PIDController& pid);
+void setMotorOutput(float control_signal);
+int readRawAngle();
 
-unsigned long lastMotorChangeTime = 0;
-const long motorInterval = 100; // Milliseconds between PWM changes
 
-unsigned long lastLedToggleTime = 0;
-const long ledInterval = 500; // Milliseconds between LED toggles
-
-bool ledState = LOW;
-
-void PID();
-int readAngle();
-
-void aplicarSalida(float pid_output)
-{
-  // Ensure output is within PWM range
-  int pwm_value = constrain(abs(pid_output), 0, 150); // max 255 per h-bridge
-
-  if (pid_output > 0)
-  {
-    digitalWrite(DIR_PIN, HIGH); // Set direction for positive output
-  }
-  else
-  {
-    digitalWrite(DIR_PIN, LOW); // Set direction for negative output
-  }
-
-  analogWrite(PWM_PIN, pwm_value);
+void setup() {
+    setupHardware();
 }
 
-int readAngle()
-{
-  Wire.beginTransmission(AS5600_ADDR);
-  Wire.write(AS5600_ANGLE_MSB); // Send the address of the angle MSB register
-  byte error = Wire.endTransmission();
+void loop() {
+    // 1. Get the desired target angle
+    float targetAngle = getTargetAngle();
 
-  if (error != 0)
-  {
-    Serial.print("Error during I2C transmission: ");
-    Serial.println(error);
-    return -1; // Return -1 on transmission error
-  }
+    // 2. Get the current angle of the steering shaft
+    float actualAngle = getActualAngle();
 
-  Wire.requestFrom(AS5600_ADDR, 2); // Request 2 bytes of data (MSB and LSB)
+    // 3. Calculate the control signal using the PID controller
+    float pidOutput = calculatePID(targetAngle, actualAngle, pid);
 
-  if (Wire.available() == 2)
-  {
-    byte msb = Wire.read(); // Read MSB
-    byte lsb = Wire.read(); // Read LSB
+    // 4. Set the motor PWM and direction based on the control signal
+    setMotorOutput(pidOutput);
 
-    // Combine MSB and LSB to form the full 12-bit angle value
-    int angle = ((msb << 8) | lsb) & 0x0FFF; // Mask to get the lower 12 bits
+    // Utility functions
+    blinkLed();
+    printDiagnostics(targetAngle, actualAngle, pidOutput);
 
-    return angle;
-  }
-  else
-  {
-    Serial.println("Error: Did not receive 2 bytes from sensor");
-    return -1; // Return -1 if data is not available
-  }
+    delay(10); // Main loop delay
 }
 
-void PID()
-{
+void setupHardware() {
+    Serial.begin(115200);
+    Wire.begin();
+    pinMode(PWM_PIN, OUTPUT);
+    pinMode(DIR_PIN, OUTPUT);
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(DIR_PIN, LOW);
+    digitalWrite(LED_PIN, LOW);
+}
 
-  unsigned long now = millis();
-  float dt = (now - lastTime) / 1000.0;
+/**
+ * @brief Gets the target steering angle.
+ * @return The target angle in radians. For now, this is a constant 0.0 for going straight.
+ */
+float getTargetAngle() {
+    return 0.0f; // Radians
+}
 
-  if (dt >= 0.01)
-  { // Ejecuta el PID cada 10 ms
-    input = readAngle();
+/**
+ * @brief Reads the raw sensor value and converts it to radians.
+ * @return The actual steering angle in radians.
+ */
+float getActualAngle() {
+    int rawAngle = readRawAngle();
+    if (rawAngle == -1) {
+        return 0.0f; // Return a neutral value on error
+    }
+    // Map the sensor value [0, 4095] to the radian range [-PI, PI] using floating-point arithmetic
+    return (float)(rawAngle - SENSOR_CENTER) / (float)SENSOR_CENTER * MAX_RAD;
+}
 
-    if (input == -1)
-    {
-      // Error reading sensor, stop the motor as a safety measure
-      aplicarSalida(0);
-      Serial.println("Error reading sensor. Restarting I2C communication.");
-      Wire.end();
-      delay(10); // Small delay before re-initializing
-      Wire.begin();
-      return; // Skip PID calculation for this cycle
+/**
+ * @brief Calculates the PID control signal.
+ * @param target The desired angle in radians.
+ * @param actual The current angle in radians.
+ * @param pid A reference to the PID controller state.
+ * @return A control signal from -1.0 to 1.0.
+ */
+float calculatePID(float target, float actual, PIDController& pid) {
+    unsigned long now = millis();
+    float dt = (now - pid.lastTime) / 1000.0f;
+
+    if (dt <= 0) { // Prevent division by zero or negative dt
+        dt = 1e-3;
     }
 
-    float error = setpoint - input;
-    integral += error * dt;
-    float derivative = (error - lastError) / dt;
+    float error = target - actual;
+    pid.integral += error * dt;
+    float derivative = (error - pid.lastError) / dt;
 
-    output = kp * error + ki * integral + kd * derivative;
+    float output = (pid.kp * error) + (pid.ki * pid.integral) + (pid.kd * derivative);
 
-    // Crop the output to a reasonable range
-    output = constrain(output, -150e3, 150e3); // Limit output to a range suitable
+    pid.lastError = error;
+    pid.lastTime = now;
 
-    aplicarSalida(output);
-
-    lastError = error;
-    lastTime = now;
-
-    Serial.print("Setpoint: ");
-    Serial.print(setpoint);
-    Serial.print("  Input: ");
-    Serial.print(input);
-    Serial.print("  DIR: ");
-    Serial.print(digitalRead(DIR_PIN));
-    Serial.print("  PWM: ");
-    Serial.print(constrain(abs(output), 0, 150));
-    Serial.print("  Output: ");
-    Serial.println(output);
-  }
+    // Constrain the output to the range [-1.0, 1.0]
+    return constrain(output, -1.0f, 1.0f);
 }
 
-////////////////////////
-void setup()
-{
-  Serial.begin(115200); // Initialize serial communication
-  Wire.begin();         // Initialize I2C communication
-  pinMode(DIR_PIN, OUTPUT);
-  digitalWrite(DIR_PIN, LOW); // Initial direction
+/**
+ * @brief Sets the motor's PWM and direction based on the MD30C truth table.
+ * @param control_signal A value from -1.0 (full right) to 1.0 (full left).
+ */
+void setMotorOutput(float control_signal) {
+    // Determine direction from the sign of the control signal
+    // According to the manual: HIGH for CCW, LOW for CW
+    bool direction = (control_signal > 0); // Assuming positive is one direction, negative is the other
 
-  pinMode(LED_BUILTIN, OUTPUT);   // Set LED pin as output
-  digitalWrite(LED_BUILTIN, LOW); // Ensure LED is off initially
+    // Calculate PWM value from the absolute magnitude of the signal, scaled by the limit
+    int pwm_value = abs(control_signal) * 255 * PWM_LIMIT;
+
+    // Apply the logic from the MD30C truth table
+    if (pwm_value < 5) { // Use a small threshold to prevent noise from causing movement
+        // Brake the motor if the control signal is near zero
+        analogWrite(PWM_PIN, 0);
+    } else {
+        // Set direction and PWM for movement
+        digitalWrite(DIR_PIN, direction);
+        analogWrite(PWM_PIN, constrain(pwm_value, 0, 255));
+    }
 }
 
-void loop()
-{
-  unsigned long currentMillis = millis();
+/**
+ * @brief Reads the raw 12-bit angle from the AS5600 sensor.
+ * @return The raw angle (0-4095) or -1 on error.
+ */
+int readRawAngle() {
+    Wire.beginTransmission(AS5600_ADDR);
+    Wire.write(AS5600_ANGLE_MSB);
+    if (Wire.endTransmission(false) != 0) {
+        Serial.println("I2C Error at endTransmission");
+        return -1;
+    }
 
-  // LED blinking logic (non-blocking)
-  if (currentMillis - lastLedToggleTime >= ledInterval)
-  {
-    lastLedToggleTime = currentMillis;
-    ledState = !ledState; // Toggle LED state
-    digitalWrite(LED_BUILTIN, ledState);
-  }
+    if (Wire.requestFrom(AS5600_ADDR, 2) == 2) {
+        int msb = Wire.read();
+        int lsb = Wire.read();
+        return ((msb << 8) | lsb) & 0x0FFF;
+    }
+    Serial.println("I2C Error at requestFrom");
+    return -1;
+}
 
-  PID();
+void blinkLed() {
+    static unsigned long lastLedToggleTime = 0;
+    const long ledInterval = 500;
+    if (millis() - lastLedToggleTime >= ledInterval) {
+        lastLedToggleTime = millis();
+        digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+    }
+}
+
+void printDiagnostics(float target, float actual, float pid_output) {
+    static unsigned long lastPrintTime = 0;
+    const long printInterval = 100;
+
+    if (millis() - lastPrintTime >= printInterval) {
+        lastPrintTime = millis();
+        Serial.print("Target: ");
+        Serial.print(target, 4);
+        Serial.print(" rad  Actual: ");
+        Serial.print(actual, 4);
+        Serial.print(" rad  PID: ");
+        Serial.print(pid_output, 4);
+        Serial.print("  DIR: ");
+        Serial.print(digitalRead(DIR_PIN));
+        Serial.print("  PWM: ");
+        Serial.println(abs(pid_output) * 255 * PWM_LIMIT);
+    }
 }
