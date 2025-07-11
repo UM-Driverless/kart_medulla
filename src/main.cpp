@@ -2,6 +2,9 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include "BluetoothSerial.h"
+
+BluetoothSerial SerialBT;
 
 // Pin Definitions
 #define PWM_PIN 25
@@ -69,6 +72,19 @@ void printDiagnostics(float target, float actual, float pid_output)
     Serial.print(digitalRead(DIR_PIN));
     Serial.print("  PWM: ");
     Serial.println(abs(pid_output) * 255 * PWM_LIMIT);
+
+    SerialBT.print("Freq: ");
+    SerialBT.print(loopFrequency, 1);
+    SerialBT.print(" Hz  Target: ");
+    SerialBT.print(target, 4);
+    SerialBT.print(" rad  Actual: ");
+    SerialBT.print(actual, 4);
+    SerialBT.print(" rad  PID: ");
+    SerialBT.print(pid_output, 4);
+    SerialBT.print("  DIR: ");
+    SerialBT.print(digitalRead(DIR_PIN));
+    SerialBT.print("  PWM: ");
+    SerialBT.println(abs(pid_output) * 255 * PWM_LIMIT);
   }
 }
 
@@ -82,6 +98,7 @@ int readRawAngle();
 void setupHardware()
 {
   Serial.begin(115200);
+  SerialBT.begin("KartMedulla"); //Bluetooth device name
   Wire.begin();
   pinMode(PWM_PIN, OUTPUT);
   pinMode(DIR_PIN, OUTPUT);
