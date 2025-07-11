@@ -21,11 +21,11 @@ GPIO 25 is PWM and GPIO 26 is DIR.
 ### ESP32 WROOM 32 to Motor Driver
 
 | Motor Driver Pin | ESP32 Pin |
-| --------------- | --------- |
-| PWM             | GPIO 25   |
-| DIR             | GPIO 26   |
-| VCC             | 5V        |
-| GND             | GND       |
+| ---------------- | --------- |
+| PWM              | GPIO 25   |
+| DIR              | GPIO 26   |
+| VCC              | 5V        |
+| GND              | GND       |
 
 ## Software Setup
 
@@ -95,3 +95,10 @@ Ensure your wiring is correct and your ESP32's USB port is recognized.
   * I²C Interface (address: `0x36`)
 
 This guide provides all necessary information to set up and verify the functionality of the AS5600 angle sensor with an ESP32 WROOM 32.
+
+# Reference systems
+- Body reference system: X is forward, Y is left, Z is up
+- Kart steering angle definition: 0 rad is straight ahead, positive values turn left, negative values turn right. This means a positive rotation angle creates a rotation vector in +Z
+- The AS5600 angle sensor outputs a positive angle when the magnet rotates with a vector pointing to the direction of the pcb with no chip.
+- 
+

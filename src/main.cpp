@@ -32,7 +32,7 @@ struct PIDController
 };
 
 // Global PID instance
-PIDController pid = {3, 0.2, 0.0, 0.0, 0.0, 0}; // { kp, ki, kd, integral, lastError, lastTime }
+PIDController pid = {0.5, 0.01, 0.0, 0.0, 0.0, 0}; // { kp, ki, kd, integral, lastError, lastTime }
 
 // Function Prototypes
 void setupHardware();
@@ -140,6 +140,7 @@ void setMotorOutput(float control_signal)
   if (pwm_value < 5)
   {
     analogWrite(PWM_PIN, 0);
+    digitalWrite(DIR_PIN, LOW);
   }
   else
   {
