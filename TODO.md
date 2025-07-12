@@ -1,1 +1,1 @@
-rename to kart_medulla
+screen /dev/ttyUSB1 115200

@@ -27,6 +27,18 @@ GPIO 25 is PWM and GPIO 26 is DIR.
 | VCC              | 5V        |
 | GND              | GND       |
 
+### ESP32 WROOM 32 to Orin (UART)
+
+| Orin Pin | ESP32 Pin |
+| -------- | --------- |
+| TX       | GPIO 18   |
+| RX       | GPIO 19   |
+| GND      | GND       |
+
+### Other Pins
+
+*   **LED:** GPIO 2 (Onboard LED)
+
 ## Software Setup
 
 ### PlatformIO Configuration (`platformio.ini`)
@@ -53,7 +65,26 @@ Serial output will be available at **115200 baud** via the USB port.
 
 ## Monitoring Serial Output
 
-To view the serial output (since PlatformIO's serial monitor has terminal compatibility issues):
+### Using Screen (Recommended)
+
+First, find your device:
+```bash
+ls -l /dev/serial/by-id/
+```
+
+Then connect using screen:
+```bash
+screen /dev/serial/by-id/usb-Silicon_Labs_CP2102* 115200
+```
+
+Or if you know the device name:
+```bash
+screen /dev/ttyUSB0 115200
+```
+
+To exit screen: `Ctrl+A`, then `K`, then `Y`
+
+### Alternative Method
 
 ```bash
 stty -F /dev/ttyUSB0 115200 raw -echo && timeout 10 cat /dev/ttyUSB0
