@@ -6,6 +6,9 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+#include "steering_test.h"
+#include "steering_test_sequence.h"
+#include "sine_wave_test.h"
 
 // BLE UUIDs
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
@@ -60,7 +63,7 @@ struct PIDController
 };
 
 // Global PID instance
-PIDController pid = {1.5, 0.01, 0.0, 0.0, 0.0, 0}; // { kp, ki, kd, integral, lastError, lastTime }
+PIDController pid = {20.0, 0.0, 0.0, 0.0, 0.0, 0}; // { kp, ki, kd, integral, lastError, lastTime }
 
 // Global State Structure
 
@@ -77,9 +80,14 @@ unsigned long lastMessageTime = 0;
 
 // Test mode variables
 bool testModeEnabled = true;  // Start in test mode
-float testAmplitude = 30.0;   // degrees
+float testAmplitude = 0.0;    // degrees - start at 0 (straight)
 float testPeriod = 5.0;       // seconds
-int testMode = 1;              // 1=sine, 2=constant, 3=step
+int testMode = 2;              // 1=sine, 2=constant, 3=step - start with constant
+
+// Test objects
+SteeringTest steeringTest;
+SteeringTestSequence testSequence;
+SineWaveTest sineTest;
 
 // Function Prototypes
 void setupHardware();
@@ -116,9 +124,15 @@ void printDiagnostics(float target, float actual, float pid_output)
     
     // Print test mode status
     if (testModeEnabled) {
-      Serial.print("[TEST ");
-      Serial.print(testMode == 1 ? "SINE" : (testMode == 2 ? "CONST" : "STEP"));
-      Serial.print("] ");
+      Serial.print("[CONST ");
+      Serial.print(testAmplitude, 0);
+      Serial.print("°] ");
+    } else if (sineTest.isActive()) {
+      Serial.print("[SINE] ");
+    } else if (testSequence.isActive()) {
+      Serial.print("[SEQ] ");
+    } else if (steeringTest.isActive()) {
+      Serial.print("[STEADY] ");
     }
     
     Serial.print("Freq: ");
@@ -429,6 +443,37 @@ void handleSerialCommands()
       Serial.print(testPeriod);
       Serial.println(" seconds");
     }
+    else if (command.startsWith("steady"))
+    {
+      float targetDeg = 15.0;  // default
+      if (command.length() > 6) {
+        targetDeg = command.substring(7).toFloat();
+      }
+      steeringTest.startSteadyStateTest(targetDeg);
+      testModeEnabled = false;  // Disable other test modes
+    }
+    else if (command == "sequence")
+    {
+      testSequence.startSequenceTest();
+      testModeEnabled = false;  // Disable other test modes
+    }
+    else if (command.startsWith("sine"))
+    {
+      float amp = 30.0;  // default amplitude
+      float freq = 0.2;  // default frequency
+      if (command.length() > 4) {
+        // Parse sine=amp,freq format
+        int commaIndex = command.indexOf(',');
+        if (commaIndex > 5) {
+          amp = command.substring(5, commaIndex).toFloat();
+          freq = command.substring(commaIndex + 1).toFloat();
+        } else {
+          amp = command.substring(5).toFloat();
+        }
+      }
+      sineTest.startTest(amp, freq, 20000);  // 20 second test
+      testModeEnabled = false;  // Disable other test modes
+    }
     else if (command == "help")
     {
       Serial.println("\n=== Commands ===");
@@ -439,6 +484,9 @@ void handleSerialCommands()
       Serial.println("mode=N     - Set test mode (1=sine, 2=constant, 3=step)");
       Serial.println("amp=X      - Set test amplitude (degrees)");
       Serial.println("period=X   - Set test period (seconds)");
+      Serial.println("steady[=X] - Run steady-state test (default 15°)");
+      Serial.println("sequence   - Run test sequence (0,±10,±20,±30°)");
+      Serial.println("sine[=A,F] - Run sine wave test (A=amplitude, F=freq)");
       Serial.println("help       - Show this help");
       Serial.println("===============\n");
     }
@@ -495,8 +543,10 @@ void setup()
 {
   setupHardware();
   Serial.println("\n=== Kart Medulla Started ===");
-  Serial.println("Starting in TEST MODE with sine wave");
+  Serial.println("Starting with constant 0° (straight)");
   Serial.println("Type 'help' for available commands");
+  Serial.println("Type 'sequence' for discrete angle test");
+  Serial.println("Type 'sine' for sine wave test");
   Serial.println("===========================\n");
 }
 
@@ -504,7 +554,13 @@ void loop()
 {
   // 1. Get the desired target angle
   float targetAngle;
-  if (testModeEnabled) {
+  if (steeringTest.isActive()) {
+    targetAngle = steeringTest.getTargetAngle();
+  } else if (testSequence.isActive()) {
+    targetAngle = testSequence.getCurrentTargetAngle();
+  } else if (sineTest.isActive()) {
+    targetAngle = sineTest.getCurrentTargetAngle();
+  } else if (testModeEnabled) {
     switch(testMode) {
       case 1: // Sine wave
         targetAngle = generateSineWaveTargetAngle(testAmplitude, testPeriod);
@@ -536,4 +592,14 @@ void loop()
 
   // 4. Run periodic tasks
   runPeriodicTasks(targetAngle, actualAngle, pidOutput);
+  
+  // 5. Update tests if active
+  steeringTest.update(actualAngle);
+  testSequence.update(actualAngle);
+  sineTest.update(actualAngle);
+  
+  // Re-enable test mode when tests complete
+  if (!steeringTest.isActive() && !testSequence.isActive() && !sineTest.isActive() && !testModeEnabled) {
+    testModeEnabled = true;
+  }
 }

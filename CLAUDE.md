@@ -1,5 +1,28 @@
 # Claude Development Notes
 
+## PID Tuning Results
+
+### Optimal Values Found
+- **Kp=10, Ki=0, Kd=0** - PASSED accuracy test
+  - Average error: 2.6°
+  - Max error: 4.4°
+  - Good response without oscillation
+
+### Test Results Summary
+| Kp | Ki | Kd | Avg Error | Max Error | Result | Notes |
+|----|----|----|-----------|-----------|--------|-------|
+| 1.5 | 0.01 | 0 | 9.0° | 19.9° | FAIL | Original - too weak |
+| 5 | 0 | 0 | 5.7° | 9.0° | FAIL | Better but still weak |
+| 10 | 0 | 0 | 2.6° | 4.4° | **PASS** | Good balance |
+| 10 | 0.5 | 0 | 84.0° | 114.0° | FAIL | Integral windup |
+| 10 | 0.05 | 0 | 79.0° | 109.0° | FAIL | Still windup |
+
+### Recommendations
+1. Use **Kp=10** as base value
+2. Avoid Ki unless anti-windup is implemented
+3. Add small Kd (0.1-0.5) only if oscillation occurs
+4. Battery voltage affects performance significantly
+
 ## Serial Monitoring Issues
 
 ### Problem: Terminal Hangs with Interactive Serial Monitors

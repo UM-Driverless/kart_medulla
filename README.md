@@ -18,6 +18,15 @@ GPIO 25 is PWM and GPIO 26 is DIR.
 | VCC        | 3.3V      |
 | GND        | GND       |
 
+#### AS5600 Wire Colors
+
+| Color | Signal    |
+|-------|-----------|
+| Grey  | GND       |
+| White | 3.3V      |
+| Green | SDA       |
+| Blue  | SCL       |
+
 ### ESP32 WROOM 32 to Motor Driver
 
 | Motor Driver Pin | ESP32 Pin |
@@ -126,6 +135,66 @@ Ensure your wiring is correct and your ESP32's USB port is recognized.
   * I²C Interface (address: `0x36`)
 
 This guide provides all necessary information to set up and verify the functionality of the AS5600 angle sensor with an ESP32 WROOM 32.
+
+## PID Tuning and Testing
+
+### Manual PID Testing via Serial
+
+You can tune PID values directly without recompiling by using serial commands:
+
+1. **Connect to serial monitor** (any serial terminal):
+   ```bash
+   screen /dev/ttyUSB0 115200
+   ```
+   Or use Arduino IDE Serial Monitor at 115200 baud
+
+2. **Available Commands**:
+   ```
+   kp=20        # Set proportional gain (Kp)
+   ki=0         # Set integral gain (Ki)  
+   kd=0         # Set derivative gain (Kd)
+   sequence     # Run full test sequence (0°, ±10°, ±20°, ±30°)
+   steady=15    # Run steady-state test at 15°
+   mode=2       # Set to constant angle mode
+   amp=10       # Set target angle to 10°
+   help         # Show all available commands
+   ```
+
+3. **Quick Test Procedure**:
+   - Set PID values: `kp=20` → Enter, `ki=0` → Enter, `kd=0` → Enter
+   - Run test: `sequence` → Enter
+   - Wait for results (~21 seconds)
+   - System reports PASS/FAIL with average and max errors
+
+4. **Tuning Guidelines**:
+   - **Start with P-only**: Set `ki=0` and `kd=0`, adjust `kp` only
+   - **If error too high**: Increase `kp` (try 10, 20, 30...)
+   - **If oscillating**: Decrease `kp` or add small `kd` (0.1-0.5)
+   - **If steady-state error persists**: Add small `ki` (0.01-0.1)
+   - **Target**: Average error < 3°, Max error < 5°
+
+5. **Example Tuning Session**:
+   ```
+   kp=15
+   sequence
+   # Wait... if error too high, increase Kp
+   
+   kp=25
+   sequence
+   # Wait... if oscillating, add Kd
+   
+   kp=25
+   kd=0.2
+   sequence
+   # Check results...
+   ```
+
+6. **Exit screen**: Press `Ctrl+A`, then `K`, then `Y`
+
+### Optimal Values Found (as of testing)
+- **Best performance**: `kp=20`, `ki=0`, `kd=0` (Average error: 1.3°, Max: 2.7°)
+- **PID loop frequency**: 1000 Hz
+- **Test conditions**: Battery must be adequately charged for proper motor response
 
 # Reference systems
 - Body reference system: X is forward, Y is left, Z is up
