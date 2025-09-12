@@ -2,9 +2,32 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include "BluetoothSerial.h"
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
 
-BluetoothSerial SerialBT;
+// BLE UUIDs
+#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+
+BLEServer* pServer = NULL;
+BLECharacteristic* pCharacteristic = NULL;
+bool deviceConnected = false;
+bool oldDeviceConnected = false;
+
+// BLE Server callbacks
+class MyServerCallbacks: public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+      deviceConnected = true;
+      Serial.println("BLE Client Connected");
+    };
+
+    void onDisconnect(BLEServer* pServer) {
+      deviceConnected = false;
+      Serial.println("BLE Client Disconnected");
+    }
+};
 
 // Pin Definitions
 #define PWM_PIN 25
@@ -52,6 +75,12 @@ float targetBrake = 0.0;
 bool messageReceived = false;
 unsigned long lastMessageTime = 0;
 
+// Test mode variables
+bool testModeEnabled = true;  // Start in test mode
+float testAmplitude = 30.0;   // degrees
+float testPeriod = 5.0;       // seconds
+int testMode = 1;              // 1=sine, 2=constant, 3=step
+
 // Function Prototypes
 void setupHardware();
 void blinkLed();
@@ -61,6 +90,7 @@ void updateTargetFromOrinData();
 bool readAndValidateSensorData(float &actualAngle);
 void calculateAndApplyMotorControl(float targetAngle, float actualAngle, float &pidOutput);
 void runPeriodicTasks(float targetAngle, float actualAngle, float pidOutput);
+int readRawAngle();
 void printDiagnostics(float target, float actual, float pid_output)
 {
   static unsigned long lastPrintTime = 0;
@@ -83,31 +113,41 @@ void printDiagnostics(float target, float actual, float pid_output)
   if (currentTime - lastPrintTime >= printInterval)
   {
     lastPrintTime = currentTime;
+    
+    // Print test mode status
+    if (testModeEnabled) {
+      Serial.print("[TEST ");
+      Serial.print(testMode == 1 ? "SINE" : (testMode == 2 ? "CONST" : "STEP"));
+      Serial.print("] ");
+    }
+    
     Serial.print("Freq: ");
     Serial.print(loopFrequency, 1);
     Serial.print(" Hz  Target: ");
-    Serial.print(target, 4);
-    Serial.print(" rad  Actual: ");
-    Serial.print(actual, 4);
-    Serial.print(" rad  PID: ");
-    Serial.print(pid_output, 4);
-    Serial.print("  DIR: ");
-    Serial.print(digitalRead(DIR_PIN));
+    Serial.print(target * 180.0 / PI, 1);  // Convert to degrees
+    Serial.print("°  Actual: ");
+    Serial.print(actual * 180.0 / PI, 1);  // Convert to degrees
+    Serial.print("°  Error: ");
+    Serial.print((target - actual) * 180.0 / PI, 1);
+    Serial.print("°  PID: ");
+    Serial.print(pid_output, 3);
     Serial.print("  PWM: ");
-    Serial.println(abs(pid_output) * 255 * PWM_LIMIT);
+    Serial.print(abs(pid_output) * 255 * PWM_LIMIT);
+    Serial.print("  Raw: ");
+    Serial.println(readRawAngle());
 
-    SerialBT.print("Freq: ");
-    SerialBT.print(loopFrequency, 1);
-    SerialBT.print(" Hz  Target: ");
-    SerialBT.print(target, 4);
-    SerialBT.print(" rad  Actual: ");
-    SerialBT.print(actual, 4);
-    SerialBT.print(" rad  PID: ");
-    SerialBT.print(pid_output, 4);
-    SerialBT.print("  DIR: ");
-    SerialBT.print(digitalRead(DIR_PIN));
-    SerialBT.print("  PWM: ");
-    SerialBT.println(abs(pid_output) * 255 * PWM_LIMIT);
+    // Send data over BLE if connected
+    if (deviceConnected) {
+      String bleData = "Freq: " + String(loopFrequency, 1) + 
+                       " Hz  Target: " + String(target, 4) + 
+                       " rad  Actual: " + String(actual, 4) + 
+                       " rad  PID: " + String(pid_output, 4) + 
+                       "  DIR: " + String(digitalRead(DIR_PIN)) + 
+                       "  PWM: " + String(abs(pid_output) * 255 * PWM_LIMIT);
+      
+      pCharacteristic->setValue(bleData.c_str());
+      pCharacteristic->notify();
+    }
   }
 }
 
@@ -119,10 +159,47 @@ float getConstantTargetAngle();
 void setMotorOutput(float control_signal);
 int readRawAngle();
 
+void setupBLE() {
+  // Create the BLE Device
+  BLEDevice::init("KartMedulla");
+
+  // Create the BLE Server
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
+
+  // Create the BLE Service
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  // Create a BLE Characteristic
+  pCharacteristic = pService->createCharacteristic(
+                      CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_READ   |
+                      BLECharacteristic::PROPERTY_WRITE  |
+                      BLECharacteristic::PROPERTY_NOTIFY |
+                      BLECharacteristic::PROPERTY_INDICATE
+                    );
+
+  // Create a BLE Descriptor for notifications
+  pCharacteristic->addDescriptor(new BLE2902());
+
+  // Start the service
+  pService->start();
+
+  // Start advertising
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(false);
+  pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
+  BLEDevice::startAdvertising();
+  Serial.println("BLE Advertising Started - Waiting for clients to connect...");
+}
+
 void setupHardware()
 {
   Serial.begin(115200);
-  SerialBT.begin("KartMedulla"); // Bluetooth device name
+  
+  // Setup BLE
+  setupBLE();
 
   // Initialize I2C master for AS5600 hall sensor (pins 21/22)
   Wire.begin();
@@ -326,6 +403,60 @@ void handleSerialCommands()
       Serial.print("kd updated to: ");
       Serial.println(pid.kd, 4);
     }
+    else if (command == "test")
+    {
+      testModeEnabled = !testModeEnabled;
+      Serial.print("Test mode: ");
+      Serial.println(testModeEnabled ? "ENABLED" : "DISABLED");
+    }
+    else if (command.startsWith("mode="))
+    {
+      testMode = command.substring(5).toInt();
+      Serial.print("Test mode changed to: ");
+      Serial.println(testMode == 1 ? "SINE" : (testMode == 2 ? "CONSTANT" : "STEP"));
+    }
+    else if (command.startsWith("amp="))
+    {
+      testAmplitude = command.substring(4).toFloat();
+      Serial.print("Test amplitude: ");
+      Serial.print(testAmplitude);
+      Serial.println(" degrees");
+    }
+    else if (command.startsWith("period="))
+    {
+      testPeriod = command.substring(7).toFloat();
+      Serial.print("Test period: ");
+      Serial.print(testPeriod);
+      Serial.println(" seconds");
+    }
+    else if (command == "help")
+    {
+      Serial.println("\n=== Commands ===");
+      Serial.println("kp=X.X     - Set P gain");
+      Serial.println("ki=X.X     - Set I gain");
+      Serial.println("kd=X.X     - Set D gain");
+      Serial.println("test       - Toggle test mode");
+      Serial.println("mode=N     - Set test mode (1=sine, 2=constant, 3=step)");
+      Serial.println("amp=X      - Set test amplitude (degrees)");
+      Serial.println("period=X   - Set test period (seconds)");
+      Serial.println("help       - Show this help");
+      Serial.println("===============\n");
+    }
+  }
+}
+
+void handleBLEConnection() {
+  // Handle disconnection - restart advertising
+  if (!deviceConnected && oldDeviceConnected) {
+    delay(500); // give the bluetooth stack the chance to get things ready
+    pServer->startAdvertising(); // restart advertising
+    Serial.println("BLE: Start advertising");
+    oldDeviceConnected = deviceConnected;
+  }
+  // Handle new connection
+  if (deviceConnected && !oldDeviceConnected) {
+    // do stuff here on connecting
+    oldDeviceConnected = deviceConnected;
   }
 }
 
@@ -334,6 +465,7 @@ void runPeriodicTasks(float targetAngle, float actualAngle, float pidOutput)
   blinkLed();
   handleSerialCommands();
   handleOrinUartData();
+  handleBLEConnection();
   printDiagnostics(targetAngle, actualAngle, pidOutput);
 }
 
@@ -362,12 +494,34 @@ bool readAndValidateSensorData(float &actualAngle)
 void setup()
 {
   setupHardware();
+  Serial.println("\n=== Kart Medulla Started ===");
+  Serial.println("Starting in TEST MODE with sine wave");
+  Serial.println("Type 'help' for available commands");
+  Serial.println("===========================\n");
 }
 
 void loop()
 {
   // 1. Get the desired target angle
-  float targetAngle = getConstantTargetAngle();
+  float targetAngle;
+  if (testModeEnabled) {
+    switch(testMode) {
+      case 1: // Sine wave
+        targetAngle = generateSineWaveTargetAngle(testAmplitude, testPeriod);
+        break;
+      case 2: // Constant angle
+        targetAngle = (testAmplitude * PI / 180.0); // Use amplitude as constant angle
+        break;
+      case 3: // Step function
+        targetAngle = ((millis() / (int)(testPeriod * 1000)) % 2 == 0) ? 
+                      (testAmplitude * PI / 180.0) : -(testAmplitude * PI / 180.0);
+        break;
+      default:
+        targetAngle = 0.0;
+    }
+  } else {
+    targetAngle = getTargetAngle(); // Use UART or fallback
+  }
 
   // 2. Get the current angle of the steering shaft
   float actualAngle;
