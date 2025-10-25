@@ -1,605 +1,274 @@
-// Kart Medulla - Steering Control with PID
+// Kart Medulla - VESC/Little FOCer Control via UART
+// This version communicates with Little FOCer Rev3.1 using VESC UART protocol
 
 #include <Arduino.h>
-#include <Wire.h>
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
-#include <BLE2902.h>
-#include "steering_test.h"
-#include "steering_test_sequence.h"
-#include "sine_wave_test.h"
+#include <VescUart.h>
 
-// BLE UUIDs
-#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
-#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
-
-BLEServer* pServer = NULL;
-BLECharacteristic* pCharacteristic = NULL;
-bool deviceConnected = false;
-bool oldDeviceConnected = false;
-
-// BLE Server callbacks
-class MyServerCallbacks: public BLEServerCallbacks {
-    void onConnect(BLEServer* pServer) {
-      deviceConnected = true;
-      Serial.println("BLE Client Connected");
-    };
-
-    void onDisconnect(BLEServer* pServer) {
-      deviceConnected = false;
-      Serial.println("BLE Client Disconnected");
-    }
-};
+// UART Configuration for Little FOCer
+// ESP32 Serial2: RX=GPIO16, TX=GPIO17
+// Connect: ESP32 TX (GPIO 17) -> Little FOCer RX (COMM port)
+//          ESP32 RX (GPIO 16) -> Little FOCer TX (COMM port)
+//          ESP32 GND -> Little FOCer GND
+HardwareSerial& VescSerial = Serial2;
+VescUart VESC;
 
 // Pin Definitions
-#define PWM_PIN 25
-#define DIR_PIN 26
 #define LED_PIN 2
 
-// I2C Address for AS5600 Hall Sensor
-#define AS5600_ADDR 0x36
-
-// I2C Configuration for Orin (Neural Network Computer)
-
-// AS5600 Registers
-#define AS5600_ANGLE_MSB 0x0C
-#define AS5600_ANGLE_LSB 0x0D
-
-// Sensor & Angle Constants
-const int SENSOR_MIN = 0;
-const int SENSOR_MAX = 4095;
-const int SENSOR_CENTER = 2048;
-const float MAX_RAD = PI;    // The steering shaft can turn PI radians (180 degrees) in each direction
-const float PWM_LIMIT = 1.0; // Limit the maximum PWM output (0.0 to 1.0)
-
-// PID Controller State
-struct PIDController
-{
-  float kp, ki, kd;
-  float integral;
-  float lastError;
-  unsigned long lastTime;
-};
-
-// Global PID instance
-PIDController pid = {20.0, 0.0, 0.0, 0.0, 0.0, 0}; // { kp, ki, kd, integral, lastError, lastTime }
-
-// Global State Structure
-
-
-// Global Target Structure
-
-
-// Global instances
-float targetSteering = 0.0;
-float targetAcceleration = 0.0;
-float targetBrake = 0.0;
-bool messageReceived = false;
-unsigned long lastMessageTime = 0;
-
 // Test mode variables
-bool testModeEnabled = true;  // Start in test mode
+bool testModeEnabled = true;
 float testAmplitude = 0.0;    // degrees - start at 0 (straight)
 float testPeriod = 5.0;       // seconds
-int testMode = 2;              // 1=sine, 2=constant, 3=step - start with constant
+int testMode = 2;             // 1=sine, 2=constant, 3=step
 
-// Test objects
-SteeringTest steeringTest;
-SteeringTestSequence testSequence;
-SineWaveTest sineTest;
+// Timing variables
+unsigned long lastPrintTime = 0;
+const long printInterval = 100; // Print every 100ms
 
-// Function Prototypes
+// Function prototypes
 void setupHardware();
 void blinkLed();
 void handleSerialCommands();
-void handleOrinUartData();
-void updateTargetFromOrinData();
-bool readAndValidateSensorData(float &actualAngle);
-void calculateAndApplyMotorControl(float targetAngle, float actualAngle, float &pidOutput);
-void runPeriodicTasks(float targetAngle, float actualAngle, float pidOutput);
-int readRawAngle();
-void printDiagnostics(float target, float actual, float pid_output)
-{
-  static unsigned long lastPrintTime = 0;
-  static unsigned long lastLoopTime = 0;
-  static float loopFrequency = 0.0;
-  const long printInterval = 100;
-
-  // Calculate loop frequency
-  unsigned long currentTime = millis();
-  if (lastLoopTime > 0)
-  {
-    float deltaTime = (currentTime - lastLoopTime) / 1000.0;
-    if (deltaTime > 0)
-    {
-      loopFrequency = 1.0 / deltaTime;
-    }
-  }
-  lastLoopTime = currentTime;
-
-  if (currentTime - lastPrintTime >= printInterval)
-  {
-    lastPrintTime = currentTime;
-    
-    // Print test mode status
-    if (testModeEnabled) {
-      Serial.print("[CONST ");
-      Serial.print(testAmplitude, 0);
-      Serial.print("°] ");
-    } else if (sineTest.isActive()) {
-      Serial.print("[SINE] ");
-    } else if (testSequence.isActive()) {
-      Serial.print("[SEQ] ");
-    } else if (steeringTest.isActive()) {
-      Serial.print("[STEADY] ");
-    }
-    
-    Serial.print("Freq: ");
-    Serial.print(loopFrequency, 1);
-    Serial.print(" Hz  Target: ");
-    Serial.print(target * 180.0 / PI, 1);  // Convert to degrees
-    Serial.print("°  Actual: ");
-    Serial.print(actual * 180.0 / PI, 1);  // Convert to degrees
-    Serial.print("°  Error: ");
-    Serial.print((target - actual) * 180.0 / PI, 1);
-    Serial.print("°  PID: ");
-    Serial.print(pid_output, 3);
-    Serial.print("  PWM: ");
-    Serial.print(abs(pid_output) * 255 * PWM_LIMIT);
-    Serial.print("  Raw: ");
-    Serial.println(readRawAngle());
-
-    // Send data over BLE if connected
-    if (deviceConnected) {
-      String bleData = "Freq: " + String(loopFrequency, 1) + 
-                       " Hz  Target: " + String(target, 4) + 
-                       " rad  Actual: " + String(actual, 4) + 
-                       " rad  PID: " + String(pid_output, 4) + 
-                       "  DIR: " + String(digitalRead(DIR_PIN)) + 
-                       "  PWM: " + String(abs(pid_output) * 255 * PWM_LIMIT);
-      
-      pCharacteristic->setValue(bleData.c_str());
-      pCharacteristic->notify();
-    }
-  }
-}
-
-float generateSineWaveTargetAngle(float amplitude_degrees, float period_seconds);
+void printDiagnostics();
 float getTargetAngle();
-float getActualAngle();
-float calculatePID(float target, float actual, PIDController &pid);
-float getConstantTargetAngle();
-void setMotorOutput(float control_signal);
-int readRawAngle();
+float generateSineWaveTargetAngle(float amplitude_degrees, float period_seconds);
 
-void setupBLE() {
-  // Create the BLE Device
-  BLEDevice::init("KartMedulla");
-
-  // Create the BLE Server
-  pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
-
-  // Create the BLE Service
-  BLEService *pService = pServer->createService(SERVICE_UUID);
-
-  // Create a BLE Characteristic
-  pCharacteristic = pService->createCharacteristic(
-                      CHARACTERISTIC_UUID,
-                      BLECharacteristic::PROPERTY_READ   |
-                      BLECharacteristic::PROPERTY_WRITE  |
-                      BLECharacteristic::PROPERTY_NOTIFY |
-                      BLECharacteristic::PROPERTY_INDICATE
-                    );
-
-  // Create a BLE Descriptor for notifications
-  pCharacteristic->addDescriptor(new BLE2902());
-
-  // Start the service
-  pService->start();
-
-  // Start advertising
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-  pAdvertising->addServiceUUID(SERVICE_UUID);
-  pAdvertising->setScanResponse(false);
-  pAdvertising->setMinPreferred(0x0);  // set value to 0x00 to not advertise this parameter
-  BLEDevice::startAdvertising();
-  Serial.println("BLE Advertising Started - Waiting for clients to connect...");
-}
-
-void setupHardware()
-{
+void setupHardware() {
+  // Initialize Serial for debugging
   Serial.begin(115200);
-  
-  // Setup BLE
-  setupBLE();
+  Serial.println("\n=== Kart Medulla - VESC Mode ===");
 
-  // Initialize I2C master for AS5600 hall sensor (pins 21/22)
-  Wire.begin();
-
-  // Initialize UART2 for Orin communication
-  Serial2.begin(115200, SERIAL_8N1, 18, 19); // Baud rate, protocol, RX pin, TX pin
-
-  pinMode(PWM_PIN, OUTPUT);
-  pinMode(DIR_PIN, OUTPUT);
+  // Initialize LED
   pinMode(LED_PIN, OUTPUT);
-  digitalWrite(DIR_PIN, LOW);
   digitalWrite(LED_PIN, LOW);
-}
 
-float generateSineWaveTargetAngle(float amplitude_degrees, float period_seconds)
-{
-  return (amplitude_degrees * PI / 180.0) * sin(2.0 * PI * (millis() / (period_seconds * 1000.0)));
-}
+  // Initialize UART communication with Little FOCer
+  // Using GPIO 16 (RX) and GPIO 17 (TX)
+  VescSerial.begin(115200, SERIAL_8N1, 16, 17);
 
-float getConstantTargetAngle()
-{
-  return 0.0;
-}
+  // Set the serial port for VESC communication
+  VESC.setSerialPort(&VescSerial);
 
-float getTargetAngle()
-{
-  updateTargetFromOrinData();
-  return targetSteering;
-}
-
-float getActualAngle()
-{
-  int rawAngle = readRawAngle();
-  if (rawAngle == -1)
-  {
-    return 0.0f;
-  }
-  return (float)(rawAngle - SENSOR_CENTER) / (float)SENSOR_CENTER * MAX_RAD;
-}
-
-float calculatePID(float target, float actual, PIDController &pid)
-{
-  unsigned long now = millis();
-  float dt = (now - pid.lastTime) / 1000.0f;
-
-  if (dt <= 0)
-  {
-    dt = 1e-3;
-  }
-
-  float error = target - actual;
-  pid.integral += error * dt;
-  float derivative = (error - pid.lastError) / dt;
-
-  float output = (pid.kp * error) + (pid.ki * pid.integral) + (pid.kd * derivative);
-
-  pid.lastError = error;
-  pid.lastTime = now;
-
-  return constrain(output, -1.0f, 1.0f);
-}
-
-void setMotorOutput(float control_signal)
-{
-  int pwm_value = abs(control_signal) * 255 * PWM_LIMIT;
-
-  if (pwm_value < 5)
-  {
-    analogWrite(PWM_PIN, 0);
-    digitalWrite(DIR_PIN, LOW);
-  }
-  else
-  {
-    if (control_signal > 0)
-    {
-      digitalWrite(DIR_PIN, HIGH); // Swapped back to HIGH
-      analogWrite(PWM_PIN, constrain(pwm_value, 0, 255));
-    }
-    else
-    {
-      digitalWrite(DIR_PIN, LOW); // Swapped back to LOW
-      analogWrite(PWM_PIN, constrain(pwm_value, 0, 255));
-    }
-  }
-}
-
-int readRawAngle()
-{
-  Wire.beginTransmission(AS5600_ADDR);
-  Wire.write(AS5600_ANGLE_MSB);
-  if (Wire.endTransmission(false) != 0)
-  {
-    return -1;
-  }
-
-  if (Wire.requestFrom(AS5600_ADDR, 2) == 2)
-  {
-    int msb = Wire.read();
-    int lsb = Wire.read();
-    return ((msb << 8) | lsb) & 0x0FFF;
-  }
-  return -1;
-}
-
-void handleOrinUartData()
-{
-  if (Serial2.available() >= 4)
-  {
-    byte buffer[4];
-    // Read all available bytes from Orin UART bus
-    Serial2.readBytes(buffer, 4);
-
-    Serial.print("UART Raw Data: ");
-    for (int j = 0; j < 4; j++) {
-      Serial.print(buffer[j], HEX);
-      Serial.print(" ");
-    }
-    Serial.println();
-
-    // Verify header byte
-    if (buffer[0] == 0xAA)
-    {
-      // Update state with received values (0-255 range)
-      targetSteering = (buffer[1] - 127.5) / 127.5; // Convert to -1.0 to 1.0
-      targetAcceleration = buffer[2] / 255.0;       // Convert to 0.0 to 1.0
-      targetBrake = buffer[3] / 255.0;              // Convert to 0.0 to 1.0
-      messageReceived = true;
-      lastMessageTime = millis();
-
-      // Update target steering angle based on received steering value
-      targetSteering = targetSteering * MAX_RAD; // Scale to max steering angle
-      targetAcceleration = targetAcceleration;
-      targetBrake = targetBrake;
-
-      Serial.print("UART Received - Steering: ");
-      Serial.print(targetSteering, 3);
-      Serial.print(", Accel: ");
-      Serial.print(targetAcceleration, 3);
-      Serial.print(", Brake: ");
-      Serial.println(targetBrake, 3);
-    }
-  }
-}
-
-void updateTargetFromOrinData()
-{
-  // Check if we have recent UART data (within last 500ms)
-  if (messageReceived && (millis() - lastMessageTime < 500))
-  {
-    // Use UART received target
-    // Target steering is already updated in handleOrinUartData
-  }
-  else
-  {
-    // Fall back to sine wave if no recent UART data
-    targetSteering = generateSineWaveTargetAngle(20.0, 3.0);
-    targetAcceleration = 0.0;
-    targetBrake = 0.0;
-
-    if (messageReceived)
-    {
-      Serial.println("UART timeout - falling back to sine wave");
-      messageReceived = false;
-    }
-  }
-}
-
-void blinkLed()
-{
-  static unsigned long lastLedToggleTime = 0;
-  const long ledInterval = 500;
-  if (millis() - lastLedToggleTime >= ledInterval)
-  {
-    lastLedToggleTime = millis();
-    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-  }
-}
-
-void handleSerialCommands()
-{
-  if (Serial.available())
-  {
-    String command = Serial.readStringUntil('\n');
-    command.trim(); // Remove any whitespace
-
-    if (command.startsWith("kp="))
-    {
-      pid.kp = command.substring(3).toFloat();
-      Serial.print("kp updated to: ");
-      Serial.println(pid.kp, 4);
-    }
-    else if (command.startsWith("ki="))
-    {
-      pid.ki = command.substring(3).toFloat();
-      Serial.print("ki updated to: ");
-      Serial.println(pid.ki, 4);
-    }
-    else if (command.startsWith("kd="))
-    {
-      pid.kd = command.substring(3).toFloat();
-      Serial.print("kd updated to: ");
-      Serial.println(pid.kd, 4);
-    }
-    else if (command == "test")
-    {
-      testModeEnabled = !testModeEnabled;
-      Serial.print("Test mode: ");
-      Serial.println(testModeEnabled ? "ENABLED" : "DISABLED");
-    }
-    else if (command.startsWith("mode="))
-    {
-      testMode = command.substring(5).toInt();
-      Serial.print("Test mode changed to: ");
-      Serial.println(testMode == 1 ? "SINE" : (testMode == 2 ? "CONSTANT" : "STEP"));
-    }
-    else if (command.startsWith("amp="))
-    {
-      testAmplitude = command.substring(4).toFloat();
-      Serial.print("Test amplitude: ");
-      Serial.print(testAmplitude);
-      Serial.println(" degrees");
-    }
-    else if (command.startsWith("period="))
-    {
-      testPeriod = command.substring(7).toFloat();
-      Serial.print("Test period: ");
-      Serial.print(testPeriod);
-      Serial.println(" seconds");
-    }
-    else if (command.startsWith("steady"))
-    {
-      float targetDeg = 15.0;  // default
-      if (command.length() > 6) {
-        targetDeg = command.substring(7).toFloat();
-      }
-      steeringTest.startSteadyStateTest(targetDeg);
-      testModeEnabled = false;  // Disable other test modes
-    }
-    else if (command == "sequence")
-    {
-      testSequence.startSequenceTest();
-      testModeEnabled = false;  // Disable other test modes
-    }
-    else if (command.startsWith("sine"))
-    {
-      float amp = 30.0;  // default amplitude
-      float freq = 0.2;  // default frequency
-      if (command.length() > 4) {
-        // Parse sine=amp,freq format
-        int commaIndex = command.indexOf(',');
-        if (commaIndex > 5) {
-          amp = command.substring(5, commaIndex).toFloat();
-          freq = command.substring(commaIndex + 1).toFloat();
-        } else {
-          amp = command.substring(5).toFloat();
-        }
-      }
-      sineTest.startTest(amp, freq, 20000);  // 20 second test
-      testModeEnabled = false;  // Disable other test modes
-    }
-    else if (command == "help")
-    {
-      Serial.println("\n=== Commands ===");
-      Serial.println("kp=X.X     - Set P gain");
-      Serial.println("ki=X.X     - Set I gain");
-      Serial.println("kd=X.X     - Set D gain");
-      Serial.println("test       - Toggle test mode");
-      Serial.println("mode=N     - Set test mode (1=sine, 2=constant, 3=step)");
-      Serial.println("amp=X      - Set test amplitude (degrees)");
-      Serial.println("period=X   - Set test period (seconds)");
-      Serial.println("steady[=X] - Run steady-state test (default 15°)");
-      Serial.println("sequence   - Run test sequence (0,±10,±20,±30°)");
-      Serial.println("sine[=A,F] - Run sine wave test (A=amplitude, F=freq)");
-      Serial.println("help       - Show this help");
-      Serial.println("===============\n");
-    }
-  }
-}
-
-void handleBLEConnection() {
-  // Handle disconnection - restart advertising
-  if (!deviceConnected && oldDeviceConnected) {
-    delay(500); // give the bluetooth stack the chance to get things ready
-    pServer->startAdvertising(); // restart advertising
-    Serial.println("BLE: Start advertising");
-    oldDeviceConnected = deviceConnected;
-  }
-  // Handle new connection
-  if (deviceConnected && !oldDeviceConnected) {
-    // do stuff here on connecting
-    oldDeviceConnected = deviceConnected;
-  }
-}
-
-void runPeriodicTasks(float targetAngle, float actualAngle, float pidOutput)
-{
-  blinkLed();
-  handleSerialCommands();
-  handleOrinUartData();
-  handleBLEConnection();
-  printDiagnostics(targetAngle, actualAngle, pidOutput);
-}
-
-void calculateAndApplyMotorControl(float targetAngle, float actualAngle, float &pidOutput)
-{
-  pidOutput = calculatePID(targetAngle, actualAngle, pid);
-  setMotorOutput(pidOutput);
-}
-
-bool readAndValidateSensorData(float &actualAngle)
-{
-  actualAngle = getActualAngle();
-
-  if (actualAngle == 0.0f && readRawAngle() == -1)
-  {
-    setMotorOutput(0); // Stop motor on sensor error
-    Serial.println("Error reading sensor. Restarting I2C communication.");
-    Wire.end();
-    delay(10);
-    Wire.begin();
-    return false;
-  }
-  return true;
-}
-
-void setup()
-{
-  setupHardware();
-  Serial.println("\n=== Kart Medulla Started ===");
-  Serial.println("Starting with constant 0° (straight)");
+  Serial.println("UART initialized - Connecting to Little FOCer...");
+  Serial.println("Pins: RX=GPIO16, TX=GPIO17");
   Serial.println("Type 'help' for available commands");
-  Serial.println("Type 'sequence' for discrete angle test");
-  Serial.println("Type 'sine' for sine wave test");
-  Serial.println("===========================\n");
+  Serial.println("==============================\n");
 }
 
-void loop()
-{
-  // 1. Get the desired target angle
+float generateSineWaveTargetAngle(float amplitude_degrees, float period_seconds) {
+  return amplitude_degrees * sin(2.0 * PI * (millis() / (period_seconds * 1000.0)));
+}
+
+float getTargetAngle() {
   float targetAngle;
-  if (steeringTest.isActive()) {
-    targetAngle = steeringTest.getTargetAngle();
-  } else if (testSequence.isActive()) {
-    targetAngle = testSequence.getCurrentTargetAngle();
-  } else if (sineTest.isActive()) {
-    targetAngle = sineTest.getCurrentTargetAngle();
-  } else if (testModeEnabled) {
+
+  if (testModeEnabled) {
     switch(testMode) {
       case 1: // Sine wave
         targetAngle = generateSineWaveTargetAngle(testAmplitude, testPeriod);
         break;
       case 2: // Constant angle
-        targetAngle = (testAmplitude * PI / 180.0); // Use amplitude as constant angle
+        targetAngle = testAmplitude;
         break;
       case 3: // Step function
-        targetAngle = ((millis() / (int)(testPeriod * 1000)) % 2 == 0) ? 
-                      (testAmplitude * PI / 180.0) : -(testAmplitude * PI / 180.0);
+        targetAngle = ((millis() / (int)(testPeriod * 1000)) % 2 == 0) ?
+                      testAmplitude : -testAmplitude;
         break;
       default:
         targetAngle = 0.0;
     }
   } else {
-    targetAngle = getTargetAngle(); // Use UART or fallback
+    targetAngle = 0.0;
   }
 
-  // 2. Get the current angle of the steering shaft
-  float actualAngle;
-  if (!readAndValidateSensorData(actualAngle))
-  {
-    return;
+  return targetAngle;
+}
+
+void handleSerialCommands() {
+  if (Serial.available()) {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+
+    if (command.startsWith("pos=")) {
+      float angle = command.substring(4).toFloat();
+      VESC.setPosition(angle);
+      Serial.print("Setting position to: ");
+      Serial.print(angle);
+      Serial.println(" degrees");
+    }
+    else if (command.startsWith("current=")) {
+      float current = command.substring(8).toFloat();
+      VESC.setCurrent(current);
+      Serial.print("Setting current to: ");
+      Serial.print(current);
+      Serial.println(" A");
+    }
+    else if (command.startsWith("rpm=")) {
+      float rpm = command.substring(4).toFloat();
+      VESC.setRPM(rpm);
+      Serial.print("Setting RPM to: ");
+      Serial.println(rpm);
+    }
+    else if (command.startsWith("duty=")) {
+      float duty = command.substring(5).toFloat();
+      VESC.setDuty(duty);
+      Serial.print("Setting duty cycle to: ");
+      Serial.println(duty);
+    }
+    else if (command == "test") {
+      testModeEnabled = !testModeEnabled;
+      Serial.print("Test mode: ");
+      Serial.println(testModeEnabled ? "ENABLED" : "DISABLED");
+    }
+    else if (command.startsWith("mode=")) {
+      testMode = command.substring(5).toInt();
+      Serial.print("Test mode changed to: ");
+      Serial.println(testMode == 1 ? "SINE" : (testMode == 2 ? "CONSTANT" : "STEP"));
+    }
+    else if (command.startsWith("amp=")) {
+      testAmplitude = command.substring(4).toFloat();
+      Serial.print("Test amplitude: ");
+      Serial.print(testAmplitude);
+      Serial.println(" degrees");
+    }
+    else if (command.startsWith("period=")) {
+      testPeriod = command.substring(7).toFloat();
+      Serial.print("Test period: ");
+      Serial.print(testPeriod);
+      Serial.println(" seconds");
+    }
+    else if (command == "stop") {
+      VESC.setCurrent(0);
+      testModeEnabled = false;
+      Serial.println("Motor stopped");
+    }
+    else if (command == "data") {
+      // Request data from VESC
+      if (VESC.getVescValues()) {
+        Serial.println("\n=== VESC Data ===");
+        Serial.print("Rotor Position: ");
+        Serial.print(VESC.data.rotor_pos);
+        Serial.println(" degrees");
+        Serial.print("Motor Current: ");
+        Serial.print(VESC.data.avg_motor_current);
+        Serial.println(" A");
+        Serial.print("Input Current: ");
+        Serial.print(VESC.data.avg_input_current);
+        Serial.println(" A");
+        Serial.print("Duty Cycle: ");
+        Serial.print(VESC.data.dutyCycleNow);
+        Serial.println(" %");
+        Serial.print("RPM: ");
+        Serial.println(VESC.data.rpm);
+        Serial.print("Input Voltage: ");
+        Serial.print(VESC.data.inpVoltage);
+        Serial.println(" V");
+        Serial.print("Amp Hours: ");
+        Serial.print(VESC.data.ampHours);
+        Serial.println(" Ah");
+        Serial.print("Amp Hours Charged: ");
+        Serial.print(VESC.data.ampHoursCharged);
+        Serial.println(" Ah");
+        Serial.print("Tachometer: ");
+        Serial.println(VESC.data.tachometer);
+        Serial.print("Tachometer ABS: ");
+        Serial.println(VESC.data.tachometerAbs);
+        Serial.println("================\n");
+      } else {
+        Serial.println("Failed to read VESC data");
+      }
+    }
+    else if (command == "help") {
+      Serial.println("\n=== VESC Commands ===");
+      Serial.println("pos=X      - Set position to X degrees");
+      Serial.println("current=X  - Set motor current to X amps");
+      Serial.println("rpm=X      - Set motor RPM to X");
+      Serial.println("duty=X     - Set duty cycle to X (-1.0 to 1.0)");
+      Serial.println("stop       - Stop motor (set current to 0)");
+      Serial.println("data       - Request and display VESC data");
+      Serial.println("\n=== Test Mode ===");
+      Serial.println("test       - Toggle test mode");
+      Serial.println("mode=N     - Set test mode (1=sine, 2=constant, 3=step)");
+      Serial.println("amp=X      - Set test amplitude (degrees)");
+      Serial.println("period=X   - Set test period (seconds)");
+      Serial.println("\n=== Info ===");
+      Serial.println("help       - Show this help");
+      Serial.println("====================\n");
+    }
+  }
+}
+
+void printDiagnostics() {
+  unsigned long currentTime = millis();
+
+  if (currentTime - lastPrintTime >= printInterval) {
+    lastPrintTime = currentTime;
+
+    float targetAngle = getTargetAngle();
+
+    // Print test mode status
+    if (testModeEnabled) {
+      Serial.print("[TEST ");
+      if (testMode == 1) Serial.print("SINE");
+      else if (testMode == 2) Serial.print("CONST");
+      else if (testMode == 3) Serial.print("STEP");
+      Serial.print("] ");
+    }
+
+    Serial.print("Target: ");
+    Serial.print(targetAngle, 2);
+    Serial.print("°  ");
+
+    // Try to get VESC data
+    if (VESC.getVescValues()) {
+      Serial.print("Actual: ");
+      Serial.print(VESC.data.rotor_pos, 2);
+      Serial.print("°  Error: ");
+      Serial.print(targetAngle - VESC.data.rotor_pos, 2);
+      Serial.print("°  Current: ");
+      Serial.print(VESC.data.avg_motor_current, 2);
+      Serial.print(" A  RPM: ");
+      Serial.print(VESC.data.rpm, 0);
+      Serial.print("  Voltage: ");
+      Serial.print(VESC.data.inpVoltage, 1);
+      Serial.println(" V");
+    } else {
+      Serial.println("  [No VESC data]");
+    }
+  }
+}
+
+void blinkLed() {
+  static unsigned long lastLedToggleTime = 0;
+  const long ledInterval = 500;
+
+  if (millis() - lastLedToggleTime >= ledInterval) {
+    lastLedToggleTime = millis();
+    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+  }
+}
+
+void setup() {
+  setupHardware();
+  delay(100);  // Give VESC time to initialize
+}
+
+void loop() {
+  // 1. Handle serial commands
+  handleSerialCommands();
+
+  // 2. Get target angle and send to VESC
+  if (testModeEnabled) {
+    float targetAngle = getTargetAngle();
+    VESC.setPosition(targetAngle);
   }
 
-  // 3. Calculate and apply motor control
-  float pidOutput;
-  calculateAndApplyMotorControl(targetAngle, actualAngle, pidOutput);
+  // 3. Print diagnostics
+  printDiagnostics();
 
-  // 4. Run periodic tasks
-  runPeriodicTasks(targetAngle, actualAngle, pidOutput);
-  
-  // 5. Update tests if active
-  steeringTest.update(actualAngle);
-  testSequence.update(actualAngle);
-  sineTest.update(actualAngle);
-  
-  // Re-enable test mode when tests complete
-  if (!steeringTest.isActive() && !testSequence.isActive() && !sineTest.isActive() && !testModeEnabled) {
-    testModeEnabled = true;
-  }
+  // 4. Blink LED to show we're alive
+  blinkLed();
+
+  // 5. Small delay to not overwhelm the UART bus
+  delay(20);  // 50Hz control loop
 }
