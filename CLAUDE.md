@@ -59,3 +59,87 @@ This approach:
 - Exits automatically after timeout
 - Can be used in automated scripts
 - Works in non-interactive environments
+
+### Important: ESP32 Serial Output Timing
+**CRITICAL QUIRK:** ESP32 prints startup messages ONCE during boot, then goes silent unless events occur.
+
+When monitoring serial:
+1. **Don't panic if you see no output** - ESP32 only prints when something happens
+2. **Startup messages appear immediately after reset** - If you connect after boot, you'll miss them
+3. **To see startup messages:** Reset the ESP32 (DTR toggle or physical button) while monitoring
+4. **Application runs silently** - Unless there are events (controller connects, errors, heartbeat messages)
+
+Example of normal behavior:
+```
+[After upload, immediate connection shows:]
+E (5007) ps5_L2CAP: L2CA_CONNECT_REQ ret=64
+⏳ Waiting for controller...
+[Then silence... this is NORMAL, not a problem!]
+```
+
+**Do NOT assume the code isn't working just because serial is quiet.** The ESP32 is event-driven.
+
+## PS5 DualSense Controller Pairing (2025-11-02)
+
+### SUCCESS: PS5 Controller Works on macOS with ESP32
+
+**Controller:** DualSense Wireless Controller
+**MAC Address:** `AC:36:1B:09:F0:28`
+**Library:** ps5Controller @ 2.1.0 (BLACKROBOTICS fork)
+**Platform:** macOS (development machine) + ESP32-WROOM
+
+### Pairing Procedure (CRITICAL - Must Follow Exactly)
+
+The controller must be properly reset and put into pairing mode:
+
+#### Step 1: Reset Controller (Unpair from Previous Device)
+**REQUIRED if controller was previously paired to PS5/PC/other device**
+
+1. Locate tiny reset hole on BACK of controller (near L2 button)
+2. Insert paperclip or pin
+3. Press and hold for **5 seconds**
+4. Controller will turn OFF completely
+5. Light bar should be dark
+
+#### Step 2: Enter Pairing Mode
+1. Press and hold **SHARE + PS buttons** together
+2. Keep holding for **3-5 seconds**
+3. Look for **RAPID BLUE FLASHING** (multiple flashes per second)
+4. This is TRUE pairing mode - not slow flashing!
+
+**Light Bar States:**
+- **Slow blue flash (every 2 sec)** = Already paired to something else → Need to reset
+- **Rapid blue flashing (fast)** = Pairing mode → Correct!
+- **Constant blue** = Connected successfully → Success!
+
+#### Step 3: Verify Connection
+After pairing, the ESP32 will show:
+```
+✓ Connected - Reading data...
+  Left Stick X:    0
+  Buttons: ---
+```
+
+Press buttons or move sticks to verify data is being received.
+
+### Troubleshooting
+
+**Problem:** Controller shows slow blue flashing
+**Solution:** Controller is still paired to previous device. Must reset first (Step 1).
+
+**Problem:** No connection after pairing
+**Solution:**
+1. Check MAC address in code matches controller: `AC:36:1B:09:F0:28`
+2. Reset ESP32 (press physical reset button)
+3. Reset controller and try pairing again
+
+**Problem:** Serial output shows nothing
+**Solution:** This is normal! ESP32 only prints on events. Press a button on the controller to trigger output.
+
+### Key Learnings
+
+1. **macOS works fine** - No need for Ubuntu/Linux for PS5 controller
+2. **Controller reset is critical** - Must unpair from previous device first
+3. **Pairing mode is specific** - Must see rapid flashing, not slow flashing
+4. **Library works correctly** - ps5Controller library has no L2CAP issues when pairing is done correctly
+5. **Serial is event-driven** - Quiet output doesn't mean failure
