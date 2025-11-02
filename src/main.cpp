@@ -132,15 +132,13 @@ void loop() {
         Serial.print(millis() / 1000);
         Serial.print("s] isConnected=");
         Serial.println(ps5.isConnected() ? "YES" : "NO");
-        Serial.flush();  // Force output immediately
     }
 
     if (ps5.isConnected()) {
-        // Update display at 20 Hz (50ms interval) for responsiveness
-        if (millis() - lastUpdate >= 50) {
+        // Update display at 10 Hz (100ms interval) for good responsiveness without overload
+        if (millis() - lastUpdate >= 100) {
             lastUpdate = millis();
             displayControllerData();
-            Serial.flush();  // Force output immediately
         }
 
         // LED color cycling with OPTIONS button
@@ -163,9 +161,8 @@ void loop() {
         if (millis() - lastWait >= 3000) {
             lastWait = millis();
             Serial.println("⏳ Waiting for controller connection...");
-            Serial.flush();
         }
     }
 
-    delay(5);  // Reduced delay for faster loop
+    delay(10);  // Small delay to prevent watchdog issues
 }
