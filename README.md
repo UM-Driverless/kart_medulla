@@ -89,6 +89,28 @@ python3 monitor_serial.py
 
 **Note:** `platformio device monitor` doesn't work in non-interactive environments. Use the Python script included in the repo.
 
+### 4. PS5 Controller GUI Monitor
+
+**Real-time graphical visualization of controller inputs:**
+
+```bash
+python3 controller_gui.py
+```
+
+**Features:**
+- Live visualization of analog sticks with crosshairs
+- Trigger pressure bars (L2/R2)
+- Button press indicators (face buttons, D-pad, shoulder buttons)
+- Real-time numeric values
+- Connection status and debug info
+- 50Hz refresh rate for smooth updates
+
+**Requirements:**
+- Python 3 with `tkinter`, `pyserial`, and `threading` (usually pre-installed)
+- ESP32 connected via USB
+
+The GUI automatically connects to `/dev/cu.usbserial-0001` at 115200 baud. It shows debug serial output when waiting for the controller to connect and switches to the full visualization once paired.
+
 ## PID Tuning
 
 ### Current Optimal Values
@@ -141,6 +163,7 @@ L2 Trigger    → Brake (0-100%)
 │   └── main.cpp          # Main application code
 ├── lib/                  # Project libraries
 ├── platformio.ini        # PlatformIO configuration
+├── controller_gui.py     # PS5 controller GUI monitor (real-time visualization)
 ├── monitor_serial.py     # Serial monitoring helper
 ├── CLAUDE.md            # Development notes and tuning data
 ├── stuff.md             # Build troubleshooting notes

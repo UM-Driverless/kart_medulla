@@ -87,7 +87,7 @@ class PS5ControllerGUI:
 
         # Stick position (map -128 to 127 to radius)
         stick_pos_x = center_x + (stick_x / 128.0) * (radius - 10)
-        stick_pos_y = center_y + (stick_y / 128.0) * (radius - 10)
+        stick_pos_y = center_y - (stick_y / 128.0) * (radius - 10)  # Inverted Y for correct visualization
 
         # Draw stick circle
         stick_r = 15
