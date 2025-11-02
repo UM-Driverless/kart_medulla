@@ -156,6 +156,14 @@ R2 Trigger    → Throttle (0-100%)
 L2 Trigger    → Brake (0-100%)
 ```
 
+## Serial Communication Protocol
+
+The ESP32 uses a compact CSV-based protocol for efficient communication. See **[SERIAL_PROTOCOL.md](SERIAL_PROTOCOL.md)** for the complete specification.
+
+**Quick summary:**
+- `DATA,LX,LY,RX,RY,L2,R2,BUTTONS,BATTERY,CHARGING,AUDIO,MIC` - Controller data (10Hz)
+- `HB,uptime,connected` - Heartbeat (1Hz)
+
 ## Project Structure
 
 ```
@@ -165,6 +173,7 @@ L2 Trigger    → Brake (0-100%)
 ├── platformio.ini        # PlatformIO configuration
 ├── controller_gui.py     # PS5 controller GUI monitor (real-time visualization)
 ├── monitor_serial.py     # Serial monitoring helper
+├── SERIAL_PROTOCOL.md   # CSV serial protocol specification
 ├── CLAUDE.md            # Development notes and tuning data
 ├── stuff.md             # Build troubleshooting notes
 └── stuff/               # Archive of old documentation

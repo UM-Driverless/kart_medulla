@@ -17,84 +17,48 @@ void onDisconnect() {
     Serial.println("===========================================\n");
 }
 
-void printBar(const char* label, int value, int minVal, int maxVal, int width = 20) {
-    // Print a visual bar graph
-    Serial.print(label);
-    Serial.print(": [");
-
-    int range = maxVal - minVal;
-    int pos = map(value, minVal, maxVal, 0, width);
-
-    for (int i = 0; i < width; i++) {
-        if (i == width / 2) {
-            Serial.print(i == pos ? "|" : "·");
-        } else if (i == pos) {
-            Serial.print("█");
-        } else {
-            Serial.print("-");
-        }
-    }
-    Serial.printf("] %4d\n", value);
-}
-
 void displayControllerData() {
-    Serial.println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    // Compact CSV format: DATA,LX,LY,RX,RY,L2,R2,BUTTONS,BATTERY,CHARGING,AUDIO,MIC
+    Serial.print("DATA,");
 
-    // Analog Sticks
-    Serial.println("ANALOG STICKS:");
-    printBar("  L-Stick X", ps5.LStickX(), -128, 127, 30);
-    printBar("  L-Stick Y", ps5.LStickY(), -128, 127, 30);
-    printBar("  R-Stick X", ps5.RStickX(), -128, 127, 30);
-    printBar("  R-Stick Y", ps5.RStickY(), -128, 127, 30);
+    // Analog sticks (-128 to 127)
+    Serial.print(ps5.LStickX()); Serial.print(",");
+    Serial.print(ps5.LStickY()); Serial.print(",");
+    Serial.print(ps5.RStickX()); Serial.print(",");
+    Serial.print(ps5.RStickY()); Serial.print(",");
 
     // Triggers (0-255)
-    Serial.println("\nTRIGGERS:");
-    printBar("  L2", ps5.L2Value(), 0, 255, 30);
-    printBar("  R2", ps5.R2Value(), 0, 255, 30);
+    Serial.print(ps5.L2Value()); Serial.print(",");
+    Serial.print(ps5.R2Value()); Serial.print(",");
 
-    // D-Pad
-    Serial.println("\nD-PAD:");
-    Serial.printf("  %-8s %-8s %-8s %-8s\n",
-                  ps5.Up() ? "UP" : "---",
-                  ps5.Down() ? "DOWN" : "---",
-                  ps5.Left() ? "LEFT" : "---",
-                  ps5.Right() ? "RIGHT" : "---");
+    // Buttons (pipe-separated list or empty)
+    bool firstButton = true;
+    if (ps5.Up()) { Serial.print("UP"); firstButton = false; }
+    if (ps5.Down()) { if (!firstButton) Serial.print("|"); Serial.print("DOWN"); firstButton = false; }
+    if (ps5.Left()) { if (!firstButton) Serial.print("|"); Serial.print("LEFT"); firstButton = false; }
+    if (ps5.Right()) { if (!firstButton) Serial.print("|"); Serial.print("RIGHT"); firstButton = false; }
+    if (ps5.Triangle()) { if (!firstButton) Serial.print("|"); Serial.print("TRIANGLE"); firstButton = false; }
+    if (ps5.Circle()) { if (!firstButton) Serial.print("|"); Serial.print("CIRCLE"); firstButton = false; }
+    if (ps5.Cross()) { if (!firstButton) Serial.print("|"); Serial.print("CROSS"); firstButton = false; }
+    if (ps5.Square()) { if (!firstButton) Serial.print("|"); Serial.print("SQUARE"); firstButton = false; }
+    if (ps5.L1()) { if (!firstButton) Serial.print("|"); Serial.print("L1"); firstButton = false; }
+    if (ps5.L2()) { if (!firstButton) Serial.print("|"); Serial.print("L2"); firstButton = false; }
+    if (ps5.R1()) { if (!firstButton) Serial.print("|"); Serial.print("R1"); firstButton = false; }
+    if (ps5.R2()) { if (!firstButton) Serial.print("|"); Serial.print("R2"); firstButton = false; }
+    if (ps5.PSButton()) { if (!firstButton) Serial.print("|"); Serial.print("PS"); firstButton = false; }
+    if (ps5.Share()) { if (!firstButton) Serial.print("|"); Serial.print("SHARE"); firstButton = false; }
+    if (ps5.Options()) { if (!firstButton) Serial.print("|"); Serial.print("OPTIONS"); firstButton = false; }
+    if (ps5.L3()) { if (!firstButton) Serial.print("|"); Serial.print("L3"); firstButton = false; }
+    if (ps5.R3()) { if (!firstButton) Serial.print("|"); Serial.print("R3"); firstButton = false; }
+    Serial.print(",");
 
-    // Face Buttons
-    Serial.println("\nFACE BUTTONS:");
-    Serial.printf("  %-10s %-10s %-10s %-10s\n",
-                  ps5.Triangle() ? "TRIANGLE" : "---",
-                  ps5.Circle() ? "CIRCLE" : "---",
-                  ps5.Cross() ? "CROSS" : "---",
-                  ps5.Square() ? "SQUARE" : "---");
+    // Status (battery 0-100, charging 0/1, audio 0/1, mic 0/1)
+    Serial.print(ps5.Battery()); Serial.print(",");
+    Serial.print(ps5.Charging() ? "1" : "0"); Serial.print(",");
+    Serial.print(ps5.Audio() ? "1" : "0"); Serial.print(",");
+    Serial.print(ps5.Mic() ? "1" : "0");
 
-    // Shoulder Buttons
-    Serial.println("\nSHOULDER BUTTONS:");
-    Serial.printf("  %-6s %-6s %-6s %-6s\n",
-                  ps5.L1() ? "L1" : "---",
-                  ps5.L2() ? "L2" : "---",
-                  ps5.R1() ? "R1" : "---",
-                  ps5.R2() ? "R2" : "---");
-
-    // Special Buttons
-    Serial.println("\nSPECIAL:");
-    Serial.printf("  %-8s %-8s %-8s %-8s %-8s\n",
-                  ps5.PSButton() ? "PS" : "---",
-                  ps5.Share() ? "SHARE" : "---",
-                  ps5.Options() ? "OPTIONS" : "---",
-                  ps5.L3() ? "L3" : "---",
-                  ps5.R3() ? "R3" : "---");
-
-    // Status
-    Serial.println("\nSTATUS:");
-    Serial.printf("  Battery: %d%%  %s  Audio: %s  Mic: %s\n",
-                  ps5.Battery(),
-                  ps5.Charging() ? "CHARGING" : "NOT CHARGING",
-                  ps5.Audio() ? "ON" : "OFF",
-                  ps5.Mic() ? "ON" : "OFF");
-
-    Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    Serial.println("Press OPTIONS to cycle LED colors | Press PS to quit\n");
+    Serial.println();
 }
 
 void setup() {
@@ -125,13 +89,13 @@ void loop() {
     static uint8_t ledMode = 0;
     static bool lastOptionsState = false;
 
-    // ALWAYS print heartbeat every 1 second to prove ESP32 is alive
+    // Heartbeat every 1 second: HB,uptime_sec,connected
     if (millis() - lastHeartbeat >= 1000) {
         lastHeartbeat = millis();
-        Serial.print("💓 [");
+        Serial.print("HB,");
         Serial.print(millis() / 1000);
-        Serial.print("s] isConnected=");
-        Serial.println(ps5.isConnected() ? "YES" : "NO");
+        Serial.print(",");
+        Serial.println(ps5.isConnected() ? "1" : "0");
     }
 
     if (ps5.isConnected()) {
@@ -155,14 +119,8 @@ void loop() {
         }
         lastOptionsState = ps5.Options();
 
-    } else {
-        // Heartbeat while waiting
-        static unsigned long lastWait = 0;
-        if (millis() - lastWait >= 3000) {
-            lastWait = millis();
-            Serial.println("⏳ Waiting for controller connection...");
-        }
     }
+    // No extra messages when not connected - heartbeat already shows status
 
     delay(10);  // Small delay to prevent watchdog issues
 }
