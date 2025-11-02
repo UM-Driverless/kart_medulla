@@ -79,6 +79,34 @@ E (5007) ps5_L2CAP: L2CA_CONNECT_REQ ret=64
 
 **Do NOT assume the code isn't working just because serial is quiet.** The ESP32 is event-driven.
 
+### Preventing ESP32 Reset on Serial Port Open
+
+**IMPORTANT:** By default, opening a serial port with Python's `pyserial` toggles DTR/RTS lines, which **resets the ESP32**. This causes the controller to disconnect and requires re-pairing.
+
+**Solution:** Disable DTR/RTS toggling when opening serial ports:
+
+```python
+import serial
+
+# WRONG - This will reset the ESP32
+ser = serial.Serial('/dev/cu.usbserial-0001', 115200)
+
+# CORRECT - This won't reset the ESP32
+ser = serial.Serial(
+    '/dev/cu.usbserial-0001',
+    115200,
+    timeout=1,
+    dsrdtr=False,  # Don't toggle DTR (prevents ESP32 reset)
+    rtscts=False   # Don't use hardware flow control
+)
+```
+
+**All Python scripts that open the serial port MUST use these flags** to prevent unwanted ESP32 resets and controller disconnections.
+
+This fix has been applied to:
+- `controller_gui.py` - GUI monitor
+- `monitor_serial.py` - Serial debug tool
+
 ## PS5 DualSense Controller Pairing (2025-11-02)
 
 ### SUCCESS: PS5 Controller Works on macOS with ESP32
@@ -143,3 +171,11 @@ Press buttons or move sticks to verify data is being received.
 3. **Pairing mode is specific** - Must see rapid flashing, not slow flashing
 4. **Library works correctly** - ps5Controller library has no L2CAP issues when pairing is done correctly
 5. **Serial is event-driven** - Quiet output doesn't mean failure
+
+### Troubleshooting GUI Freezes
+
+**If the GUI freezes or shows stale data:**
+1. **Tap the PS button** on the controller to wake it up (controller may have gone to sleep)
+2. **Restart the Python GUI script** (`python3 controller_gui.py`)
+
+The controller goes into power-saving mode after a period of inactivity. Simply pressing the PS button wakes it up, and restarting the GUI re-establishes the connection. This is normal behavior.

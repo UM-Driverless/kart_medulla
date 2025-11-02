@@ -33,7 +33,9 @@ class PS5ControllerGUI:
             'l2': 0,
             'r2': 0,
             'buttons': set(),
-            'connected': False
+            'connected': False,
+            'battery': 0,
+            'charging': False
         }
 
         # Debug info
@@ -274,10 +276,23 @@ class PS5ControllerGUI:
                                fill='#aaaaaa', font=('Courier', 11),
                                anchor='w')
 
+        info_y += 25
+        charging = "⚡" if self.state.get('charging', False) else ""
+        battery_color = '#00ff00' if self.state.get('battery', 0) > 50 else '#ffaa00' if self.state.get('battery', 0) > 20 else '#ff0000'
+        self.canvas.create_text(info_x, info_y,
+                               text=f"Battery: {self.state.get('battery', 0)}% {charging}",
+                               fill=battery_color, font=('Courier', 11, 'bold'),
+                               anchor='w')
+
         self.root.after(20, self.update_display)  # 50 Hz update rate for smooth visuals
 
     def parse_serial_line(self, line):
-        """Parse serial output and update state"""
+        """Parse CSV serial output and update state
+
+        Format:
+        - DATA,LX,LY,RX,RY,L2,R2,BUTTONS,BATTERY,CHARGING,AUDIO,MIC
+        - HB,uptime_sec,connected (0/1)
+        """
         line = line.strip()
 
         # Update debug info
@@ -287,7 +302,56 @@ class PS5ControllerGUI:
                 self.debug_lines.pop(0)
             self.last_serial_time = time.time()
 
-        if "CONNECTED!" in line or "CONTROLLER CONNECTED" in line:
+        # Parse CSV data
+        if line.startswith("DATA,"):
+            try:
+                parts = line.split(",")
+                if len(parts) >= 12:
+                    # Analog sticks
+                    self.state['lstick_x'] = int(parts[1])
+                    self.state['lstick_y'] = int(parts[2])
+                    self.state['rstick_x'] = int(parts[3])
+                    self.state['rstick_y'] = int(parts[4])
+
+                    # Triggers
+                    self.state['l2'] = int(parts[5])
+                    self.state['r2'] = int(parts[6])
+
+                    # Buttons - clear and repopulate
+                    self.state['buttons'].clear()
+                    if parts[7]:  # If button string is not empty
+                        button_list = parts[7].split("|")
+                        for btn in button_list:
+                            self.state['buttons'].add(btn)
+
+                    # Battery and charging status
+                    # Battery value appears to be inverted (0-100 becomes 100-0)
+                    raw_battery = int(parts[8])
+                    self.state['battery'] = 100 - raw_battery  # Correct inversion
+                    self.state['charging'] = parts[9] == "1"
+
+                    # Mark as connected when we receive data
+                    if not self.state['connected']:
+                        self.state['connected'] = True
+                        self.status_label.config(text="✓ CONNECTED", fg='#00ff00')
+            except (ValueError, IndexError) as e:
+                pass  # Ignore malformed lines
+
+        # Parse heartbeat
+        elif line.startswith("HB,"):
+            try:
+                parts = line.split(",")
+                if len(parts) >= 3:
+                    connected = parts[2] == "1"
+                    if not connected and self.state['connected']:
+                        # Controller disconnected
+                        self.state['connected'] = False
+                        self.status_label.config(text="✗ DISCONNECTED", fg='#ff0000')
+            except (ValueError, IndexError):
+                pass
+
+        # Legacy messages for connection status
+        elif "CONNECTED!" in line or "CONTROLLER CONNECTED" in line:
             self.state['connected'] = True
             self.status_label.config(text="✓ CONNECTED", fg='#00ff00')
 
@@ -295,108 +359,34 @@ class PS5ControllerGUI:
             self.state['connected'] = False
             self.status_label.config(text="✗ DISCONNECTED", fg='#ff0000')
 
-        # If we see actual stick data, we're connected
-        elif "ANALOG STICKS:" in line and not self.state['connected']:
-            self.state['connected'] = True
-            self.status_label.config(text="✓ CONNECTED", fg='#00ff00')
-
-        # Parse stick values: "L-Stick X: [...] value"
-        elif "L-Stick X:" in line:
-            match = re.search(r'L-Stick X:.*?(-?\d+)\s*$', line)
-            if match:
-                self.state['lstick_x'] = int(match.group(1))
-
-        elif "L-Stick Y:" in line:
-            match = re.search(r'L-Stick Y:.*?(-?\d+)\s*$', line)
-            if match:
-                self.state['lstick_y'] = int(match.group(1))
-
-        elif "R-Stick X:" in line:
-            match = re.search(r'R-Stick X:.*?(-?\d+)\s*$', line)
-            if match:
-                self.state['rstick_x'] = int(match.group(1))
-
-        elif "R-Stick Y:" in line:
-            match = re.search(r'R-Stick Y:.*?(-?\d+)\s*$', line)
-            if match:
-                self.state['rstick_y'] = int(match.group(1))
-
-        # Parse triggers: "L2: [...] value"
-        elif "L2:" in line and "L2Value" not in line:
-            match = re.search(r'L2:.*?(\d+)\s*$', line)
-            if match:
-                self.state['l2'] = int(match.group(1))
-
-        elif "R2:" in line and "R2Value" not in line:
-            match = re.search(r'R2:.*?(\d+)\s*$', line)
-            if match:
-                self.state['r2'] = int(match.group(1))
-
-        # Parse buttons
-        elif "D-PAD:" in line:
-            self.state['buttons'].discard('UP')
-            self.state['buttons'].discard('DOWN')
-            self.state['buttons'].discard('LEFT')
-            self.state['buttons'].discard('RIGHT')
-        elif line.startswith("  ") and any(x in line for x in ["UP", "DOWN", "LEFT", "RIGHT"]):
-            if "UP" in line and "UP" not in "---":
-                parts = line.split()
-                if len(parts) >= 1 and parts[0] == "UP":
-                    self.state['buttons'].add('UP')
-                if len(parts) >= 2 and parts[1] == "DOWN":
-                    self.state['buttons'].add('DOWN')
-                if len(parts) >= 3 and parts[2] == "LEFT":
-                    self.state['buttons'].add('LEFT')
-                if len(parts) >= 4 and parts[3] == "RIGHT":
-                    self.state['buttons'].add('RIGHT')
-
-        # Face buttons
-        elif "FACE BUTTONS:" in line:
-            self.state['buttons'].discard('TRIANGLE')
-            self.state['buttons'].discard('CIRCLE')
-            self.state['buttons'].discard('CROSS')
-            self.state['buttons'].discard('SQUARE')
-        elif "TRIANGLE" in line or "CIRCLE" in line or "CROSS" in line or "SQUARE" in line:
-            parts = line.split()
-            for btn in ["TRIANGLE", "CIRCLE", "CROSS", "SQUARE"]:
-                if btn in parts:
-                    self.state['buttons'].add(btn)
-
-        # Shoulder buttons
-        elif "SHOULDER BUTTONS:" in line:
-            pass  # Header
-        elif line.strip().startswith("L1") or "L1" in line:
-            parts = line.split()
-            for btn in ["L1", "L2", "R1", "R2"]:
-                if btn in parts:
-                    self.state['buttons'].add(btn)
-                else:
-                    self.state['buttons'].discard(btn)
-
-        # Special buttons
-        elif "PS" in line or "SHARE" in line or "OPTIONS" in line:
-            if "SPECIAL:" not in line:
-                parts = line.split()
-                for btn in ["PS", "SHARE", "OPTIONS"]:
-                    if btn in parts:
-                        self.state['buttons'].add(btn)
-                    else:
-                        self.state['buttons'].discard(btn)
-
     def serial_reader(self):
         """Background thread to read serial data"""
         try:
-            self.ser = serial.Serial(self.serial_port, self.baud_rate, timeout=1)
+            print(f"[DEBUG] Opening serial port: {self.serial_port}")
+            # Open serial port WITHOUT toggling DTR/RTS to avoid resetting ESP32
+            self.ser = serial.Serial(
+                self.serial_port,
+                self.baud_rate,
+                timeout=1,
+                dsrdtr=False,  # Don't toggle DTR (prevents ESP32 reset)
+                rtscts=False   # Don't use hardware flow control
+            )
+            print("[DEBUG] Serial port opened successfully")
             time.sleep(0.5)
             self.ser.reset_input_buffer()
 
+            packet_count = 0
             while self.running:
                 if self.ser.in_waiting > 0:
                     try:
                         line = self.ser.readline().decode('utf-8', errors='ignore')
+                        if 'DATA,' in line:
+                            packet_count += 1
+                            if packet_count == 1 or packet_count % 100 == 0:
+                                print(f"[DEBUG] Received {packet_count} data packets")
                         self.parse_serial_line(line)
-                    except:
-                        pass
+                    except Exception as e:
+                        print(f"[DEBUG] Parse error: {e}")
                 time.sleep(0.001)  # Minimal delay for faster serial reads
 
         except Exception as e:

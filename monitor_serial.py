@@ -2,7 +2,14 @@
 import serial
 import time
 
-ser = serial.Serial('/dev/cu.usbserial-0001', 115200, timeout=1)
+# Open serial WITHOUT toggling DTR/RTS to avoid resetting ESP32
+ser = serial.Serial(
+    '/dev/cu.usbserial-0001',
+    115200,
+    timeout=1,
+    dsrdtr=False,  # Don't toggle DTR (prevents ESP32 reset)
+    rtscts=False   # Don't use hardware flow control
+)
 ser.reset_input_buffer()
 
 print("Monitoring ESP32 serial output... (Ctrl+C to stop)\n")
