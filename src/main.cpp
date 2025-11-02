@@ -63,7 +63,7 @@ struct PIDController
 };
 
 // Global PID instance
-PIDController pid = {20.0, 0.0, 0.0, 0.0, 0.0, 0}; // { kp, ki, kd, integral, lastError, lastTime }
+PIDController pid = {15.0, 0.0, 0.0, 0.0, 0.0, 0}; // { kp, ki, kd, integral, lastError, lastTime }
 
 // Global State Structure
 
