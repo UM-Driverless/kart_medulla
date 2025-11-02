@@ -36,6 +36,10 @@ class PS5ControllerGUI:
             'connected': False
         }
 
+        # Debug info
+        self.debug_lines = []
+        self.last_serial_time = time.time()
+
         self.setup_gui()
         self.start_serial_thread()
 
@@ -157,9 +161,37 @@ class PS5ControllerGUI:
         self.canvas.delete('all')
 
         if not self.state['connected']:
-            self.canvas.create_text(380, 250,
+            self.canvas.create_text(380, 150,
                                    text="⏳ WAITING FOR CONTROLLER...",
                                    fill='#666666', font=('Courier', 16, 'bold'))
+
+            # Show debug info
+            self.canvas.create_text(380, 200,
+                                   text="SERIAL DEBUG (last 10 lines):",
+                                   fill='#00ff00', font=('Courier', 10, 'bold'))
+
+            # Time since last data
+            time_since = int(time.time() - self.last_serial_time)
+            self.canvas.create_text(380, 220,
+                                   text=f"Last data: {time_since}s ago",
+                                   fill='#ffaa00', font=('Courier', 9))
+
+            # Show recent serial lines
+            y_pos = 250
+            for i, line in enumerate(self.debug_lines[-10:]):
+                color = '#aaaaaa' if i < len(self.debug_lines)-1 else '#00ff00'
+                # Truncate long lines
+                display_line = line[:80] + "..." if len(line) > 80 else line
+                self.canvas.create_text(380, y_pos,
+                                       text=display_line,
+                                       fill=color, font=('Courier', 8))
+                y_pos += 20
+
+            # Instructions
+            self.canvas.create_text(380, 450,
+                                   text="Press PS button to wake controller",
+                                   fill='#666666', font=('Courier', 10))
+
             self.root.after(100, self.update_display)
             return
 
@@ -242,11 +274,18 @@ class PS5ControllerGUI:
                                fill='#aaaaaa', font=('Courier', 11),
                                anchor='w')
 
-        self.root.after(50, self.update_display)  # 20 Hz update rate
+        self.root.after(20, self.update_display)  # 50 Hz update rate for smooth visuals
 
     def parse_serial_line(self, line):
         """Parse serial output and update state"""
         line = line.strip()
+
+        # Update debug info
+        if line:
+            self.debug_lines.append(line)
+            if len(self.debug_lines) > 50:  # Keep last 50 lines
+                self.debug_lines.pop(0)
+            self.last_serial_time = time.time()
 
         if "CONNECTED!" in line or "CONTROLLER CONNECTED" in line:
             self.state['connected'] = True
@@ -358,7 +397,7 @@ class PS5ControllerGUI:
                         self.parse_serial_line(line)
                     except:
                         pass
-                time.sleep(0.01)
+                time.sleep(0.001)  # Minimal delay for faster serial reads
 
         except Exception as e:
             print(f"Serial error: {e}")

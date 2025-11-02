@@ -121,14 +121,26 @@ void setup() {
 
 void loop() {
     static unsigned long lastUpdate = 0;
+    static unsigned long lastHeartbeat = 0;
     static uint8_t ledMode = 0;
     static bool lastOptionsState = false;
 
+    // ALWAYS print heartbeat every 1 second to prove ESP32 is alive
+    if (millis() - lastHeartbeat >= 1000) {
+        lastHeartbeat = millis();
+        Serial.print("💓 [");
+        Serial.print(millis() / 1000);
+        Serial.print("s] isConnected=");
+        Serial.println(ps5.isConnected() ? "YES" : "NO");
+        Serial.flush();  // Force output immediately
+    }
+
     if (ps5.isConnected()) {
-        // Update display at 2 Hz (500ms interval)
-        if (millis() - lastUpdate >= 500) {
+        // Update display at 20 Hz (50ms interval) for responsiveness
+        if (millis() - lastUpdate >= 50) {
             lastUpdate = millis();
             displayControllerData();
+            Serial.flush();  // Force output immediately
         }
 
         // LED color cycling with OPTIONS button
@@ -147,12 +159,13 @@ void loop() {
 
     } else {
         // Heartbeat while waiting
-        static unsigned long lastHeart = 0;
-        if (millis() - lastHeart >= 3000) {
-            lastHeart = millis();
+        static unsigned long lastWait = 0;
+        if (millis() - lastWait >= 3000) {
+            lastWait = millis();
             Serial.println("⏳ Waiting for controller connection...");
+            Serial.flush();
         }
     }
 
-    delay(10);
+    delay(5);  // Reduced delay for faster loop
 }
