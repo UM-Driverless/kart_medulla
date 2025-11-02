@@ -2,6 +2,9 @@
 #include <Arduino.h>
 #include <ps5Controller.h>
 
+// Pin Assignments
+const int ACCEL_DAC_PIN = 25;  // GPIO 25 (DAC1) - Analog output for acceleration (0-3.3V)
+
 void onConnect() {
     Serial.println("\n===========================================");
     Serial.println("  PS5 CONTROLLER CONNECTED!");
@@ -105,6 +108,10 @@ void loop() {
             displayControllerData();
         }
 
+        // Acceleration control: R2 trigger to DAC output (0-3.3V)
+        uint8_t r2Value = ps5.R2Value();  // 0-255
+        dacWrite(ACCEL_DAC_PIN, r2Value); // Output analog voltage
+
         // LED color cycling with OPTIONS button
         if (ps5.Options() && !lastOptionsState) {
             ledMode = (ledMode + 1) % 5;
@@ -119,8 +126,10 @@ void loop() {
         }
         lastOptionsState = ps5.Options();
 
+    } else {
+        // Controller not connected - set acceleration to 0
+        dacWrite(ACCEL_DAC_PIN, 0);
     }
-    // No extra messages when not connected - heartbeat already shows status
 
     delay(10);  // Small delay to prevent watchdog issues
 }

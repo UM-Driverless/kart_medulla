@@ -179,3 +179,46 @@ Press buttons or move sticks to verify data is being received.
 2. **Restart the Python GUI script** (`python3 controller_gui.py`)
 
 The controller goes into power-saving mode after a period of inactivity. Simply pressing the PS button wakes it up, and restarting the GUI re-establishes the connection. This is normal behavior.
+
+## Remote Control Implementation (2025-11-02)
+
+### Acceleration Control via DAC
+
+**Hardware Setup:**
+- The kart uses an AliExpress electronic kit that expects an analog voltage (0-3.3V) from a hall sensor pedal
+- ESP32 GPIO 25 (DAC1) outputs analog voltage to simulate the pedal sensor
+- Direct connection: GPIO 25 → Kart's acceleration input
+
+**Implementation:**
+```cpp
+const int ACCEL_DAC_PIN = 25;  // GPIO 25 (DAC1)
+
+// In loop() when controller connected:
+uint8_t r2Value = ps5.R2Value();  // 0-255
+dacWrite(ACCEL_DAC_PIN, r2Value); // Output 0-3.3V analog
+```
+
+**Behavior:**
+- R2 trigger position (0-255) directly controls DAC output voltage
+- 0% R2 = 0V (no acceleration)
+- 100% R2 = 3.3V (full acceleration)
+- Controller disconnect automatically sets output to 0V for safety
+
+**Testing Procedure:**
+1. Upload code to ESP32
+2. Use multimeter to measure voltage on GPIO 25:
+   - R2 released: 0V
+   - R2 half-pressed: ~1.65V
+   - R2 fully pressed: 3.3V
+3. Connect GPIO 25 to kart's pedal sensor input
+4. Test acceleration response
+
+**Safety:**
+- Output automatically set to 0V when controller disconnects
+- No deadman switch or emergency stop implemented yet (kept simple)
+- Future enhancements can add L1/R1 deadman switch and PS button emergency stop
+
+**Steering:**
+- Not yet implemented
+- Future: Left stick X will control steering via separate motor driver
+- AS5600 sensor on I2C (GPIO 21/22) ready for angle feedback

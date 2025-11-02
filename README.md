@@ -151,10 +151,23 @@ help         # Show all commands
 ## Controller Mapping
 
 ```
-Left Stick X  → Steering angle (-30° to +30°)
-R2 Trigger    → Throttle (0-100%)
-L2 Trigger    → Brake (0-100%)
+R2 Trigger    → Acceleration (0-100%) - ACTIVE
+Left Stick X  → Steering angle (not implemented yet)
+L2 Trigger    → Brake (not implemented yet)
 ```
+
+## Pin Assignments
+
+| GPIO Pin | Function | Connected To |
+|----------|----------|--------------|
+| GPIO 25  | DAC Output | Kart acceleration input (0-3.3V analog) |
+| GPIO 26  | Reserved | Motor Driver Direction (future use) |
+| GPIO 21  | I2C SDA | AS5600 Magnetic Angle Sensor |
+| GPIO 22  | I2C SCL | AS5600 Magnetic Angle Sensor |
+| GPIO 18  | UART RX | Orin TX |
+| GPIO 19  | UART TX | Orin RX |
+| GPIO 2   | LED | Onboard LED |
+| Bluetooth | PS5 Controller | Wireless connection |
 
 ## Serial Communication Protocol
 
