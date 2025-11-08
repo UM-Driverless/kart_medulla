@@ -73,13 +73,13 @@ monitor_filters = direct
   - Good response without oscillation
 
 ### Test Results Summary
-| Kp | Ki | Kd | Avg Error | Max Error | Result | Notes |
-|----|----|----|-----------|-----------|--------|-------|
-| 1.5 | 0.01 | 0 | 9.0° | 19.9° | FAIL | Original - too weak |
-| 5 | 0 | 0 | 5.7° | 9.0° | FAIL | Better but still weak |
-| 10 | 0 | 0 | 2.6° | 4.4° | **PASS** | Good balance |
-| 10 | 0.5 | 0 | 84.0° | 114.0° | FAIL | Integral windup |
-| 10 | 0.05 | 0 | 79.0° | 109.0° | FAIL | Still windup |
+| Kp  | Ki   | Kd  | Avg Error | Max Error | Result   | Notes                 |
+| --- | ---- | --- | --------- | --------- | -------- | --------------------- |
+| 1.5 | 0.01 | 0   | 9.0°      | 19.9°     | FAIL     | Original - too weak   |
+| 5   | 0    | 0   | 5.7°      | 9.0°      | FAIL     | Better but still weak |
+| 10  | 0    | 0   | 2.6°      | 4.4°      | **PASS** | Good balance          |
+| 10  | 0.5  | 0   | 84.0°     | 114.0°    | FAIL     | Integral windup       |
+| 10  | 0.05 | 0   | 79.0°     | 109.0°    | FAIL     | Still windup          |
 
 ### Recommendations
 1. Use **Kp=10** as base value
@@ -122,21 +122,21 @@ targetAngle = -(float)axisX * MAX_STEERING_ANGLE_DEG / 511.0f;
 
 ### Motor Control Hardware
 
-| Motor | GPIO | Type | Range | Component |
-|-------|------|------|-------|-----------|
-| Throttle | GPIO 26 | DAC2 | 0-255 (8-bit) | `ThrottleMotor` |
-| Brake | GPIO 25 | DAC1 | 0-255 (8-bit) | `BrakeMotor` |
-| Steering | GPIO 27 (PWM) + GPIO 14 (DIR) | LEDC | -1.0 to +1.0 | `SteeringMotor` |
+| Motor    | GPIO                          | Type | Range         | Component       |
+| -------- | ----------------------------- | ---- | ------------- | --------------- |
+| Throttle | GPIO 26                       | DAC2 | 0-255 (8-bit) | `ThrottleMotor` |
+| Brake    | GPIO 25                       | DAC1 | 0-255 (8-bit) | `BrakeMotor`    |
+| Steering | GPIO 27 (PWM) + GPIO 14 (DIR) | LEDC | -1.0 to +1.0  | `SteeringMotor` |
 
 ## Serial Monitoring
 
 ### Cross-Platform Serial Ports
 
-| Platform | Port Pattern | Example |
-|----------|--------------|---------|
-| **macOS** | `/dev/cu.*` | `/dev/cu.usbserial-0001` |
-| **Ubuntu/Linux** | `/dev/ttyUSB*` or `/dev/ttyACM*` | `/dev/ttyUSB0` |
-| **Windows** | `COM*` | `COM3` |
+| Platform         | Port Pattern                     | Example                  |
+| ---------------- | -------------------------------- | ------------------------ |
+| **macOS**        | `/dev/cu.*`                      | `/dev/cu.usbserial-0001` |
+| **Ubuntu/Linux** | `/dev/ttyUSB*` or `/dev/ttyACM*` | `/dev/ttyUSB0`           |
+| **Windows**      | `COM*`                           | `COM3`                   |
 
 **Finding Your Port**:
 ```bash
@@ -231,10 +231,10 @@ void processGamepad(ControllerPtr ctl) {
 
 The ESP32 DevKit V1 has two buttons:
 
-| Button | Function | Usage |
-|--------|----------|-------|
-| **EN** | Enable/Reset | Press once to restart ESP32 (exits bootloader mode) |
-| **BOOT** | Bootloader Mode | Hold during power-on or reset to enter flash mode |
+| Button   | Function        | Usage                                               |
+| -------- | --------------- | --------------------------------------------------- |
+| **EN**   | Enable/Reset    | Press once to restart ESP32 (exits bootloader mode) |
+| **BOOT** | Bootloader Mode | Hold during power-on or reset to enter flash mode   |
 
 **Common Issue**: After firmware upload, ESP32 may remain in bootloader mode showing "waiting for download". Press **EN** button once to restart and run firmware.
 
@@ -285,13 +285,13 @@ DATA,-8,4,4,12,0,0,0x0000,176,0,0.0,0.0,0.00,0.000,NO_SENSOR
 
 ### Troubleshooting Build Issues
 
-| Problem | Solution |
-|---------|----------|
-| Upload hangs at "Connecting..." | Hold BOOT button, plug USB, release BOOT |
-| Changes not reflected | Clean build: `rm -rf .pio/build/esp32dev` |
-| I2C errors in serial | AS5600 sensor not disabled in code |
-| Controller won't pair | Check for serial errors, verify firmware running |
-| Wrong code compiling | Verify NO `src/` directory exists |
+| Problem                         | Solution                                         |
+| ------------------------------- | ------------------------------------------------ |
+| Upload hangs at "Connecting..." | Hold BOOT button, plug USB, release BOOT         |
+| Changes not reflected           | Clean build: `rm -rf .pio/build/esp32dev`        |
+| I2C errors in serial            | AS5600 sensor not disabled in code               |
+| Controller won't pair           | Check for serial errors, verify firmware running |
+| Wrong code compiling            | Verify NO `src/` directory exists                |
 
 ## Component Architecture
 
