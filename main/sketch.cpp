@@ -197,7 +197,7 @@ void setup()
     brakeMotor.begin();
 
     // Set output limits (can be adjusted for safety during testing)
-    steeringMotor.setOutputLimit(0.2f); // SAFETY: Limited to 20% for testing - change back to 1.0f when ready
+    steeringMotor.setOutputLimit(0.4f); // SAFETY: Limited to 40% for testing - change back to 1.0f when ready
     throttleMotor.setOutputLimit(1.0f); // 100% max
     brakeMotor.setOutputLimit(1.0f);    // 100% max
 
