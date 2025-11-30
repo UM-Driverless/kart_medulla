@@ -1,6 +1,7 @@
 # PlatformIO build artifacts
 .pio
 .vscode
+.venv
 
 # ESP-IDF managed components (downloaded dependencies)
 managed_components/
