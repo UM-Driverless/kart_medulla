@@ -78,7 +78,7 @@ void onDisconnectedController(ControllerPtr ctl)
 void processGamepad(ControllerPtr ctl)
 {
     if (!ctl->isConnected())
-        return; // Note: hasData() check removed per CLAUDE.md
+        return; // Note: hasData() check removed per AGENTS.md
 
     // ============================================================================
     // Read AS5600 Steering Sensor (ENABLED - sensor connected)
@@ -148,7 +148,7 @@ void processControllers()
 {
     for (auto ctl : myControllers)
     {
-        // Note: hasData() check removed per CLAUDE.md (prevents controller timeout)
+        // Note: hasData() check removed per AGENTS.md (prevents controller timeout)
         if (ctl && ctl->isConnected() && ctl->isGamepad())
         {
             processGamepad(ctl);

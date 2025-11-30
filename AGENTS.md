@@ -1,4 +1,4 @@
-# Claude Development Notes
+# Agent Development Notes
 
 ## Repository Structure - CRITICAL CONVENTIONS
 

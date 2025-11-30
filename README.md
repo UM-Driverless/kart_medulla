@@ -297,7 +297,7 @@ mode  # Lists COM ports
 
 ## Development Notes
 
-See [`CLAUDE.md`](CLAUDE.md) for comprehensive documentation:
+See [`AGENTS.md`](AGENTS.md) for comprehensive documentation:
 - Repository structure and critical conventions
 - Build system configuration
 - Common issues and solutions
