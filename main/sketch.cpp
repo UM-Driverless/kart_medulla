@@ -30,10 +30,10 @@ const int deadzone = 50;
 // Array para controlar hasta 4 mandos
 ControllerPtr myControllers[BP32_MAX_GAMEPADS];
 
-// PID tuning parameters (adjust these for your system)
-const float KP = 0.02f; // Proportional gain
+// PID tuning parameters (adjust these for your system) --- CONSTANTS
+const float KP = 0.03f; // Proportional gain
 const float KI = 0.0f;  // Integral gain
-const float KD = 0.00f; // Derivative gain
+const float KD = 0.0004f; // Derivative gain
 
 // Angle mapping constants
 const float MAX_STEERING_ANGLE_DEG = 45.0f; // Maximum steering angle in degrees
