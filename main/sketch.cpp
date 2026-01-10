@@ -10,8 +10,8 @@
 // ============================================================================
 const int PIN_THROTTLE_DAC = 26; // GPIO 26 = DAC2 (throttle)
 const int PIN_BRAKE_DAC = 25;    // GPIO 25 = DAC1 (brake)
-const int PIN_STEERING_PWM = 27; // Steering motor PWM
-const int PIN_STEERING_DIR = 14; // Steering motor direction
+const int PIN_STEERING_PWM = 27; // Steering motor PWM (FUTURE UPDATE TO GPIO32)
+const int PIN_STEERING_DIR = 14; // Steering motor direction (FUTURE UPDATE TO GPIO33)
 const int PIN_I2C_SDA = 21;      // AS5600 sensor SDA
 const int PIN_I2C_SCL = 22;      // AS5600 sensor SCL
 
