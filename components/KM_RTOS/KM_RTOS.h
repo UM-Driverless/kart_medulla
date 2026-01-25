@@ -19,16 +19,30 @@
 #define RTOS_MAX_TASKS          10  // Número máximo de tareas que puede manejar la librería
 
 /**
+ * @brief Logical task function type (RTOS-agnostic)
+ *
+ * This function is executed periodically by the RTOS wrapper.
+ * It must NOT contain an infinite loop or call vTaskDelay().
+ *
+ * @param context User-defined context pointer
+ */
+typedef void (*KM_RTOS_TaskFunction_t)(void *context);
+
+/**
  * @brief Structure that reperesents a task in FreeRTOS
  */
 typedef struct {
-    TaskHandle_t handle;        /**< Handle of FreeRTOS to control the task */
-    const char *name;           /**< Name of the task */
-    TaskFunction_t function;    /**< Pointer to the function of the task */
-    void *params;               /**< Parameters of the task */
-    uint16_t stackSize;         /**< Size of stack in words */
-    UBaseType_t priority;       /**< Priority of the task */
-    uint8_t active;             /**< Flag that indicates if the task is active */
+    TaskHandle_t handle;          /**< FreeRTOS task handle */
+    const char *name;             /**< Task name */
+
+    KM_RTOS_TaskFunction_t taskFn;     /**< Logical task function */
+    void *context;                /**< User context pointer */
+
+    uint32_t period_ms;            /**< Execution period in milliseconds */
+    uint16_t stackSize;            /**< Stack size in words */
+    UBaseType_t priority;          /**< Task priority */
+
+    uint8_t active;                /**< Task active flag */
 } RTOS_Task;
 
 /******************************* VARIABLES PÚBLICAS ***************************/

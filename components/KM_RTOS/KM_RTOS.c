@@ -12,8 +12,6 @@
  * @author Adrian Navarredonda Arizaleta
  * @date 24-01-2026
  */
-
-#include "KM_RTOS.h"
  
 /******************************* INCLUDES INTERNOS ****************************/
 // Headers internos opcionales, dependencias privadas
@@ -21,12 +19,13 @@
 
 /******************************* DEFINES PRIVADAS *****************************/
 // Constantes internas
-#define RTOS_DEFAULT_STACK_SIZE 1024
-#define RTOS_DEFAULT_PRIORITY   1
+#define RTOS_DEFAULT_STACK_SIZE 1024// Default size stack
+#define RTOS_DEFAULT_PRIORITY   1   // Default priority for each task
+#define RTOS_DEFAULT_PERIOD_MS 50   // Default time for executing each task
 
 /******************************* VARIABLES PRIVADAS ***************************/
 // Variables globales internas (static)
-RTOS_Task tasks[RTOS_MAX_TASKS];
+static RTOS_Task tasks[RTOS_MAX_TASKS];
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
 
@@ -51,40 +50,34 @@ uint8_t KM_RTOS_CreateTask(RTOS_Task task){
 
     // Buscar hueco libre en array y comprobar que no exista ya esa tarea
     for (uint8_t i = 0; i < RTOS_MAX_TASKS; i++) {
-        // Caso tarea ya existe
-        if (tasks[i].handle == task.handle) {
-            return 0;
+        // Hueco ocupado
+        if (tasks[i].handle != NULL) continue;
         
-        // Caso hueco libre
-        } else if (tasks[i].handle == NULL) {
+        tasks[i] = task;
+        tasks[i].active = 1;
 
-            // Crear tarea
-            BaseType_t result;
-            result = xTaskCreate(task.function, 
-                                task.name, 
-                                task.stackSize, 
-                                task.params, 
-                                task.priority, 
-                                &tasks[i].handle);
+        if (tasks[i].priority == 0) tasks[i].priority = RTOS_DEFAULT_PRIORITY;
+        if (tasks[i].stackSize == 0) tasks[i].stackSize = RTOS_DEFAULT_STACK_SIZE;
+        if (tasks[i].period_ms == 0) tasks[i].period_ms = RTOS_DEFAULT_PERIOD_MS;
 
-            if (result == pdPASS) {
-                // Tarea creada correctamente
-                tasks[i].name = task.name;
-                tasks[i].function = task.function;
-                tasks[i].params = task.params;
-                tasks[i].stackSize = task.stackSize;
-                tasks[i].priority = task.priority;
-                tasks[i].active = 1;
+        BaseType_t result = xTaskCreate(
+            KM_RTOS_TaskWrapper,  // Wrapper
+            task.name,
+            task.stackSize,
+            &tasks[i],            // Pointer to this task
+            task.priority,
+            &tasks[i].handle
+        );
 
-                return 1;
-            } 
-            // Error: memoria insuficiente u otro fallo
-            return 0;
+        if (result != pdPASS) {
+            memset(&tasks[i], 0, sizeof(RTOS_Task));
+            return 0; // Error creating task
         }
+
+        return 1; // Success
     }
 
-    // No se ha encontrado hueco
-    return 0;
+    return 0; // Fail, no space in array
 }
 
 // Destruir una tarea existente, devuelve 0 en caso de error, 1 en caso correcto
@@ -183,6 +176,26 @@ int8_t KM_RTOS_FindTask(TaskHandle_t handle) {
     }
 
     return -1;
+}
+
+/**
+ * @brief RTOS wrapper that calls the logical task function periodically
+ *
+ * @param params Pointer to RTOS_Task
+ */
+static void KM_RTOS_TaskWrapper(void *params) {
+    RTOS_Task *task = (RTOS_Task *)params;
+    TickType_t delay = pdMS_TO_TICKS(task->period_ms);
+
+    if (!task) vTaskDelete(NULL);
+
+    while (1) {
+        if (task->active && task->taskFn != NULL) {
+            task->taskFn(task->context);  // Call the logical function
+        }
+
+        vTaskDelay(delay);
+    }
 }
 
 /******************************* FIN DE ARCHIVO ********************************/
