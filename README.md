@@ -17,10 +17,10 @@ ESP32-based control system for autonomous go-kart using Bluepad32 for PS4/PS5 co
 
 | Function | ESP32 Pin | Type | Range | Description |
 |----------|-----------|------|-------|-------------|
-| **Throttle** | GPIO 26 | DAC2 | 0-255 (8-bit) | Analog throttle output |
-| **Brake** | GPIO 25 | DAC1 | 0-255 (8-bit) | Analog brake output |
-| **Steering PWM** | GPIO 27 | PWM (LEDC) | 0-255 | Steering motor speed |
-| **Steering DIR** | GPIO 14 | Digital | 0/1 | Steering motor direction |
+| **Throttle (CMD_ACC)** | GPIO 25 | DAC1 | 0-255 (8-bit) | Analog throttle output |
+| **Brake (CMD_BRAKE)** | GPIO 26 | DAC2 | 0-255 (8-bit) | Analog brake output |
+| **Steering PWM** | GPIO 18 | PWM (LEDC) | 0-255 | Steering motor speed |
+| **Steering DIR** | GPIO 19 | Digital | 0/1 | Steering motor direction |
 
 ### Sensor Inputs (AS5600 - Currently Disabled)
 
@@ -36,7 +36,55 @@ ESP32-based control system for autonomous go-kart using Bluepad32 for PS4/PS5 co
 ### Other Pins
 
 * **LED:** GPIO 2 (Onboard LED)
-* **UART to Orin:** GPIO 18 (TX), GPIO 19 (RX) - for future integration
+* **USB Serial (UART0):** GPIO 1 (TX0), GPIO 3 (RX0) - reserved for console
+
+## ESP32-DevKitC V4 Header Pin Map
+
+Numbering used below:
+- USB-C at the bottom, H1 is the right header. H1 pin 1 is bottom-right and counts up to pin 19 at top-right.
+- H2 is the left header. H2 pin 1 is top-left and counts down to pin 19 at bottom-left.
+- If you count around the chip, H2 pin 1 corresponds to logical pin 20.
+
+| ESP32 Pin # | Header Pin | ESP32 Pin | Kart Net | Notes |
+|-------------|------------|-----------|----------|-------|
+| 1 | H1 pin 1 | GPIO 6 (SCK) | RESERVED (FLASH/SDIO) | Do not use |
+| 2 | H1 pin 2 | GPIO 7 (SD0) | RESERVED (FLASH/SDIO) | Do not use |
+| 3 | H1 pin 3 | GPIO 8 (SD1) | RESERVED (FLASH/SDIO) | Do not use |
+| 4 | H1 pin 4 | GPIO 15 (MTDO) | NC (strap) | Boot config risk |
+| 5 | H1 pin 5 | GPIO 2 | NC (strap) | Boot config risk |
+| 6 | H1 pin 6 | GPIO 0 (BOOT) | NC (strap) | Boot mode pin |
+| 7 | H1 pin 7 | GPIO 4 | NC (strap) | Boot config risk |
+| 8 | H1 pin 8 | GPIO 16 | MOTOR_HALL_3 | Input |
+| 9 | H1 pin 9 | GPIO 17 | MOTOR_HALL_1 | Input |
+| 10 | H1 pin 10 | GPIO 5 (VSPI_SS) | NC (strap) | Boot config risk |
+| 11 | H1 pin 11 | GPIO 18 (VSPI_SCK) | CMD_STEER_PWM | PWM output |
+| 12 | H1 pin 12 | GPIO 19 (VSPI_MISO) | CMD_STEER_DIR | Digital output |
+| 13 | H1 pin 13 | GND | GND | Ground |
+| 14 | H1 pin 14 | GPIO 21 (SDA) | STEER_SDA (I2C) | I2C data |
+| 15 | H1 pin 15 | GPIO 3 (U0RXD) | RESERVED (USB UART0 RX) | Console UART |
+| 16 | H1 pin 16 | GPIO 1 (U0TXD) | RESERVED (USB UART0 TX) | Console UART |
+| 17 | H1 pin 17 | GPIO 22 (SCL) | STEER_SCL (I2C) | I2C clock |
+| 18 | H1 pin 18 | GPIO 23 (VSPI_MOSI) | SPARE_3V3 | Spare GPIO |
+| 19 | H1 pin 19 | GND | GND | Ground |
+| 20 | H2 pin 1 | 3V3 | 3V3 | Power |
+| 21 | H2 pin 2 | EN | EN | Reset/enable |
+| 22 | H2 pin 3 | GPIO 36 (SVP) | PRESSURE_1 (0-3V3) | ADC input only |
+| 23 | H2 pin 4 | GPIO 39 (SVN) | PRESSURE_2 (0-3V3) | ADC input only |
+| 24 | H2 pin 5 | GPIO 34 | PRESSURE_3 (0-3V3) | ADC input only |
+| 25 | H2 pin 6 | GPIO 35 | PEDAL_ACC (0-3V3) | ADC input only |
+| 26 | H2 pin 7 | GPIO 32 | PEDAL_BRAKE (0-3V3) | ADC input |
+| 27 | H2 pin 8 | GPIO 33 | MOTOR_HALL_2 | Input |
+| 28 | H2 pin 9 | GPIO 25 (DAC1) | CMD_ACC (0-3V3) | DAC output |
+| 29 | H2 pin 10 | GPIO 26 (DAC2) | CMD_BRAKE (0-3V3) | DAC output |
+| 30 | H2 pin 11 | GPIO 27 | HYDRAULIC_1 (0-3V3) | GPIO |
+| 31 | H2 pin 12 | GPIO 14 | HYDRAULIC_2 (0-3V3) | GPIO |
+| 32 | H2 pin 13 | GPIO 12 (MTDI) | NC (strap) | Boot config risk |
+| 33 | H2 pin 14 | GND | GND | Ground |
+| 34 | H2 pin 15 | GPIO 13 (MTCK) | SDC_NOT_EMERGENCY | Digital input |
+| 35 | H2 pin 16 | GPIO 9 (SD2) | RESERVED (FLASH/SDIO) | Do not use |
+| 36 | H2 pin 17 | GPIO 10 (SD3) | RESERVED (FLASH/SDIO) | Do not use |
+| 37 | H2 pin 18 | GPIO 11 (CMD) | RESERVED (FLASH/SDIO) | Do not use |
+| 38 | H2 pin 19 | 5V | 5V | Power |
 
 ## System Architecture
 
