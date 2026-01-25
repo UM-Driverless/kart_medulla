@@ -1,7 +1,24 @@
+/******************************************************************************
+ * @file    KM_PID.c
+ * @brief   Implementación de la librería.
+ * @author Adrian Navarredonda Arizaleta
+ *****************************************************************************/
+
 #include "KM_PID.h"
 
-#include <Arduino.h>
+/******************************* INCLUDES INTERNOS ****************************/
+// Headers internos opcionales, dependencias privadas
 
+/******************************* MACROS PRIVADAS ******************************/
+// Constantes internas, flags de debug
+// #define LIBRERIA_DEBUG 1
+
+/******************************* VARIABLES PRIVADAS ***************************/
+// Variables globales internas (static)
+
+/******************************* DECLARACION FUNCIONES PRIVADAS ***************/
+
+/******************************* FUNCIONES PÚBLICAS ***************************/
 PID_Controller KM_PID_INIT(float kp_val, float ki_val, float kd_val) {
 
     PID_Controller controller;
@@ -96,3 +113,7 @@ void KM_PID_GetTunings(PID_Controller controller, float kp, float ki, float kd) 
 float KM_PID_GetIntegral(PID_Controller controller){
     return controller.integral;
 }
+ 
+ /******************************* FUNCIONES PRIVADAS ***************************/
+ 
+ /******************************* FIN DE ARCHIVO ********************************/
