@@ -17,6 +17,8 @@
 // Headers internos opcionales, dependencias privadas
 #include "KM_RTOS.h"
 
+#include <string.h>
+
 /******************************* DEFINES PRIVADAS *****************************/
 // Constantes internas
 #define RTOS_DEFAULT_STACK_SIZE 1024// Default size stack
@@ -25,7 +27,11 @@
 
 /******************************* VARIABLES PRIVADAS ***************************/
 // Variables globales internas (static)
-static RTOS_Task tasks[RTOS_MAX_TASKS];
+RTOS_Task tasks[RTOS_MAX_TASKS];
+
+/******************************* DECLARACION FUNCIONES PRIVADAS ***************/
+int8_t KM_RTOS_FindTask(TaskHandle_t handle);
+static void KM_RTOS_TaskWrapper(void *params);
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
 

@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <Bluepad32.h>
 #include "as5600_sensor.h" // ENABLED - sensor now connected
-#include "pid_controller.h"
+#include "KM_PID.h"
 #include "motor_control.h"
 
 // ============================================================================
@@ -19,7 +19,7 @@ const int PIN_I2C_SCL = 22;      // AS5600 sensor SCL
 // System Objects
 // ============================================================================
 AS5600Sensor steeringSensor; // ENABLED - sensor now connected
-PIDController steeringPID;
+PID_Controller steeringPID;
 SteeringMotor steeringMotor(PIN_STEERING_PWM, PIN_STEERING_DIR, 0, 5000, 8);
 ThrottleMotor throttleMotor(PIN_THROTTLE_DAC);
 BrakeMotor brakeMotor(PIN_BRAKE_DAC);
