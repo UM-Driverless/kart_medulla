@@ -423,6 +423,9 @@ void runMode()
     switch (currentMode)
     {
     case KartMode::REMOTE:
+        throttleMotor.stop();
+        brakeMotor.stop();
+        steeringMotor.stop();
         processControllers();
         break;
     case KartMode::AUTONOMOUS:
