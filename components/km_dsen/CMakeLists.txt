@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "as5600_sensor.cpp"
+    SRCS "km_dsen.cpp"
     INCLUDE_DIRS "."
     REQUIRES arduino
 )

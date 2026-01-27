@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "motor_control.cpp"
+    SRCS "km_cdir.cpp"
     INCLUDE_DIRS "."
     REQUIRES arduino driver
 )

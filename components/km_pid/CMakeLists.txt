@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "KM_PID.c"
+    SRCS "km_pid.c"
     INCLUDE_DIRS "."
     REQUIRES arduino
 )
