@@ -1,5 +1,5 @@
 /******************************************************************************
- * @file    KM_PID.h
+ * @file    km_pid.h
  * @brief   Interfaz pública de la librería.
  * @author  Adrian Navarredonda Arizaleta
  * @date    25-01-2026
@@ -11,12 +11,13 @@
 
 /******************************* INCLUDES *************************************/
 // Includes necesarios para la API pública
+#include <Arduino.h>
 
 /******************************* DEFINES PÚBLICAS *****************************/
 // Constantes, flags o configuraciones visibles desde fuera de la librería
 
 /**
- * @brief Structure that reperesents a task in FreeRTOS
+ * @brief Structure that reperesents a PID
  */
 typedef struct {
     float kp;               /**< Proportional gain */

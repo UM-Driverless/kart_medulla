@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "km_dsen.cpp"
+    SRCS "km_sdir.c"
     INCLUDE_DIRS "."
     REQUIRES arduino
 )

@@ -4,7 +4,7 @@
  * @author Adrian Navarredonda Arizaleta
  *****************************************************************************/
 
-#include "KM_PID.h"
+#include "km_pid.h"
 
 /******************************* INCLUDES INTERNOS ****************************/
 // Headers internos opcionales, dependencias privadas

@@ -1,9 +1,10 @@
 #include "sdkconfig.h"
 #include <Arduino.h>
 #include <Bluepad32.h>
-#include "as5600_sensor.h" // ENABLED - sensor now connected
-#include "KM_PID.h"
-#include "motor_control.h"
+#include "km_sdir.h"
+#include "km_pid.h"
+#include "km_rtos.h"
+#include "km_cdir.h"
 
 // ============================================================================
 // Pin Configuration

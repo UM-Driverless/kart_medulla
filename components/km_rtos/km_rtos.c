@@ -191,7 +191,7 @@ int8_t KM_RTOS_FindTask(TaskHandle_t handle) {
  */
 static void KM_RTOS_TaskWrapper(void *params) {
     RTOS_Task *task = (RTOS_Task *)params;
-    TickType_t delay = pdMS_TO_TICKS(task->period_ms);
+    TickType_t xLastWakeTime = xTaskGetTickCount();
 
     if (!task) vTaskDelete(NULL);
 
@@ -200,7 +200,7 @@ static void KM_RTOS_TaskWrapper(void *params) {
             task->taskFn(task->context);  // Call the logical function
         }
 
-        vTaskDelay(delay);
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(task->period_ms));
     }
 }
 
