@@ -2,8 +2,8 @@
 
 ESP32-based control system for autonomous go-kart using Bluepad32 for PS4/PS5 controller input, with PID-controlled steering and analog throttle/brake output.
 
-Hardware docs: https://um-driverless.github.io/kart_docs/assembly/electronics/kart-medulla/
-
+- Hardware docs: https://um-driverless.github.io/kart_docs/assembly/electronics/kart-medulla/
+- PCB design: https://u.easyeda.com/account/user/projects/index/detail?project=90f6158fb62a4e79af68560e3b41af01&listType=all
 ## Hardware Overview
 
 * **Microcontroller:** ESP32 WROOM 32
