@@ -39,15 +39,15 @@ public:
     void stop();
 };
 
-// Brake motor class - uses DAC for true analog output
-class BrakeMotor {
+// Brake valve class - uses DAC for true analog output
+class BrakeValve {
 private:
     dac_oneshot_handle_t dacHandle;
     dac_channel_t dacChannel;
     float outputLimit;
 
 public:
-    BrakeMotor(int dacPin);  // GPIO 25 (DAC_CHAN_0) or GPIO 26 (DAC_CHAN_1)
+    BrakeValve(int dacPin);  // GPIO 25 (DAC_CHAN_0) or GPIO 26 (DAC_CHAN_1)
 
     void begin();
     void setOutput(float value);  // Input: 0.0 to 1.0

@@ -125,7 +125,7 @@ targetAngle = -(float)axisX * MAX_STEERING_ANGLE_DEG / 511.0f;
 | Motor    | GPIO                          | Type | Range         | Component       |
 | -------- | ----------------------------- | ---- | ------------- | --------------- |
 | Throttle | GPIO 26                       | DAC2 | 0-255 (8-bit) | `ThrottleMotor` |
-| Brake    | GPIO 25                       | DAC1 | 0-255 (8-bit) | `BrakeMotor`    |
+| Brake    | GPIO 25                       | DAC1 | 0-255 (8-bit) | `BrakeValve`    |
 | Steering | GPIO 27 (PWM) + GPIO 14 (DIR) | LEDC | -1.0 to +1.0  | `SteeringMotor` |
 
 ## Serial Monitoring

@@ -62,7 +62,7 @@ AS5600Sensor steeringSensor; // ENABLED - sensor now connected
 PIDController steeringPID;
 SteeringMotor steeringMotor(PIN_STEERING_PWM, PIN_STEERING_DIR, 0, 5000, 8);
 ThrottleMotor throttleMotor(PIN_THROTTLE_DAC);
-BrakeMotor brakeMotor(PIN_BRAKE_DAC);
+BrakeValve brakeValve(PIN_BRAKE_DAC);
 
 // Joystick deadzone
 const int deadzone = 50;
@@ -318,7 +318,7 @@ void processGamepad(ControllerPtr ctl)
     float brakeValue = (float)l2Value / 1023.0f;
 
     throttleMotor.setOutput(throttleValue);
-    brakeMotor.setOutput(brakeValue);
+    brakeValve.setOutput(brakeValue);
 
     float cmdAccV = throttleValue * CMD_ACC_MAX_V;
     float cmdBrakeV = brakeValue * CMD_BRAKE_MAX_V;
@@ -403,7 +403,7 @@ void processManual()
 {
     steeringMotor.stop();
     throttleMotor.stop();
-    brakeMotor.stop();
+    brakeValve.stop();
 }
 
 void processAutonomous()
@@ -415,7 +415,7 @@ void processAutonomous()
     }
     steeringMotor.stop();
     throttleMotor.stop();
-    brakeMotor.stop();
+    brakeValve.stop();
 }
 
 void runMode()
@@ -424,7 +424,7 @@ void runMode()
     {
     case KartMode::REMOTE:
         throttleMotor.stop();
-        brakeMotor.stop();
+        brakeValve.stop();
         steeringMotor.stop();
         processControllers();
         break;
@@ -475,7 +475,7 @@ void setup()
     Console.println("\n[3/4] Initializing motor controllers...");
     steeringMotor.begin();
     throttleMotor.begin();
-    brakeMotor.begin();
+    brakeValve.begin();
 
     // ============================================================================
     // Initialize Hall Sensors (speed feedback)
@@ -506,7 +506,7 @@ void setup()
     // Set output limits (can be adjusted for safety during testing)
     steeringMotor.setOutputLimit(0.4f); // SAFETY: Limited to 40% for testing - change back to 1.0f when ready
     throttleMotor.setOutputLimit(1.0f); // 100% max
-    brakeMotor.setOutputLimit(1.0f);    // 100% max
+    brakeValve.setOutputLimit(1.0f);    // 100% max
 
     // ============================================================================
     // Initialize Bluepad32 Controller Interface

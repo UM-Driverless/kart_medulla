@@ -112,10 +112,10 @@ void ThrottleMotor::stop() {
 }
 
 // ============================================================================
-// Brake Motor Implementation (DAC)
+// Brake Valve Implementation (DAC)
 // ============================================================================
 
-BrakeMotor::BrakeMotor(int dacPin)
+BrakeValve::BrakeValve(int dacPin)
     : dacHandle(nullptr), outputLimit(1.0f) {
     if (dacPin == 25) {
         dacChannel = DAC_CHAN_0;  // GPIO 25
@@ -127,7 +127,7 @@ BrakeMotor::BrakeMotor(int dacPin)
     }
 }
 
-void BrakeMotor::begin() {
+void BrakeValve::begin() {
     // Configure DAC using new oneshot API
     dac_oneshot_config_t dac_cfg = {
         .chan_id = dacChannel
@@ -142,11 +142,11 @@ void BrakeMotor::begin() {
     // Set initial voltage to 0
     dac_oneshot_output_voltage(dacHandle, 0);
 
-    Serial.printf("Brake motor initialized: DAC Channel=%d (GPIO %d)\n",
+    Serial.printf("Brake valve initialized: DAC Channel=%d (GPIO %d)\n",
                   dacChannel, dacChannel == DAC_CHAN_0 ? 25 : 26);
 }
 
-void BrakeMotor::setOutput(float value) {
+void BrakeValve::setOutput(float value) {
     if (dacHandle == nullptr) return;
 
     // Clamp to limits
@@ -159,12 +159,12 @@ void BrakeMotor::setOutput(float value) {
     dac_oneshot_output_voltage(dacHandle, dacValue);
 }
 
-void BrakeMotor::setOutputLimit(float limit) {
+void BrakeValve::setOutputLimit(float limit) {
     outputLimit = constrain(limit, 0.0f, 1.0f);
-    Serial.printf("Brake motor output limit set to: %.2f\n", outputLimit);
+    Serial.printf("Brake valve output limit set to: %.2f\n", outputLimit);
 }
 
-void BrakeMotor::stop() {
+void BrakeValve::stop() {
     if (dacHandle != nullptr) {
         dac_oneshot_output_voltage(dacHandle, 0);
     }
