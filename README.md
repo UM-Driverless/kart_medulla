@@ -236,6 +236,28 @@ DATA,-8,4,4,12,0,512,0x0100,176,0,15.2,0.0,15.20,0.523,NO_SENSOR
 - `PID` - PID controller output (-1.0 to +1.0)
 - `SENSOR_STATUS` - `NO_SENSOR` or `SENSOR_OK`
 
+## Orin <-> ESP32 Messaging (UTF-8)
+
+All inter-computer messages are UTF-8 text. Payloads are defined below; line framing and exact field ordering should follow the agreed message definitions when implemented.
+
+**ESP32 -> Orin (telemetry):**
+- `actual_speed` (m/s, float)
+- `actual_acc` (m/s^2, float, signed)
+- `actual_braking` (0-1, float; interpreted as brake pedal or hydraulic pressure)
+- `actual_steering` (rad, float)
+- `mission` (enum; state machine owner TBD)
+- `machine_state` (enum; mission sub-state)
+- `actual_shutdown` (0/1, end of SDC loop state)
+- `esp32_heartbeat`
+
+**Orin -> ESP32 (commands):**
+- `target_throttle` (0-1, float)
+- `target_braking` (0-1, float)
+- `target_steering` (-1 to 1, float)
+- `mission` (enum; state machine owner TBD)
+- `machine_state` (enum; mission sub-state)
+- `orin_heartbeat`
+
 ## Controller GUI
 
 Real-time visualization of controller inputs:
