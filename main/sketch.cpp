@@ -1,10 +1,11 @@
 #include "sdkconfig.h"
 #include <Arduino.h>
 #include <Bluepad32.h>
-#include "km_sdir.h"
+
 #include "km_pid.h"
 #include "km_rtos.h"
-#include "km_cdir.h"
+#include "km_sdir.h"
+#include "km_act.h"
 
 // ============================================================================
 // Pin Configuration
