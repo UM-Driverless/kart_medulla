@@ -1,5 +1,5 @@
 idf_component_register(
     SRCS "km_pid.c"
     INCLUDE_DIRS "."
-    REQUIRES arduino
+    REQUIRES esp_timer
 )

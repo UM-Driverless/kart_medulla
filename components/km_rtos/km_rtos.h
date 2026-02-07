@@ -13,6 +13,8 @@
 // Includes necesarios para la API pública
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include <stdint.h>
+#include "esp_log.h" // Para log
 
 /******************************* DEFINES PUBLICOS *****************************/
 // Constantes, flags o configuraciones visibles desde fuera de la librería

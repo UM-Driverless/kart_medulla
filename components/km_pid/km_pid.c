@@ -29,14 +29,14 @@ PID_Controller KM_PID_INIT(float kp_val, float ki_val, float kd_val) {
 
     controller.integral = 0.0f;
     controller.lastError = 0.0f;
-    controller.lastTime = millis();
+    controller.lastTime = esp_timer_get_time();
 
     return controller;                                                             
 }
 
 float KM_PID_Calculate(PID_Controller controller, float setpoint, float measurement) {
-    unsigned long currentTime = millis();
-    float dt = (currentTime - controller.lastTime) / 1000.0f;  // Convert to seconds
+    unsigned long currentTime = esp_timer_get_time();
+    float dt = (currentTime - controller.lastTime) / 1000000.0f;  // Convert to seconds
 
     // Avoid division by zero
     if (dt <= 0.0f) {
@@ -100,7 +100,7 @@ void KM_PID_SetIntegralLimits(PID_Controller controller, float min, float max) {
 void KM_PID_Reset(PID_Controller controller){
     controller.integral = 0.0f;
     controller.lastError = 0.0f;
-    controller.lastTime = millis();
+    controller.lastTime = esp_timer_get_time();
 }
 
 void KM_PID_GetTunings(PID_Controller controller, float kp, float ki, float kd) {

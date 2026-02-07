@@ -11,8 +11,9 @@
 
 /******************************* INCLUDES *************************************/
 // Includes necesarios para la API pública
-#include <Arduino.h>
 #include <driver/dac_oneshot.h>
+#include <stdint.h>
+#include "esp_log.h" // Para log
 
 /******************************* DEFINES PÚBLICAS *****************************/
 // Constantes, flags o configuraciones visibles desde fuera de la librería

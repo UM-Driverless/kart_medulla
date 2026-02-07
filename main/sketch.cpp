@@ -1,5 +1,5 @@
 #include "sdkconfig.h"
-#include <Arduino.h>
+
 #include <Bluepad32.h>
 
 #include "km_pid.h"

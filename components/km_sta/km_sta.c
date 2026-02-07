@@ -3,7 +3,7 @@
  * @brief   Implementación de la librería.
  *****************************************************************************/
 
- #include "nombre_libreria.h"
+ #include "km_sta.h"
  #include <stdio.h>   // solo si es necesario para debug interno
  
  /******************************* INCLUDES INTERNOS ****************************/

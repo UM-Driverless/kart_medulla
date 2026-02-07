@@ -11,7 +11,9 @@
 
 /******************************* INCLUDES *************************************/
 // Includes necesarios para la API pública
-#include <Arduino.h>
+#include <stdint.h>
+#include "esp_log.h" // Para log
+#include "esp_timer.h"
 
 /******************************* DEFINES PÚBLICAS *****************************/
 // Constantes, flags o configuraciones visibles desde fuera de la librería

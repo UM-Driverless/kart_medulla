@@ -15,7 +15,7 @@
  
 /******************************* INCLUDES INTERNOS ****************************/
 // Headers internos opcionales, dependencias privadas
-#include "KM_RTOS.h"
+#include "km_rtos.h"
 
 #include <string.h>
 
