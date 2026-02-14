@@ -22,6 +22,16 @@
 #include "esp_sntp.h"        // Para sincronizar tiempo
 #include "esp_system.h"      // Información de sistema
 
+// Librerias propias
+#include "km_act.h"
+#include "km_coms.h"
+#include "km_gamc.h"
+#include "km_pid.h"
+#include "km_rtos.h"
+#include "km_sdir.h"
+#include "km_sta.h"
+#include "km_gpio.h"
+
 static const char *TAG = "MAIN";
 
 // ===========================
@@ -67,6 +77,8 @@ void app_main(void) {
 
     // Inicializa Bluetooth, Bluepad32, NVS, etc.
     //init_bluetooth();
+
+    // Tarea para mandar mensajes periodicamente a ORIN
 
     // Llamar a funcion para iniciar el sistema(esta funcion iniciara los pines y demas cosas)
 

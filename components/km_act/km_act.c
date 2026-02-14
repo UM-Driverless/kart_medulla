@@ -48,27 +48,27 @@ ACT_Controller KM_ACT_Begin(uint8_t pwmPin, uint8_t dirPin, uint8_t pwmChannel,
     act_controller.dacChannel = dacChannel;
     act_controller.dacPin = dacPin;
 
-    // Configure DAC using new oneshot API
-    dac_oneshot_config_t dac_cfg;
-    dac_cfg.chan_id = dacChannel;
+    // // Configure DAC using new oneshot API
+    // dac_oneshot_config_t dac_cfg;
+    // dac_cfg.chan_id = dacChannel;
 
-    esp_err_t err = dac_oneshot_new_channel(&dac_cfg, &act_controller.dacHandle);
-    if (err != ESP_OK) {
-        ESP_LOGE("KM_ACT", "Failed to initialize DAC channel (error: 0x%x)\n", err);
-        act_controller.pwmPin = 0;
-        act_controller.dirPin = 0;
-        act_controller.pwmChannel = 0;
-        act_controller.pwmFreq = 0;
-        act_controller.pwmResolution = 0;
-        act_controller.outputLimit = 0;
-        act_controller.dacChannel = 0;
-        act_controller.dacHandle = 0;
-        act_controller.dacPin = 0;
-        return act_controller;
-    }
+    // esp_err_t err = dac_oneshot_new_channel(&dac_cfg, &act_controller.dacHandle);
+    // if (err != ESP_OK) {
+    //     ESP_LOGE("KM_ACT", "Failed to initialize DAC channel (error: 0x%x)\n", err);
+    //     act_controller.pwmPin = 0;
+    //     act_controller.dirPin = 0;
+    //     act_controller.pwmChannel = 0;
+    //     act_controller.pwmFreq = 0;
+    //     act_controller.pwmResolution = 0;
+    //     act_controller.outputLimit = 0;
+    //     act_controller.dacChannel = 0;
+    //     act_controller.dacHandle = 0;
+    //     act_controller.dacPin = 0;
+    //     return act_controller;
+    // }
 
     // Set initial voltage to 0
-    dac_oneshot_output_voltage(act_controller.dacHandle, 0);
+    //dac_oneshot_output_voltage(act_controller.dacHandle, 0);
 
     ESP_LOGI("KM_ACT", "Controller initialised: DAC Channel=%d (GPIO %d)\n",
                     dacChannel, dacChannel == DAC_CHAN_0 ? 25 : 26);
@@ -91,26 +91,30 @@ void KM_ACT_SetOutput(ACT_Controller *act_controller, int8_t valor){
     // Determine direction
     int direction = (valor >= 0);
     if (act_controller->dirPin != 0)
-        digitalWrite(act_controller->dirPin, direction ? 1 : 0);
+        //digitalWrite(act_controller->dirPin, direction ? 1 : 0);
 
     // Calculate PWM value (0-255 for 8-bit resolution)
     pwmValue = (uint8_t)(abs(valor) * ((1 << act_controller->pwmResolution) - 1));
-    pwmValue = constrain(pwmValue, 0, (1 << act_controller->pwmResolution) - 1);
+    //pwmValue = constrain(pwmValue, 0, (1 << act_controller->pwmResolution) - 1);
 
     // Set PWM (new API uses pin number instead of channel)
-    ledcWrite(act_controller->pwmPin, pwmValue);
+    //ledcWrite(act_controller->pwmPin, pwmValue);
 
 }
 
 void KM_ACT_SetOutputLimit(ACT_Controller *act_controller, int8_t limite){
-    act_controller->outputLimit = constrain(limite, 0.0f, 1.0f);
+
+    if (limite > 1.0f)
+        act_controller->outputLimit = 1.0f;
+
+    if (limite < 0.0f)
+        act_controller->outputLimit = 0.0f;
+
     ESP_LOGI("KM_ACT", "Brake motor output limit set to: %.2f\n", act_controller->outputLimit);
 }
 
 void KM_ACT_Stop(ACT_Controller *act_controller){
-    if (act_controller != NULL && act_controller->dacHandle != NULL) {
-        dac_oneshot_output_voltage(act_controller->dacChannel, 0);
-    }
+        dac_output_voltage(act_controller->dacChannel, 0);
 }
 /******************************* FUNCIONES PRIVADAS ***************************/
 /**

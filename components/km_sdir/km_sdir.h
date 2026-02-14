@@ -11,17 +11,24 @@
 
 /******************************* INCLUDES *************************************/
 // Includes necesarios para la API pública
-#include <stdint.h>
-#include "esp_log.h" // Para log
+#include "driver/i2c.h"
+#include "esp_log.h"
+#include <math.h>
+#include "esp_timer.h"
  
 /******************************* DEFINES PÚBLICAS *****************************/
 // Constantes, flags o configuraciones visibles desde fuera de la librería
 
+
+#define PI 3.1415
+
+/******************************* TIPOS PÚBLICOS ********************************/
+// Estructuras, enums, typedefs públicos
 /**
  * @brief Structure that reperesents the direction sensor
  */
 typedef struct {
-    bool connected;
+    uint8_t connected;
     uint8_t errorCount;
     uint8_t max_error_count;
     uint64_t lastReadTime;
@@ -42,13 +49,10 @@ typedef enum {
     SENSOR_CENTER = 2048,
 } sensor_constans;
 
-const float MAX_RAD = PI;
-
-/******************************* TIPOS PÚBLICOS ********************************/
-// Estructuras, enums, typedefs públicos
-
 /******************************* VARIABLES PÚBLICAS ***************************/
 // Variables globales visibles (si realmente se necesitan)
+
+const float MAX_RAD = PI;
 
 // extern int ejemplo_variable_publica;
 
@@ -61,7 +65,7 @@ const float MAX_RAD = PI;
 sensor_struct KM_SDIR_Init(int8_t max_error_count);
 
 // Initialize the sensor
-int8_t KM_SDIR_Begin(sensor_struct *sensor, int8_t sdaPin, int8_t sclPin);
+int8_t KM_SDIR_Begin(sensor_struct *sensor, gpio_num_t sdaPin, gpio_num_t sclPin);
 
 // Read raw sensor value (0-4095)
 uint16_t KM_SDIR_ReadRaw(sensor_struct *sensor);

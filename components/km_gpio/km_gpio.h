@@ -21,6 +21,13 @@
 /******************************* DEFINES PÚBLICAS *****************************/
 // Constantes, flags o configuraciones visibles desde fuera de la librería
 
+#ifndef LEDC_HIGH_SPEED_MODE
+#define LEDC_HIGH_SPEED_MODE 0
+#endif
+#ifndef LEDC_LOW_SPEED_MODE
+#define LEDC_LOW_SPEED_MODE 1
+#endif
+
 /* ============================================================
  *  ESP32-DevKitC V4  (ESP32-WROOM-32E)
  *  Pin assignment - NO WiFi

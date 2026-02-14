@@ -17,7 +17,7 @@
 // Variables globales internas (static)
 
 /* ---------- USB (UART0 to ORIN) ---------- */
-gpio_config_t pin_usb_uart_rx = {
+const gpio_config_t pin_usb_uart_rx = {
     .pin_bit_mask = 1ULL << PIN_USB_UART_RX,
     .mode = GPIO_MODE_INPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -25,7 +25,7 @@ gpio_config_t pin_usb_uart_rx = {
     .intr_type = GPIO_INTR_DISABLE
 };
 
-gpio_config_t pin_usb_uart_tx = {
+const gpio_config_t pin_usb_uart_tx = {
     .pin_bit_mask = 1ULL << PIN_USB_UART_TX,
     .mode = GPIO_MODE_OUTPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -35,7 +35,7 @@ gpio_config_t pin_usb_uart_tx = {
 
 /* ---------- ADC INPUTS (Sensors) ---------- */
 /* ADC1 - input only */
-gpio_config_t pin_pressure_1 = {
+const gpio_config_t pin_pressure_1 = {
     .pin_bit_mask = 1ULL << PIN_PRESSURE_1,
     .mode = GPIO_MODE_INPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -43,7 +43,7 @@ gpio_config_t pin_pressure_1 = {
     .intr_type = GPIO_INTR_DISABLE
 };
 
-gpio_config_t pin_pressure_2 = {
+const gpio_config_t pin_pressure_2 = {
     .pin_bit_mask = 1ULL << PIN_PRESSURE_2,
     .mode = GPIO_MODE_INPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -51,7 +51,7 @@ gpio_config_t pin_pressure_2 = {
     .intr_type = GPIO_INTR_DISABLE
 };
 
-gpio_config_t pin_pressure_3 = {
+const gpio_config_t pin_pressure_3 = {
     .pin_bit_mask = 1ULL << PIN_PRESSURE_3,
     .mode = GPIO_MODE_INPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -59,7 +59,7 @@ gpio_config_t pin_pressure_3 = {
     .intr_type = GPIO_INTR_DISABLE
 };
 
-gpio_config_t pin_pedal_acc = {
+const gpio_config_t pin_pedal_acc = {
     .pin_bit_mask = 1ULL << PIN_PEDAL_ACC,
     .mode = GPIO_MODE_INPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -67,7 +67,7 @@ gpio_config_t pin_pedal_acc = {
     .intr_type = GPIO_INTR_DISABLE
 };
 
-gpio_config_t pin_pedal_brake = {
+const gpio_config_t pin_pedal_brake = {
     .pin_bit_mask = 1ULL << PIN_PEDAL_BRAKE,
     .mode = GPIO_MODE_INPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -75,7 +75,7 @@ gpio_config_t pin_pedal_brake = {
     .intr_type = GPIO_INTR_DISABLE
 };
 
-gpio_config_t pin_hydraulic_1 = {
+const gpio_config_t pin_hydraulic_1 = {
     .pin_bit_mask = 1ULL << PIN_HYDRAULIC_1,
     .mode = GPIO_MODE_INPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -84,7 +84,7 @@ gpio_config_t pin_hydraulic_1 = {
 };
 
 /* ADC2 - allowed (WiFi not used) */
-gpio_config_t pin_hydraulic_2 = {
+const gpio_config_t pin_hydraulic_2 = {
     .pin_bit_mask = 1ULL << PIN_HYDRAULIC_2,
     .mode = GPIO_MODE_INPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -93,7 +93,7 @@ gpio_config_t pin_hydraulic_2 = {
 };
 
 /* ---------- DAC OUTPUTS ---------- */
-gpio_config_t pin_cmd_acc = {
+const gpio_config_t pin_cmd_acc = {
     .pin_bit_mask = 1ULL << PIN_CMD_ACC,
     .mode = GPIO_MODE_OUTPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -101,7 +101,7 @@ gpio_config_t pin_cmd_acc = {
     .intr_type = GPIO_INTR_DISABLE
 };
 
-gpio_config_t pin_cmd_brake = {
+const gpio_config_t pin_cmd_brake = {
     .pin_bit_mask = 1ULL << PIN_CMD_BRAKE,
     .mode = GPIO_MODE_OUTPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -110,7 +110,7 @@ gpio_config_t pin_cmd_brake = {
 };
 
 /* ---------- STEERING MOTOR ---------- */
-gpio_config_t pin_steer_pwm = {
+const gpio_config_t pin_steer_pwm = {
     .pin_bit_mask = 1ULL << PIN_STEER_PWM,
     .mode = GPIO_MODE_OUTPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -118,7 +118,7 @@ gpio_config_t pin_steer_pwm = {
     .intr_type = GPIO_INTR_DISABLE
 };
 
-gpio_config_t pin_steer_dir = {
+const gpio_config_t pin_steer_dir = {
     .pin_bit_mask = 1ULL << PIN_STEER_DIR,
     .mode = GPIO_MODE_OUTPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -127,7 +127,7 @@ gpio_config_t pin_steer_dir = {
 };
 
 /* ---------- HALL SENSORS ---------- */
-gpio_config_t pin_motor_hall_1 = {
+const gpio_config_t pin_motor_hall_1 = {
     .pin_bit_mask = 1ULL << PIN_MOTOR_HALL_1,
     .mode = GPIO_MODE_INPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -135,7 +135,7 @@ gpio_config_t pin_motor_hall_1 = {
     .intr_type = GPIO_INTR_POSEDGE
 };
 
-gpio_config_t pin_motor_hall_2 = {
+const gpio_config_t pin_motor_hall_2 = {
     .pin_bit_mask = 1ULL << PIN_MOTOR_HALL_2,
     .mode = GPIO_MODE_INPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -143,7 +143,7 @@ gpio_config_t pin_motor_hall_2 = {
     .intr_type = GPIO_INTR_POSEDGE
 };
 
-gpio_config_t pin_motor_hall_3 = {
+const gpio_config_t pin_motor_hall_3 = {
     .pin_bit_mask = 1ULL << PIN_MOTOR_HALL_3,
     .mode = GPIO_MODE_INPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -152,7 +152,7 @@ gpio_config_t pin_motor_hall_3 = {
 };
 
 /* ---------- I2C (AS5600) ---------- */
-gpio_config_t pin_i2c_scl = {
+const gpio_config_t pin_i2c_scl = {
     .pin_bit_mask = 1ULL << PIN_I2C_SCL,
     .mode = GPIO_MODE_INPUT_OUTPUT_OD,
     .pull_up_en = GPIO_PULLUP_ENABLE,
@@ -160,7 +160,7 @@ gpio_config_t pin_i2c_scl = {
     .intr_type = GPIO_INTR_DISABLE
 };
 
-gpio_config_t pin_i2c_sda = {
+const gpio_config_t pin_i2c_sda = {
     .pin_bit_mask = 1ULL << PIN_I2C_SDA,
     .mode = GPIO_MODE_INPUT_OUTPUT_OD,
     .pull_up_en = GPIO_PULLUP_ENABLE,
@@ -169,7 +169,7 @@ gpio_config_t pin_i2c_sda = {
 };
 
 /* ---------- STATUS LED ---------- */
-gpio_config_t pin_status_led = {
+const gpio_config_t pin_status_led = {
     .pin_bit_mask = 1ULL << PIN_STATUS_LED,
     .mode = GPIO_MODE_OUTPUT,
     .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -182,16 +182,6 @@ gpio_config_t pin_status_led = {
 
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
-#include "km_gpio.h"
-#include "board_pins.h"  // Tus structs const gpio_config_t
-#include "driver/adc.h"
-#include "driver/dac.h"
-#include "driver/ledc.h"
-#include "driver/i2c.h"
-
-/* ============================================================
- *  KM GPIO - Implementation
- * ============================================================ */
 
 /* ---------- Initialization ---------- */
 esp_err_t KM_GPIO_Init(void)
@@ -199,9 +189,9 @@ esp_err_t KM_GPIO_Init(void)
     esp_err_t ret;
 
     // Enable DAC channels
-    ret = dac_output_enable(DAC_CHANNEL_1); // CMD_ACC
+    ret = dac_output_enable(DAC_CHAN_0); // CMD_ACC
     if (ret != ESP_OK) return ret;
-    ret = dac_output_enable(DAC_CHANNEL_2); // CMD_BRAKE
+    ret = dac_output_enable(DAC_CHAN_1); // CMD_BRAKE
     if (ret != ESP_OK) return ret;
 
     // Setup PWM (LEDC)
@@ -253,16 +243,21 @@ esp_err_t KM_GPIO_WritePinLow(const gpio_config_t *pin)
 uint16_t KM_GPIO_ReadADC(const gpio_config_t *pin)
 {
     gpio_num_t gpio = (gpio_num_t)(pin->pin_bit_mask);
+    int raw_out_adc2 = 0;
 
     switch (gpio)
     {
-        case GPIO_NUM_36: return adc1_get_raw(ADC1_CHANNEL_0); // pressure 1
-        case GPIO_NUM_39: return adc1_get_raw(ADC1_CHANNEL_3); // pressure 2
-        case GPIO_NUM_34: return adc1_get_raw(ADC1_CHANNEL_6); // pressure 3
-        case GPIO_NUM_35: return adc1_get_raw(ADC1_CHANNEL_7); // pedal acc
-        case GPIO_NUM_32: return adc1_get_raw(ADC1_CHANNEL_4); // pedal brake
-        case GPIO_NUM_33: return adc1_get_raw(ADC1_CHANNEL_5); // hydraulic 1
-        case GPIO_NUM_13: return adc2_get_raw(ADC2_CHANNEL_4); // hydraulic 2
+        case GPIO_NUM_36: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_0); // pressure 1
+        case GPIO_NUM_39: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_3); // pressure 2
+        case GPIO_NUM_34: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_6); // pressure 3
+        case GPIO_NUM_35: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_7); // pedal acc
+        case GPIO_NUM_32: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_4); // pedal brake
+        case GPIO_NUM_33: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_5); // hydraulic 1
+        case GPIO_NUM_13:    // hydraulic 2
+            if (adc2_get_raw(ADC2_CHANNEL_4, ADC_WIDTH_BIT_12, &raw_out_adc2) == ESP_OK)
+                return raw_out_adc2;
+            return 0;
+            
         default: return 0;
     }
 }
@@ -272,8 +267,8 @@ esp_err_t KM_GPIO_WriteDAC(const gpio_config_t *pin, uint8_t value)
 {
     gpio_num_t gpio = (gpio_num_t)(pin->pin_bit_mask);
 
-    if (gpio == GPIO_NUM_25) return dac_output_voltage(DAC_CHANNEL_1, value);
-    if (gpio == GPIO_NUM_26) return dac_output_voltage(DAC_CHANNEL_2, value);
+    if (gpio == GPIO_NUM_25) return dac_output_voltage(DAC_CHAN_0, value);
+    if (gpio == GPIO_NUM_26) return dac_output_voltage(DAC_CHAN_1, value);
 
     return ESP_ERR_INVALID_ARG;
 }

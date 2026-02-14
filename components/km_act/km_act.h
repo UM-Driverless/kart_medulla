@@ -11,13 +11,12 @@
 
 /******************************* INCLUDES *************************************/
 // Includes necesarios para la API pública
-#include <driver/dac_oneshot.h>
+#include <driver/dac.h>
 #include <stdint.h>
 #include "esp_log.h" // Para log
 
 /******************************* DEFINES PÚBLICAS *****************************/
 // Constantes, flags o configuraciones visibles desde fuera de la librería
-
 
 /******************************* TIPOS PÚBLICOS ********************************/
 // Estructuras, enums, typedefs públicos
@@ -32,7 +31,7 @@ typedef struct {
     uint8_t pwmResolution;          /**< Resolucion de la PWM*/
     float outputLimit;              /**< Limitacion de la salida del controlador*/
     uint8_t dacPin;                 /**< Pin donde esta el DAC a usar */
-    dac_oneshot_handle_t dacHandle; /**< Manejador del DAC*/
+    //dac_oneshot_handle_t dacHandle; /**< Manejador del DAC*/
     dac_channel_t dacChannel;       /**< Canal que usara el DAC*/
 } ACT_Controller;
 

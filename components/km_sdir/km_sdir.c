@@ -1,36 +1,27 @@
 /******************************************************************************
 * @file    km_sdir.c
-* @brief   Implementación de la librería.
-* @author Adrian Navarredonda Arizaleta
+* @brief   Librería para usar el sensor de dirección (ESP-IDF)
+* @author Adrian Navarredonda
 * @date 31-01-2026
 *****************************************************************************/
 
 #include "km_sdir.h"
-#include <stdio.h>   // solo si es necesario para debug interno
 
-/******************************* INCLUDES INTERNOS ****************************/
-// Headers internos opcionales, dependencias privadas
-
-/******************************* MACROS PRIVADAS ********************************/
-// Constantes internas, flags de debug
-// #define LIBRERIA_DEBUG 1
-
-/******************************* VARIABLES PRIVADAS ***************************/
-// Variables globales internas (static)
+/******************************* MACROS PRIVADAS ******************************/
+#define TAG "KM_SDIR"
+#define I2C_MASTER_TIMEOUT_MS 1000
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
-int8_t KM_SDIR_ReadRegisters(uint8_t reg, uint8_t* data, uint8_t len);
+static int8_t KM_SDIR_ReadRegisters(sensor_struct *sensor, uint8_t reg, uint8_t* data, uint8_t len);
+static float KM_SDIR_ReadAngle(sensor_struct *sensor);
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
-/**
- * @brief   Implementación de la función pública declarada en el header
- */
-sensor_struct KM_SDIR_Init(int8_t max_error_count) {
 
+sensor_struct KM_SDIR_Init(int8_t max_error_count) {
     sensor_struct sensor;
 
     sensor.centerOffset = SENSOR_CENTER;
-    sensor.connected = false;
+    sensor.connected = 0;
     sensor.errorCount = 0;
     sensor.lastRawValue = 0;
     sensor.lastReadTime = 0;
@@ -39,114 +30,141 @@ sensor_struct KM_SDIR_Init(int8_t max_error_count) {
     return sensor;
 }
 
-// Initialize the sensor
-int8_t KM_SDIR_Begin(sensor_struct *sensor ,int8_t sdaPin, int8_t sclPin){
-    Wire.begin(sdaPin, sclPin);
-    Wire.setClock(400000);  // 400kHz I2C speed
+// Inicializa I2C
+int8_t KM_SDIR_Begin(sensor_struct *sensor, gpio_num_t sda, gpio_num_t scl) {
+    i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = sda,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_io_num = scl,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = 400000
+    };
 
-    // Test connection by reading a register
+    i2c_param_config(I2C_NUM_0, &conf);
+    if (i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to install I2C driver");
+        return 0;
+    }
+
     uint8_t testData[2];
-    sensor->connected = readRegisters(AS5600_ANGLE_MSB, testData, 2);
-
+    sensor->connected = KM_SDIR_ReadRegisters(sensor, AS5600_ANGLE_MSB, testData, 2);
     if (sensor->connected) {
-        Serial.println("AS5600 sensor initialized successfully");
+        ESP_LOGI(TAG, "AS5600 sensor initialized successfully");
     } else {
-        Serial.println("AS5600 sensor not found!");
+        ESP_LOGW(TAG, "AS5600 sensor not found!");
     }
 
     return sensor->connected;
 }
 
-// Read raw sensor value (0-4095)
-uint16_t KM_SDIR_ReadRaw(sensor_struct *sensor){
+// Leer valor crudo (0-4095)
+uint16_t KM_SDIR_ReadRaw(sensor_struct *sensor) {
     uint8_t data[2];
 
-    if (readRegisters(AS5600_ANGLE_MSB, data, 2)) {
+    if (KM_SDIR_ReadRegisters(sensor, AS5600_ANGLE_MSB, data, 2)) {
         sensor->lastRawValue = ((uint16_t)data[0] << 8) | data[1];
-        sensor->lastReadTime = millis();
+        sensor->lastReadTime = esp_timer_get_time(); // microsegundos desde boot
         sensor->errorCount = 0;
         return sensor->lastRawValue;
     } else {
         sensor->errorCount++;
         if (sensor->errorCount >= sensor->max_error_count) {
-            Serial.println("Error reading sensor. Restarting I2C communication.");
-            resetI2C();
+            ESP_LOGW(TAG, "Error reading sensor, resetting I2C");
+            KM_SDIR_ResetI2C(sensor);
             sensor->errorCount = 0;
         }
-        return sensor->lastRawValue;  // Return last good value
+        return sensor->lastRawValue;
     }
 }
 
-// Read angle in radians (-PI to PI)
-float KM_SDIR_ReadAngleRadians(sensor_struct *sensor){
+// Leer ángulo en radianes
+float KM_SDIR_ReadAngleRadians(sensor_struct *sensor) {
     return KM_SDIR_ReadAngle(sensor);
 }
 
-// Read angle in degrees (-180 to 180)
-float KM_SDIR_ReadAngleDegrees(sensor_struct *sensor){
-    return readAngle(sensor) * 180.0f / PI;
+// Leer ángulo en grados
+float KM_SDIR_ReadAngleDegrees(sensor_struct *sensor) {
+    return KM_SDIR_ReadAngle(sensor) * 180.0f / PI;
 }
 
-// Check if sensor is connected
-int8_t KM_SDIR_isConnected(sensor_struct *sensor){
+// Verifica si el sensor está conectado
+int8_t KM_SDIR_isConnected(sensor_struct *sensor) {
     return sensor->connected && (sensor->errorCount < sensor->max_error_count);
 }
 
-// Reset I2C communication if errors occur
-int8_t KM_SDIR_ResetI2C(sensor_struct *sensor){
-    Wire.end();
-    delay(100);
-    Wire.begin();
-    Wire.setClock(400000);
+// Reset de I2C
+int8_t KM_SDIR_ResetI2C(sensor_struct *sensor) {
+    i2c_driver_delete(I2C_NUM_0);
+    vTaskDelay(pdMS_TO_TICKS(100));
 
-    // Test connection again
+    // Reinstala I2C con los mismos parámetros guardados en el sensor
+    // Necesitas que sensor tenga guardados i2c_port, sda, scl
+    // Por simplicidad vamos a usar I2C_NUM_0 y pines por defecto
+    i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = 21,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_io_num = 22,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = 400000
+    };
+    i2c_param_config(I2C_NUM_0, &conf);
+    if (i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to reinstall I2C driver");
+        return 0;
+    }
+
     uint8_t testData[2];
-    sensor->connected = readRegisters(AS5600_ANGLE_MSB, testData, 2);
-
+    sensor->connected = KM_SDIR_ReadRegisters(sensor, AS5600_ANGLE_MSB, testData, 2);
     return sensor->connected;
 }
 
-// Get center offset for calibration
-void KM_SDIR_setCenterOffset(sensor_struct *sensor, uint16_t offset){
+// Ajuste de offset
+void KM_SDIR_setCenterOffset(sensor_struct *sensor, uint16_t offset) {
     sensor->centerOffset = offset;
-    Serial.printf("AS5600 center offset set to: %d\n", offset);
+    ESP_LOGI(TAG, "AS5600 center offset set to: %d", offset);
 }
 
 /******************************* FUNCIONES PRIVADAS ***************************/
-/**
- * @brief   Función interna no visible desde fuera
- */
-int8_t KM_SDIR_ReadRegisters(uint8_t reg, uint8_t* data, uint8_t len) {
-    Wire.beginTransmission(AS5600_ADDR);
-    Wire.write(reg);
 
-    if (Wire.endTransmission(false) != 0) {
-        return 0; // False
+// Leer registros I2C
+static int8_t KM_SDIR_ReadRegisters(sensor_struct *sensor, uint8_t reg, uint8_t* data, uint8_t len) {
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (AS5600_ADDR << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, reg, true);
+    i2c_master_stop(cmd);
+    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_MASTER_TIMEOUT_MS));
+    i2c_cmd_link_delete(cmd);
+
+    if (ret != ESP_OK) {
+        return 0;
     }
 
-    if (Wire.requestFrom(AS5600_ADDR, len) != len) {
-        return 0; // False
+    cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (AS5600_ADDR << 1) | I2C_MASTER_READ, true);
+    if (len > 1) {
+        i2c_master_read(cmd, data, len - 1, I2C_MASTER_ACK);
     }
+    i2c_master_read_byte(cmd, data + len - 1, I2C_MASTER_NACK);
+    i2c_master_stop(cmd);
 
-    for (uint8_t i = 0; i < len; i++) {
-        data[i] = Wire.read();
-    }
+    ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_MASTER_TIMEOUT_MS));
+    i2c_cmd_link_delete(cmd);
 
-    return 1; // True
+    return (ret == ESP_OK) ? 1 : 0;
 }
 
-// Devuelve el angulo en radianes
-float KM_SDIR_ReadAngle(sensor_struct *sensor) {
-    uint16_t raw = readRaw();
+// Devuelve ángulo en radianes (-PI a PI)
+static float KM_SDIR_ReadAngle(sensor_struct *sensor) {
+    uint16_t raw = KM_SDIR_ReadRaw(sensor);
 
-    // Convert to centered value (-2048 to 2047)
     int16_t centered = (int16_t)raw - sensor->centerOffset;
-
-    // Convert to radians (-PI to PI)
     float angle = ((float)centered / (float)SENSOR_MAX) * 2.0f * MAX_RAD;
 
     return angle;
 }
 
 /******************************* FIN DE ARCHIVO ********************************/
- 
