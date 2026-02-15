@@ -69,6 +69,19 @@ static const char *TAG = "MAIN";
 //     ESP_LOGI(TAG, "Bluetooth y Bluepad32 inicializados");
 // }
 
+void system_init(void) {
+
+    if (KM_GPIO_Init() != ESP_OK) 
+        ESP_LOGE(TAG, "Error inicializando libreria gpio\n");
+
+    KM_RTOS_Init();
+    // KM_SDIR_Init();
+
+    // KM_ACT_Begin();
+    // KM_PID_Init();
+
+}
+
 // ===========================
 // app_main - punto de entrada
 // ===========================
@@ -76,11 +89,13 @@ void app_main(void) {
     ESP_LOGI(TAG, "ESP iniciando...");
 
     // Inicializa Bluetooth, Bluepad32, NVS, etc.
-    //init_bluetooth();
+    // init_bluetooth();
+    
+    // Inicia todas las librerias que se necesitan
+    system_init();
 
+    // Creacion de toda las tareas de FreeRTOS
     // Tarea para mandar mensajes periodicamente a ORIN
-
-    // Llamar a funcion para iniciar el sistema(esta funcion iniciara los pines y demas cosas)
 
     // Ejecutar loop de BTstack (bloquea dentro de app_main, pero otras tareas siguen)
     btstack_run_loop_execute();

@@ -336,7 +336,7 @@ static int light_sleep(int argc, char** argv) {
         }
         ESP_LOGI(TAG, "Enabling wakeup on GPIO%d, wakeup on %s level", io_num, level ? "HIGH" : "LOW");
 
-        ESP_ERROR_CHECK(gpio_wakeup_enable(io_num, level ? GPIO_INTR_HIGH_LEVEL : GPIO_INTR_LOW_LEVEL));
+        ESP_ERROR_CHECK(esp_sleep_enable_gpio_wakeup());
     }
     if (io_count > 0) {
         ESP_ERROR_CHECK(esp_sleep_enable_gpio_wakeup());

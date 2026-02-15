@@ -62,7 +62,7 @@ void km_coms_task_process(void *pvParameters)
 
     while(1)
     {
-        if (xQueueReceive(km_coms_queue, &msg, 10) == pdPASS) // AJUSTAR TIEMPO
+        if (xQueueReceive(km_coms_queue, &msg, pdMS_TO_TICKS(5)) == pdPASS) // AJUSTAR TIEMPO
         {
             // Armar frame
             uint8_t frame[4 + KM_COMS_PAYLOAD_MAX];

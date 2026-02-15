@@ -45,27 +45,27 @@ typedef struct {
 /******************************* FUNCIONES PÚBLICAS ***************************/
 
 // Initialize with gains
-PID_Controller KM_PID_INIT(float kp, float ki, float kd);
+PID_Controller KM_PID_Init(float kp, float ki, float kd);
 
 // Calculate PID output
-float KM_PID_Calculate(PID_Controller controller, float setpoint, float measurement);
+float KM_PID_Calculate(PID_Controller *controller, float setpoint, float measurement);
 
 // Set tuning parameters at runtime
-void KM_PID_SetTunings(PID_Controller controller, float kp, float ki, float kd);
+void KM_PID_SetTunings(PID_Controller *controller, float kp, float ki, float kd);
 
 // Set output limits
-void KM_PID_SetOutputLimits(PID_Controller controller, float min, float max);
+void KM_PID_SetOutputLimits(PID_Controller *controller, float min, float max);
 
 // Set integral limits (anti-windup)
-void KM_PID_SetIntegralLimits(PID_Controller controller, float min, float max);
+void KM_PID_SetIntegralLimits(PID_Controller *controller, float min, float max);
 
 // Reset controller state
-void KM_PID_Reset(PID_Controller controller);
+void KM_PID_Reset(PID_Controller *controller);
 
 // Get current gains
-void KM_PID_GetTunings(PID_Controller controller, float kp, float ki, float kd);
+void KM_PID_GetTunings(PID_Controller *controller, float kp, float ki, float kd);
 
 // Get integral value (for debugging)
-float KM_PID_GetIntegral(PID_Controller controller); 
+float KM_PID_GetIntegral(PID_Controller *controller); 
  
 #endif // KM_PID_H
