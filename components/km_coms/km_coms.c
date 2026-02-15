@@ -14,9 +14,14 @@
 /******************************* MACROS PRIVADAS ********************************/
 // Constantes internas, flags de debug
 
+#define KM_COMS_QUEUE_LEN 10
+
 /******************************* VARIABLES PRIVADAS ***************************/
 // Variables globales internas (static)
+static uint8_t rx_buffer[KM_COMS_MSG_MAX_LEN-1]; //[0-255]
+static size_t rx_buffer_len = 0;
 static QueueHandle_t km_coms_queue;
+static SemaphoreHandle_t km_coms_mutex;
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
 static uint8_t KM_COMS_crc8(const uint8_t *data, uint8_t len);
@@ -25,56 +30,155 @@ static uint8_t KM_COMS_crc8(const uint8_t *data, uint8_t len);
 
 int KM_COMS_Init(gpio_num_t uart_num)
 {
-
-    // Crear cola
+    // Crear la cola
     km_coms_queue = xQueueCreate(KM_COMS_QUEUE_LEN, sizeof(km_coms_msg));
-    if (!km_coms_queue) return -1;
 
-    return 0;
+    if (km_coms_queue == NULL)
+        return 0;
+
+    km_coms_mutex = xSemaphoreCreateMutex();
+    if (km_coms_mutex == NULL)
+        return 0;
+
+    // Instala el driver UART con buffers TX/RX
+    uart_driver_install(UART_NUM_0, BUF_SIZE_RX, BUF_SIZE_TX, 0, NULL, 0);
+    uart_param_config(UART_NUM_0, &uart_config);
+
+    // Asigna pines (TX/RX)
+    uart_set_pin(UART_NUM_0, PIN_USB_UART_TX, PIN_USB_UART_RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+
+    return 1;
 }
 
-int KM_COMS_AddMsg(message_type_t type, uint8_t *payload, uint8_t len)
+int KM_COMS_SendMsg(message_type_t type, uint8_t *payload, uint8_t len)
 {
-    if (!km_coms_queue) return -1;
-    if (len > KM_COMS_PAYLOAD_MAX) return -2;
-
     km_coms_msg msg;
+    uint8_t frame[KM_COMS_MSG_MAX_LEN-1];
+    size_t total_sent = 0;
+    int sent, attempts = 0;
+
+    if (len > KM_COMS_MSG_MAX_LEN) return -1;
+
     msg.len = len;
     msg.type = (uint8_t)type;
 
     memcpy(msg.payload, payload, len);
     msg.crc = KM_COMS_crc8(&msg.len, len + 2);  // LEN + TYPE + PAYLOAD
 
-    // Enviar a la cola sin bloquear
-    if (xQueueSend(km_coms_queue, &msg, 0) != pdPASS)
-    {
-        ESP_LOGW("KM_COMS", "Cola llena, mensaje perdido");
-        return -3;
+    // Armar frame
+    frame[0] = KM_COMS_SOM;
+    frame[1] = msg.len;
+    frame[2] = msg.type;
+    memcpy(&frame[3], msg.payload, msg.len);
+    frame[3 + msg.len] = msg.crc;
+
+    // Enviar mensaje, se intenta 5 veces
+    while (total_sent < len && attempts < 5) {
+        sent = uart_write_bytes(UART_NUM_0, frame + total_sent, len - total_sent);
+        total_sent += sent;
+
+        if (sent < (len - total_sent)) {
+            // buffer lleno, espera a que se vacíe
+            attempts++;
+            vTaskDelay(5 / portTICK_PERIOD_MS);
+        }
     }
 
-    return 0;
+    // NO se ha podido enviar el mensaje correctamente
+    if (attempts >= 5 || total_sent < 4 + len)
+        return 0;
+
+    // Se ha enviado el mensaje correctamente
+    return 1;
 }
 
-// ---------------------- Tarea de envío ----------------------
-void km_coms_task_process(void *pvParameters)
-{
-    km_coms_msg msg;
+// Esta funcion sube los bytes del buffer de la uart al buffer de la libreria
+void km_coms_ReceiveMsg(void){
+    uint8_t uart_chunk[KM_COMS_RX_CHUNK];
+    size_t len_read = 0;
+    uint8_t bytes2read = 0;
+    
+    // 1. Verificar cuantos bytes hay en el buffer UART
+    size_t uart_len = 0;
+    uart_get_buffered_data_len(UART_NUM_0, &uart_len);
+    if (uart_len == 0)
+        return;
 
-    while(1)
-    {
-        if (xQueueReceive(km_coms_queue, &msg, pdMS_TO_TICKS(5)) == pdPASS) // AJUSTAR TIEMPO
-        {
-            // Armar frame
-            uint8_t frame[4 + KM_COMS_PAYLOAD_MAX];
-            frame[0] = KM_COMS_SOM;
-            frame[1] = msg.len;
-            frame[2] = msg.type;
-            memcpy(&frame[3], msg.payload, msg.len);
-            frame[3 + msg.len] = msg.crc;
+    // 2. Leer hasta KM_COMS_RX_CHUNK bytes de la UART
+    if (uart_len > KM_COMS_RX_CHUNK)
+        bytes2read = KM_COMS_RX_CHUNK;
+    else
+        bytes2read = uart_len;
 
-            // Enviar solo bytes necesarios
-            uart_write_bytes(PIN_USB_UART_TX, (const char *)frame, 4 + msg.len);
+    len_read = uart_read_bytes(UART_NUM_0, uart_chunk, bytes2read, 0);
+
+    if (len_read == 0) 
+        return;
+
+    if (xSemaphoreTake(km_coms_mutex, pdMS_TO_TICKS(5)) == pdTRUE) {
+        // 3. Copiar bytes al buffer interno
+        if (rx_buffer_len + len_read > sizeof(rx_buffer)) {
+            // Overflow, reiniciar buffer
+            rx_buffer_len = 0;
         }
+        memcpy(rx_buffer + rx_buffer_len, uart_chunk, len_read);
+        rx_buffer_len += len_read;
+        xSemaphoreGive(km_coms_mutex);
+    }
+}
+
+// Esta funcion procesa los bytes que se han dejado en el buffer de la libreria
+void KM_COMS_ProccessMsgs(void){
+    // Procesar mensajes completos
+    size_t processed = 0;
+    if (xSemaphoreTake(km_coms_mutex, pdMS_TO_TICKS(5)) == pdTRUE) {
+        while (rx_buffer_len - processed >= 4) { // Mínimo tamaño de mensaje: SOM + LEN + TYPE + CRC
+            if (rx_buffer[processed] != KM_COMS_SOM) {
+                processed++; // Buscar siguiente SOM
+                continue;
+            }
+
+            uint8_t payload_len = rx_buffer[processed + 1];
+            size_t total_len = 4 + payload_len; // SOM + LEN + TYPE + PAYLOAD + CRC
+
+            if (rx_buffer_len - processed < total_len) {
+                // Mensaje incompleto, esperar más bytes
+                break;
+            }
+
+            // Construir mensaje
+            km_coms_msg msg;
+            msg.len = payload_len;
+            msg.type = rx_buffer[processed + 2];
+            memcpy(msg.payload, rx_buffer + processed + 3, payload_len);
+            msg.crc = rx_buffer[processed + 3 + payload_len];
+
+            // Liberar mutex
+            xSemaphoreGive(km_coms_mutex);
+
+            // Verificar CRC
+            uint8_t crc_calc = KM_COMS_crc8(&msg.len, payload_len + 2); // LEN + TYPE + PAYLOAD
+            if (crc_calc == msg.crc) {
+                // Mensaje válido, enviar a la cola
+                if (km_coms_queue) {
+                    xQueueSend(km_coms_queue, &msg, 0);
+                }
+            }
+
+            // Avanzar processed al siguiente mensaje
+            processed += total_len;
+        }
+    }
+
+    if (xSemaphoreTake(km_coms_mutex, pdMS_TO_TICKS(5)) == pdTRUE) {
+        // 5. Mover los bytes restantes al inicio del buffer
+        if (processed > 0 && processed < rx_buffer_len) {
+            memmove(rx_buffer, rx_buffer + processed, rx_buffer_len - processed);
+            rx_buffer_len -= processed;
+        } else if (processed == rx_buffer_len) {
+            rx_buffer_len = 0;
+        }
+        xSemaphoreGive(km_coms_mutex);
     }
 }
 

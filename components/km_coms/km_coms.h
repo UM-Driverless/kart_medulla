@@ -60,8 +60,10 @@
 // Constantes, flags o configuraciones visibles desde fuera de la librería
 
 #define KM_COMS_SOM 0xAA
-#define KM_COMS_PAYLOAD_MAX 255
-#define KM_COMS_QUEUE_LEN   16
+#define KM_COMS_MSG_MAX_LEN 256
+#define KM_COMS_RX_CHUNK    64    // Lectura de la UART por bloques
+#define BUF_SIZE_TX     2048
+#define BUF_SIZE_RX     2048
 
 /******************************* TIPOS PÚBLICOS ********************************/
 // Estructuras, enums, typedefs públicos
@@ -102,7 +104,7 @@ typedef enum
 typedef struct {
     uint8_t len;                            // Len of payload    
     message_type_t type;                    // Type of msg send
-    uint8_t payload[KM_COMS_PAYLOAD_MAX];   // Payload del msg
+    uint8_t payload[KM_COMS_MSG_MAX_LEN-5]; // Payload del msg
     uint8_t crc;                            // CRC del msg
 } km_coms_msg;
 
@@ -117,10 +119,10 @@ typedef struct {
 int KM_COMS_Init(gpio_num_t uart_num);
 
 // Agrega un mensaje a la cola
-int KM_COMS_AddMsg(message_type_t type, uint8_t *payload, uint8_t len);
+int KM_COMS_SendMsg(message_type_t type, uint8_t *payload, uint8_t len);
 
 // Función que la tarea FreeRTOS debe ejecutar periódicamente
-void KM_COMS_SendMSG(void *pvParameters);
+void km_coms_ReceiveMsg(void);
 
 #endif /* KM_COMS_H */
  

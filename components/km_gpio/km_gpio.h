@@ -16,6 +16,7 @@
 #include "driver/dac.h"
 #include "driver/ledc.h"
 #include "driver/i2c.h"
+#include "driver/uart.h"
 #include "esp_err.h"
 
 /******************************* DEFINES PÚBLICAS *****************************/
@@ -82,9 +83,7 @@
 // Variables globales visibles (si realmente se necesitan)
 
 /* ---------- USB (UART0 to ORIN) ---------- */
-
-extern const gpio_config_t pin_usb_uart_rx;
-extern const gpio_config_t pin_usb_uart_tx;
+extern const uart_config_t uart_config
 
 /* ---------- ADC INPUTS (Sensors) ---------- */
 /* ADC1 - input only, WiFi safe */
