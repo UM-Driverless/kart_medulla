@@ -34,17 +34,17 @@ typedef void (*KM_RTOS_TaskFunction_t)(void *context);
  * @brief Structure that reperesents a task in FreeRTOS
  */
 typedef struct {
-    TaskHandle_t handle;          /**< FreeRTOS task handle */
-    const char *name;             /**< Task name */
+    TaskHandle_t handle;            /**< FreeRTOS task handle */
+    const char *name;               /**< Task name */
 
-    KM_RTOS_TaskFunction_t taskFn;     /**< Logical task function */
-    void *context;                /**< User context pointer */
+    KM_RTOS_TaskFunction_t taskFn;  /**< Logical task function */
+    void *context;                  /**< User context pointer */
 
-    uint32_t period_ms;            /**< Execution period in milliseconds */
-    uint16_t stackSize;            /**< Stack size in words */
-    UBaseType_t priority;          /**< Task priority */
+    uint32_t period_ms;             /**< Execution period in milliseconds */
+    uint16_t stackSize;             /**< Stack size in words */
+    UBaseType_t priority;           /**< Task priority */
 
-    uint8_t active;                /**< Task active flag */
+    uint8_t active;                 /**< Task active flag */
 } RTOS_Task;
 
 /******************************* VARIABLES PÚBLICAS ***************************/

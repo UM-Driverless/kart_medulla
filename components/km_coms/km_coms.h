@@ -11,10 +11,9 @@
 
 /******************************* INCLUDES *************************************/
 // Includes necesarios para la API pública
-#include <stdint.h>
 #include "esp_log.h" // Para log
 #include "km_gpio.h"
-
+#include <stdint.h>
 
 // Estructura mensaje, | es solo para visualizar los disintintos campos, no esta
 // en el mensaje
@@ -32,11 +31,11 @@
 
 //     CRC → 1 byte (checksum simple XOR)
 
-
 // -------------------------- Tipos de mensajes --------------------------------
 // ## Orin <-> ESP32 Messaging (UTF-8)
 
-// All inter-computer messages are UTF-8 text. Payloads are defined below; line framing and exact field ordering should follow the agreed message definitions when implemented.
+// All inter-computer messages are UTF-8 text. Payloads are defined below; line framing and exact
+// field ordering should follow the agreed message definitions when implemented.
 
 // **ESP32 -> Orin (telemetry):**
 // - `actual_speed` (m/s, float)
@@ -55,15 +54,15 @@
 // - `mission` (enum; state machine owner TBD)
 // - `machine_state` (enum; mission sub-state)
 // - `orin_heartbeat`
- 
+
 /******************************* DEFINES PÚBLICAS *****************************/
 // Constantes, flags o configuraciones visibles desde fuera de la librería
 
 #define KM_COMS_SOM 0xAA
 #define KM_COMS_MSG_MAX_LEN 256
-#define KM_COMS_RX_CHUNK    64    // Lectura de la UART por bloques
-#define BUF_SIZE_TX     2048
-#define BUF_SIZE_RX     2048
+#define KM_COMS_RX_CHUNK 64 // Lectura de la UART por bloques
+#define BUF_SIZE_TX 2048
+#define BUF_SIZE_RX 2048
 
 /******************************* TIPOS PÚBLICOS ********************************/
 // Estructuras, enums, typedefs públicos
@@ -108,7 +107,6 @@ typedef struct {
     uint8_t crc;                            // CRC del msg
 } km_coms_msg;
 
-
 /******************************* VARIABLES PÚBLICAS ***************************/
 // Variables globales visibles (si realmente se necesitan)
 
@@ -125,4 +123,3 @@ int KM_COMS_SendMsg(message_type_t type, uint8_t *payload, uint8_t len);
 void km_coms_ReceiveMsg(void);
 
 #endif /* KM_COMS_H */
- 

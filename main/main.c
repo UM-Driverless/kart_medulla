@@ -71,37 +71,59 @@ static const char *TAG = "MAIN";
 
 void system_init(void) {
 
-    if (KM_GPIO_Init() != ESP_OK) 
-        ESP_LOGE(TAG, "Error inicializando libreria gpio\n");
+    // if(KM_GPIO_Init() != ESP_OK)
+    //     ESP_LOGE(TAG, "Error inicializando libreria gpio\n");
 
+    ESP_LOGI(TAG, "Antes de iniciar RTOS");
     KM_RTOS_Init();
+    KM_COMS_Init(UART_NUM_0);
     // KM_SDIR_Init();
 
     // KM_ACT_Begin();
     // KM_PID_Init();
 
+    uint8_t payload[256];
+    char *msg = "Mensaje enviado desde ESP32\0";
+    
+    ESP_LOGI(TAG, "Antes de strlen");
+    size_t len = strlen(msg);
+    if (len < sizeof(payload)) {
+        ESP_LOGE(TAG, "Antes de memcpy");
+        memcpy(payload, msg, len + 1);
+    }
+    
+    while (true) {
+        ESP_LOGE(TAG, "Antes de enviar mensaje");
+        KM_COMS_SendMsg(ESP_HEARTBEAT, payload, len);
+        ESP_LOGE(TAG, "Despues de enviar mensaje");
+        sys_delay_ms(100);
+    }
 }
 
 // ===========================
 // app_main - punto de entrada
 // ===========================
 void app_main(void) {
+
+    // Sin trazas
+    esp_log_level_set("*", ESP_LOG_NONE);
+
+
     ESP_LOGI(TAG, "ESP iniciando...");
 
     // Inicializa Bluetooth, Bluepad32, NVS, etc.
     // init_bluetooth();
-    
+
     // Inicia todas las librerias que se necesitan
     system_init();
 
     // Creacion de toda las tareas de FreeRTOS
-    // Tarea para mandar mensajes periodicamente a ORIN
+    // Tareas de libreria de comunicaciones
+    // Tareas de libreria de maquina de estado
 
     // Ejecutar loop de BTstack (bloquea dentro de app_main, pero otras tareas siguen)
-    btstack_run_loop_execute();
+    //btstack_run_loop_execute();
 }
-
-
 
 // ESP_LOGI(TAG, "Mensaje: %d", valor); → Información normal
 

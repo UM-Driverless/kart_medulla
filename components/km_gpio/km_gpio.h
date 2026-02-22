@@ -83,7 +83,7 @@
 // Variables globales visibles (si realmente se necesitan)
 
 /* ---------- USB (UART0 to ORIN) ---------- */
-extern const uart_config_t uart_config
+extern const uart_config_t uart_config;
 
 /* ---------- ADC INPUTS (Sensors) ---------- */
 /* ADC1 - input only, WiFi safe */
