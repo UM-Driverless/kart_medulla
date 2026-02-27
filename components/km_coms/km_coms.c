@@ -14,7 +14,6 @@
 /******************************* MACROS PRIVADAS ********************************/
 // Constantes internas, flags de debug
 
-#define KM_COMS_QUEUE_LEN 10
 #define KM_COMS_WAIT_SEM_AVAILABLE 5
 
 /******************************* VARIABLES PRIVADAS ***************************/
@@ -25,17 +24,12 @@ QueueHandle_t km_coms_queue;
 static SemaphoreHandle_t km_coms_mutex;
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
+static void KM_COMS_ProccessPayload(km_coms_msg msg);
 static uint8_t KM_COMS_crc8(uint8_t len, uint8_t type, const uint8_t *data);
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
 
 esp_err_t KM_COMS_Init(gpio_num_t uart_num) {
-
-    // Crear la cola
-    km_coms_queue = xQueueCreate(KM_COMS_QUEUE_LEN, sizeof(km_coms_msg));
-
-    if(km_coms_queue == NULL)
-        return 0;
 
     km_coms_mutex = xSemaphoreCreateMutex();
     if(km_coms_mutex == NULL)
@@ -105,7 +99,6 @@ void km_coms_ReceiveMsg(void) {
     // 1. Verificar cuantos bytes hay en el buffer UART
     size_t uart_len = 0;
     uart_get_buffered_data_len(UART_NUM_0, &uart_len);
-    debug_led_off();
     if(uart_len == 0)
         return;
 
@@ -165,9 +158,8 @@ void KM_COMS_ProccessMsgs(void) {
             uint8_t crc_calc = KM_COMS_crc8(msg.len, msg.type, msg.payload); // LEN + TYPE + PAYLOAD
             if(crc_calc == msg.crc) {
                 // Mensaje válido, enviar a la cola
-                if(km_coms_queue) {
-                    xQueueSend(km_coms_queue, &msg, 0);
-                }
+                // Llamar a funcion para que se dejen las cosas aqui
+                KM_COMS_ProccessPayload(msg);
             }
 
             // Avanzar processed al siguiente mensaje
@@ -188,6 +180,62 @@ void KM_COMS_ProccessMsgs(void) {
 }
 
 /******************************* FUNCIONES PRIVADAS ***************************/
+
+// Procesar payload y setear objeto
+static void KM_COMS_ProccessPayload(km_coms_msg msg) {
+
+    int64_t object_value = 0;
+
+    switch (msg.type)
+    {
+    case ORIN_TARG_THROTTLE:
+
+        KM_OBJ_SetObjectValue(TARGET_THROTTLE, object_value);
+        break;
+
+    case ORIN_TARG_BRAKING:
+        KM_OBJ_SetObjectValue(TARGET_BRAKING, object_value);
+
+        break;
+
+    case ORIN_TARG_STEERING:
+        KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
+        break;
+
+    case ORIN_MISION:
+        KM_OBJ_SetObjectValue(MISION_ORIN, object_value);
+        break;
+
+    case ORIN_MACHINE_STATE:
+        KM_OBJ_SetObjectValue(MACHINE_STATE_ORIN, object_value);
+        break;
+
+    case ORIN_HEARTBEAT:
+        // Ns si guardarlo en la libreria de variables o reinicar algo. ns
+        break;
+
+    case ORIN_SHUTDOWN:
+        KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
+        break;
+
+    case ORIN_COMPLETE:
+
+        // Procesar todo los datos y mandarlos a libreria de variables
+        KM_OBJ_SetObjectValue(TARGET_THROTTLE, object_value);
+        KM_OBJ_SetObjectValue(TARGET_BRAKING, object_value);
+        KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
+        KM_OBJ_SetObjectValue(MISION_ORIN, object_value);
+        KM_OBJ_SetObjectValue(MACHINE_STATE_ORIN, object_value);
+        KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
+        break;
+    
+    default:
+        break;
+    }
+
+}
+
+
 
 static uint8_t KM_COMS_crc8(uint8_t len, uint8_t type, const uint8_t *data) {
     uint8_t crc = 0x00;

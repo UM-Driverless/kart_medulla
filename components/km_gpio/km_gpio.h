@@ -51,7 +51,7 @@
 #define PIN_HYDRAULIC_2         GPIO_NUM_13  // ADC2_CH4 (strap pin)
 
 /* ---------- DAC OUTPUTS ---------- */
-#define PIN_CMD_ACC             GPIO_NUM_25  // DAC1
+#define PIN_CMD_ACC             GPIO_NUM_30  // DAC1 !!!!!!Antes era el 25
 #define PIN_CMD_BRAKE           GPIO_NUM_26  // DAC2
 
 /* ---------- STEERING MOTOR ---------- */
@@ -61,11 +61,11 @@
 /* ---------- HALL SENSORS ---------- */
 #define PIN_MOTOR_HALL_1        GPIO_NUM_18  // HALL 1 motor
 #define PIN_MOTOR_HALL_2        GPIO_NUM_19  // HALL 2 motor
-#define PIN_MOTOR_HALL_3        GPIO_NUM_23  // HALL 3 motor
+#define PIN_MOTOR_HALL_3        GPIO_NUM_31  // HALL 3 motor !!!!!!!!!Antes era el 23
 
 /* ---------- I2C (AS5600) ---------- */
 #define PIN_I2C_SDA             GPIO_NUM_21  // I2C SDA
-#define PIN_I2C_SCL             GPIO_NUM_22  // I2C SCL
+#define PIN_I2C_SCL             GPIO_NUM_32  // I2C SCL !!!!!!!!!!!!Antes era el 22
 
 /* ---------- STATUS LED ---------- */
 #define PIN_STATUS_LED          GPIO_NUM_2   // Strap pin (keep LOW at boot)

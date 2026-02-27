@@ -13,7 +13,7 @@
 // Includes necesarios para la API pública
 #include "esp_log.h" // Para log
 #include "km_gpio.h"
-#include "km_debug_led.h"
+#include "km_objects.h"
 #include <stdint.h>
 
 // Estructura mensaje, | es solo para visualizar los disintintos campos, no esta
@@ -74,7 +74,7 @@ typedef enum
     // ESP32 --> Orin (0x01 - 0x1F)
     // ==========================
     ESP_ACT_SPEED           = 0x01,
-    ESP_ACT_ACCELERATION    = 0x02,
+    ESP_ACT_THROTTLE        = 0x02,
     ESP_ACT_BRAKING         = 0x03,
     ESP_ACT_STEERING        = 0x04,
     ESP_MISION              = 0x05,
@@ -103,7 +103,7 @@ typedef enum
 
 typedef struct {
     uint8_t len;                            // Len of payload    
-    uint8_t type;                    // Type of msg send
+    uint8_t type;                           // Type of msg send
     uint8_t payload[KM_COMS_MSG_MAX_LEN-5]; // Payload del msg
     uint8_t crc;                            // CRC del msg
 } km_coms_msg;

@@ -255,8 +255,8 @@ esp_err_t KM_GPIO_WriteDAC(const gpio_config_t *pin, uint8_t value)
 {
     gpio_num_t gpio = (gpio_num_t)(pin->pin_bit_mask);
 
-    if (gpio == GPIO_NUM_25) return dac_output_voltage(DAC_CHAN_0, value);
-    if (gpio == GPIO_NUM_26) return dac_output_voltage(DAC_CHAN_1, value);
+    if (gpio == PIN_CMD_ACC) return dac_output_voltage(DAC_CHAN_0, value);
+    if (gpio == PIN_CMD_BRAKE) return dac_output_voltage(DAC_CHAN_1, value);
 
     return ESP_ERR_INVALID_ARG;
 }
