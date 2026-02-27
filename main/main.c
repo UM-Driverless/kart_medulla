@@ -69,34 +69,52 @@ static const char *TAG = "MAIN";
 //     ESP_LOGI(TAG, "Bluetooth y Bluepad32 inicializados");
 // }
 
+#define MAX_ERROR_COUNT_SDIR 10
+
 void system_init(void) {
 
-    // if(KM_GPIO_Init() != ESP_OK)
-    //     ESP_LOGE(TAG, "Error inicializando libreria gpio\n");
+    // Initialize hardware
+    if(KM_GPIO_Init() != ESP_OK)
+        ESP_LOGE(TAG, "Error inicializando libreria gpio\n");
 
-    ESP_LOGI(TAG, "Antes de iniciar RTOS");
+    // Initialize I2C
+    if (KM_GPIO_I2CInit() != ESP_OK)
+        ESP_LOGE(TAG, "Error inicializando libreria i2c\n");
+
+    // Initialise tasks
     KM_RTOS_Init();
-    KM_COMS_Init(UART_NUM_0);
-    // KM_SDIR_Init();
+
+    // Initialise comunications
+    if (KM_COMS_Init(UART_NUM_0) != ESP_OK)
+        ESP_LOGE(TAG, "Error inicializando libreria de comunicaciones");
+    
+    // KM_SDIR_Init(MAX_ERROR_COUNT_SDIR);
 
     // KM_ACT_Begin();
     // KM_PID_Init();
 
-    uint8_t payload[256];
-    char *msg = "Mensaje enviado desde ESP32\0";
-    
-    ESP_LOGI(TAG, "Antes de strlen");
-    size_t len = strlen(msg);
-    if (len < sizeof(payload)) {
-        ESP_LOGE(TAG, "Antes de memcpy");
-        memcpy(payload, msg, len + 1);
+    uint8_t payload[31];  // 255 - 4 = 251
+    uint8_t len = 31;     // LEN solo cuenta los bytes del payload
+    for (size_t i = 0; i < 31; i++) {
+        payload[i] = i;
     }
     
+    // while (true) {
+    //     ESP_LOGE(TAG, "Antes de enviar mensaje");
+    //     KM_COMS_SendMsg(ESP_HEARTBEAT, payload, len);
+    //     ESP_LOGE(TAG, "Despues de enviar mensaje");
+    //     sys_delay_ms(100);
+    // }
+    km_coms_msg msg;
     while (true) {
-        ESP_LOGE(TAG, "Antes de enviar mensaje");
-        KM_COMS_SendMsg(ESP_HEARTBEAT, payload, len);
-        ESP_LOGE(TAG, "Despues de enviar mensaje");
-        sys_delay_ms(100);
+        km_coms_ReceiveMsg();
+        ESP_LOGI(TAG, "Despues de receive msg");
+    //     KM_COMS_ProccessMsgs();
+
+    //     if(xQueueReceive(km_coms_queue, &msg, 0) == pdPASS)
+    //         ESP_LOGI(TAG, "El mensaje recibido es de tipo: %d, tiene logitud: %d, y CRC: %d", msg.type, msg.len, msg.crc);
+        //sys_delay_ms(1000);
+        ESP_LOGI(TAG, "Despues de delay");
     }
 }
 
@@ -107,6 +125,8 @@ void app_main(void) {
 
     // Sin trazas
     esp_log_level_set("*", ESP_LOG_NONE);
+
+    debug_led_init();
 
 
     ESP_LOGI(TAG, "ESP iniciando...");

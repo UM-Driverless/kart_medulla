@@ -21,15 +21,16 @@
 // Variables globales internas (static)
 static uint8_t rx_buffer[KM_COMS_MSG_MAX_LEN - 1]; //[0-255]
 static size_t rx_buffer_len = 0;
-static QueueHandle_t km_coms_queue;
+QueueHandle_t km_coms_queue;
 static SemaphoreHandle_t km_coms_mutex;
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
-static uint8_t KM_COMS_crc8(const uint8_t *data, uint8_t len);
+static uint8_t KM_COMS_crc8(uint8_t len, uint8_t type, const uint8_t *data);
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
 
-int KM_COMS_Init(gpio_num_t uart_num) {
+esp_err_t KM_COMS_Init(gpio_num_t uart_num) {
+
     // Crear la cola
     km_coms_queue = xQueueCreate(KM_COMS_QUEUE_LEN, sizeof(km_coms_msg));
 
@@ -60,18 +61,18 @@ int KM_COMS_SendMsg(message_type_t type, uint8_t *payload, uint8_t len) {
     if(len > KM_COMS_MSG_MAX_LEN)
         return -1;
 
-    msg.len = len;
+    msg.len = (uint8_t)len;
     msg.type = (uint8_t)type;
 
     memcpy(msg.payload, payload, len);
-    msg.crc = KM_COMS_crc8(&msg.len, len + 2); // LEN + TYPE + PAYLOAD
+    msg.crc = KM_COMS_crc8(msg.len, msg.type, msg.payload); // LEN + TYPE + PAYLOAD
 
     // Armar frame
-    frame[0] = KM_COMS_SOM;
-    frame[1] = msg.len;
-    frame[2] = msg.type;
+    frame[0] = (uint8_t)KM_COMS_SOM;
+    frame[1] = (uint8_t)msg.len;
+    frame[2] = (uint8_t)msg.type;
     memcpy(&frame[3], msg.payload, msg.len);
-    frame[3 + msg.len] = msg.crc;
+    frame[3 + msg.len] = (uint8_t)msg.crc;
 
     // Enviar mensaje, se intenta 5 veces
     while(total_sent < len+4 && attempts < 5) {
@@ -87,7 +88,7 @@ int KM_COMS_SendMsg(message_type_t type, uint8_t *payload, uint8_t len) {
 
     // NO se ha podido enviar el mensaje correctamente
     if(attempts >= 5 || total_sent < 4 + len){
-        ESP_LOGI("KM_coms", "El msg no se ha enviado, bytes enviados: %d, bytes que habia que enviar: %d", total_sent, 4+len);
+        ESP_LOGE("KM_coms", "El msg no se ha enviado, bytes enviados: %d, bytes que habia que enviar: %d", total_sent, 4+len);
         return 0;
     }
 
@@ -104,6 +105,7 @@ void km_coms_ReceiveMsg(void) {
     // 1. Verificar cuantos bytes hay en el buffer UART
     size_t uart_len = 0;
     uart_get_buffered_data_len(UART_NUM_0, &uart_len);
+    debug_led_off();
     if(uart_len == 0)
         return;
 
@@ -114,7 +116,6 @@ void km_coms_ReceiveMsg(void) {
         bytes2read = uart_len;
 
     len_read = uart_read_bytes(UART_NUM_0, uart_chunk, bytes2read, 0);
-
     if(len_read == 0)
         return;
 
@@ -161,7 +162,7 @@ void KM_COMS_ProccessMsgs(void) {
             xSemaphoreGive(km_coms_mutex);
 
             // Verificar CRC
-            uint8_t crc_calc = KM_COMS_crc8(&msg.len, payload_len + 2); // LEN + TYPE + PAYLOAD
+            uint8_t crc_calc = KM_COMS_crc8(msg.len, msg.type, msg.payload); // LEN + TYPE + PAYLOAD
             if(crc_calc == msg.crc) {
                 // Mensaje válido, enviar a la cola
                 if(km_coms_queue) {
@@ -188,17 +189,26 @@ void KM_COMS_ProccessMsgs(void) {
 
 /******************************* FUNCIONES PRIVADAS ***************************/
 
-static uint8_t KM_COMS_crc8(const uint8_t *data, uint8_t len) {
+static uint8_t KM_COMS_crc8(uint8_t len, uint8_t type, const uint8_t *data) {
     uint8_t crc = 0x00;
-    for(uint16_t i = 0; i < len; i++) {
+
+    crc ^= len;
+    for (int j = 0; j < 8; j++) {
+        crc = (crc & 0x80) ? (crc << 1) ^ 0x07 : (crc << 1);
+    }
+
+    crc ^= type;
+    for (int j = 0; j < 8; j++) {
+        crc = (crc & 0x80) ? (crc << 1) ^ 0x07 : (crc << 1);
+    }
+
+    for (uint8_t i = 0; i < len; i++) {
         crc ^= data[i];
-        for(uint8_t j = 0; j < 8; j++) {
-            if(crc & 0x80)
-                crc = (crc << 1) ^ 0x07;
-            else
-                crc <<= 1;
+        for (int j = 0; j < 8; j++) {
+            crc = (crc & 0x80) ? (crc << 1) ^ 0x07 : (crc << 1);
         }
     }
+
     return crc;
 }
 

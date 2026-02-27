@@ -1,7 +1,5 @@
 - Libreria km_coms
-Hacer funcion para que formatee el payload en funcion del tipo que se le ponga, 
-y luego ya se le pase  el payload y todo a la funcion send, y luego hacer la 
-funcion inversa para cuando se recibe
+Testear el mensaje de vuelta a ESP32, Hacer formateo de payload en Orin y ESP32
 
 (Recibir un mensaje)
 Buffer Uart --> Buffer libreria --> (se formatea mensaje y se pone en cola) --> se formatea payload en funcion del tipo de mensaje

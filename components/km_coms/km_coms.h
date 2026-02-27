@@ -13,6 +13,7 @@
 // Includes necesarios para la API pública
 #include "esp_log.h" // Para log
 #include "km_gpio.h"
+#include "km_debug_led.h"
 #include <stdint.h>
 
 // Estructura mensaje, | es solo para visualizar los disintintos campos, no esta
@@ -102,10 +103,12 @@ typedef enum
 
 typedef struct {
     uint8_t len;                            // Len of payload    
-    message_type_t type;                    // Type of msg send
+    uint8_t type;                    // Type of msg send
     uint8_t payload[KM_COMS_MSG_MAX_LEN-5]; // Payload del msg
     uint8_t crc;                            // CRC del msg
 } km_coms_msg;
+
+extern QueueHandle_t km_coms_queue;
 
 /******************************* VARIABLES PÚBLICAS ***************************/
 // Variables globales visibles (si realmente se necesitan)
@@ -114,12 +117,16 @@ typedef struct {
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
 // Inicializa UART y la cola
-int KM_COMS_Init(gpio_num_t uart_num);
+esp_err_t KM_COMS_Init(gpio_num_t uart_num);
 
 // Agrega un mensaje a la cola
 int KM_COMS_SendMsg(message_type_t type, uint8_t *payload, uint8_t len);
 
 // Función que la tarea FreeRTOS debe ejecutar periódicamente
 void km_coms_ReceiveMsg(void);
+
+// Esta funcion procesa los bytes que se han dejado en el buffer de la libreria
+// y recrea el mensaje
+void KM_COMS_ProccessMsgs(void);
 
 #endif /* KM_COMS_H */

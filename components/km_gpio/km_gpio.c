@@ -4,7 +4,7 @@
  *****************************************************************************/
 
 #include "km_gpio.h"
-#include <stdio.h>   // solo si es necesario para debug interno
+#include "esp_log.h"
 
 /******************************* INCLUDES INTERNOS ****************************/
 // Headers internos opcionales, dependencias privadas
@@ -198,7 +198,7 @@ esp_err_t KM_GPIO_Init(void)
     if (ret != ESP_OK) return ret;
 
     ledc_channel_config_t pwm_channel = {
-        .gpio_num = (gpio_num_t)pin_steer_pwm.pin_bit_mask,
+        .gpio_num = (gpio_num_t)PIN_STEER_PWM,
         .speed_mode = LEDC_HIGH_SPEED_MODE,
         .channel = LEDC_CHANNEL_0,
         .intr_type = LEDC_INTR_DISABLE,
@@ -206,10 +206,6 @@ esp_err_t KM_GPIO_Init(void)
         .duty = 0
     };
     ret = ledc_channel_config(&pwm_channel);
-    if (ret != ESP_OK) return ret;
-
-    // Initialize I2C
-    ret = KM_GPIO_I2CInit();
     if (ret != ESP_OK) return ret;
 
     return ESP_OK;
