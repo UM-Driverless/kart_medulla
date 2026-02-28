@@ -1,0 +1,62 @@
+\doxysection{km\+\_\+objects.\+h}
+\hypertarget{km__objects_8h_source}{}\label{km__objects_8h_source}\index{km\_objects.h@{km\_objects.h}}
+\mbox{\hyperlink{km__objects_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00001}00001\ \textcolor{comment}{/******************************************************************************}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00002}00002\ \textcolor{comment}{\ *\ @file\ \ \ \ km\_objects.h}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00003}00003\ \textcolor{comment}{\ *\ @brief\ \ \ Interfaz\ pública\ de\ la\ librería.}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00004}00004\ \textcolor{comment}{\ *\ @author\ \ Adrian\ Navarredonda\ Arizaleta}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00005}00005\ \textcolor{comment}{\ *\ @date\ \ \ \ 27-\/02-\/2026}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00006}00006\ \textcolor{comment}{\ *\ @version\ 1.0}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00007}00007\ \textcolor{comment}{\ *****************************************************************************/}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00008}00008\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00009}00009\ \textcolor{preprocessor}{\#ifndef\ KM\_OBJECTS\_H}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00010}00010\ \textcolor{preprocessor}{\#define\ KM\_OBJECTS\_H}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00011}00011\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00012}00012\ \textcolor{comment}{/*******************************\ INCLUDES\ *************************************/}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00013}00013\ \textcolor{comment}{//\ Includes\ necesarios\ para\ la\ API\ pública}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00014}00014\ \textcolor{preprocessor}{\#include\ <stdint.h>}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00016}00016\ \textcolor{comment}{/*******************************\ DEFINES\ PÚBLICAS\ *****************************/}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00017}00017\ \textcolor{comment}{//\ Constantes,\ flags\ o\ configuraciones\ visibles\ desde\ fuera\ de\ la\ librería}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00018}\mbox{\hyperlink{km__objects_8h_a535e43d8615a1056304f4d3445877dea}{00018}}\ \textcolor{preprocessor}{\#define\ OBJECT\_VALUE\_ERROR\ -\/9223372036854775808}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00019}00019\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00020}00020\ \textcolor{comment}{/*******************************\ TIPOS\ PÚBLICOS\ ********************************/}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00021}00021\ \textcolor{comment}{//\ Estructuras,\ enums,\ typedefs\ públicos}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00022}00022\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00023}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36}{00023}}\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00024}00024\ \{}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00025}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a4968151e0cc2da6d56087adf622c3026}{00025}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a4968151e0cc2da6d56087adf622c3026}{TARGET\_THROTTLE}}\ =\ 0,\ \ \ \ \textcolor{comment}{//\ Target\ throttle\ send\ by\ ORIN\ in\ [0-\/1].\ \ \ \ \ \ \ x100}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00026}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a229204c5c3a08da758d0fb4d830acb17}{00026}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a229204c5c3a08da758d0fb4d830acb17}{TARGET\_BRAKING}},\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Target\ braking\ send\ by\ ORIN\ in\ [0-\/1]\ \ \ \ \ \ \ \ \ x100}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00027}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36aebdb8633b2467a7a009fb39872ebff7a}{00027}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36aebdb8633b2467a7a009fb39872ebff7a}{TARGET\_STEERING}},\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Target\ steering\ angle\ send\ by\ ORIN\ in\ [-\/1\ to\ 1].\ \ \ x100}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00028}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36ac3c3367c5b8bd9cd83a42c1490b74b59}{00028}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36ac3c3367c5b8bd9cd83a42c1490b74b59}{MISION\_ORIN}},\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Mision\ that\ is\ executing\ the\ ORIN}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00029}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a596712d692da41aa476b6e82607f3401}{00029}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a596712d692da41aa476b6e82607f3401}{MACHINE\_STATE\_ORIN}},\ \ \ \ \ \textcolor{comment}{//\ State\ inside\ the\ state\ machine\ of\ the\ ORIN}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00030}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a96ce56c458b7646e8c7073dd8a86710a}{00030}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a96ce56c458b7646e8c7073dd8a86710a}{SHUTDOWN\_ORIN}},\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Status\ of\ the\ shutdown\ in\ the\ ORIN\ 0\ or\ 1}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00031}00031\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00032}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a235af853ca3f334c520168634b112769}{00032}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a235af853ca3f334c520168634b112769}{ACTUAL\_SPEED}},\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Actual\ speed\ of\ the\ kart\ in\ m/s\ x100}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00033}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a163cd95650d6f608f63686be70b931cc}{00033}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a163cd95650d6f608f63686be70b931cc}{ACTUAL\_ACCERELATION}},\ \ \ \ \textcolor{comment}{//\ Actual\ value\ of\ the\ acceleration\ of\ the\ kart\ m/s\string^2\ x100\ }}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00034}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36af176651357990ba94077d6ab496705af}{00034}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36af176651357990ba94077d6ab496705af}{ACTUAL\_BRAKING}},\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Actual\ value\ of\ the\ brake\ [0-\/1]\ interpreted\ as\ brake\ pedal\ or\ hydraulic\ pressure)\ x100}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00035}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a9ba18710eba25d438604cbb8d2266b8a}{00035}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a9ba18710eba25d438604cbb8d2266b8a}{ACTUAL\_STEERING}},\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Actual\ value\ of\ the\ steering\ in\ rad\ x100}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00036}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36ac7f7e981ef172f5bd070de622694c343}{00036}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36ac7f7e981ef172f5bd070de622694c343}{MISION\_ESP}},\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Mision\ that\ is\ executing\ the\ ESP}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00037}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a559a38a0b5b3acf2b425e589c7f4bf43}{00037}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a559a38a0b5b3acf2b425e589c7f4bf43}{MACHINE\_STATE\_ESP}},\ \ \ \ \ \ \textcolor{comment}{//\ State\ inside\ the\ state\ machine\ of\ the\ ESP}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00038}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36ab3e63a3e081d5c1033eac8c344525adb}{00038}}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36ab3e63a3e081d5c1033eac8c344525adb}{ACTUAL\_SHUTDOWN}},\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Actual\ state\ of\ the\ SHUTDOWN}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00039}00039\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00040}00040\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00041}00041\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a84f3c8c20f32b1c5625a34965b4eee9e}{KM\_OBJ\_LAST}}\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Este\ debe\ de\ ser\ siempre\ el\ ultimo}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00042}\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a84f3c8c20f32b1c5625a34965b4eee9e}{00042}}\ \}\ \mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36}{km\_objects\_t}};}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00043}00043\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00044}00044\ \textcolor{comment}{/*******************************\ VARIABLES\ PÚBLICAS\ ***************************/}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00045}00045\ \textcolor{comment}{//\ Variables\ globales\ visibles\ (si\ realmente\ se\ necesitan)}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00046}00046\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00047}00047\ \textcolor{comment}{//\ extern\ int\ ejemplo\_variable\_publica;}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00048}00048\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00049}00049\ \textcolor{comment}{/*******************************\ FUNCIONES\ PÚBLICAS\ ***************************/}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00055}00055\ uint8\_t\ \mbox{\hyperlink{km__objects_8h_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36}{km\_objects\_t}}\ \textcolor{keywordtype}{object},\ int64\_t\ value);}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00056}00056\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00063}00063\ int64\_t\ \mbox{\hyperlink{km__objects_8h_a2ab029982863a09951299106e7b23e47}{KM\_OBJ\_GetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36}{km\_objects\_t}}\ \textcolor{keywordtype}{object});}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00064}00064\ }
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00065}00065\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ KM\_OBJECTS\_H\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{km__objects_8h_source_l00066}00066\ \ }
+
+\end{DoxyCode}

@@ -1,0 +1,168 @@
+\doxysection{main.\+c File Reference}
+\hypertarget{main_8c}{}\label{main_8c}\index{main.c@{main.c}}
+{\ttfamily \#include "{}nvs\+\_\+flash.\+h"{}}\newline
+{\ttfamily \#include "{}esp\+\_\+system.\+h"{}}\newline
+{\ttfamily \#include "{}esp\+\_\+log.\+h"{}}\newline
+{\ttfamily \#include "{}esp\+\_\+bt.\+h"{}}\newline
+{\ttfamily \#include $<$btstack\+\_\+port\+\_\+esp32.\+h$>$}\newline
+{\ttfamily \#include $<$btstack\+\_\+run\+\_\+loop.\+h$>$}\newline
+{\ttfamily \#include $<$btstack\+\_\+stdio\+\_\+esp32.\+h$>$}\newline
+{\ttfamily \#include $<$uni.\+h$>$}\newline
+{\ttfamily \#include "{}esp\+\_\+timer.\+h"{}}\newline
+{\ttfamily \#include "{}esp\+\_\+wifi.\+h"{}}\newline
+{\ttfamily \#include "{}esp\+\_\+event.\+h"{}}\newline
+{\ttfamily \#include "{}esp\+\_\+netif.\+h"{}}\newline
+{\ttfamily \#include "{}esp\+\_\+sntp.\+h"{}}\newline
+{\ttfamily \#include "{}km\+\_\+act.\+h"{}}\newline
+{\ttfamily \#include "{}km\+\_\+coms.\+h"{}}\newline
+{\ttfamily \#include "{}km\+\_\+gamc.\+h"{}}\newline
+{\ttfamily \#include "{}km\+\_\+pid.\+h"{}}\newline
+{\ttfamily \#include "{}km\+\_\+rtos.\+h"{}}\newline
+{\ttfamily \#include "{}km\+\_\+sdir.\+h"{}}\newline
+{\ttfamily \#include "{}km\+\_\+sta.\+h"{}}\newline
+{\ttfamily \#include "{}km\+\_\+gpio.\+h"{}}\newline
+Include dependency graph for main.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{main_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{main_8c_ae926ecdafab792fa60f183627cb03f88}{MAX\+\_\+\+ERROR\+\_\+\+COUNT\+\_\+\+SDIR}}~10
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{main_8c_a43f5e0d6db0fb41a437cc9096b32e9b5}{system\+\_\+init}} (void)
+\item 
+void \mbox{\hyperlink{main_8c_a630544a7f0a2cc40d8a7fefab7e2fe70}{app\+\_\+main}} (void)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+static const char \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}} = "{}MAIN"{}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{main_8c_ae926ecdafab792fa60f183627cb03f88}\label{main_8c_ae926ecdafab792fa60f183627cb03f88} 
+\index{main.c@{main.c}!MAX\_ERROR\_COUNT\_SDIR@{MAX\_ERROR\_COUNT\_SDIR}}
+\index{MAX\_ERROR\_COUNT\_SDIR@{MAX\_ERROR\_COUNT\_SDIR}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{MAX\_ERROR\_COUNT\_SDIR}{MAX\_ERROR\_COUNT\_SDIR}}
+{\footnotesize\ttfamily \#define MAX\+\_\+\+ERROR\+\_\+\+COUNT\+\_\+\+SDIR~10}
+
+
+
+Definition at line \mbox{\hyperlink{main_8c_source_l00072}{72}} of file \mbox{\hyperlink{main_8c_source}{main.\+c}}.
+
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{main_8c_a630544a7f0a2cc40d8a7fefab7e2fe70}\label{main_8c_a630544a7f0a2cc40d8a7fefab7e2fe70} 
+\index{main.c@{main.c}!app\_main@{app\_main}}
+\index{app\_main@{app\_main}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{app\_main()}{app\_main()}}
+{\footnotesize\ttfamily void app\+\_\+main (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{main_8c_source_l00121}{121}} of file \mbox{\hyperlink{main_8c_source}{main.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{comment}{//\ Habilitar\ logs\ por\ UART0\ (USB)\ para\ debug}}
+\DoxyCodeLine{00124\ \ \ \ \ esp\_log\_level\_set(\textcolor{stringliteral}{"{}*"{}},\ ESP\_LOG\_INFO);}
+\DoxyCodeLine{00125\ }
+\DoxyCodeLine{00126\ \ \ \ \ ESP\_LOGI(\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}},\ \textcolor{stringliteral}{"{}ESP\ iniciando..."{}});}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{comment}{//\ Inicializa\ Bluetooth,\ Bluepad32,\ NVS,\ etc.}}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{comment}{//\ init\_bluetooth();}}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{comment}{//\ Inicia\ todas\ las\ librerias\ que\ se\ necesitan}}
+\DoxyCodeLine{00132\ \ \ \ \ \mbox{\hyperlink{main_8c_a43f5e0d6db0fb41a437cc9096b32e9b5}{system\_init}}();}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \textcolor{comment}{//\ Creacion\ de\ toda\ las\ tareas\ de\ FreeRTOS}}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{comment}{//\ Tareas\ de\ libreria\ de\ comunicaciones}}
+\DoxyCodeLine{00136\ \ \ \ \ \textcolor{comment}{//\ Tareas\ de\ libreria\ de\ maquina\ de\ estado}}
+\DoxyCodeLine{00137\ }
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{comment}{//\ Ejecutar\ loop\ de\ BTstack\ (bloquea\ dentro\ de\ app\_main,\ pero\ otras\ tareas\ siguen)}}
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{comment}{//btstack\_run\_loop\_execute();}}
+\DoxyCodeLine{00140\ \}}
+
+\end{DoxyCode}
+\Hypertarget{main_8c_a43f5e0d6db0fb41a437cc9096b32e9b5}\label{main_8c_a43f5e0d6db0fb41a437cc9096b32e9b5} 
+\index{main.c@{main.c}!system\_init@{system\_init}}
+\index{system\_init@{system\_init}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{system\_init()}{system\_init()}}
+{\footnotesize\ttfamily void system\+\_\+init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{main_8c_source_l00074}{74}} of file \mbox{\hyperlink{main_8c_source}{main.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ \textcolor{comment}{//\ Initialize\ hardware}}
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{keywordflow}{if}(\mbox{\hyperlink{km__gpio_8c_a4467a661ca6fe29f12f392cb58b386f3}{KM\_GPIO\_Init}}()\ !=\ ESP\_OK)}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ ESP\_LOGE(\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}},\ \textcolor{stringliteral}{"{}Error\ inicializando\ libreria\ gpio\(\backslash\)n"{}});}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{//\ Initialize\ I2C}}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__gpio_8c_a292bd05e9fda7632e0e0b4aab966d28b}{KM\_GPIO\_I2CInit}}()\ !=\ ESP\_OK)}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ ESP\_LOGE(\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}},\ \textcolor{stringliteral}{"{}Error\ inicializando\ libreria\ i2c\(\backslash\)n"{}});}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{comment}{//\ Initialise\ tasks}}
+\DoxyCodeLine{00085\ \ \ \ \ \mbox{\hyperlink{km__rtos_8c_a63ebe5189542c7e70e5d52b54bd416d5}{KM\_RTOS\_Init}}();}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{comment}{//\ Initialise\ comunications\ on\ UART0\ (USB\ to\ Orin)}}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__coms_8c_ab76bebe5e423f1067e670d62a730e721}{KM\_COMS\_Init}}(UART\_NUM\_0)\ !=\ ESP\_OK)}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ ESP\_LOGE(\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}},\ \textcolor{stringliteral}{"{}Error\ inicializando\ libreria\ de\ comunicaciones"{}});}
+\DoxyCodeLine{00090\ \ \ \ \ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{comment}{//\ KM\_SDIR\_Init(MAX\_ERROR\_COUNT\_SDIR);}}
+\DoxyCodeLine{00092\ }
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{comment}{//\ KM\_ACT\_Begin();}}
+\DoxyCodeLine{00094\ \ \ \ \ \textcolor{comment}{//\ KM\_PID\_Init();}}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ \textcolor{comment}{//\ Test\ bidirectional:\ send\ heartbeat\ +\ receive\ from\ Orin}}
+\DoxyCodeLine{00097\ \ \ \ \ uint8\_t\ payload[4]\ =\ \{0xDE,\ 0xAD,\ 0xBE,\ 0xEF\};}
+\DoxyCodeLine{00098\ \ \ \ \ uint32\_t\ loop\_count\ =\ 0;}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keywordflow}{while}\ (\textcolor{keyword}{true})\ \{}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ TX:\ send\ heartbeat\ to\ Orin\ every\ 10\ iterations\ (\string~1s)}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (loop\_count\ \%\ 10\ ==\ 0)\ \{}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__coms_8c_a1761afbf51adcb8c23f3c6b5e0db2ead}{KM\_COMS\_SendMsg}}(\mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557ca41bbcc90bbab89a5de8fb6a87eb8b1de}{ESP\_HEARTBEAT}},\ payload,\ \textcolor{keyword}{sizeof}(payload));}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ ESP\_LOGI(\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}},\ \textcolor{stringliteral}{"{}TX:\ heartbeat\ sent"{}});}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00106\ }
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ RX:\ read\ bytes\ from\ UART2\ into\ internal\ buffer}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__coms_8c_a88b2405843415e6bf9a03b36048890d4}{km\_coms\_ReceiveMsg}}();}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ RX:\ parse\ complete\ frames\ and\ dispatch\ to\ objects}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__coms_8c_ac4c6ccd77f6a2289dc69ff18629e516f}{KM\_COMS\_ProccessMsgs}}();}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ loop\_count++;}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ vTaskDelay(pdMS\_TO\_TICKS(100));}
+\DoxyCodeLine{00115\ \ \ \ \ \}}
+\DoxyCodeLine{00116\ \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}\label{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c} 
+\index{main.c@{main.c}!TAG@{TAG}}
+\index{TAG@{TAG}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{TAG}{TAG}}
+{\footnotesize\ttfamily const char\texorpdfstring{$\ast$}{*} TAG = "{}MAIN"{}\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line \mbox{\hyperlink{main_8c_source_l00035}{35}} of file \mbox{\hyperlink{main_8c_source}{main.\+c}}.
+

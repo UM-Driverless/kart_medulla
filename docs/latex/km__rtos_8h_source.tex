@@ -1,0 +1,86 @@
+\doxysection{km\+\_\+rtos.\+h}
+\hypertarget{km__rtos_8h_source}{}\label{km__rtos_8h_source}\index{km\_rtos.h@{km\_rtos.h}}
+\mbox{\hyperlink{km__rtos_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00001}00001\ \textcolor{comment}{/******************************************************************************}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00002}00002\ \textcolor{comment}{\ *\ @file\ \ \ \ Km\_rtos.h}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00003}00003\ \textcolor{comment}{\ *\ @brief\ \ \ Public\ API\ for\ the\ KM\_RTOS\ task\ management\ library.}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00004}00004\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00005}00005\ \textcolor{comment}{\ *\ This\ header\ provides\ the\ public\ interface\ for\ the\ KM\_RTOS\ library,\ which\ }}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00006}00006\ \textcolor{comment}{\ *\ offers\ a\ structured\ and\ safe\ way\ to\ manage\ FreeRTOS\ tasks.\ Through\ this\ API,\ }}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00007}00007\ \textcolor{comment}{\ *\ users\ can\ create,\ delete,\ suspend,\ resume,\ restart\ tasks,\ and\ change\ task\ }}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00008}00008\ \textcolor{comment}{\ *\ priorities\ without\ directly\ manipulating\ internal\ data\ structures.}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00009}00009\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00010}00010\ \textcolor{comment}{\ *\ The\ library\ ensures:}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00011}00011\ \textcolor{comment}{\ *\ \ -\/\ Controlled\ access\ to\ a\ static\ internal\ task\ array.}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00012}00012\ \textcolor{comment}{\ *\ \ -\/\ Consistent\ task\ creation\ with\ default\ parameters\ if\ needed.}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00013}00013\ \textcolor{comment}{\ *\ \ -\/\ Safe\ periodic\ execution\ of\ tasks\ via\ the\ KM\_RTOS\_TaskWrapper.}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00014}00014\ \textcolor{comment}{\ *\ \ -\/\ Simplified\ FreeRTOS\ task\ management\ while\ maintaining\ thread\ safety.}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00015}00015\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00016}00016\ \textcolor{comment}{\ *\ Usage:}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00017}00017\ \textcolor{comment}{\ *\ \ 1.\ Call\ KM\_RTOS\_Init()\ before\ creating\ any\ tasks.}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00018}00018\ \textcolor{comment}{\ *\ \ 2.\ Use\ KM\_RTOS\_CreateTask\ /\ KM\_RTOS\_AddTask\ to\ define\ and\ add\ tasks.}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00019}00019\ \textcolor{comment}{\ *\ \ 3.\ Manage\ tasks\ using\ KM\_RTOS\_DeleteTask,\ KM\_RTOS\_SuspendTask,\ KM\_RTOS\_ResumeTask,\ }}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00020}00020\ \textcolor{comment}{\ *\ \ \ \ \ KM\_RTOS\_RestartTask,\ and\ KM\_RTOS\_ChangePriority.}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00021}00021\ \textcolor{comment}{\ *}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00022}00022\ \textcolor{comment}{\ *\ Author:\ Adrian\ Navarredonda\ Arizaleta}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00023}00023\ \textcolor{comment}{\ *\ Date:\ 24-\/01-\/2026}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00024}00024\ \textcolor{comment}{\ *\ Version:\ 1.0}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00025}00025\ \textcolor{comment}{\ *****************************************************************************/}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00026}00026\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00027}00027\ \textcolor{preprocessor}{\#ifndef\ KM\_RTOS\_H}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00028}00028\ \textcolor{preprocessor}{\#define\ KM\_RTOS\_H}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00029}00029\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00030}00030\ \textcolor{comment}{/*******************************\ INCLUDES\ *************************************/}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00031}00031\ \textcolor{comment}{//\ Includes\ necesarios\ para\ la\ API\ pública}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00032}00032\ \textcolor{preprocessor}{\#include\ "{}freertos/FreeRTOS.h"{}}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00033}00033\ \textcolor{preprocessor}{\#include\ "{}freertos/task.h"{}}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00034}00034\ \textcolor{preprocessor}{\#include\ <stdint.h>}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00035}00035\ \textcolor{preprocessor}{\#include\ "{}esp\_log.h"{}}\ \textcolor{comment}{//\ Para\ log}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00036}00036\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00037}00037\ \textcolor{comment}{/*******************************\ DEFINES\ PUBLICOS\ *****************************/}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00038}00038\ \textcolor{comment}{//\ Constantes,\ flags\ o\ configuraciones\ visibles\ desde\ fuera\ de\ la\ librería}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00039}\mbox{\hyperlink{km__rtos_8h_a89f5ed3f5e14656c4aebaaf5d1c85bc0}{00039}}\ \textcolor{preprocessor}{\#define\ RTOS\_MAX\_TASKS\ \ \ \ \ \ \ \ \ \ 10\ \ }\textcolor{comment}{//\ Número\ máximo\ de\ tareas\ que\ puede\ manejar\ la\ librería}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00040}00040\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00049}\mbox{\hyperlink{km__rtos_8h_add978c093de2d5db48a0c7aa31396bf6}{00049}}\ \textcolor{keyword}{typedef}\ void\ (*\mbox{\hyperlink{km__rtos_8h_add978c093de2d5db48a0c7aa31396bf6}{KM\_RTOS\_TaskFunction\_t}})(\textcolor{keywordtype}{void}\ *context);}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00050}00050\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00054}\mbox{\hyperlink{structRTOS__Task}{00054}}\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00055}\mbox{\hyperlink{structRTOS__Task_a5cbc06a021e71fc467c35eaa7a2f426f}{00055}}\ \ \ \ \ TaskHandle\_t\ \mbox{\hyperlink{structRTOS__Task_a5cbc06a021e71fc467c35eaa7a2f426f}{handle}};\ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00056}\mbox{\hyperlink{structRTOS__Task_a960cc0b3b28a93fbf954ee56e105cd1b}{00056}}\ \ \ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\mbox{\hyperlink{structRTOS__Task_a960cc0b3b28a93fbf954ee56e105cd1b}{name}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00058}\mbox{\hyperlink{structRTOS__Task_a9749e2faa9757e4483140a0e772a9332}{00058}}\ \ \ \ \ \mbox{\hyperlink{km__rtos_8h_add978c093de2d5db48a0c7aa31396bf6}{KM\_RTOS\_TaskFunction\_t}}\ \mbox{\hyperlink{structRTOS__Task_a9749e2faa9757e4483140a0e772a9332}{taskFn}};\ \ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00059}\mbox{\hyperlink{structRTOS__Task_a3a0d9b13173e264634cbfbf8b6d0256f}{00059}}\ \ \ \ \ \textcolor{keywordtype}{void}\ *\mbox{\hyperlink{structRTOS__Task_a3a0d9b13173e264634cbfbf8b6d0256f}{context}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00061}\mbox{\hyperlink{structRTOS__Task_ac687c9c565c979754004eda9d648f74a}{00061}}\ \ \ \ \ uint32\_t\ \mbox{\hyperlink{structRTOS__Task_ac687c9c565c979754004eda9d648f74a}{period\_ms}};\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00062}\mbox{\hyperlink{structRTOS__Task_ab346e2bbd2986ec7bc1f23578a7c210b}{00062}}\ \ \ \ \ uint16\_t\ \mbox{\hyperlink{structRTOS__Task_ab346e2bbd2986ec7bc1f23578a7c210b}{stackSize}};\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00063}\mbox{\hyperlink{structRTOS__Task_a6b93e3d1e0845215790b4f50c64e60cf}{00063}}\ \ \ \ \ UBaseType\_t\ \mbox{\hyperlink{structRTOS__Task_a6b93e3d1e0845215790b4f50c64e60cf}{priority}};\ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00065}\mbox{\hyperlink{structRTOS__Task_acbee0cc3c70f919b62ce1d0ee61fddc4}{00065}}\ \ \ \ \ uint8\_t\ \mbox{\hyperlink{structRTOS__Task_acbee0cc3c70f919b62ce1d0ee61fddc4}{active}};\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00066}00066\ \}\ \mbox{\hyperlink{structRTOS__Task}{RTOS\_Task}};}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00068}00068\ \textcolor{comment}{/*******************************\ VARIABLES\ PÚBLICAS\ ***************************/}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00069}00069\ \textcolor{comment}{//\ Variables\ globales\ visibles\ (si\ realmente\ se\ necesitan)}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00070}00070\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00071}00071\ \textcolor{comment}{//\ extern\ int\ ejemplo\_variable\_publica;}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00073}00073\ \textcolor{comment}{/*******************************\ FUNCIONES\ PÚBLICAS\ ***************************/}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00084}00084\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{km__rtos_8h_a63ebe5189542c7e70e5d52b54bd416d5}{KM\_RTOS\_Init}}(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00085}00085\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00100}00100\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{km__rtos_8h_a064b054c86ce2d788f4ffe56421c89a1}{KM\_RTOS\_Destroy}}(\textcolor{keywordtype}{void});}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00101}00101\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00121}00121\ \mbox{\hyperlink{structRTOS__Task}{RTOS\_Task}}\ \mbox{\hyperlink{km__rtos_8h_a3484843c9cb2d0ad7d15f62d915cafe4}{KM\_COMS\_CreateTask}}(\textcolor{keywordtype}{char}\ *name,\ \mbox{\hyperlink{km__rtos_8h_add978c093de2d5db48a0c7aa31396bf6}{KM\_RTOS\_TaskFunction\_t}}\ taskFn,\ \textcolor{keywordtype}{void}\ *context,}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00122}00122\ \ \ \ \ \ \ \ \ uint32\_t\ period\_ms,\ uint16\_t\ stackSize,\ UBaseType\_t\ priority,\ uint8\_t\ active);}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00123}00123\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00153}00153\ esp\_err\_t\ \mbox{\hyperlink{km__rtos_8h_a5fa8c2cdbfc6083c17a12ef34938910f}{KM\_RTOS\_AddTask}}(\mbox{\hyperlink{structRTOS__Task}{RTOS\_Task}}\ task);}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00154}00154\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00169}00169\ esp\_err\_t\ \mbox{\hyperlink{km__rtos_8h_ab78a8ac9d391833abe59b66cf66c6528}{KM\_RTOS\_DeleteTask}}(TaskHandle\_t\ handle);}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00170}00170\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00185}00185\ esp\_err\_t\ \mbox{\hyperlink{km__rtos_8h_af2a79120057380fd437eccb5fd54a7bd}{KM\_RTOS\_SuspendTask}}(TaskHandle\_t\ handle);}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00186}00186\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00201}00201\ esp\_err\_t\ \mbox{\hyperlink{km__rtos_8h_a8b203a317e4546a4b4697abfefeaee31}{KM\_RTOS\_ResumeTask}}(TaskHandle\_t\ handle);}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00202}00202\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00218}00218\ esp\_err\_t\ \mbox{\hyperlink{km__rtos_8h_a5ffe7d1472bbb6be0b481c57495faa3c}{KM\_RTOS\_RestartTask}}(TaskHandle\_t\ handle);}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00219}00219\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00236}00236\ esp\_err\_t\ \mbox{\hyperlink{km__rtos_8h_a97a4541969a686d9853a8ae62edb5a57}{KM\_RTOS\_ChangePriority}}(TaskHandle\_t\ handle,\ uint8\_t\ newPriority);}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00237}00237\ }
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00238}00238\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ NOMBRE\_LIBRERIA\_H\ */}\textcolor{preprocessor}{}}
+\DoxyCodeLine{\Hypertarget{km__rtos_8h_source_l00239}00239\ \ }
+
+\end{DoxyCode}

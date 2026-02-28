@@ -1,0 +1,609 @@
+\doxysection{km\+\_\+coms.\+c File Reference}
+\hypertarget{km__coms_8c}{}\label{km__coms_8c}\index{km\_coms.c@{km\_coms.c}}
+{\ttfamily \#include "{}km\+\_\+coms.\+h"{}}\newline
+{\ttfamily \#include "{}driver/uart.\+h"{}}\newline
+{\ttfamily \#include "{}freertos/queue.\+h"{}}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+Include dependency graph for km\+\_\+coms.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{km__coms_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{km__coms_8c_acf6e50ab7bb3358cc025937f28c3156b}{KM\+\_\+\+COMS\+\_\+\+WAIT\+\_\+\+SEM\+\_\+\+AVAILABLE}}~5
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \mbox{\hyperlink{km__coms_8c_aba79802c58d982bf8dcb35a4ffd48b2d}{KM\+\_\+\+COMS\+\_\+\+Proccess\+Payload}} (\mbox{\hyperlink{structkm__coms__msg}{km\+\_\+coms\+\_\+msg}} msg)
+\begin{DoxyCompactList}\small\item\em Processes the payload of the incoming message and updates the corresponding application objects. \end{DoxyCompactList}\item 
+static uint8\+\_\+t \mbox{\hyperlink{km__coms_8c_a9bba34735d6baab1f423bc218f94fafa}{KM\+\_\+\+COMS\+\_\+crc8}} (uint8\+\_\+t len, uint8\+\_\+t type, const uint8\+\_\+t \texorpdfstring{$\ast$}{*}data)
+\begin{DoxyCompactList}\small\item\em Calculates an 8-\/bit CRC checksum for a message. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__coms_8c_ab76bebe5e423f1067e670d62a730e721}{KM\+\_\+\+COMS\+\_\+\+Init}} (uart\+\_\+port\+\_\+t uart\+\_\+port)
+\begin{DoxyCompactList}\small\item\em Initializes the KM\+\_\+\+COMS communication library for a given UART port. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{km__coms_8c_a1761afbf51adcb8c23f3c6b5e0db2ead}{KM\+\_\+\+COMS\+\_\+\+Send\+Msg}} (\mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557c}{message\+\_\+type\+\_\+t}} type, uint8\+\_\+t \texorpdfstring{$\ast$}{*}payload, uint8\+\_\+t len)
+\begin{DoxyCompactList}\small\item\em Sends a communication message over UART. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{km__coms_8c_a88b2405843415e6bf9a03b36048890d4}{km\+\_\+coms\+\_\+\+Receive\+Msg}} (void)
+\begin{DoxyCompactList}\small\item\em Reads bytes from the UART and stores them into the internal RX buffer. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{km__coms_8c_ac4c6ccd77f6a2289dc69ff18629e516f}{KM\+\_\+\+COMS\+\_\+\+Proccess\+Msgs}} (void)
+\begin{DoxyCompactList}\small\item\em Processes all received messages from the RX buffer. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+static uint8\+\_\+t \mbox{\hyperlink{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9}{rx\+\_\+buffer}} \mbox{[}\mbox{\hyperlink{km__coms_8h_aeb8a3b7d00c98bdb8a4b54429e14e066}{KM\+\_\+\+COMS\+\_\+\+MSG\+\_\+\+MAX\+\_\+\+LEN}} -\/ 1\mbox{]}
+\item 
+static size\+\_\+t \mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\+\_\+buffer\+\_\+len}} = 0
+\item 
+static Semaphore\+Handle\+\_\+t \mbox{\hyperlink{km__coms_8c_a608f9ac88a5b86dcc969bfc8e3cd8786}{km\+\_\+coms\+\_\+mutex}}
+\item 
+static uart\+\_\+port\+\_\+t \mbox{\hyperlink{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f}{km\+\_\+coms\+\_\+uart}} = UART\+\_\+\+NUM\+\_\+0
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{km__coms_8c_acf6e50ab7bb3358cc025937f28c3156b}\label{km__coms_8c_acf6e50ab7bb3358cc025937f28c3156b} 
+\index{km\_coms.c@{km\_coms.c}!KM\_COMS\_WAIT\_SEM\_AVAILABLE@{KM\_COMS\_WAIT\_SEM\_AVAILABLE}}
+\index{KM\_COMS\_WAIT\_SEM\_AVAILABLE@{KM\_COMS\_WAIT\_SEM\_AVAILABLE}!km\_coms.c@{km\_coms.c}}
+\doxysubsubsection{\texorpdfstring{KM\_COMS\_WAIT\_SEM\_AVAILABLE}{KM\_COMS\_WAIT\_SEM\_AVAILABLE}}
+{\footnotesize\ttfamily \#define KM\+\_\+\+COMS\+\_\+\+WAIT\+\_\+\+SEM\+\_\+\+AVAILABLE~5}
+
+
+
+Definition at line \mbox{\hyperlink{km__coms_8c_source_l00065}{65}} of file \mbox{\hyperlink{km__coms_8c_source}{km\+\_\+coms.\+c}}.
+
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{km__coms_8c_a9bba34735d6baab1f423bc218f94fafa}\label{km__coms_8c_a9bba34735d6baab1f423bc218f94fafa} 
+\index{km\_coms.c@{km\_coms.c}!KM\_COMS\_crc8@{KM\_COMS\_crc8}}
+\index{KM\_COMS\_crc8@{KM\_COMS\_crc8}!km\_coms.c@{km\_coms.c}}
+\doxysubsubsection{\texorpdfstring{KM\_COMS\_crc8()}{KM\_COMS\_crc8()}}
+{\footnotesize\ttfamily static uint8\+\_\+t KM\+\_\+\+COMS\+\_\+crc8 (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{len,  }\item[{uint8\+\_\+t}]{type,  }\item[{const uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Calculates an 8-\/bit CRC checksum for a message. 
+
+This function computes a CRC-\/8 checksum using the polynomial 0x07. The calculation includes the message length ({\ttfamily len}), message type ({\ttfamily type}), and the actual payload data. The CRC is computed sequentially\+:
+\begin{DoxyEnumerate}
+\item XOR with the message length and process 8 bits.
+\item XOR with the message type and process 8 bits.
+\item XOR each byte of the payload data and process 8 bits per byte.
+\end{DoxyEnumerate}
+
+This checksum is used for detecting errors in communication messages.
+
+
+\begin{DoxyParams}{Parameters}
+{\em len} & Length of the payload data in bytes. \\
+\hline
+{\em type} & Message type identifier. \\
+\hline
+{\em data} & Pointer to the payload data array. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The computed 8-\/bit CRC value. 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{km__coms_8c_source_l00358}{358}} of file \mbox{\hyperlink{km__coms_8c_source}{km\+\_\+coms.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00359\ \ \ \ \ uint8\_t\ crc\ =\ 0x00;}
+\DoxyCodeLine{00360\ }
+\DoxyCodeLine{00361\ \ \ \ \ crc\ \string^=\ len;}
+\DoxyCodeLine{00362\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <\ 8;\ j++)\ \{}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ crc\ =\ (crc\ \&\ 0x80)\ ?\ (crc\ <<\ 1)\ \string^\ 0x07\ :\ (crc\ <<\ 1);}
+\DoxyCodeLine{00364\ \ \ \ \ \}}
+\DoxyCodeLine{00365\ }
+\DoxyCodeLine{00366\ \ \ \ \ crc\ \string^=\ type;}
+\DoxyCodeLine{00367\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <\ 8;\ j++)\ \{}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ crc\ =\ (crc\ \&\ 0x80)\ ?\ (crc\ <<\ 1)\ \string^\ 0x07\ :\ (crc\ <<\ 1);}
+\DoxyCodeLine{00369\ \ \ \ \ \}}
+\DoxyCodeLine{00370\ }
+\DoxyCodeLine{00371\ \ \ \ \ \textcolor{keywordflow}{for}\ (uint8\_t\ i\ =\ 0;\ i\ <\ len;\ i++)\ \{}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ crc\ \string^=\ data[i];}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ j\ =\ 0;\ j\ <\ 8;\ j++)\ \{}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ crc\ =\ (crc\ \&\ 0x80)\ ?\ (crc\ <<\ 1)\ \string^\ 0x07\ :\ (crc\ <<\ 1);}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00376\ \ \ \ \ \}}
+\DoxyCodeLine{00377\ }
+\DoxyCodeLine{00378\ \ \ \ \ \textcolor{keywordflow}{return}\ crc;}
+\DoxyCodeLine{00379\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__coms_8c_ab76bebe5e423f1067e670d62a730e721}\label{km__coms_8c_ab76bebe5e423f1067e670d62a730e721} 
+\index{km\_coms.c@{km\_coms.c}!KM\_COMS\_Init@{KM\_COMS\_Init}}
+\index{KM\_COMS\_Init@{KM\_COMS\_Init}!km\_coms.c@{km\_coms.c}}
+\doxysubsubsection{\texorpdfstring{KM\_COMS\_Init()}{KM\_COMS\_Init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+COMS\+\_\+\+Init (\begin{DoxyParamCaption}\item[{uart\+\_\+port\+\_\+t}]{uart\+\_\+port }\end{DoxyParamCaption})}
+
+
+
+Initializes the KM\+\_\+\+COMS communication library for a given UART port. 
+
+This function sets up the internal UART interface for the communication library, creates a mutex for thread-\/safe access to the RX buffer, and installs/configures the UART driver with the appropriate TX/\+RX pins and buffer sizes.
+
+Steps performed by the function\+:
+\begin{DoxyEnumerate}
+\item Stores the UART port to be used by the library ({\ttfamily km\+\_\+coms\+\_\+uart}).
+\item Creates a mutex ({\ttfamily km\+\_\+coms\+\_\+mutex}) to protect access to the internal RX buffer.
+\begin{DoxyItemize}
+\item Returns {\ttfamily ESP\+\_\+\+ERR\+\_\+\+NO\+\_\+\+MEM} if mutex creation fails.
+\end{DoxyItemize}
+\item Installs the UART driver with predefined RX and TX buffer sizes.
+\item Configures UART parameters (baud rate, data bits, parity, stop bits, etc.).
+\item Sets the TX/\+RX pins based on the selected UART port.
+\end{DoxyEnumerate}
+
+
+\begin{DoxyParams}{Parameters}
+{\em uart\+\_\+port} & The UART port to use (e.\+g., UART\+\_\+\+NUM\+\_\+1, UART\+\_\+\+NUM\+\_\+2). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK if initialization succeeded. 
+
+ESP\+\_\+\+ERR\+\_\+\+NO\+\_\+\+MEM if the mutex could not be created.
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+This function should be called once at the start of the system before sending or receiving messages. 
+
+Thread-\/safety for the RX buffer is ensured via {\ttfamily km\+\_\+coms\+\_\+mutex}. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__coms_8c_source_l00080}{80}} of file \mbox{\hyperlink{km__coms_8c_source}{km\+\_\+coms.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00081\ \ \ \ \ \mbox{\hyperlink{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f}{km\_coms\_uart}}\ =\ uart\_port;}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ \mbox{\hyperlink{km__coms_8c_a608f9ac88a5b86dcc969bfc8e3cd8786}{km\_coms\_mutex}}\ =\ xSemaphoreCreateMutex();}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordflow}{if}(\mbox{\hyperlink{km__coms_8c_a608f9ac88a5b86dcc969bfc8e3cd8786}{km\_coms\_mutex}}\ ==\ NULL)}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_ERR\_NO\_MEM;}
+\DoxyCodeLine{00086\ }
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{comment}{//\ Instala\ el\ driver\ UART\ con\ buffers\ TX/RX}}
+\DoxyCodeLine{00088\ \ \ \ \ uart\_driver\_install(\mbox{\hyperlink{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f}{km\_coms\_uart}},\ \mbox{\hyperlink{km__coms_8h_ac25768043d6647b28f0372b02b70bbb4}{BUF\_SIZE\_RX}},\ \mbox{\hyperlink{km__coms_8h_a9b56c57167c0ff83253c3c123661706a}{BUF\_SIZE\_TX}},\ 0,\ NULL,\ 0);}
+\DoxyCodeLine{00089\ \ \ \ \ uart\_param\_config(\mbox{\hyperlink{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f}{km\_coms\_uart}},\ \&\mbox{\hyperlink{km__gpio_8c_a22cf3a004d95b68f395f32ecdfe6ba15}{uart\_config}});}
+\DoxyCodeLine{00090\ }
+\DoxyCodeLine{00091\ \ \ \ \ \textcolor{comment}{//\ Asigna\ pines\ según\ el\ puerto}}
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordflow}{if}(\mbox{\hyperlink{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f}{km\_coms\_uart}}\ ==\ UART\_NUM\_2)\ \{}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ uart\_set\_pin(\mbox{\hyperlink{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f}{km\_coms\_uart}},\ \mbox{\hyperlink{km__gpio_8h_a9980602166120297bd562931995115fe}{PIN\_ORIN\_UART\_TX}},\ \mbox{\hyperlink{km__gpio_8h_a33393403cefaa6a9f07e6341bc0b6121}{PIN\_ORIN\_UART\_RX}},}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ UART\_PIN\_NO\_CHANGE,\ UART\_PIN\_NO\_CHANGE);}
+\DoxyCodeLine{00095\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ uart\_set\_pin(\mbox{\hyperlink{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f}{km\_coms\_uart}},\ \mbox{\hyperlink{km__gpio_8h_ab729b72da44a7e74d0c84733353476ba}{PIN\_USB\_UART\_TX}},\ \mbox{\hyperlink{km__gpio_8h_ae50025ff397267332e943e2d4b16da85}{PIN\_USB\_UART\_RX}},}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ UART\_PIN\_NO\_CHANGE,\ UART\_PIN\_NO\_CHANGE);}
+\DoxyCodeLine{00098\ \ \ \ \ \}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_OK;}
+\DoxyCodeLine{00101\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__coms_8c_ac4c6ccd77f6a2289dc69ff18629e516f}\label{km__coms_8c_ac4c6ccd77f6a2289dc69ff18629e516f} 
+\index{km\_coms.c@{km\_coms.c}!KM\_COMS\_ProccessMsgs@{KM\_COMS\_ProccessMsgs}}
+\index{KM\_COMS\_ProccessMsgs@{KM\_COMS\_ProccessMsgs}!km\_coms.c@{km\_coms.c}}
+\doxysubsubsection{\texorpdfstring{KM\_COMS\_ProccessMsgs()}{KM\_COMS\_ProccessMsgs()}}
+{\footnotesize\ttfamily void KM\+\_\+\+COMS\+\_\+\+Proccess\+Msgs (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Processes all received messages from the RX buffer. 
+
+This function iterates through the {\ttfamily rx\+\_\+buffer} to extract and process complete communication messages. Each message is expected to follow the protocol\+: \mbox{[}SOM \texorpdfstring{$\vert$}{|} LEN \texorpdfstring{$\vert$}{|} TYPE \texorpdfstring{$\vert$}{|} PAYLOAD... \texorpdfstring{$\vert$}{|} CRC\mbox{]}.
+
+Steps performed by the function\+:
+\begin{DoxyEnumerate}
+\item Acquires the {\ttfamily km\+\_\+coms\+\_\+mutex} semaphore to ensure thread-\/safe access to the RX buffer.
+\item Iterates through the buffer while enough bytes remain for at least a minimal message.
+\item Searches for the Start-\/of-\/\+Message (SOM) byte. Skips invalid bytes.
+\item Reads the payload length ({\ttfamily LEN}) and calculates the total message length.
+\item If a complete message is available\+:
+\begin{DoxyItemize}
+\item Constructs a {\ttfamily \doxylink{structkm__coms__msg}{km\+\_\+coms\+\_\+msg}} structure with {\ttfamily len}, {\ttfamily type}, {\ttfamily payload}, and {\ttfamily crc}.
+\item Verifies the CRC using {\ttfamily \doxylink{km__coms_8c_a9bba34735d6baab1f423bc218f94fafa}{KM\+\_\+\+COMS\+\_\+crc8()}}.
+\item If the CRC is valid, calls {\ttfamily \doxylink{km__coms_8c_aba79802c58d982bf8dcb35a4ffd48b2d}{KM\+\_\+\+COMS\+\_\+\+Proccess\+Payload()}} to handle the message.
+\end{DoxyItemize}
+\item After processing, compacts the buffer by moving unprocessed bytes to the beginning.
+\item Releases the {\ttfamily km\+\_\+coms\+\_\+mutex} semaphore.
+\end{DoxyEnumerate}
+
+This function ensures that partially received messages are retained in the buffer until complete data arrives.
+
+\begin{DoxyNote}{Note}
+The minimum message length is 4 bytes\+: SOM + LEN + TYPE + CRC. 
+
+Thread-\/safety is provided by {\ttfamily km\+\_\+coms\+\_\+mutex}. 
+
+This function is intended to be called periodically from a Free\+RTOS task. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__coms_8c_source_l00181}{181}} of file \mbox{\hyperlink{km__coms_8c_source}{km\+\_\+coms.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ processed\ =\ 0;}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keywordflow}{if}(xSemaphoreTake(\mbox{\hyperlink{km__coms_8c_a608f9ac88a5b86dcc969bfc8e3cd8786}{km\_coms\_mutex}},\ pdMS\_TO\_TICKS(\mbox{\hyperlink{km__coms_8c_acf6e50ab7bb3358cc025937f28c3156b}{KM\_COMS\_WAIT\_SEM\_AVAILABLE}}))\ !=\ pdTRUE)}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordflow}{while}(\mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\_buffer\_len}}\ -\/\ processed\ >=\ 4)\ \{\ \textcolor{comment}{//\ Mínimo:\ SOM\ +\ LEN\ +\ TYPE\ +\ CRC}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\mbox{\hyperlink{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9}{rx\_buffer}}[processed]\ !=\ \mbox{\hyperlink{km__coms_8h_abe11fc7a6ddd042ef9c27ddde12dd442}{KM\_COMS\_SOM}})\ \{}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ processed++;}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ uint8\_t\ payload\_len\ =\ \mbox{\hyperlink{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9}{rx\_buffer}}[processed\ +\ 1];}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ total\_len\ =\ 4\ +\ payload\_len;\ \textcolor{comment}{//\ SOM\ +\ LEN\ +\ TYPE\ +\ PAYLOAD\ +\ CRC}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\_buffer\_len}}\ -\/\ processed\ <\ total\_len)}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};\ \textcolor{comment}{//\ Mensaje\ incompleto,\ esperar\ más\ bytes}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Construir\ mensaje}}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{structkm__coms__msg}{km\_coms\_msg}}\ msg;}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}}\ =\ payload\_len;}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ msg.\mbox{\hyperlink{structkm__coms__msg_a5bc2da8149e24537f75547e219bf447a}{type}}\ =\ \mbox{\hyperlink{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9}{rx\_buffer}}[processed\ +\ 2];}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ memcpy(msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}},\ \mbox{\hyperlink{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9}{rx\_buffer}}\ +\ processed\ +\ 3,\ payload\_len);}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ msg.\mbox{\hyperlink{structkm__coms__msg_aa33daf691ecabe9bef9453e9c19c833d}{crc}}\ =\ \mbox{\hyperlink{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9}{rx\_buffer}}[processed\ +\ 3\ +\ payload\_len];}
+\DoxyCodeLine{00205\ }
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Verificar\ CRC}}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ uint8\_t\ crc\_calc\ =\ \mbox{\hyperlink{km__coms_8c_a9bba34735d6baab1f423bc218f94fafa}{KM\_COMS\_crc8}}(msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}},\ msg.\mbox{\hyperlink{structkm__coms__msg_a5bc2da8149e24537f75547e219bf447a}{type}},\ msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}});}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(crc\_calc\ ==\ msg.\mbox{\hyperlink{structkm__coms__msg_aa33daf691ecabe9bef9453e9c19c833d}{crc}})\ \{}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__coms_8c_aba79802c58d982bf8dcb35a4ffd48b2d}{KM\_COMS\_ProccessPayload}}(msg);}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ processed\ +=\ total\_len;}
+\DoxyCodeLine{00213\ \ \ \ \ \}}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{comment}{//\ Compactar\ buffer:\ mover\ bytes\ no\ procesados\ al\ inicio}}
+\DoxyCodeLine{00216\ \ \ \ \ \textcolor{keywordflow}{if}(processed\ >\ 0\ \&\&\ processed\ <\ \mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\_buffer\_len}})\ \{}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ memmove(\mbox{\hyperlink{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9}{rx\_buffer}},\ \mbox{\hyperlink{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9}{rx\_buffer}}\ +\ processed,\ \mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\_buffer\_len}}\ -\/\ processed);}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\_buffer\_len}}\ -\/=\ processed;}
+\DoxyCodeLine{00219\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}(processed\ >=\ \mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\_buffer\_len}})\ \{}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\_buffer\_len}}\ =\ 0;}
+\DoxyCodeLine{00221\ \ \ \ \ \}}
+\DoxyCodeLine{00222\ }
+\DoxyCodeLine{00223\ \ \ \ \ xSemaphoreGive(\mbox{\hyperlink{km__coms_8c_a608f9ac88a5b86dcc969bfc8e3cd8786}{km\_coms\_mutex}});}
+\DoxyCodeLine{00224\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__coms_8c_aba79802c58d982bf8dcb35a4ffd48b2d}\label{km__coms_8c_aba79802c58d982bf8dcb35a4ffd48b2d} 
+\index{km\_coms.c@{km\_coms.c}!KM\_COMS\_ProccessPayload@{KM\_COMS\_ProccessPayload}}
+\index{KM\_COMS\_ProccessPayload@{KM\_COMS\_ProccessPayload}!km\_coms.c@{km\_coms.c}}
+\doxysubsubsection{\texorpdfstring{KM\_COMS\_ProccessPayload()}{KM\_COMS\_ProccessPayload()}}
+{\footnotesize\ttfamily static void KM\+\_\+\+COMS\+\_\+\+Proccess\+Payload (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structkm__coms__msg}{km\+\_\+coms\+\_\+msg}}}]{msg }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Processes the payload of the incoming message and updates the corresponding application objects. 
+
+This function interprets the payload of a received message ({\ttfamily \doxylink{structkm__coms__msg}{km\+\_\+coms\+\_\+msg}}) based on its {\ttfamily type}. Depending on the message type, it extracts the relevant data from the payload, converts it to a 64-\/bit integer ({\ttfamily int64\+\_\+t}), and updates the appropriate shared object using {\ttfamily \doxylink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\+\_\+\+OBJ\+\_\+\+Set\+Object\+Value()}}.
+
+Supported message types include\+:
+\begin{DoxyItemize}
+\item ORIN\+\_\+\+TARG\+\_\+\+THROTTLE\+: 1-\/byte payload representing the target throttle.
+\item ORIN\+\_\+\+TARG\+\_\+\+BRAKING\+: 1-\/byte payload representing the target braking.
+\item ORIN\+\_\+\+TARG\+\_\+\+STEERING\+: 2-\/byte payload where the first byte indicates direction and the second byte the magnitude. 0-\/\texorpdfstring{$>$}{>}positive turn, 1-\/\texorpdfstring{$>$}{>}negative turn
+\item ORIN\+\_\+\+MISION\+: 1-\/byte payload representing the current mission state.
+\item ORIN\+\_\+\+MACHINE\+\_\+\+STATE\+: 1-\/byte payload representing the machine\textquotesingle{}s current state.
+\item ORIN\+\_\+\+HEARTBEAT\+: message indicating heartbeat; currently not processed.
+\item ORIN\+\_\+\+SHUTDOWN\+: 1-\/byte payload indicating shutdown command.
+\item ORIN\+\_\+\+COMPLETE\+: 7-\/byte payload updating all above objects in a single message.
+\end{DoxyItemize}
+
+Invalid payloads (wrong length or unknown direction for steering) are ignored.
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & The incoming message to process. \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{km__coms_8c_source_l00251}{251}} of file \mbox{\hyperlink{km__coms_8c_source}{km\+\_\+coms.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00252\ \ \ \ \ ESP\_LOGI(\textcolor{stringliteral}{"{}KM\_coms"{}},\ \textcolor{stringliteral}{"{}RX\ msg\ type=0x\%02X\ len=\%d\ crc=0x\%02X"{}},\ msg.\mbox{\hyperlink{structkm__coms__msg_a5bc2da8149e24537f75547e219bf447a}{type}},\ msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}},\ msg.\mbox{\hyperlink{structkm__coms__msg_aa33daf691ecabe9bef9453e9c19c833d}{crc}});}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \ \ \ \ int64\_t\ object\_value\ =\ 0;}
+\DoxyCodeLine{00255\ \ \ \ \ int8\_t\ direction;}
+\DoxyCodeLine{00256\ }
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keywordflow}{switch}\ (msg.\mbox{\hyperlink{structkm__coms__msg_a5bc2da8149e24537f75547e219bf447a}{type}})}
+\DoxyCodeLine{00258\ \ \ \ \ \{}
+\DoxyCodeLine{00259\ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557cace6e4f1b53360014c96170d78bedfeec}{ORIN\_TARG\_THROTTLE}}:}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}}\ !=\ 1)\ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ Invalid\ payload}}
+\DoxyCodeLine{00261\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00262\ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[0];}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a4968151e0cc2da6d56087adf622c3026}{TARGET\_THROTTLE}},\ object\_value);}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00266\ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557ca4c978d522ff98b457704437bb924310a}{ORIN\_TARG\_BRAKING}}:}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}}\ !=\ 1)\ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ Invalid\ payload}}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[0];}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a229204c5c3a08da758d0fb4d830acb17}{TARGET\_BRAKING}},\ object\_value);}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00271\ }
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557ca2eaf6bee868873bdd23e514b2ae964f9}{ORIN\_TARG\_STEERING}}:}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}}\ !=\ 2)\ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ Invalid\ payload}}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ \ \ direction\ =\ msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[0];}
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (direction\ ==\ 0)\ \{}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[1];}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (direction\ ==\ 1)\{}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ object\_value\ -\/=\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[1];}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ Invalid\ payload}}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36aebdb8633b2467a7a009fb39872ebff7a}{TARGET\_STEERING}},\ object\_value);}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00285\ }
+\DoxyCodeLine{00286\ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557ca152eae081cf5f8acbaa9a5c764f1ec20}{ORIN\_MISION}}:}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}}\ !=\ 1)\ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ Invalid\ payload}}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[0];}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36ac3c3367c5b8bd9cd83a42c1490b74b59}{MISION\_ORIN}},\ object\_value);}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557cabd4454098238f72df425321a4e22a286}{ORIN\_MACHINE\_STATE}}:}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}}\ !=\ 1)\ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ Invalid\ payload}}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[0];}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a596712d692da41aa476b6e82607f3401}{MACHINE\_STATE\_ORIN}},\ object\_value);}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00298\ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557cad7627e672899664c62f4c94e5df6805f}{ORIN\_HEARTBEAT}}:}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Ns\ si\ guardarlo\ en\ la\ libreria\ de\ variables\ o\ reinicar\ algo.\ ns}}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00301\ }
+\DoxyCodeLine{00302\ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557ca4a4fe38207556f1e3b050281fd4eec25}{ORIN\_SHUTDOWN}}:}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}}\ !=\ 1)\ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ Invalid\ payload}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[0];}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a96ce56c458b7646e8c7073dd8a86710a}{SHUTDOWN\_ORIN}},\ object\_value);}
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00307\ }
+\DoxyCodeLine{00308\ \ \ \ \ \textcolor{keywordflow}{case}\ \mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557cafe27389db3bce49cacdb583008b93c85}{ORIN\_COMPLETE}}:}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}}\ !=\ 7)\ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ Invalid\ payload}}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[0];}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a4968151e0cc2da6d56087adf622c3026}{TARGET\_THROTTLE}},\ object\_value);}
+\DoxyCodeLine{00312\ }
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[1];}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a229204c5c3a08da758d0fb4d830acb17}{TARGET\_BRAKING}},\ object\_value);}
+\DoxyCodeLine{00315\ }
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ direction\ =\ msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[2];}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (direction\ ==\ 0)\ \{}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[3];}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (direction\ ==\ 1)\{}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ object\_value\ -\/=\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[3];}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};\ \textcolor{comment}{//\ Invalid\ payload}}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00324\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36aebdb8633b2467a7a009fb39872ebff7a}{TARGET\_STEERING}},\ object\_value);}
+\DoxyCodeLine{00325\ }
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[4];}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36ac3c3367c5b8bd9cd83a42c1490b74b59}{MISION\_ORIN}},\ object\_value);}
+\DoxyCodeLine{00328\ }
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[5];}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a596712d692da41aa476b6e82607f3401}{MACHINE\_STATE\_ORIN}},\ object\_value);}
+\DoxyCodeLine{00331\ }
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ object\_value\ =\ (int64\_t)msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}}[6];}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__objects_8c_a6b81204c392a1d5ab55c4582cd34809c}{KM\_OBJ\_SetObjectValue}}(\mbox{\hyperlink{km__objects_8h_a862393760e9bb593cf293380f0d6fb36a96ce56c458b7646e8c7073dd8a86710a}{SHUTDOWN\_ORIN}},\ object\_value);}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00335\ \ \ \ \ }
+\DoxyCodeLine{00336\ \ \ \ \ \textcolor{keywordflow}{default}:}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00338\ \ \ \ \ \}}
+\DoxyCodeLine{00339\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__coms_8c_a88b2405843415e6bf9a03b36048890d4}\label{km__coms_8c_a88b2405843415e6bf9a03b36048890d4} 
+\index{km\_coms.c@{km\_coms.c}!km\_coms\_ReceiveMsg@{km\_coms\_ReceiveMsg}}
+\index{km\_coms\_ReceiveMsg@{km\_coms\_ReceiveMsg}!km\_coms.c@{km\_coms.c}}
+\doxysubsubsection{\texorpdfstring{km\_coms\_ReceiveMsg()}{km\_coms\_ReceiveMsg()}}
+{\footnotesize\ttfamily void km\+\_\+coms\+\_\+\+Receive\+Msg (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Reads bytes from the UART and stores them into the internal RX buffer. 
+
+This function retrieves available data from the UART interface ({\ttfamily km\+\_\+coms\+\_\+uart}) and appends it to the internal communication library buffer ({\ttfamily rx\+\_\+buffer}). It ensures thread-\/safe access using the {\ttfamily km\+\_\+coms\+\_\+mutex} semaphore.
+
+Steps performed by the function\+:
+\begin{DoxyEnumerate}
+\item Checks how many bytes are currently available in the UART buffer.
+\item Reads up to {\ttfamily KM\+\_\+\+COMS\+\_\+\+RX\+\_\+\+CHUNK} bytes from the UART.
+\item If bytes are read successfully, acquires the {\ttfamily km\+\_\+coms\+\_\+mutex} semaphore.
+\item Appends the read bytes to the internal RX buffer.
+\begin{DoxyItemize}
+\item If the buffer would overflow, it is reset to prevent memory corruption.
+\end{DoxyItemize}
+\item Releases the semaphore after updating the buffer.
+\end{DoxyEnumerate}
+
+\begin{DoxyNote}{Note}
+Thread-\/safety is provided via {\ttfamily km\+\_\+coms\+\_\+mutex}. 
+
+The internal RX buffer size is limited; excessive incoming data may reset the buffer. 
+
+This function is intended to be called periodically from a Free\+RTOS task. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__coms_8c_source_l00148}{148}} of file \mbox{\hyperlink{km__coms_8c_source}{km\+\_\+coms.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00149\ \ \ \ \ uint8\_t\ uart\_chunk[\mbox{\hyperlink{km__coms_8h_a25741fa2da4986d88b7741916221d1be}{KM\_COMS\_RX\_CHUNK}}];}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ len\_read\ =\ 0;}
+\DoxyCodeLine{00151\ \ \ \ \ uint8\_t\ bytes2read\ =\ 0;}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{comment}{//\ 1.\ Verificar\ cuantos\ bytes\ hay\ en\ el\ buffer\ UART}}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ uart\_len\ =\ 0;}
+\DoxyCodeLine{00155\ \ \ \ \ uart\_get\_buffered\_data\_len(\mbox{\hyperlink{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f}{km\_coms\_uart}},\ \&uart\_len);}
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{keywordflow}{if}(uart\_len\ ==\ 0)}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00158\ }
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{comment}{//\ 2.\ Leer\ hasta\ KM\_COMS\_RX\_CHUNK\ bytes\ de\ la\ UART}}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keywordflow}{if}(uart\_len\ >\ \mbox{\hyperlink{km__coms_8h_a25741fa2da4986d88b7741916221d1be}{KM\_COMS\_RX\_CHUNK}})}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ bytes2read\ =\ \mbox{\hyperlink{km__coms_8h_a25741fa2da4986d88b7741916221d1be}{KM\_COMS\_RX\_CHUNK}};}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ bytes2read\ =\ uart\_len;}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ len\_read\ =\ uart\_read\_bytes(\mbox{\hyperlink{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f}{km\_coms\_uart}},\ uart\_chunk,\ bytes2read,\ 0);}
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{keywordflow}{if}(len\_read\ ==\ 0)}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \ \ \textcolor{keywordflow}{if}(xSemaphoreTake(\mbox{\hyperlink{km__coms_8c_a608f9ac88a5b86dcc969bfc8e3cd8786}{km\_coms\_mutex}},\ pdMS\_TO\_TICKS(\mbox{\hyperlink{km__coms_8c_acf6e50ab7bb3358cc025937f28c3156b}{KM\_COMS\_WAIT\_SEM\_AVAILABLE}}))\ ==\ pdTRUE)\ \{}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ 3.\ Copiar\ bytes\ al\ buffer\ interno}}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\_buffer\_len}}\ +\ len\_read\ >\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9}{rx\_buffer}}))\ \{}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Overflow,\ reiniciar\ buffer}}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\_buffer\_len}}\ =\ 0;}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ memcpy(\mbox{\hyperlink{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9}{rx\_buffer}}\ +\ \mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\_buffer\_len}},\ uart\_chunk,\ len\_read);}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__coms_8c_a7d1257da930199e7c904f42131257593}{rx\_buffer\_len}}\ +=\ len\_read;}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ xSemaphoreGive(\mbox{\hyperlink{km__coms_8c_a608f9ac88a5b86dcc969bfc8e3cd8786}{km\_coms\_mutex}});}
+\DoxyCodeLine{00178\ \ \ \ \ \}}
+\DoxyCodeLine{00179\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__coms_8c_a1761afbf51adcb8c23f3c6b5e0db2ead}\label{km__coms_8c_a1761afbf51adcb8c23f3c6b5e0db2ead} 
+\index{km\_coms.c@{km\_coms.c}!KM\_COMS\_SendMsg@{KM\_COMS\_SendMsg}}
+\index{KM\_COMS\_SendMsg@{KM\_COMS\_SendMsg}!km\_coms.c@{km\_coms.c}}
+\doxysubsubsection{\texorpdfstring{KM\_COMS\_SendMsg()}{KM\_COMS\_SendMsg()}}
+{\footnotesize\ttfamily int KM\+\_\+\+COMS\+\_\+\+Send\+Msg (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557c}{message\+\_\+type\+\_\+t}}}]{type,  }\item[{uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{payload,  }\item[{uint8\+\_\+t}]{len }\end{DoxyParamCaption})}
+
+
+
+Sends a communication message over UART. 
+
+This function constructs and sends a message frame according to the KM\+\_\+\+COMS protocol\+: \mbox{[}SOM \texorpdfstring{$\vert$}{|} LEN \texorpdfstring{$\vert$}{|} TYPE \texorpdfstring{$\vert$}{|} PAYLOAD \texorpdfstring{$\vert$}{|} CRC\mbox{]}. It calculates the CRC for the message and attempts to send it via UART up to 5 times if the UART buffer is full.
+
+Steps performed by the function\+:
+\begin{DoxyEnumerate}
+\item Validates that the payload length does not exceed the maximum allowed.
+\item Fills a {\ttfamily \doxylink{structkm__coms__msg}{km\+\_\+coms\+\_\+msg}} structure with length, type, payload, and calculated CRC.
+\item Builds the UART frame\+: Start-\/of-\/\+Message (SOM), LEN, TYPE, PAYLOAD, CRC.
+\item Attempts to send the entire frame via {\ttfamily uart\+\_\+write\+\_\+bytes}, retrying up to 5 times if the UART buffer is temporarily full, with a short delay between attempts.
+\item Returns success if the full message is transmitted, or failure if it could not be sent.
+\end{DoxyEnumerate}
+
+
+\begin{DoxyParams}{Parameters}
+{\em type} & The type of message to send (message\+\_\+type\+\_\+t). \\
+\hline
+{\em payload} & Pointer to the payload data to send. \\
+\hline
+{\em len} & Length of the payload in bytes. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+1 if the message was sent successfully, 0 if sending failed, -\/1 if payload is too long.
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+This function can be called from a Free\+RTOS task periodically or on-\/demand. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__coms_8c_source_l00103}{103}} of file \mbox{\hyperlink{km__coms_8c_source}{km\+\_\+coms.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00104\ \ \ \ \ \mbox{\hyperlink{structkm__coms__msg}{km\_coms\_msg}}\ msg;}
+\DoxyCodeLine{00105\ \ \ \ \ uint8\_t\ frame[\mbox{\hyperlink{km__coms_8h_aeb8a3b7d00c98bdb8a4b54429e14e066}{KM\_COMS\_MSG\_MAX\_LEN}}\ -\/\ 1];}
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ total\_sent\ =\ 0;}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keywordtype}{int}\ sent,\ attempts\ =\ 0;}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{if}(len\ >\ \mbox{\hyperlink{km__coms_8h_aeb8a3b7d00c98bdb8a4b54429e14e066}{KM\_COMS\_MSG\_MAX\_LEN}})}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ -\/1;}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \ \ msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}}\ =\ (uint8\_t)len;}
+\DoxyCodeLine{00113\ \ \ \ \ msg.\mbox{\hyperlink{structkm__coms__msg_a5bc2da8149e24537f75547e219bf447a}{type}}\ =\ (uint8\_t)type;}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ memcpy(msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}},\ payload,\ len);}
+\DoxyCodeLine{00116\ \ \ \ \ msg.\mbox{\hyperlink{structkm__coms__msg_aa33daf691ecabe9bef9453e9c19c833d}{crc}}\ =\ \mbox{\hyperlink{km__coms_8c_a9bba34735d6baab1f423bc218f94fafa}{KM\_COMS\_crc8}}(msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}},\ msg.\mbox{\hyperlink{structkm__coms__msg_a5bc2da8149e24537f75547e219bf447a}{type}},\ msg.\mbox{\hyperlink{structkm__coms__msg_abfc31581c378e4f9bd5401c4cc28b44c}{payload}});\ \textcolor{comment}{//\ LEN\ +\ TYPE\ +\ PAYLOAD}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{comment}{//\ Armar\ frame}}
+\DoxyCodeLine{00119\ \ \ \ \ frame[0]\ =\ (uint8\_t)\mbox{\hyperlink{km__coms_8h_abe11fc7a6ddd042ef9c27ddde12dd442}{KM\_COMS\_SOM}};}
+\DoxyCodeLine{00120\ \ \ \ \ frame[1]\ =\ (uint8\_t)msg.\mbox{\hyperlink{structkm__coms__msg_ab9dbd3ad7908ca25b692df7579cc64d3}{len}};}
+\DoxyCodeLine{00121\ \ \ \ \ frame[2]\ =\ (uint8\_t)msg.\mbox{\hyperlink{structkm__coms__msg_a5bc2da8149e24537f75547e219bf447a}{type}};}
+\DoxyCodeLine{00122\ \ \ \ \ memcpy(\&frame[3],\ msg.payload,\ msg.len);}
+\DoxyCodeLine{00123\ \ \ \ \ frame[3\ +\ msg.len]\ =\ (uint8\_t)msg.crc;}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{comment}{//\ Enviar\ mensaje,\ se\ intenta\ 5\ veces}}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordflow}{while}(total\_sent\ <\ len+4\ \&\&\ attempts\ <\ 5)\ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ sent\ =\ uart\_write\_bytes(\mbox{\hyperlink{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f}{km\_coms\_uart}},\ frame\ +\ total\_sent,\ (len\ +\ 4)\ -\/\ total\_sent);}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ total\_sent\ +=\ sent;}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(sent\ <\ (len\ -\/\ total\_sent))\ \{}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ buffer\ lleno,\ espera\ a\ que\ se\ vacíe}}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ attempts++;}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ vTaskDelay(5\ /\ portTICK\_PERIOD\_MS);}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00135\ \ \ \ \ \}}
+\DoxyCodeLine{00136\ }
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{comment}{//\ NO\ se\ ha\ podido\ enviar\ el\ mensaje\ correctamente}}
+\DoxyCodeLine{00138\ \ \ \ \ \textcolor{keywordflow}{if}(attempts\ >=\ 5\ ||\ total\_sent\ <\ 4\ +\ len)\{}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ ESP\_LOGE(\textcolor{stringliteral}{"{}KM\_coms"{}},\ \textcolor{stringliteral}{"{}El\ msg\ no\ se\ ha\ enviado,\ bytes\ enviados:\ \%d,\ bytes\ que\ habia\ que\ enviar:\ \%d"{}},\ total\_sent,\ 4+len);}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00141\ \ \ \ \ \}}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{comment}{//\ Se\ ha\ enviado\ el\ mensaje\ correctamente}}
+\DoxyCodeLine{00144\ \ \ \ \ \textcolor{keywordflow}{return}\ 1;}
+\DoxyCodeLine{00145\ \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{km__coms_8c_a608f9ac88a5b86dcc969bfc8e3cd8786}\label{km__coms_8c_a608f9ac88a5b86dcc969bfc8e3cd8786} 
+\index{km\_coms.c@{km\_coms.c}!km\_coms\_mutex@{km\_coms\_mutex}}
+\index{km\_coms\_mutex@{km\_coms\_mutex}!km\_coms.c@{km\_coms.c}}
+\doxysubsubsection{\texorpdfstring{km\_coms\_mutex}{km\_coms\_mutex}}
+{\footnotesize\ttfamily Semaphore\+Handle\+\_\+t km\+\_\+coms\+\_\+mutex\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__coms_8c_source_l00071}{71}} of file \mbox{\hyperlink{km__coms_8c_source}{km\+\_\+coms.\+c}}.
+
+\Hypertarget{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f}\label{km__coms_8c_acff6ce490f7f7c3b265c2ffc4be3d82f} 
+\index{km\_coms.c@{km\_coms.c}!km\_coms\_uart@{km\_coms\_uart}}
+\index{km\_coms\_uart@{km\_coms\_uart}!km\_coms.c@{km\_coms.c}}
+\doxysubsubsection{\texorpdfstring{km\_coms\_uart}{km\_coms\_uart}}
+{\footnotesize\ttfamily uart\+\_\+port\+\_\+t km\+\_\+coms\+\_\+uart = UART\+\_\+\+NUM\+\_\+0\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__coms_8c_source_l00072}{72}} of file \mbox{\hyperlink{km__coms_8c_source}{km\+\_\+coms.\+c}}.
+
+\Hypertarget{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9}\label{km__coms_8c_a1ab99be7805e9652a2f2549c1f2d53b9} 
+\index{km\_coms.c@{km\_coms.c}!rx\_buffer@{rx\_buffer}}
+\index{rx\_buffer@{rx\_buffer}!km\_coms.c@{km\_coms.c}}
+\doxysubsubsection{\texorpdfstring{rx\_buffer}{rx\_buffer}}
+{\footnotesize\ttfamily uint8\+\_\+t rx\+\_\+buffer\mbox{[}\mbox{\hyperlink{km__coms_8h_aeb8a3b7d00c98bdb8a4b54429e14e066}{KM\+\_\+\+COMS\+\_\+\+MSG\+\_\+\+MAX\+\_\+\+LEN}} -\/ 1\mbox{]}\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__coms_8c_source_l00069}{69}} of file \mbox{\hyperlink{km__coms_8c_source}{km\+\_\+coms.\+c}}.
+
+\Hypertarget{km__coms_8c_a7d1257da930199e7c904f42131257593}\label{km__coms_8c_a7d1257da930199e7c904f42131257593} 
+\index{km\_coms.c@{km\_coms.c}!rx\_buffer\_len@{rx\_buffer\_len}}
+\index{rx\_buffer\_len@{rx\_buffer\_len}!km\_coms.c@{km\_coms.c}}
+\doxysubsubsection{\texorpdfstring{rx\_buffer\_len}{rx\_buffer\_len}}
+{\footnotesize\ttfamily size\+\_\+t rx\+\_\+buffer\+\_\+len = 0\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__coms_8c_source_l00070}{70}} of file \mbox{\hyperlink{km__coms_8c_source}{km\+\_\+coms.\+c}}.
+

@@ -1,0 +1,231 @@
+\doxysection{km\+\_\+pid.\+c File Reference}
+\hypertarget{km__pid_8c}{}\label{km__pid_8c}\index{km\_pid.c@{km\_pid.c}}
+{\ttfamily \#include "{}km\+\_\+pid.\+h"{}}\newline
+Include dependency graph for km\+\_\+pid.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=307pt]{km__pid_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \mbox{\hyperlink{km__pid_8c_a322793c6ee8c8404d7290adf09cf868b}{KM\+\_\+\+PID\+\_\+\+Init}} (float kp\+\_\+val, float ki\+\_\+val, float kd\+\_\+val)
+\item 
+float \mbox{\hyperlink{km__pid_8c_a7a8a79f2df68df5e26381c2c39b8c3b1}{KM\+\_\+\+PID\+\_\+\+Calculate}} (\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}controller, float setpoint, float measurement)
+\item 
+void \mbox{\hyperlink{km__pid_8c_a8f9a48ab6a086765b51a4256be6d5cf5}{KM\+\_\+\+PID\+\_\+\+Set\+Tunings}} (\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}controller, float kp, float ki, float kd)
+\item 
+void \mbox{\hyperlink{km__pid_8c_a328a5c5d18ca5eb84725e9c105535b4d}{KM\+\_\+\+PID\+\_\+\+Set\+Output\+Limits}} (\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}controller, float min, float max)
+\item 
+void \mbox{\hyperlink{km__pid_8c_affd9556d0f9d18387b6972a700dc5d24}{KM\+\_\+\+PID\+\_\+\+Set\+Integral\+Limits}} (\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}controller, float min, float max)
+\item 
+void \mbox{\hyperlink{km__pid_8c_af8c16043f7b7a96f7f043d1f2469257d}{KM\+\_\+\+PID\+\_\+\+Reset}} (\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}controller)
+\item 
+void \mbox{\hyperlink{km__pid_8c_ae0cda65dc559258f60eca3c2907b0a3c}{KM\+\_\+\+PID\+\_\+\+Get\+Tunings}} (\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}controller, float kp, float ki, float kd)
+\item 
+float \mbox{\hyperlink{km__pid_8c_ab923f8de607a73a3b363f2077c4993ec}{KM\+\_\+\+PID\+\_\+\+Get\+Integral}} (\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}controller)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{km__pid_8c_a7a8a79f2df68df5e26381c2c39b8c3b1}\label{km__pid_8c_a7a8a79f2df68df5e26381c2c39b8c3b1} 
+\index{km\_pid.c@{km\_pid.c}!KM\_PID\_Calculate@{KM\_PID\_Calculate}}
+\index{KM\_PID\_Calculate@{KM\_PID\_Calculate}!km\_pid.c@{km\_pid.c}}
+\doxysubsubsection{\texorpdfstring{KM\_PID\_Calculate()}{KM\_PID\_Calculate()}}
+{\footnotesize\ttfamily float KM\+\_\+\+PID\+\_\+\+Calculate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}}]{controller,  }\item[{float}]{setpoint,  }\item[{float}]{measurement }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__pid_8c_source_l00037}{37}} of file \mbox{\hyperlink{km__pid_8c_source}{km\+\_\+pid.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordtype}{unsigned}\ \textcolor{keywordtype}{long}\ currentTime\ =\ esp\_timer\_get\_time();}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordtype}{float}\ dt\ =\ (currentTime\ -\/\ controller-\/>\mbox{\hyperlink{structPID__Controller_ad0f1712ca259d7c008286c04292e9322}{lastTime}})\ /\ 1000000.0f;\ \ \textcolor{comment}{//\ Convert\ to\ seconds}}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ Avoid\ division\ by\ zero}}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordflow}{if}\ (dt\ <=\ 0.0f)\ \{}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ dt\ =\ 0.001f;\ \ \textcolor{comment}{//\ Minimum\ 1ms}}
+\DoxyCodeLine{00044\ \ \ \ \ \}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{//\ Calculate\ error}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{float}\ error\ =\ setpoint\ -\/\ measurement;}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \ \ \textcolor{comment}{//\ Proportional\ term}}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{float}\ pTerm\ =\ controller-\/>\mbox{\hyperlink{structPID__Controller_a9608eb2661d299170269a2560dde9e2c}{kp}}\ *\ error;}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{//\ Integral\ term\ with\ anti-\/windup}}
+\DoxyCodeLine{00053\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad}{integral}}\ +=\ error\ *\ dt;}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordflow}{if}\ (controller-\/>\mbox{\hyperlink{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad}{integral}}\ <\ controller-\/>\mbox{\hyperlink{structPID__Controller_a313b1bbe802e1067941d65ef5f9b3c23}{integralMin}})\ \{}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad}{integral}}\ =\ controller-\/>\mbox{\hyperlink{structPID__Controller_a313b1bbe802e1067941d65ef5f9b3c23}{integralMin}};}
+\DoxyCodeLine{00057\ \ \ \ \ \}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keywordflow}{if}\ (controller-\/>\mbox{\hyperlink{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad}{integral}}\ >\ controller-\/>\mbox{\hyperlink{structPID__Controller_ab67ed2fd91789b7d7412b95af3031f1d}{integralMax}})\ \{}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad}{integral}}\ =\ controller-\/>\mbox{\hyperlink{structPID__Controller_ab67ed2fd91789b7d7412b95af3031f1d}{integralMax}};}
+\DoxyCodeLine{00061\ \ \ \ \ \}}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordtype}{float}\ iTerm\ =\ controller-\/>\mbox{\hyperlink{structPID__Controller_a46825e324bc672616adf8108d0776c2a}{ki}}\ *\ controller-\/>\mbox{\hyperlink{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad}{integral}};}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{comment}{//\ Derivative\ term}}
+\DoxyCodeLine{00066\ \ \ \ \ \textcolor{keywordtype}{float}\ derivative\ =\ (error\ -\/\ controller-\/>\mbox{\hyperlink{structPID__Controller_a7c9dda89aaf1f41326a57d2d11588676}{lastError}})\ /\ dt;}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordtype}{float}\ dTerm\ =\ controller-\/>\mbox{\hyperlink{structPID__Controller_a0b1969e9aa059699242c549384e38f89}{kd}}\ *\ derivative;}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{comment}{//\ Calculate\ total\ output}}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordtype}{float}\ output\ =\ pTerm\ +\ iTerm\ +\ dTerm;}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{comment}{//\ Apply\ output\ limits}}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordflow}{if}\ (output\ <\ controller-\/>outputMin)\ output\ =\ controller-\/>\mbox{\hyperlink{structPID__Controller_a5bdb5bfc0f41c98753088c6ff0c2a3da}{outputMin}};}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordflow}{if}\ (output\ >\ controller-\/>\mbox{\hyperlink{structPID__Controller_a6eba90b0ad2463a0ebfe0df94efe23d8}{outputMax}})\ output\ =\ controller-\/>\mbox{\hyperlink{structPID__Controller_a6eba90b0ad2463a0ebfe0df94efe23d8}{outputMax}};}
+\DoxyCodeLine{00075\ \ \ \ \ }
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{//\ Update\ state}}
+\DoxyCodeLine{00078\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a7c9dda89aaf1f41326a57d2d11588676}{lastError}}\ =\ error;}
+\DoxyCodeLine{00079\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_ad0f1712ca259d7c008286c04292e9322}{lastTime}}\ =\ currentTime;}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordflow}{return}\ output;}
+\DoxyCodeLine{00082\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__pid_8c_ab923f8de607a73a3b363f2077c4993ec}\label{km__pid_8c_ab923f8de607a73a3b363f2077c4993ec} 
+\index{km\_pid.c@{km\_pid.c}!KM\_PID\_GetIntegral@{KM\_PID\_GetIntegral}}
+\index{KM\_PID\_GetIntegral@{KM\_PID\_GetIntegral}!km\_pid.c@{km\_pid.c}}
+\doxysubsubsection{\texorpdfstring{KM\_PID\_GetIntegral()}{KM\_PID\_GetIntegral()}}
+{\footnotesize\ttfamily float KM\+\_\+\+PID\+\_\+\+Get\+Integral (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}}]{controller }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__pid_8c_source_l00113}{113}} of file \mbox{\hyperlink{km__pid_8c_source}{km\+\_\+pid.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{keywordflow}{return}\ controller-\/>\mbox{\hyperlink{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad}{integral}};}
+\DoxyCodeLine{00115\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__pid_8c_ae0cda65dc559258f60eca3c2907b0a3c}\label{km__pid_8c_ae0cda65dc559258f60eca3c2907b0a3c} 
+\index{km\_pid.c@{km\_pid.c}!KM\_PID\_GetTunings@{KM\_PID\_GetTunings}}
+\index{KM\_PID\_GetTunings@{KM\_PID\_GetTunings}!km\_pid.c@{km\_pid.c}}
+\doxysubsubsection{\texorpdfstring{KM\_PID\_GetTunings()}{KM\_PID\_GetTunings()}}
+{\footnotesize\ttfamily void KM\+\_\+\+PID\+\_\+\+Get\+Tunings (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}}]{controller,  }\item[{float}]{kp,  }\item[{float}]{ki,  }\item[{float}]{kd }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__pid_8c_source_l00106}{106}} of file \mbox{\hyperlink{km__pid_8c_source}{km\+\_\+pid.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00107\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a9608eb2661d299170269a2560dde9e2c}{kp}}\ =\ kp;}
+\DoxyCodeLine{00108\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a46825e324bc672616adf8108d0776c2a}{ki}}\ =\ ki;}
+\DoxyCodeLine{00109\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a0b1969e9aa059699242c549384e38f89}{kd}}\ =\ kd;}
+\DoxyCodeLine{00110\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__pid_8c_a322793c6ee8c8404d7290adf09cf868b}\label{km__pid_8c_a322793c6ee8c8404d7290adf09cf868b} 
+\index{km\_pid.c@{km\_pid.c}!KM\_PID\_Init@{KM\_PID\_Init}}
+\index{KM\_PID\_Init@{KM\_PID\_Init}!km\_pid.c@{km\_pid.c}}
+\doxysubsubsection{\texorpdfstring{KM\_PID\_Init()}{KM\_PID\_Init()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} KM\+\_\+\+PID\+\_\+\+Init (\begin{DoxyParamCaption}\item[{float}]{kp\+\_\+val,  }\item[{float}]{ki\+\_\+val,  }\item[{float}]{kd\+\_\+val }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__pid_8c_source_l00022}{22}} of file \mbox{\hyperlink{km__pid_8c_source}{km\+\_\+pid.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \ \ \ \ \mbox{\hyperlink{structPID__Controller}{PID\_Controller}}\ controller;}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00026\ \ \ \ \ controller.\mbox{\hyperlink{structPID__Controller_a9608eb2661d299170269a2560dde9e2c}{kp}}\ =\ kp\_val;}
+\DoxyCodeLine{00027\ \ \ \ \ controller.\mbox{\hyperlink{structPID__Controller_a46825e324bc672616adf8108d0776c2a}{ki}}\ =\ ki\_val;}
+\DoxyCodeLine{00028\ \ \ \ \ controller.\mbox{\hyperlink{structPID__Controller_a0b1969e9aa059699242c549384e38f89}{kd}}\ =\ kd\_val;}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \ \ \ \ controller.\mbox{\hyperlink{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad}{integral}}\ =\ 0.0f;}
+\DoxyCodeLine{00031\ \ \ \ \ controller.\mbox{\hyperlink{structPID__Controller_a7c9dda89aaf1f41326a57d2d11588676}{lastError}}\ =\ 0.0f;}
+\DoxyCodeLine{00032\ \ \ \ \ controller.\mbox{\hyperlink{structPID__Controller_ad0f1712ca259d7c008286c04292e9322}{lastTime}}\ =\ esp\_timer\_get\_time();}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keywordflow}{return}\ controller;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00035\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__pid_8c_af8c16043f7b7a96f7f043d1f2469257d}\label{km__pid_8c_af8c16043f7b7a96f7f043d1f2469257d} 
+\index{km\_pid.c@{km\_pid.c}!KM\_PID\_Reset@{KM\_PID\_Reset}}
+\index{KM\_PID\_Reset@{KM\_PID\_Reset}!km\_pid.c@{km\_pid.c}}
+\doxysubsubsection{\texorpdfstring{KM\_PID\_Reset()}{KM\_PID\_Reset()}}
+{\footnotesize\ttfamily void KM\+\_\+\+PID\+\_\+\+Reset (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}}]{controller }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__pid_8c_source_l00100}{100}} of file \mbox{\hyperlink{km__pid_8c_source}{km\+\_\+pid.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00101\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad}{integral}}\ =\ 0.0f;}
+\DoxyCodeLine{00102\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a7c9dda89aaf1f41326a57d2d11588676}{lastError}}\ =\ 0.0f;}
+\DoxyCodeLine{00103\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_ad0f1712ca259d7c008286c04292e9322}{lastTime}}\ =\ esp\_timer\_get\_time();}
+\DoxyCodeLine{00104\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__pid_8c_affd9556d0f9d18387b6972a700dc5d24}\label{km__pid_8c_affd9556d0f9d18387b6972a700dc5d24} 
+\index{km\_pid.c@{km\_pid.c}!KM\_PID\_SetIntegralLimits@{KM\_PID\_SetIntegralLimits}}
+\index{KM\_PID\_SetIntegralLimits@{KM\_PID\_SetIntegralLimits}!km\_pid.c@{km\_pid.c}}
+\doxysubsubsection{\texorpdfstring{KM\_PID\_SetIntegralLimits()}{KM\_PID\_SetIntegralLimits()}}
+{\footnotesize\ttfamily void KM\+\_\+\+PID\+\_\+\+Set\+Integral\+Limits (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}}]{controller,  }\item[{float}]{min,  }\item[{float}]{max }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__pid_8c_source_l00095}{95}} of file \mbox{\hyperlink{km__pid_8c_source}{km\+\_\+pid.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00096\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a313b1bbe802e1067941d65ef5f9b3c23}{integralMin}}\ =\ min;}
+\DoxyCodeLine{00097\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_ab67ed2fd91789b7d7412b95af3031f1d}{integralMax}}\ =\ max;}
+\DoxyCodeLine{00098\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__pid_8c_a328a5c5d18ca5eb84725e9c105535b4d}\label{km__pid_8c_a328a5c5d18ca5eb84725e9c105535b4d} 
+\index{km\_pid.c@{km\_pid.c}!KM\_PID\_SetOutputLimits@{KM\_PID\_SetOutputLimits}}
+\index{KM\_PID\_SetOutputLimits@{KM\_PID\_SetOutputLimits}!km\_pid.c@{km\_pid.c}}
+\doxysubsubsection{\texorpdfstring{KM\_PID\_SetOutputLimits()}{KM\_PID\_SetOutputLimits()}}
+{\footnotesize\ttfamily void KM\+\_\+\+PID\+\_\+\+Set\+Output\+Limits (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}}]{controller,  }\item[{float}]{min,  }\item[{float}]{max }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__pid_8c_source_l00090}{90}} of file \mbox{\hyperlink{km__pid_8c_source}{km\+\_\+pid.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00091\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a5bdb5bfc0f41c98753088c6ff0c2a3da}{outputMin}}\ =\ min;}
+\DoxyCodeLine{00092\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a6eba90b0ad2463a0ebfe0df94efe23d8}{outputMax}}\ =\ max;}
+\DoxyCodeLine{00093\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__pid_8c_a8f9a48ab6a086765b51a4256be6d5cf5}\label{km__pid_8c_a8f9a48ab6a086765b51a4256be6d5cf5} 
+\index{km\_pid.c@{km\_pid.c}!KM\_PID\_SetTunings@{KM\_PID\_SetTunings}}
+\index{KM\_PID\_SetTunings@{KM\_PID\_SetTunings}!km\_pid.c@{km\_pid.c}}
+\doxysubsubsection{\texorpdfstring{KM\_PID\_SetTunings()}{KM\_PID\_SetTunings()}}
+{\footnotesize\ttfamily void KM\+\_\+\+PID\+\_\+\+Set\+Tunings (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structPID__Controller}{PID\+\_\+\+Controller}} \texorpdfstring{$\ast$}{*}}]{controller,  }\item[{float}]{kp,  }\item[{float}]{ki,  }\item[{float}]{kd }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__pid_8c_source_l00084}{84}} of file \mbox{\hyperlink{km__pid_8c_source}{km\+\_\+pid.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00085\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a9608eb2661d299170269a2560dde9e2c}{kp}}\ =\ kp;}
+\DoxyCodeLine{00086\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a46825e324bc672616adf8108d0776c2a}{ki}}\ =\ ki;}
+\DoxyCodeLine{00087\ \ \ \ \ controller-\/>\mbox{\hyperlink{structPID__Controller_a0b1969e9aa059699242c549384e38f89}{kd}}\ =\ kd;}
+\DoxyCodeLine{00088\ \}}
+
+\end{DoxyCode}

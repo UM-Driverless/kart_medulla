@@ -1,0 +1,125 @@
+\doxysection{RTOS\+\_\+\+Task Struct Reference}
+\hypertarget{structRTOS__Task}{}\label{structRTOS__Task}\index{RTOS\_Task@{RTOS\_Task}}
+
+
+Structure that reperesents a task in Free\+RTOS.  
+
+
+
+
+{\ttfamily \#include $<$km\+\_\+rtos.\+h$>$}
+
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+Task\+Handle\+\_\+t \mbox{\hyperlink{structRTOS__Task_a5cbc06a021e71fc467c35eaa7a2f426f}{handle}}
+\item 
+const char \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{structRTOS__Task_a960cc0b3b28a93fbf954ee56e105cd1b}{name}}
+\item 
+\mbox{\hyperlink{km__rtos_8h_add978c093de2d5db48a0c7aa31396bf6}{KM\+\_\+\+RTOS\+\_\+\+Task\+Function\+\_\+t}} \mbox{\hyperlink{structRTOS__Task_a9749e2faa9757e4483140a0e772a9332}{task\+Fn}}
+\item 
+void \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{structRTOS__Task_a3a0d9b13173e264634cbfbf8b6d0256f}{context}}
+\item 
+uint32\+\_\+t \mbox{\hyperlink{structRTOS__Task_ac687c9c565c979754004eda9d648f74a}{period\+\_\+ms}}
+\item 
+uint16\+\_\+t \mbox{\hyperlink{structRTOS__Task_ab346e2bbd2986ec7bc1f23578a7c210b}{stack\+Size}}
+\item 
+UBase\+Type\+\_\+t \mbox{\hyperlink{structRTOS__Task_a6b93e3d1e0845215790b4f50c64e60cf}{priority}}
+\item 
+uint8\+\_\+t \mbox{\hyperlink{structRTOS__Task_acbee0cc3c70f919b62ce1d0ee61fddc4}{active}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Structure that reperesents a task in Free\+RTOS. 
+
+Definition at line \mbox{\hyperlink{km__rtos_8h_source_l00054}{54}} of file \mbox{\hyperlink{km__rtos_8h_source}{km\+\_\+rtos.\+h}}.
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{structRTOS__Task_acbee0cc3c70f919b62ce1d0ee61fddc4}\label{structRTOS__Task_acbee0cc3c70f919b62ce1d0ee61fddc4} 
+\index{RTOS\_Task@{RTOS\_Task}!active@{active}}
+\index{active@{active}!RTOS\_Task@{RTOS\_Task}}
+\doxysubsubsection{\texorpdfstring{active}{active}}
+{\footnotesize\ttfamily uint8\+\_\+t RTOS\+\_\+\+Task\+::active}
+
+Task active flag 
+
+Definition at line \mbox{\hyperlink{km__rtos_8h_source_l00065}{65}} of file \mbox{\hyperlink{km__rtos_8h_source}{km\+\_\+rtos.\+h}}.
+
+\Hypertarget{structRTOS__Task_a3a0d9b13173e264634cbfbf8b6d0256f}\label{structRTOS__Task_a3a0d9b13173e264634cbfbf8b6d0256f} 
+\index{RTOS\_Task@{RTOS\_Task}!context@{context}}
+\index{context@{context}!RTOS\_Task@{RTOS\_Task}}
+\doxysubsubsection{\texorpdfstring{context}{context}}
+{\footnotesize\ttfamily void\texorpdfstring{$\ast$}{*} RTOS\+\_\+\+Task\+::context}
+
+User context pointer 
+
+Definition at line \mbox{\hyperlink{km__rtos_8h_source_l00059}{59}} of file \mbox{\hyperlink{km__rtos_8h_source}{km\+\_\+rtos.\+h}}.
+
+\Hypertarget{structRTOS__Task_a5cbc06a021e71fc467c35eaa7a2f426f}\label{structRTOS__Task_a5cbc06a021e71fc467c35eaa7a2f426f} 
+\index{RTOS\_Task@{RTOS\_Task}!handle@{handle}}
+\index{handle@{handle}!RTOS\_Task@{RTOS\_Task}}
+\doxysubsubsection{\texorpdfstring{handle}{handle}}
+{\footnotesize\ttfamily Task\+Handle\+\_\+t RTOS\+\_\+\+Task\+::handle}
+
+Free\+RTOS task handle 
+
+Definition at line \mbox{\hyperlink{km__rtos_8h_source_l00055}{55}} of file \mbox{\hyperlink{km__rtos_8h_source}{km\+\_\+rtos.\+h}}.
+
+\Hypertarget{structRTOS__Task_a960cc0b3b28a93fbf954ee56e105cd1b}\label{structRTOS__Task_a960cc0b3b28a93fbf954ee56e105cd1b} 
+\index{RTOS\_Task@{RTOS\_Task}!name@{name}}
+\index{name@{name}!RTOS\_Task@{RTOS\_Task}}
+\doxysubsubsection{\texorpdfstring{name}{name}}
+{\footnotesize\ttfamily const char\texorpdfstring{$\ast$}{*} RTOS\+\_\+\+Task\+::name}
+
+Task name 
+
+Definition at line \mbox{\hyperlink{km__rtos_8h_source_l00056}{56}} of file \mbox{\hyperlink{km__rtos_8h_source}{km\+\_\+rtos.\+h}}.
+
+\Hypertarget{structRTOS__Task_ac687c9c565c979754004eda9d648f74a}\label{structRTOS__Task_ac687c9c565c979754004eda9d648f74a} 
+\index{RTOS\_Task@{RTOS\_Task}!period\_ms@{period\_ms}}
+\index{period\_ms@{period\_ms}!RTOS\_Task@{RTOS\_Task}}
+\doxysubsubsection{\texorpdfstring{period\_ms}{period\_ms}}
+{\footnotesize\ttfamily uint32\+\_\+t RTOS\+\_\+\+Task\+::period\+\_\+ms}
+
+Execution period in milliseconds 
+
+Definition at line \mbox{\hyperlink{km__rtos_8h_source_l00061}{61}} of file \mbox{\hyperlink{km__rtos_8h_source}{km\+\_\+rtos.\+h}}.
+
+\Hypertarget{structRTOS__Task_a6b93e3d1e0845215790b4f50c64e60cf}\label{structRTOS__Task_a6b93e3d1e0845215790b4f50c64e60cf} 
+\index{RTOS\_Task@{RTOS\_Task}!priority@{priority}}
+\index{priority@{priority}!RTOS\_Task@{RTOS\_Task}}
+\doxysubsubsection{\texorpdfstring{priority}{priority}}
+{\footnotesize\ttfamily UBase\+Type\+\_\+t RTOS\+\_\+\+Task\+::priority}
+
+Task priority 
+
+Definition at line \mbox{\hyperlink{km__rtos_8h_source_l00063}{63}} of file \mbox{\hyperlink{km__rtos_8h_source}{km\+\_\+rtos.\+h}}.
+
+\Hypertarget{structRTOS__Task_ab346e2bbd2986ec7bc1f23578a7c210b}\label{structRTOS__Task_ab346e2bbd2986ec7bc1f23578a7c210b} 
+\index{RTOS\_Task@{RTOS\_Task}!stackSize@{stackSize}}
+\index{stackSize@{stackSize}!RTOS\_Task@{RTOS\_Task}}
+\doxysubsubsection{\texorpdfstring{stackSize}{stackSize}}
+{\footnotesize\ttfamily uint16\+\_\+t RTOS\+\_\+\+Task\+::stack\+Size}
+
+Stack size in words 
+
+Definition at line \mbox{\hyperlink{km__rtos_8h_source_l00062}{62}} of file \mbox{\hyperlink{km__rtos_8h_source}{km\+\_\+rtos.\+h}}.
+
+\Hypertarget{structRTOS__Task_a9749e2faa9757e4483140a0e772a9332}\label{structRTOS__Task_a9749e2faa9757e4483140a0e772a9332} 
+\index{RTOS\_Task@{RTOS\_Task}!taskFn@{taskFn}}
+\index{taskFn@{taskFn}!RTOS\_Task@{RTOS\_Task}}
+\doxysubsubsection{\texorpdfstring{taskFn}{taskFn}}
+{\footnotesize\ttfamily \mbox{\hyperlink{km__rtos_8h_add978c093de2d5db48a0c7aa31396bf6}{KM\+\_\+\+RTOS\+\_\+\+Task\+Function\+\_\+t}} RTOS\+\_\+\+Task\+::task\+Fn}
+
+Logical task function 
+
+Definition at line \mbox{\hyperlink{km__rtos_8h_source_l00058}{58}} of file \mbox{\hyperlink{km__rtos_8h_source}{km\+\_\+rtos.\+h}}.
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{km__rtos_8h}{km\+\_\+rtos.\+h}}\end{DoxyCompactItemize}

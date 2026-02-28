@@ -1,0 +1,87 @@
+\doxysection{km\+\_\+sdir.\+h}
+\hypertarget{km__sdir_8h_source}{}\label{km__sdir_8h_source}\index{km\_sdir.h@{km\_sdir.h}}
+\mbox{\hyperlink{km__sdir_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00001}00001\ \textcolor{comment}{/******************************************************************************}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00002}00002\ \textcolor{comment}{\ *\ @file\ \ \ \ km\_dsen.h}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00003}00003\ \textcolor{comment}{\ *\ @brief\ \ \ Libreria\ para\ usar\ el\ sensor\ de\ la\ direccion.}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00004}00004\ \textcolor{comment}{\ *\ @author\ \ Adrian\ Navarredonda\ Arizaleta}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00005}00005\ \textcolor{comment}{\ *\ @date\ \ \ \ 27-\/01-\/2026}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00006}00006\ \textcolor{comment}{\ *\ @version\ 1.0}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00007}00007\ \textcolor{comment}{\ *****************************************************************************/}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00008}00008\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00009}00009\ \textcolor{preprocessor}{\#ifndef\ KM\_SDIR\_H}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00010}00010\ \textcolor{preprocessor}{\#define\ KM\_SDIR\_H}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00011}00011\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00012}00012\ \textcolor{comment}{/*******************************\ INCLUDES\ *************************************/}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00013}00013\ \textcolor{comment}{//\ Includes\ necesarios\ para\ la\ API\ pública}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00014}00014\ \textcolor{preprocessor}{\#include\ "{}driver/i2c.h"{}}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00015}00015\ \textcolor{preprocessor}{\#include\ "{}esp\_log.h"{}}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00016}00016\ \textcolor{preprocessor}{\#include\ <math.h>}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00017}00017\ \textcolor{preprocessor}{\#include\ "{}esp\_timer.h"{}}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00018}00018\ \ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00019}00019\ \textcolor{comment}{/*******************************\ DEFINES\ PÚBLICAS\ *****************************/}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00020}00020\ \textcolor{comment}{//\ Constantes,\ flags\ o\ configuraciones\ visibles\ desde\ fuera\ de\ la\ librería}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00021}00021\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00022}00022\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00023}\mbox{\hyperlink{km__sdir_8h_a598a3330b3c21701223ee0ca14316eca}{00023}}\ \textcolor{preprocessor}{\#define\ PI\ 3.1415}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00024}00024\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00025}00025\ \textcolor{comment}{/*******************************\ TIPOS\ PÚBLICOS\ ********************************/}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00026}00026\ \textcolor{comment}{//\ Estructuras,\ enums,\ typedefs\ públicos}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00030}\mbox{\hyperlink{structsensor__struct}{00030}}\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{struct\ }\{}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00031}\mbox{\hyperlink{structsensor__struct_a8388f2e09f0e2e3ec6dc4224f06f68c0}{00031}}\ \ \ \ \ uint8\_t\ \mbox{\hyperlink{structsensor__struct_a8388f2e09f0e2e3ec6dc4224f06f68c0}{connected}};}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00032}\mbox{\hyperlink{structsensor__struct_abbc0a7ab5d3016f5bc019eed46ea24dd}{00032}}\ \ \ \ \ uint8\_t\ \mbox{\hyperlink{structsensor__struct_abbc0a7ab5d3016f5bc019eed46ea24dd}{errorCount}};}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00033}\mbox{\hyperlink{structsensor__struct_ae7288a99c2497a24e98b6d881ec784b8}{00033}}\ \ \ \ \ uint8\_t\ \mbox{\hyperlink{structsensor__struct_ae7288a99c2497a24e98b6d881ec784b8}{max\_error\_count}};}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00034}\mbox{\hyperlink{structsensor__struct_afefedb49da2e40ee6c0b08e3adc8af4a}{00034}}\ \ \ \ \ uint64\_t\ \mbox{\hyperlink{structsensor__struct_afefedb49da2e40ee6c0b08e3adc8af4a}{lastReadTime}};}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00035}\mbox{\hyperlink{structsensor__struct_a3aa104f79ff602778009f38b4d4bdd18}{00035}}\ \ \ \ \ uint16\_t\ \mbox{\hyperlink{structsensor__struct_a3aa104f79ff602778009f38b4d4bdd18}{lastRawValue}};}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00036}\mbox{\hyperlink{structsensor__struct_aabac13860b48ac93bf8bab4417fc3a76}{00036}}\ \ \ \ \ uint16\_t\ \mbox{\hyperlink{structsensor__struct_aabac13860b48ac93bf8bab4417fc3a76}{centerOffset}};}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00037}00037\ \}\ \mbox{\hyperlink{structsensor__struct}{sensor\_struct}};}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00038}00038\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00039}00039\ \textcolor{comment}{//\ Represents\ the\ conection\ constans}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00040}\mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381}{00040}}\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00041}\mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381add12dffa79f9c9c06ef9bff3fdf0b65b}{00041}}\ \ \ \ \ \mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381add12dffa79f9c9c06ef9bff3fdf0b65b}{AS5600\_ADDR}}\ =\ 0x36,}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00042}\mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381adc3acdecb2e12f76b2d69281e5c32377}{00042}}\ \ \ \ \ \mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381adc3acdecb2e12f76b2d69281e5c32377}{AS5600\_ANGLE\_MSB}}\ =\ 0x0C,}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00043}00043\ \ \ \ \ \mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381a1b81f52d6f6a1953bbc80e03f840f4c8}{AS5600\_ANGLE\_LSB}}\ =\ 0x0D}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00044}\mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381a1b81f52d6f6a1953bbc80e03f840f4c8}{00044}}\ \}\ \mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381}{conection\_constans}};}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00045}00045\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00046}\mbox{\hyperlink{km__sdir_8h_afbee24912f20fb674c426efe55013de3}{00046}}\ \textcolor{keyword}{typedef}\ \textcolor{keyword}{enum}\ \{}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00047}\mbox{\hyperlink{km__sdir_8h_afbee24912f20fb674c426efe55013de3abff83598722be5a9ff3fc2d113abd7da}{00047}}\ \ \ \ \ \mbox{\hyperlink{km__sdir_8h_afbee24912f20fb674c426efe55013de3abff83598722be5a9ff3fc2d113abd7da}{SENSOR\_MIN}}\ =\ 0,}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00048}\mbox{\hyperlink{km__sdir_8h_afbee24912f20fb674c426efe55013de3a8380277138b5a174ff67c4a42220a45d}{00048}}\ \ \ \ \ \mbox{\hyperlink{km__sdir_8h_afbee24912f20fb674c426efe55013de3a8380277138b5a174ff67c4a42220a45d}{SENSOR\_MAX}}\ =\ 4095,}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00049}\mbox{\hyperlink{km__sdir_8h_afbee24912f20fb674c426efe55013de3ad3578e50e29eff99b30967a88b275f59}{00049}}\ \ \ \ \ \mbox{\hyperlink{km__sdir_8h_afbee24912f20fb674c426efe55013de3ad3578e50e29eff99b30967a88b275f59}{SENSOR\_CENTER}}\ =\ 2048,}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00050}00050\ \}\ \mbox{\hyperlink{km__sdir_8h_afbee24912f20fb674c426efe55013de3}{sensor\_constans}};}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00051}00051\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00052}00052\ \textcolor{comment}{/*******************************\ VARIABLES\ PÚBLICAS\ ***************************/}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00053}00053\ \textcolor{comment}{//\ Variables\ globales\ visibles\ (si\ realmente\ se\ necesitan)}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00054}00054\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00055}\mbox{\hyperlink{km__sdir_8h_a601a1105619d4477d766b2e5baef865f}{00055}}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{km__sdir_8h_a601a1105619d4477d766b2e5baef865f}{MAX\_RAD}}\ =\ \mbox{\hyperlink{km__sdir_8h_a598a3330b3c21701223ee0ca14316eca}{PI}};}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00056}00056\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00057}00057\ \textcolor{comment}{//\ extern\ int\ ejemplo\_variable\_publica;}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00058}00058\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00059}00059\ \textcolor{comment}{/*******************************\ FUNCIONES\ PÚBLICAS\ ***************************/}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00060}00060\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00065}00065\ \mbox{\hyperlink{structsensor__struct}{sensor\_struct}}\ \mbox{\hyperlink{km__sdir_8h_a0785144a38f05da23fcbf18750b22233}{KM\_SDIR\_Init}}(int8\_t\ max\_error\_count);}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00066}00066\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00067}00067\ \textcolor{comment}{//\ Initialize\ the\ sensor}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00068}00068\ int8\_t\ \mbox{\hyperlink{km__sdir_8h_ad82f698f25a84b878d8040e74c4f5edf}{KM\_SDIR\_Begin}}(\mbox{\hyperlink{structsensor__struct}{sensor\_struct}}\ *sensor,\ gpio\_num\_t\ sdaPin,\ gpio\_num\_t\ sclPin);}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00069}00069\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00070}00070\ \textcolor{comment}{//\ Read\ raw\ sensor\ value\ (0-\/4095)}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00071}00071\ uint16\_t\ \mbox{\hyperlink{km__sdir_8h_aacb41a5a17c035c7e97a7a8f348ba6b9}{KM\_SDIR\_ReadRaw}}(\mbox{\hyperlink{structsensor__struct}{sensor\_struct}}\ *sensor);}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00072}00072\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00073}00073\ \textcolor{comment}{//\ Read\ angle\ in\ radians\ (-\/PI\ to\ PI)}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00074}00074\ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{km__sdir_8h_af8f6747d76355bdc52a8863c2ff66d37}{KM\_SDIR\_ReadAngleRadians}}(\mbox{\hyperlink{structsensor__struct}{sensor\_struct}}\ *sensor);}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00075}00075\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00076}00076\ \textcolor{comment}{//\ Read\ angle\ in\ degrees\ (-\/180\ to\ 180)}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00077}00077\ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{km__sdir_8h_a614387a742f29a940e57bd849f10ce85}{KM\_SDIR\_ReadAngleDegrees}}(\mbox{\hyperlink{structsensor__struct}{sensor\_struct}}\ *sensor);}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00078}00078\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00079}00079\ \textcolor{comment}{//\ Check\ if\ sensor\ is\ connected}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00080}00080\ int8\_t\ \mbox{\hyperlink{km__sdir_8h_aa051b9fdfa5d5d0cd1d6db174442aeba}{KM\_SDIR\_isConnected}}(\mbox{\hyperlink{structsensor__struct}{sensor\_struct}}\ *sensor);}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00081}00081\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00082}00082\ \textcolor{comment}{//\ Reset\ I2C\ communication\ if\ errors\ occur}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00083}00083\ int8\_t\ \mbox{\hyperlink{km__sdir_8h_a6ebe4d9ab446c06878b02fc59001d928}{KM\_SDIR\_ResetI2C}}(\mbox{\hyperlink{structsensor__struct}{sensor\_struct}}\ *sensor);}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00084}00084\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00085}00085\ \textcolor{comment}{//\ Get\ center\ offset\ for\ calibration}}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00086}00086\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{km__sdir_8h_a7925c6327f449e320b221661df2c34ac}{KM\_SDIR\_setCenterOffset}}(\mbox{\hyperlink{structsensor__struct}{sensor\_struct}}\ *sensor,\ uint16\_t\ offset);}
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00087}00087\ }
+\DoxyCodeLine{\Hypertarget{km__sdir_8h_source_l00088}00088\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ KM\_SDIR\_H\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

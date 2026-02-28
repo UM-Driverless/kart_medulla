@@ -1,0 +1,1063 @@
+\doxysection{km\+\_\+gpio.\+h File Reference}
+\hypertarget{km__gpio_8h}{}\label{km__gpio_8h}\index{km\_gpio.h@{km\_gpio.h}}
+{\ttfamily \#include "{}driver/gpio.\+h"{}}\newline
+{\ttfamily \#include "{}driver/adc.\+h"{}}\newline
+{\ttfamily \#include "{}driver/dac.\+h"{}}\newline
+{\ttfamily \#include "{}driver/ledc.\+h"{}}\newline
+{\ttfamily \#include "{}driver/i2c.\+h"{}}\newline
+{\ttfamily \#include "{}driver/uart.\+h"{}}\newline
+{\ttfamily \#include "{}esp\+\_\+err.\+h"{}}\newline
+Include dependency graph for km\+\_\+gpio.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{km__gpio_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=291pt]{km__gpio_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a5f0a132f2e2cf7864f8bd7d1d2ec64ee}{LEDC\+\_\+\+HIGH\+\_\+\+SPEED\+\_\+\+MODE}}~0
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a587743ee73102d80b4d0d5a12a456272}{LEDC\+\_\+\+LOW\+\_\+\+SPEED\+\_\+\+MODE}}~1
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_ab729b72da44a7e74d0c84733353476ba}{PIN\+\_\+\+USB\+\_\+\+UART\+\_\+\+TX}}~GPIO\+\_\+\+NUM\+\_\+1
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_ae50025ff397267332e943e2d4b16da85}{PIN\+\_\+\+USB\+\_\+\+UART\+\_\+\+RX}}~GPIO\+\_\+\+NUM\+\_\+3
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a9980602166120297bd562931995115fe}{PIN\+\_\+\+ORIN\+\_\+\+UART\+\_\+\+TX}}~GPIO\+\_\+\+NUM\+\_\+17
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a33393403cefaa6a9f07e6341bc0b6121}{PIN\+\_\+\+ORIN\+\_\+\+UART\+\_\+\+RX}}~GPIO\+\_\+\+NUM\+\_\+16
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_ab7d4554dcbbe1bf0cae780014b928428}{PIN\+\_\+\+PEDAL\+\_\+\+BRAKE}}~GPIO\+\_\+\+NUM\+\_\+32
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a7eb88311c5bbc031e2fcaf00a64ae53e}{PIN\+\_\+\+HYDRAULIC\+\_\+1}}~GPIO\+\_\+\+NUM\+\_\+33
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a05bc33a8db7db441ce92d1370eaa1084}{PIN\+\_\+\+PRESSURE\+\_\+3}}~GPIO\+\_\+\+NUM\+\_\+34
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_aac397306d13562ded89fe827f967ea25}{PIN\+\_\+\+PEDAL\+\_\+\+ACC}}~GPIO\+\_\+\+NUM\+\_\+35
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a8fb25f688edbd078b029114028fa41ed}{PIN\+\_\+\+PRESSURE\+\_\+1}}~GPIO\+\_\+\+NUM\+\_\+36
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a827e8af645597dd0445cf4e83d4d2b05}{PIN\+\_\+\+PRESSURE\+\_\+2}}~GPIO\+\_\+\+NUM\+\_\+39
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a1773691aaf6fc0b7ca31a8e8b414c588}{PIN\+\_\+\+HYDRAULIC\+\_\+2}}~GPIO\+\_\+\+NUM\+\_\+13
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a0108eb94d0a806a3bf5f1f9fba8b5bea}{PIN\+\_\+\+CMD\+\_\+\+ACC}}~GPIO\+\_\+\+NUM\+\_\+30
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a76984f952d1a68611235af5de185bd8b}{PIN\+\_\+\+CMD\+\_\+\+BRAKE}}~GPIO\+\_\+\+NUM\+\_\+26
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a05033af15135c5ccb8a14c8d721be821}{PIN\+\_\+\+STEER\+\_\+\+PWM}}~GPIO\+\_\+\+NUM\+\_\+27
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a58b08a11ef75b28f24e49ce4b1dfa18c}{PIN\+\_\+\+STEER\+\_\+\+DIR}}~GPIO\+\_\+\+NUM\+\_\+14
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_aed25264bde8243d833e5f688ccd75b4e}{PIN\+\_\+\+MOTOR\+\_\+\+HALL\+\_\+1}}~GPIO\+\_\+\+NUM\+\_\+18
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a02a5236b09e27d22de4e677a073f21eb}{PIN\+\_\+\+MOTOR\+\_\+\+HALL\+\_\+2}}~GPIO\+\_\+\+NUM\+\_\+19
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a64ffcf99e8b7e94eab9ab6bafb32b8dc}{PIN\+\_\+\+MOTOR\+\_\+\+HALL\+\_\+3}}~GPIO\+\_\+\+NUM\+\_\+31
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_afd84f048502b749115c9e05262ed6753}{PIN\+\_\+\+I2\+C\+\_\+\+SDA}}~GPIO\+\_\+\+NUM\+\_\+21
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a6b5cc0023af0923f5e57d107bdd8f985}{PIN\+\_\+\+I2\+C\+\_\+\+SCL}}~GPIO\+\_\+\+NUM\+\_\+32
+\item 
+\#define \mbox{\hyperlink{km__gpio_8h_a9cccc3fd0833b8971461317cc3750096}{PIN\+\_\+\+STATUS\+\_\+\+LED}}~GPIO\+\_\+\+NUM\+\_\+2
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__gpio_8h_a4467a661ca6fe29f12f392cb58b386f3}{KM\+\_\+\+GPIO\+\_\+\+Init}} (void)
+\begin{DoxyCompactList}\small\item\em Initialize all hardware peripherals needed by KM\+\_\+\+GPIO. \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{km__gpio_8h_a9197f579c88c677da941107c9a4b3b3a}{KM\+\_\+\+GPIO\+\_\+\+Read\+Pin}} (const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}pin)
+\begin{DoxyCompactList}\small\item\em Read the digital level of a GPIO pin. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__gpio_8h_ac6c6f297041b14cb0ad1cd7d9aa6f2b2}{KM\+\_\+\+GPIO\+\_\+\+Write\+Pin\+High}} (const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}pin)
+\begin{DoxyCompactList}\small\item\em Set a GPIO pin HIGH (1). \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__gpio_8h_ad7bcfffee3a58a8dabcb0cfeea0178ad}{KM\+\_\+\+GPIO\+\_\+\+Write\+Pin\+Low}} (const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}pin)
+\begin{DoxyCompactList}\small\item\em Set a GPIO pin LOW (0). \end{DoxyCompactList}\item 
+uint16\+\_\+t \mbox{\hyperlink{km__gpio_8h_a048a9f0aea71f71f2f863a38bce87ba9}{KM\+\_\+\+GPIO\+\_\+\+Read\+ADC}} (const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}pin)
+\begin{DoxyCompactList}\small\item\em Read an analog input (ADC) from the specified pin. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__gpio_8h_a94f396afe846586cd4f01fbf23043fcb}{KM\+\_\+\+GPIO\+\_\+\+Write\+DAC}} (const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}pin, uint8\+\_\+t value)
+\begin{DoxyCompactList}\small\item\em Write a value to a DAC output pin. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__gpio_8h_a8b7f6b445c202fffdafa04bd0a98f809}{KM\+\_\+\+GPIO\+\_\+\+Write\+PWM}} (const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}pin, uint8\+\_\+t duty)
+\begin{DoxyCompactList}\small\item\em Write a PWM duty cycle to a pin using LEDC. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__gpio_8h_a292bd05e9fda7632e0e0b4aab966d28b}{KM\+\_\+\+GPIO\+\_\+\+I2\+CInit}} (void)
+\begin{DoxyCompactList}\small\item\em Initialize I2C master interface. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const uart\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_a22cf3a004d95b68f395f32ecdfe6ba15}{uart\+\_\+config}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_acf7d9b0ed84a4be88f862dd6fd4a489e}{pin\+\_\+pressure\+\_\+1}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_ac593b1fde53672b7ecbef1a07bdeaa93}{pin\+\_\+pressure\+\_\+2}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_ad4b10105bedc4fc224baf7d4aee9fa45}{pin\+\_\+pressure\+\_\+3}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_aeef04eeac4de585060c973234f4c423e}{pin\+\_\+pedal\+\_\+acc}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_ad03c660364d890d9ff02283049ccba0e}{pin\+\_\+pedal\+\_\+brake}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_a0de7c1b9d4e548cef48401c51522a206}{pin\+\_\+hydraulic\+\_\+1}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_a627853334cbc7b666d21aa9802492ece}{pin\+\_\+hydraulic\+\_\+2}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_ab7ea71722ed6ad46cc7b0b60ee816ad9}{pin\+\_\+cmd\+\_\+acc}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_ad32a127f101a5b0b29b9b450ed44350a}{pin\+\_\+cmd\+\_\+brake}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_a0205eceb6d3184bd73a9406a50c49844}{pin\+\_\+steer\+\_\+pwm}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_ae759f073dbed9c97c7bf1ffc36b2de7e}{pin\+\_\+steer\+\_\+dir}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_a9700211b14d87a634e6d6ef74f041bd0}{pin\+\_\+motor\+\_\+hall\+\_\+1}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_a2c4c3025b5eab823e846d92390bd8613}{pin\+\_\+motor\+\_\+hall\+\_\+2}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_ae9d9a382b8ca89e0ef570c13e4db1468}{pin\+\_\+motor\+\_\+hall\+\_\+3}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_ae45bc9ae2a0dc4803f1e9f1d030d16bc}{pin\+\_\+i2c\+\_\+scl}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_aa70681f2b4add7d570969eb391cd5336}{pin\+\_\+i2c\+\_\+sda}}
+\item 
+const gpio\+\_\+config\+\_\+t \mbox{\hyperlink{km__gpio_8h_ab30e317aef245ee83e4f960bd49c0a59}{pin\+\_\+status\+\_\+led}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{km__gpio_8h_a5f0a132f2e2cf7864f8bd7d1d2ec64ee}\label{km__gpio_8h_a5f0a132f2e2cf7864f8bd7d1d2ec64ee} 
+\index{km\_gpio.h@{km\_gpio.h}!LEDC\_HIGH\_SPEED\_MODE@{LEDC\_HIGH\_SPEED\_MODE}}
+\index{LEDC\_HIGH\_SPEED\_MODE@{LEDC\_HIGH\_SPEED\_MODE}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{LEDC\_HIGH\_SPEED\_MODE}{LEDC\_HIGH\_SPEED\_MODE}}
+{\footnotesize\ttfamily \#define LEDC\+\_\+\+HIGH\+\_\+\+SPEED\+\_\+\+MODE~0}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00026}{26}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a587743ee73102d80b4d0d5a12a456272}\label{km__gpio_8h_a587743ee73102d80b4d0d5a12a456272} 
+\index{km\_gpio.h@{km\_gpio.h}!LEDC\_LOW\_SPEED\_MODE@{LEDC\_LOW\_SPEED\_MODE}}
+\index{LEDC\_LOW\_SPEED\_MODE@{LEDC\_LOW\_SPEED\_MODE}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{LEDC\_LOW\_SPEED\_MODE}{LEDC\_LOW\_SPEED\_MODE}}
+{\footnotesize\ttfamily \#define LEDC\+\_\+\+LOW\+\_\+\+SPEED\+\_\+\+MODE~1}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00029}{29}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a0108eb94d0a806a3bf5f1f9fba8b5bea}\label{km__gpio_8h_a0108eb94d0a806a3bf5f1f9fba8b5bea} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_CMD\_ACC@{PIN\_CMD\_ACC}}
+\index{PIN\_CMD\_ACC@{PIN\_CMD\_ACC}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_CMD\_ACC}{PIN\_CMD\_ACC}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+CMD\+\_\+\+ACC~GPIO\+\_\+\+NUM\+\_\+30}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00058}{58}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a76984f952d1a68611235af5de185bd8b}\label{km__gpio_8h_a76984f952d1a68611235af5de185bd8b} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_CMD\_BRAKE@{PIN\_CMD\_BRAKE}}
+\index{PIN\_CMD\_BRAKE@{PIN\_CMD\_BRAKE}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_CMD\_BRAKE}{PIN\_CMD\_BRAKE}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+CMD\+\_\+\+BRAKE~GPIO\+\_\+\+NUM\+\_\+26}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00059}{59}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a7eb88311c5bbc031e2fcaf00a64ae53e}\label{km__gpio_8h_a7eb88311c5bbc031e2fcaf00a64ae53e} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_HYDRAULIC\_1@{PIN\_HYDRAULIC\_1}}
+\index{PIN\_HYDRAULIC\_1@{PIN\_HYDRAULIC\_1}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_HYDRAULIC\_1}{PIN\_HYDRAULIC\_1}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+HYDRAULIC\+\_\+1~GPIO\+\_\+\+NUM\+\_\+33}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00048}{48}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a1773691aaf6fc0b7ca31a8e8b414c588}\label{km__gpio_8h_a1773691aaf6fc0b7ca31a8e8b414c588} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_HYDRAULIC\_2@{PIN\_HYDRAULIC\_2}}
+\index{PIN\_HYDRAULIC\_2@{PIN\_HYDRAULIC\_2}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_HYDRAULIC\_2}{PIN\_HYDRAULIC\_2}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+HYDRAULIC\+\_\+2~GPIO\+\_\+\+NUM\+\_\+13}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00055}{55}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a6b5cc0023af0923f5e57d107bdd8f985}\label{km__gpio_8h_a6b5cc0023af0923f5e57d107bdd8f985} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_I2C\_SCL@{PIN\_I2C\_SCL}}
+\index{PIN\_I2C\_SCL@{PIN\_I2C\_SCL}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_I2C\_SCL}{PIN\_I2C\_SCL}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+I2\+C\+\_\+\+SCL~GPIO\+\_\+\+NUM\+\_\+32}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00072}{72}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_afd84f048502b749115c9e05262ed6753}\label{km__gpio_8h_afd84f048502b749115c9e05262ed6753} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_I2C\_SDA@{PIN\_I2C\_SDA}}
+\index{PIN\_I2C\_SDA@{PIN\_I2C\_SDA}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_I2C\_SDA}{PIN\_I2C\_SDA}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+I2\+C\+\_\+\+SDA~GPIO\+\_\+\+NUM\+\_\+21}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00071}{71}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_aed25264bde8243d833e5f688ccd75b4e}\label{km__gpio_8h_aed25264bde8243d833e5f688ccd75b4e} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_MOTOR\_HALL\_1@{PIN\_MOTOR\_HALL\_1}}
+\index{PIN\_MOTOR\_HALL\_1@{PIN\_MOTOR\_HALL\_1}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_MOTOR\_HALL\_1}{PIN\_MOTOR\_HALL\_1}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+MOTOR\+\_\+\+HALL\+\_\+1~GPIO\+\_\+\+NUM\+\_\+18}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00066}{66}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a02a5236b09e27d22de4e677a073f21eb}\label{km__gpio_8h_a02a5236b09e27d22de4e677a073f21eb} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_MOTOR\_HALL\_2@{PIN\_MOTOR\_HALL\_2}}
+\index{PIN\_MOTOR\_HALL\_2@{PIN\_MOTOR\_HALL\_2}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_MOTOR\_HALL\_2}{PIN\_MOTOR\_HALL\_2}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+MOTOR\+\_\+\+HALL\+\_\+2~GPIO\+\_\+\+NUM\+\_\+19}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00067}{67}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a64ffcf99e8b7e94eab9ab6bafb32b8dc}\label{km__gpio_8h_a64ffcf99e8b7e94eab9ab6bafb32b8dc} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_MOTOR\_HALL\_3@{PIN\_MOTOR\_HALL\_3}}
+\index{PIN\_MOTOR\_HALL\_3@{PIN\_MOTOR\_HALL\_3}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_MOTOR\_HALL\_3}{PIN\_MOTOR\_HALL\_3}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+MOTOR\+\_\+\+HALL\+\_\+3~GPIO\+\_\+\+NUM\+\_\+31}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00068}{68}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a33393403cefaa6a9f07e6341bc0b6121}\label{km__gpio_8h_a33393403cefaa6a9f07e6341bc0b6121} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_ORIN\_UART\_RX@{PIN\_ORIN\_UART\_RX}}
+\index{PIN\_ORIN\_UART\_RX@{PIN\_ORIN\_UART\_RX}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_ORIN\_UART\_RX}{PIN\_ORIN\_UART\_RX}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+ORIN\+\_\+\+UART\+\_\+\+RX~GPIO\+\_\+\+NUM\+\_\+16}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00043}{43}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a9980602166120297bd562931995115fe}\label{km__gpio_8h_a9980602166120297bd562931995115fe} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_ORIN\_UART\_TX@{PIN\_ORIN\_UART\_TX}}
+\index{PIN\_ORIN\_UART\_TX@{PIN\_ORIN\_UART\_TX}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_ORIN\_UART\_TX}{PIN\_ORIN\_UART\_TX}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+ORIN\+\_\+\+UART\+\_\+\+TX~GPIO\+\_\+\+NUM\+\_\+17}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00042}{42}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_aac397306d13562ded89fe827f967ea25}\label{km__gpio_8h_aac397306d13562ded89fe827f967ea25} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_PEDAL\_ACC@{PIN\_PEDAL\_ACC}}
+\index{PIN\_PEDAL\_ACC@{PIN\_PEDAL\_ACC}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_PEDAL\_ACC}{PIN\_PEDAL\_ACC}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+PEDAL\+\_\+\+ACC~GPIO\+\_\+\+NUM\+\_\+35}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00050}{50}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_ab7d4554dcbbe1bf0cae780014b928428}\label{km__gpio_8h_ab7d4554dcbbe1bf0cae780014b928428} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_PEDAL\_BRAKE@{PIN\_PEDAL\_BRAKE}}
+\index{PIN\_PEDAL\_BRAKE@{PIN\_PEDAL\_BRAKE}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_PEDAL\_BRAKE}{PIN\_PEDAL\_BRAKE}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+PEDAL\+\_\+\+BRAKE~GPIO\+\_\+\+NUM\+\_\+32}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00047}{47}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a8fb25f688edbd078b029114028fa41ed}\label{km__gpio_8h_a8fb25f688edbd078b029114028fa41ed} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_PRESSURE\_1@{PIN\_PRESSURE\_1}}
+\index{PIN\_PRESSURE\_1@{PIN\_PRESSURE\_1}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_PRESSURE\_1}{PIN\_PRESSURE\_1}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+PRESSURE\+\_\+1~GPIO\+\_\+\+NUM\+\_\+36}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00051}{51}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a827e8af645597dd0445cf4e83d4d2b05}\label{km__gpio_8h_a827e8af645597dd0445cf4e83d4d2b05} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_PRESSURE\_2@{PIN\_PRESSURE\_2}}
+\index{PIN\_PRESSURE\_2@{PIN\_PRESSURE\_2}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_PRESSURE\_2}{PIN\_PRESSURE\_2}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+PRESSURE\+\_\+2~GPIO\+\_\+\+NUM\+\_\+39}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00052}{52}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a05bc33a8db7db441ce92d1370eaa1084}\label{km__gpio_8h_a05bc33a8db7db441ce92d1370eaa1084} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_PRESSURE\_3@{PIN\_PRESSURE\_3}}
+\index{PIN\_PRESSURE\_3@{PIN\_PRESSURE\_3}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_PRESSURE\_3}{PIN\_PRESSURE\_3}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+PRESSURE\+\_\+3~GPIO\+\_\+\+NUM\+\_\+34}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00049}{49}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a9cccc3fd0833b8971461317cc3750096}\label{km__gpio_8h_a9cccc3fd0833b8971461317cc3750096} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_STATUS\_LED@{PIN\_STATUS\_LED}}
+\index{PIN\_STATUS\_LED@{PIN\_STATUS\_LED}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_STATUS\_LED}{PIN\_STATUS\_LED}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+STATUS\+\_\+\+LED~GPIO\+\_\+\+NUM\+\_\+2}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00075}{75}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a58b08a11ef75b28f24e49ce4b1dfa18c}\label{km__gpio_8h_a58b08a11ef75b28f24e49ce4b1dfa18c} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_STEER\_DIR@{PIN\_STEER\_DIR}}
+\index{PIN\_STEER\_DIR@{PIN\_STEER\_DIR}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_STEER\_DIR}{PIN\_STEER\_DIR}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+STEER\+\_\+\+DIR~GPIO\+\_\+\+NUM\+\_\+14}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00063}{63}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_a05033af15135c5ccb8a14c8d721be821}\label{km__gpio_8h_a05033af15135c5ccb8a14c8d721be821} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_STEER\_PWM@{PIN\_STEER\_PWM}}
+\index{PIN\_STEER\_PWM@{PIN\_STEER\_PWM}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_STEER\_PWM}{PIN\_STEER\_PWM}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+STEER\+\_\+\+PWM~GPIO\+\_\+\+NUM\+\_\+27}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00062}{62}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_ae50025ff397267332e943e2d4b16da85}\label{km__gpio_8h_ae50025ff397267332e943e2d4b16da85} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_USB\_UART\_RX@{PIN\_USB\_UART\_RX}}
+\index{PIN\_USB\_UART\_RX@{PIN\_USB\_UART\_RX}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_USB\_UART\_RX}{PIN\_USB\_UART\_RX}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+USB\+\_\+\+UART\+\_\+\+RX~GPIO\+\_\+\+NUM\+\_\+3}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00039}{39}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+\Hypertarget{km__gpio_8h_ab729b72da44a7e74d0c84733353476ba}\label{km__gpio_8h_ab729b72da44a7e74d0c84733353476ba} 
+\index{km\_gpio.h@{km\_gpio.h}!PIN\_USB\_UART\_TX@{PIN\_USB\_UART\_TX}}
+\index{PIN\_USB\_UART\_TX@{PIN\_USB\_UART\_TX}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{PIN\_USB\_UART\_TX}{PIN\_USB\_UART\_TX}}
+{\footnotesize\ttfamily \#define PIN\+\_\+\+USB\+\_\+\+UART\+\_\+\+TX~GPIO\+\_\+\+NUM\+\_\+1}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8h_source_l00038}{38}} of file \mbox{\hyperlink{km__gpio_8h_source}{km\+\_\+gpio.\+h}}.
+
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{km__gpio_8h_a292bd05e9fda7632e0e0b4aab966d28b}\label{km__gpio_8h_a292bd05e9fda7632e0e0b4aab966d28b} 
+\index{km\_gpio.h@{km\_gpio.h}!KM\_GPIO\_I2CInit@{KM\_GPIO\_I2CInit}}
+\index{KM\_GPIO\_I2CInit@{KM\_GPIO\_I2CInit}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{KM\_GPIO\_I2CInit()}{KM\_GPIO\_I2CInit()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+GPIO\+\_\+\+I2\+CInit (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Initialize I2C master interface. 
+
+Uses SDA and SCL pins defined in the gpio\+\_\+config\+\_\+t structs.
+
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK on success, or an ESP-\/\+IDF error code. 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00279}{279}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00280\ \{}
+\DoxyCodeLine{00281\ \ \ \ \ i2c\_config\_t\ conf\ =\ \{}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \ .mode\ =\ I2C\_MODE\_MASTER,}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ .sda\_io\_num\ =\ \mbox{\hyperlink{km__gpio_8h_afd84f048502b749115c9e05262ed6753}{PIN\_I2C\_SDA}},}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ .scl\_io\_num\ =\ \mbox{\hyperlink{km__gpio_8h_a6b5cc0023af0923f5e57d107bdd8f985}{PIN\_I2C\_SCL}},}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ .sda\_pullup\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ .scl\_pullup\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ .master.clk\_speed\ =\ 400000}
+\DoxyCodeLine{00288\ \ \ \ \ \};}
+\DoxyCodeLine{00289\ \ \ \ \ esp\_err\_t\ ret\ =\ i2c\_param\_config(I2C\_NUM\_0,\ \&conf);}
+\DoxyCodeLine{00290\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ !=\ ESP\_OK)\ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \ \ \textcolor{keywordflow}{return}\ i2c\_driver\_install(I2C\_NUM\_0,\ conf.mode,\ 0,\ 0,\ 0);}
+\DoxyCodeLine{00293\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_a4467a661ca6fe29f12f392cb58b386f3}\label{km__gpio_8h_a4467a661ca6fe29f12f392cb58b386f3} 
+\index{km\_gpio.h@{km\_gpio.h}!KM\_GPIO\_Init@{KM\_GPIO\_Init}}
+\index{KM\_GPIO\_Init@{KM\_GPIO\_Init}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{KM\_GPIO\_Init()}{KM\_GPIO\_Init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+GPIO\+\_\+\+Init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Initialize all hardware peripherals needed by KM\+\_\+\+GPIO. 
+
+This function initializes\+:
+\begin{DoxyItemize}
+\item PWM (LEDC) timers and channels
+\item DAC channels
+\item I2C driver
+\end{DoxyItemize}
+
+Note\+: The actual GPIO pins must be configured in gpio\+\_\+config\+\_\+t structs before calling this function.
+
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK on success, or an ESP-\/\+IDF error code. 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00179}{179}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00180\ \{}
+\DoxyCodeLine{00181\ \ \ \ \ esp\_err\_t\ ret;}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{comment}{//\ Enable\ DAC\ channels}}
+\DoxyCodeLine{00184\ \ \ \ \ ret\ =\ dac\_output\_enable(DAC\_CHAN\_0);\ \textcolor{comment}{//\ CMD\_ACC}}
+\DoxyCodeLine{00185\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ !=\ ESP\_OK)\ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00186\ \ \ \ \ ret\ =\ dac\_output\_enable(DAC\_CHAN\_1);\ \textcolor{comment}{//\ CMD\_BRAKE}}
+\DoxyCodeLine{00187\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ !=\ ESP\_OK)\ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00188\ }
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{comment}{//\ Setup\ PWM\ (LEDC)}}
+\DoxyCodeLine{00190\ \ \ \ \ ledc\_timer\_config\_t\ pwm\_timer\ =\ \{}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ .speed\_mode\ =\ \mbox{\hyperlink{km__gpio_8h_a5f0a132f2e2cf7864f8bd7d1d2ec64ee}{LEDC\_HIGH\_SPEED\_MODE}},}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ .duty\_resolution\ =\ LEDC\_TIMER\_8\_BIT,}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ .timer\_num\ =\ LEDC\_TIMER\_0,}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ .freq\_hz\ =\ 1000,}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ .clk\_cfg\ =\ LEDC\_AUTO\_CLK}
+\DoxyCodeLine{00196\ \ \ \ \ \};}
+\DoxyCodeLine{00197\ \ \ \ \ ret\ =\ ledc\_timer\_config(\&pwm\_timer);}
+\DoxyCodeLine{00198\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ !=\ ESP\_OK)\ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \ \ ledc\_channel\_config\_t\ pwm\_channel\ =\ \{}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ .gpio\_num\ =\ (gpio\_num\_t)\mbox{\hyperlink{km__gpio_8h_a05033af15135c5ccb8a14c8d721be821}{PIN\_STEER\_PWM}},}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ .speed\_mode\ =\ \mbox{\hyperlink{km__gpio_8h_a5f0a132f2e2cf7864f8bd7d1d2ec64ee}{LEDC\_HIGH\_SPEED\_MODE}},}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ .channel\ =\ LEDC\_CHANNEL\_0,}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ .intr\_type\ =\ LEDC\_INTR\_DISABLE,}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ .timer\_sel\ =\ LEDC\_TIMER\_0,}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ .duty\ =\ 0}
+\DoxyCodeLine{00207\ \ \ \ \ \};}
+\DoxyCodeLine{00208\ \ \ \ \ ret\ =\ ledc\_channel\_config(\&pwm\_channel);}
+\DoxyCodeLine{00209\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ !=\ ESP\_OK)\ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_OK;}
+\DoxyCodeLine{00212\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_a048a9f0aea71f71f2f863a38bce87ba9}\label{km__gpio_8h_a048a9f0aea71f71f2f863a38bce87ba9} 
+\index{km\_gpio.h@{km\_gpio.h}!KM\_GPIO\_ReadADC@{KM\_GPIO\_ReadADC}}
+\index{KM\_GPIO\_ReadADC@{KM\_GPIO\_ReadADC}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{KM\_GPIO\_ReadADC()}{KM\_GPIO\_ReadADC()}}
+{\footnotesize\ttfamily uint16\+\_\+t KM\+\_\+\+GPIO\+\_\+\+Read\+ADC (\begin{DoxyParamCaption}\item[{const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}}]{pin }\end{DoxyParamCaption})}
+
+
+
+Read an analog input (ADC) from the specified pin. 
+
+Only pins configured as ADC1 or ADC2 channels can be read.
+
+
+\begin{DoxyParams}{Parameters}
+{\em pin} & Pointer to a gpio\+\_\+config\+\_\+t representing the ADC pin. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+12-\/bit ADC value (0-\/4095). Returns 0 if pin is invalid. 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00231}{231}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00232\ \{}
+\DoxyCodeLine{00233\ \ \ \ \ gpio\_num\_t\ gpio\ =\ (gpio\_num\_t)(pin-\/>pin\_bit\_mask);}
+\DoxyCodeLine{00234\ \ \ \ \ \textcolor{keywordtype}{int}\ raw\_out\_adc2\ =\ 0;}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{keywordflow}{switch}\ (gpio)}
+\DoxyCodeLine{00237\ \ \ \ \ \{}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_36:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_0);\ \textcolor{comment}{//\ pressure\ 1}}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_39:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_3);\ \textcolor{comment}{//\ pressure\ 2}}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_34:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_6);\ \textcolor{comment}{//\ pressure\ 3}}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_35:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_7);\ \textcolor{comment}{//\ pedal\ acc}}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_32:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_4);\ \textcolor{comment}{//\ pedal\ brake}}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_33:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_5);\ \textcolor{comment}{//\ hydraulic\ 1}}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_13:\ \ \ \ \textcolor{comment}{//\ hydraulic\ 2}}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (adc2\_get\_raw(ADC2\_CHANNEL\_4,\ ADC\_WIDTH\_BIT\_12,\ \&raw\_out\_adc2)\ ==\ ESP\_OK)}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ raw\_out\_adc2;}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{default}:\ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00250\ \ \ \ \ \}}
+\DoxyCodeLine{00251\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_a9197f579c88c677da941107c9a4b3b3a}\label{km__gpio_8h_a9197f579c88c677da941107c9a4b3b3a} 
+\index{km\_gpio.h@{km\_gpio.h}!KM\_GPIO\_ReadPin@{KM\_GPIO\_ReadPin}}
+\index{KM\_GPIO\_ReadPin@{KM\_GPIO\_ReadPin}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{KM\_GPIO\_ReadPin()}{KM\_GPIO\_ReadPin()}}
+{\footnotesize\ttfamily uint8\+\_\+t KM\+\_\+\+GPIO\+\_\+\+Read\+Pin (\begin{DoxyParamCaption}\item[{const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}}]{pin }\end{DoxyParamCaption})}
+
+
+
+Read the digital level of a GPIO pin. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em pin} & Pointer to a gpio\+\_\+config\+\_\+t representing the pin to read. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 if LOW, 1 if HIGH. 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00215}{215}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00216\ \{}
+\DoxyCodeLine{00217\ \ \ \ \ \textcolor{keywordflow}{return}\ gpio\_get\_level((gpio\_num\_t)(pin-\/>pin\_bit\_mask));}
+\DoxyCodeLine{00218\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_a94f396afe846586cd4f01fbf23043fcb}\label{km__gpio_8h_a94f396afe846586cd4f01fbf23043fcb} 
+\index{km\_gpio.h@{km\_gpio.h}!KM\_GPIO\_WriteDAC@{KM\_GPIO\_WriteDAC}}
+\index{KM\_GPIO\_WriteDAC@{KM\_GPIO\_WriteDAC}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{KM\_GPIO\_WriteDAC()}{KM\_GPIO\_WriteDAC()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+GPIO\+\_\+\+Write\+DAC (\begin{DoxyParamCaption}\item[{const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}}]{pin,  }\item[{uint8\+\_\+t}]{value }\end{DoxyParamCaption})}
+
+
+
+Write a value to a DAC output pin. 
+
+Only DAC1 (GPIO25) and DAC2 (GPIO26) are supported.
+
+
+\begin{DoxyParams}{Parameters}
+{\em pin} & Pointer to a gpio\+\_\+config\+\_\+t representing the DAC pin. \\
+\hline
+{\em value} & 8-\/bit value (0-\/255) to output. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK on success, or ESP\+\_\+\+ERR\+\_\+\+INVALID\+\_\+\+ARG if pin is not DAC. 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00254}{254}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00255\ \{}
+\DoxyCodeLine{00256\ \ \ \ \ gpio\_num\_t\ gpio\ =\ (gpio\_num\_t)(pin-\/>pin\_bit\_mask);}
+\DoxyCodeLine{00257\ }
+\DoxyCodeLine{00258\ \ \ \ \ \textcolor{keywordflow}{if}\ (gpio\ ==\ \mbox{\hyperlink{km__gpio_8h_a0108eb94d0a806a3bf5f1f9fba8b5bea}{PIN\_CMD\_ACC}})\ \textcolor{keywordflow}{return}\ dac\_output\_voltage(DAC\_CHAN\_0,\ value);}
+\DoxyCodeLine{00259\ \ \ \ \ \textcolor{keywordflow}{if}\ (gpio\ ==\ \mbox{\hyperlink{km__gpio_8h_a76984f952d1a68611235af5de185bd8b}{PIN\_CMD\_BRAKE}})\ \textcolor{keywordflow}{return}\ dac\_output\_voltage(DAC\_CHAN\_1,\ value);}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_ERR\_INVALID\_ARG;}
+\DoxyCodeLine{00262\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_ac6c6f297041b14cb0ad1cd7d9aa6f2b2}\label{km__gpio_8h_ac6c6f297041b14cb0ad1cd7d9aa6f2b2} 
+\index{km\_gpio.h@{km\_gpio.h}!KM\_GPIO\_WritePinHigh@{KM\_GPIO\_WritePinHigh}}
+\index{KM\_GPIO\_WritePinHigh@{KM\_GPIO\_WritePinHigh}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{KM\_GPIO\_WritePinHigh()}{KM\_GPIO\_WritePinHigh()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+GPIO\+\_\+\+Write\+Pin\+High (\begin{DoxyParamCaption}\item[{const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}}]{pin }\end{DoxyParamCaption})}
+
+
+
+Set a GPIO pin HIGH (1). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em pin} & Pointer to a gpio\+\_\+config\+\_\+t representing the pin to write. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK on success, or an ESP-\/\+IDF error code. 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00220}{220}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00221\ \{}
+\DoxyCodeLine{00222\ \ \ \ \ \textcolor{keywordflow}{return}\ gpio\_set\_level((gpio\_num\_t)(pin-\/>pin\_bit\_mask),\ 1);}
+\DoxyCodeLine{00223\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_ad7bcfffee3a58a8dabcb0cfeea0178ad}\label{km__gpio_8h_ad7bcfffee3a58a8dabcb0cfeea0178ad} 
+\index{km\_gpio.h@{km\_gpio.h}!KM\_GPIO\_WritePinLow@{KM\_GPIO\_WritePinLow}}
+\index{KM\_GPIO\_WritePinLow@{KM\_GPIO\_WritePinLow}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{KM\_GPIO\_WritePinLow()}{KM\_GPIO\_WritePinLow()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+GPIO\+\_\+\+Write\+Pin\+Low (\begin{DoxyParamCaption}\item[{const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}}]{pin }\end{DoxyParamCaption})}
+
+
+
+Set a GPIO pin LOW (0). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em pin} & Pointer to a gpio\+\_\+config\+\_\+t representing the pin to write. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK on success, or an ESP-\/\+IDF error code. 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00225}{225}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00226\ \{}
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keywordflow}{return}\ gpio\_set\_level((gpio\_num\_t)(pin-\/>pin\_bit\_mask),\ 0);}
+\DoxyCodeLine{00228\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_a8b7f6b445c202fffdafa04bd0a98f809}\label{km__gpio_8h_a8b7f6b445c202fffdafa04bd0a98f809} 
+\index{km\_gpio.h@{km\_gpio.h}!KM\_GPIO\_WritePWM@{KM\_GPIO\_WritePWM}}
+\index{KM\_GPIO\_WritePWM@{KM\_GPIO\_WritePWM}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{KM\_GPIO\_WritePWM()}{KM\_GPIO\_WritePWM()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+GPIO\+\_\+\+Write\+PWM (\begin{DoxyParamCaption}\item[{const gpio\+\_\+config\+\_\+t \texorpdfstring{$\ast$}{*}}]{pin,  }\item[{uint8\+\_\+t}]{duty }\end{DoxyParamCaption})}
+
+
+
+Write a PWM duty cycle to a pin using LEDC. 
+
+Only pins configured with PWM channels will respond.
+
+
+\begin{DoxyParams}{Parameters}
+{\em pin} & Pointer to a gpio\+\_\+config\+\_\+t representing the PWM pin. \\
+\hline
+{\em duty} & Duty cycle from 0 to 255. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK on success, or ESP\+\_\+\+ERR\+\_\+\+INVALID\+\_\+\+ARG if pin is not PWM. 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00265}{265}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00266\ \{}
+\DoxyCodeLine{00267\ \ \ \ \ gpio\_num\_t\ gpio\ =\ (gpio\_num\_t)(pin-\/>pin\_bit\_mask);}
+\DoxyCodeLine{00268\ }
+\DoxyCodeLine{00269\ \ \ \ \ \textcolor{keywordflow}{if}\ (gpio\ ==\ GPIO\_NUM\_27)\ \textcolor{comment}{//\ Steering\ PWM}}
+\DoxyCodeLine{00270\ \ \ \ \ \{}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ \ ledc\_set\_duty(\mbox{\hyperlink{km__gpio_8h_a5f0a132f2e2cf7864f8bd7d1d2ec64ee}{LEDC\_HIGH\_SPEED\_MODE}},\ LEDC\_CHANNEL\_0,\ duty);}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ledc\_update\_duty(\mbox{\hyperlink{km__gpio_8h_a5f0a132f2e2cf7864f8bd7d1d2ec64ee}{LEDC\_HIGH\_SPEED\_MODE}},\ LEDC\_CHANNEL\_0);}
+\DoxyCodeLine{00273\ \ \ \ \ \}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_ERR\_INVALID\_ARG;}
+\DoxyCodeLine{00276\ \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{km__gpio_8h_ab7ea71722ed6ad46cc7b0b60ee816ad9}\label{km__gpio_8h_ab7ea71722ed6ad46cc7b0b60ee816ad9} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_cmd\_acc@{pin\_cmd\_acc}}
+\index{pin\_cmd\_acc@{pin\_cmd\_acc}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_cmd\_acc}{pin\_cmd\_acc}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+cmd\+\_\+acc\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00088}{88}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00089\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a0108eb94d0a806a3bf5f1f9fba8b5bea}{PIN\_CMD\_ACC}},}
+\DoxyCodeLine{00090\ \ \ \ \ .mode\ =\ GPIO\_MODE\_OUTPUT,}
+\DoxyCodeLine{00091\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00092\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00093\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00094\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_ad32a127f101a5b0b29b9b450ed44350a}\label{km__gpio_8h_ad32a127f101a5b0b29b9b450ed44350a} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_cmd\_brake@{pin\_cmd\_brake}}
+\index{pin\_cmd\_brake@{pin\_cmd\_brake}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_cmd\_brake}{pin\_cmd\_brake}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+cmd\+\_\+brake\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00096}{96}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00097\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a76984f952d1a68611235af5de185bd8b}{PIN\_CMD\_BRAKE}},}
+\DoxyCodeLine{00098\ \ \ \ \ .mode\ =\ GPIO\_MODE\_OUTPUT,}
+\DoxyCodeLine{00099\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00100\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00101\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00102\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_a0de7c1b9d4e548cef48401c51522a206}\label{km__gpio_8h_a0de7c1b9d4e548cef48401c51522a206} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_hydraulic\_1@{pin\_hydraulic\_1}}
+\index{pin\_hydraulic\_1@{pin\_hydraulic\_1}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_hydraulic\_1}{pin\_hydraulic\_1}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+hydraulic\+\_\+1\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00070}{70}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00071\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a7eb88311c5bbc031e2fcaf00a64ae53e}{PIN\_HYDRAULIC\_1}},}
+\DoxyCodeLine{00072\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{00073\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00074\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00075\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00076\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_a627853334cbc7b666d21aa9802492ece}\label{km__gpio_8h_a627853334cbc7b666d21aa9802492ece} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_hydraulic\_2@{pin\_hydraulic\_2}}
+\index{pin\_hydraulic\_2@{pin\_hydraulic\_2}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_hydraulic\_2}{pin\_hydraulic\_2}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+hydraulic\+\_\+2\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00079}{79}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00080\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a1773691aaf6fc0b7ca31a8e8b414c588}{PIN\_HYDRAULIC\_2}},}
+\DoxyCodeLine{00081\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{00082\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00083\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00084\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00085\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_ae45bc9ae2a0dc4803f1e9f1d030d16bc}\label{km__gpio_8h_ae45bc9ae2a0dc4803f1e9f1d030d16bc} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_i2c\_scl@{pin\_i2c\_scl}}
+\index{pin\_i2c\_scl@{pin\_i2c\_scl}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_i2c\_scl}{pin\_i2c\_scl}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+i2c\+\_\+scl\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00147}{147}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00148\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a6b5cc0023af0923f5e57d107bdd8f985}{PIN\_I2C\_SCL}},}
+\DoxyCodeLine{00149\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT\_OUTPUT\_OD,}
+\DoxyCodeLine{00150\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{00151\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00152\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00153\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_aa70681f2b4add7d570969eb391cd5336}\label{km__gpio_8h_aa70681f2b4add7d570969eb391cd5336} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_i2c\_sda@{pin\_i2c\_sda}}
+\index{pin\_i2c\_sda@{pin\_i2c\_sda}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_i2c\_sda}{pin\_i2c\_sda}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+i2c\+\_\+sda\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00155}{155}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00156\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_afd84f048502b749115c9e05262ed6753}{PIN\_I2C\_SDA}},}
+\DoxyCodeLine{00157\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT\_OUTPUT\_OD,}
+\DoxyCodeLine{00158\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{00159\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00160\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00161\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_a9700211b14d87a634e6d6ef74f041bd0}\label{km__gpio_8h_a9700211b14d87a634e6d6ef74f041bd0} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_motor\_hall\_1@{pin\_motor\_hall\_1}}
+\index{pin\_motor\_hall\_1@{pin\_motor\_hall\_1}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_motor\_hall\_1}{pin\_motor\_hall\_1}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+motor\+\_\+hall\+\_\+1\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00122}{122}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00123\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_aed25264bde8243d833e5f688ccd75b4e}{PIN\_MOTOR\_HALL\_1}},}
+\DoxyCodeLine{00124\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{00125\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00126\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00127\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_POSEDGE}
+\DoxyCodeLine{00128\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_a2c4c3025b5eab823e846d92390bd8613}\label{km__gpio_8h_a2c4c3025b5eab823e846d92390bd8613} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_motor\_hall\_2@{pin\_motor\_hall\_2}}
+\index{pin\_motor\_hall\_2@{pin\_motor\_hall\_2}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_motor\_hall\_2}{pin\_motor\_hall\_2}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+motor\+\_\+hall\+\_\+2\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00130}{130}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00131\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a02a5236b09e27d22de4e677a073f21eb}{PIN\_MOTOR\_HALL\_2}},}
+\DoxyCodeLine{00132\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{00133\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00134\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00135\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_POSEDGE}
+\DoxyCodeLine{00136\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_ae9d9a382b8ca89e0ef570c13e4db1468}\label{km__gpio_8h_ae9d9a382b8ca89e0ef570c13e4db1468} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_motor\_hall\_3@{pin\_motor\_hall\_3}}
+\index{pin\_motor\_hall\_3@{pin\_motor\_hall\_3}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_motor\_hall\_3}{pin\_motor\_hall\_3}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+motor\+\_\+hall\+\_\+3\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00138}{138}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00139\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a64ffcf99e8b7e94eab9ab6bafb32b8dc}{PIN\_MOTOR\_HALL\_3}},}
+\DoxyCodeLine{00140\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{00141\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00142\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00143\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_POSEDGE}
+\DoxyCodeLine{00144\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_aeef04eeac4de585060c973234f4c423e}\label{km__gpio_8h_aeef04eeac4de585060c973234f4c423e} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_pedal\_acc@{pin\_pedal\_acc}}
+\index{pin\_pedal\_acc@{pin\_pedal\_acc}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_pedal\_acc}{pin\_pedal\_acc}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+pedal\+\_\+acc\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00054}{54}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00055\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_aac397306d13562ded89fe827f967ea25}{PIN\_PEDAL\_ACC}},}
+\DoxyCodeLine{00056\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{00057\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00058\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00059\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00060\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_ad03c660364d890d9ff02283049ccba0e}\label{km__gpio_8h_ad03c660364d890d9ff02283049ccba0e} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_pedal\_brake@{pin\_pedal\_brake}}
+\index{pin\_pedal\_brake@{pin\_pedal\_brake}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_pedal\_brake}{pin\_pedal\_brake}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+pedal\+\_\+brake\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00062}{62}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00063\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_ab7d4554dcbbe1bf0cae780014b928428}{PIN\_PEDAL\_BRAKE}},}
+\DoxyCodeLine{00064\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{00065\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00066\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00067\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00068\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_acf7d9b0ed84a4be88f862dd6fd4a489e}\label{km__gpio_8h_acf7d9b0ed84a4be88f862dd6fd4a489e} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_pressure\_1@{pin\_pressure\_1}}
+\index{pin\_pressure\_1@{pin\_pressure\_1}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_pressure\_1}{pin\_pressure\_1}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+pressure\+\_\+1\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00030}{30}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00031\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a8fb25f688edbd078b029114028fa41ed}{PIN\_PRESSURE\_1}},}
+\DoxyCodeLine{00032\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{00033\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00034\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00035\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00036\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_ac593b1fde53672b7ecbef1a07bdeaa93}\label{km__gpio_8h_ac593b1fde53672b7ecbef1a07bdeaa93} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_pressure\_2@{pin\_pressure\_2}}
+\index{pin\_pressure\_2@{pin\_pressure\_2}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_pressure\_2}{pin\_pressure\_2}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+pressure\+\_\+2\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00038}{38}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00039\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a827e8af645597dd0445cf4e83d4d2b05}{PIN\_PRESSURE\_2}},}
+\DoxyCodeLine{00040\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{00041\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00042\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00043\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00044\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_ad4b10105bedc4fc224baf7d4aee9fa45}\label{km__gpio_8h_ad4b10105bedc4fc224baf7d4aee9fa45} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_pressure\_3@{pin\_pressure\_3}}
+\index{pin\_pressure\_3@{pin\_pressure\_3}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_pressure\_3}{pin\_pressure\_3}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+pressure\+\_\+3\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00046}{46}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00047\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a05bc33a8db7db441ce92d1370eaa1084}{PIN\_PRESSURE\_3}},}
+\DoxyCodeLine{00048\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{00049\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00050\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00051\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00052\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_ab30e317aef245ee83e4f960bd49c0a59}\label{km__gpio_8h_ab30e317aef245ee83e4f960bd49c0a59} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_status\_led@{pin\_status\_led}}
+\index{pin\_status\_led@{pin\_status\_led}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_status\_led}{pin\_status\_led}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+status\+\_\+led\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00164}{164}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00165\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a9cccc3fd0833b8971461317cc3750096}{PIN\_STATUS\_LED}},}
+\DoxyCodeLine{00166\ \ \ \ \ .mode\ =\ GPIO\_MODE\_OUTPUT,}
+\DoxyCodeLine{00167\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00168\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00169\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00170\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_ae759f073dbed9c97c7bf1ffc36b2de7e}\label{km__gpio_8h_ae759f073dbed9c97c7bf1ffc36b2de7e} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_steer\_dir@{pin\_steer\_dir}}
+\index{pin\_steer\_dir@{pin\_steer\_dir}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_steer\_dir}{pin\_steer\_dir}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+steer\+\_\+dir\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00113}{113}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00114\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a58b08a11ef75b28f24e49ce4b1dfa18c}{PIN\_STEER\_DIR}},}
+\DoxyCodeLine{00115\ \ \ \ \ .mode\ =\ GPIO\_MODE\_OUTPUT,}
+\DoxyCodeLine{00116\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00117\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00118\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00119\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_a0205eceb6d3184bd73a9406a50c49844}\label{km__gpio_8h_a0205eceb6d3184bd73a9406a50c49844} 
+\index{km\_gpio.h@{km\_gpio.h}!pin\_steer\_pwm@{pin\_steer\_pwm}}
+\index{pin\_steer\_pwm@{pin\_steer\_pwm}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{pin\_steer\_pwm}{pin\_steer\_pwm}}
+{\footnotesize\ttfamily const gpio\+\_\+config\+\_\+t pin\+\_\+steer\+\_\+pwm\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00105}{105}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00106\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a05033af15135c5ccb8a14c8d721be821}{PIN\_STEER\_PWM}},}
+\DoxyCodeLine{00107\ \ \ \ \ .mode\ =\ GPIO\_MODE\_OUTPUT,}
+\DoxyCodeLine{00108\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{00109\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{00110\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{00111\ \};}
+
+\end{DoxyCode}
+\Hypertarget{km__gpio_8h_a22cf3a004d95b68f395f32ecdfe6ba15}\label{km__gpio_8h_a22cf3a004d95b68f395f32ecdfe6ba15} 
+\index{km\_gpio.h@{km\_gpio.h}!uart\_config@{uart\_config}}
+\index{uart\_config@{uart\_config}!km\_gpio.h@{km\_gpio.h}}
+\doxysubsubsection{\texorpdfstring{uart\_config}{uart\_config}}
+{\footnotesize\ttfamily const uart\+\_\+config\+\_\+t uart\+\_\+config\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__gpio_8c_source_l00020}{20}} of file \mbox{\hyperlink{km__gpio_8c_source}{km\+\_\+gpio.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00021\ \ \ \ \ .baud\_rate\ =\ 115200,}
+\DoxyCodeLine{00022\ \ \ \ \ .data\_bits\ =\ UART\_DATA\_8\_BITS,}
+\DoxyCodeLine{00023\ \ \ \ \ .parity\ \ \ \ =\ UART\_PARITY\_DISABLE,}
+\DoxyCodeLine{00024\ \ \ \ \ .stop\_bits\ =\ UART\_STOP\_BITS\_1,}
+\DoxyCodeLine{00025\ \ \ \ \ .flow\_ctrl\ =\ UART\_HW\_FLOWCTRL\_DISABLE}
+\DoxyCodeLine{00026\ \};}
+
+\end{DoxyCode}

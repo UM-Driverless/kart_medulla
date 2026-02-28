@@ -1,0 +1,343 @@
+\doxysection{km\+\_\+sdir.\+c File Reference}
+\hypertarget{km__sdir_8c}{}\label{km__sdir_8c}\index{km\_sdir.c@{km\_sdir.c}}
+{\ttfamily \#include "{}km\+\_\+sdir.\+h"{}}\newline
+Include dependency graph for km\+\_\+sdir.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{km__sdir_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{km__sdir_8c_afc3d101f633a076cc1ca84b85b6224b2}{TAG}}~"{}KM\+\_\+\+SDIR"{}
+\item 
+\#define \mbox{\hyperlink{km__sdir_8c_a7ebc0bc57afc33bd33967be8479690db}{I2\+C\+\_\+\+MASTER\+\_\+\+TIMEOUT\+\_\+\+MS}}~1000
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+static int8\+\_\+t \mbox{\hyperlink{km__sdir_8c_a327dff7f2676c80d006519af73f7efb0}{KM\+\_\+\+SDIR\+\_\+\+Read\+Registers}} (\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}sensor, uint8\+\_\+t reg, uint8\+\_\+t \texorpdfstring{$\ast$}{*}data, uint8\+\_\+t len)
+\item 
+static float \mbox{\hyperlink{km__sdir_8c_a22c8222e7c0b2db4a0d79b75a1268206}{KM\+\_\+\+SDIR\+\_\+\+Read\+Angle}} (\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}sensor)
+\item 
+\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \mbox{\hyperlink{km__sdir_8c_a0785144a38f05da23fcbf18750b22233}{KM\+\_\+\+SDIR\+\_\+\+Init}} (int8\+\_\+t max\+\_\+error\+\_\+count)
+\begin{DoxyCompactList}\small\item\em Inicializa una conexion i2c. \end{DoxyCompactList}\item 
+int8\+\_\+t \mbox{\hyperlink{km__sdir_8c_a64f3eab2deb84b2b39fbb7eb3c6d3357}{KM\+\_\+\+SDIR\+\_\+\+Begin}} (\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}sensor, gpio\+\_\+num\+\_\+t sda, gpio\+\_\+num\+\_\+t scl)
+\item 
+uint16\+\_\+t \mbox{\hyperlink{km__sdir_8c_aacb41a5a17c035c7e97a7a8f348ba6b9}{KM\+\_\+\+SDIR\+\_\+\+Read\+Raw}} (\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}sensor)
+\item 
+float \mbox{\hyperlink{km__sdir_8c_af8f6747d76355bdc52a8863c2ff66d37}{KM\+\_\+\+SDIR\+\_\+\+Read\+Angle\+Radians}} (\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}sensor)
+\item 
+float \mbox{\hyperlink{km__sdir_8c_a614387a742f29a940e57bd849f10ce85}{KM\+\_\+\+SDIR\+\_\+\+Read\+Angle\+Degrees}} (\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}sensor)
+\item 
+int8\+\_\+t \mbox{\hyperlink{km__sdir_8c_aa051b9fdfa5d5d0cd1d6db174442aeba}{KM\+\_\+\+SDIR\+\_\+is\+Connected}} (\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}sensor)
+\item 
+int8\+\_\+t \mbox{\hyperlink{km__sdir_8c_a6ebe4d9ab446c06878b02fc59001d928}{KM\+\_\+\+SDIR\+\_\+\+Reset\+I2C}} (\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}sensor)
+\item 
+void \mbox{\hyperlink{km__sdir_8c_a7925c6327f449e320b221661df2c34ac}{KM\+\_\+\+SDIR\+\_\+set\+Center\+Offset}} (\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}sensor, uint16\+\_\+t offset)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{km__sdir_8c_a7ebc0bc57afc33bd33967be8479690db}\label{km__sdir_8c_a7ebc0bc57afc33bd33967be8479690db} 
+\index{km\_sdir.c@{km\_sdir.c}!I2C\_MASTER\_TIMEOUT\_MS@{I2C\_MASTER\_TIMEOUT\_MS}}
+\index{I2C\_MASTER\_TIMEOUT\_MS@{I2C\_MASTER\_TIMEOUT\_MS}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{I2C\_MASTER\_TIMEOUT\_MS}{I2C\_MASTER\_TIMEOUT\_MS}}
+{\footnotesize\ttfamily \#define I2\+C\+\_\+\+MASTER\+\_\+\+TIMEOUT\+\_\+\+MS~1000}
+
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00012}{12}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+\Hypertarget{km__sdir_8c_afc3d101f633a076cc1ca84b85b6224b2}\label{km__sdir_8c_afc3d101f633a076cc1ca84b85b6224b2} 
+\index{km\_sdir.c@{km\_sdir.c}!TAG@{TAG}}
+\index{TAG@{TAG}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{TAG}{TAG}}
+{\footnotesize\ttfamily \#define TAG~"{}KM\+\_\+\+SDIR"{}}
+
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00011}{11}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{km__sdir_8c_a64f3eab2deb84b2b39fbb7eb3c6d3357}\label{km__sdir_8c_a64f3eab2deb84b2b39fbb7eb3c6d3357} 
+\index{km\_sdir.c@{km\_sdir.c}!KM\_SDIR\_Begin@{KM\_SDIR\_Begin}}
+\index{KM\_SDIR\_Begin@{KM\_SDIR\_Begin}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{KM\_SDIR\_Begin()}{KM\_SDIR\_Begin()}}
+{\footnotesize\ttfamily int8\+\_\+t KM\+\_\+\+SDIR\+\_\+\+Begin (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}}]{sensor,  }\item[{gpio\+\_\+num\+\_\+t}]{sda,  }\item[{gpio\+\_\+num\+\_\+t}]{scl }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00034}{34}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00035\ \ \ \ \ i2c\_config\_t\ conf\ =\ \{}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ .mode\ =\ I2C\_MODE\_MASTER,}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \ .sda\_io\_num\ =\ sda,}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ .sda\_pullup\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ .scl\_io\_num\ =\ scl,}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ .scl\_pullup\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ .master.clk\_speed\ =\ 400000}
+\DoxyCodeLine{00042\ \ \ \ \ \};}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ i2c\_param\_config(I2C\_NUM\_0,\ \&conf);}
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordflow}{if}\ (i2c\_driver\_install(I2C\_NUM\_0,\ I2C\_MODE\_MASTER,\ 0,\ 0,\ 0)\ !=\ ESP\_OK)\ \{}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ ESP\_LOGE(\mbox{\hyperlink{km__sdir_8c_afc3d101f633a076cc1ca84b85b6224b2}{TAG}},\ \textcolor{stringliteral}{"{}Failed\ to\ install\ I2C\ driver"{}});}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00048\ \ \ \ \ \}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ uint8\_t\ testData[2];}
+\DoxyCodeLine{00051\ \ \ \ \ sensor-\/>\mbox{\hyperlink{structsensor__struct_a8388f2e09f0e2e3ec6dc4224f06f68c0}{connected}}\ =\ \mbox{\hyperlink{km__sdir_8c_a327dff7f2676c80d006519af73f7efb0}{KM\_SDIR\_ReadRegisters}}(sensor,\ \mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381adc3acdecb2e12f76b2d69281e5c32377}{AS5600\_ANGLE\_MSB}},\ testData,\ 2);}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{keywordflow}{if}\ (sensor-\/>\mbox{\hyperlink{structsensor__struct_a8388f2e09f0e2e3ec6dc4224f06f68c0}{connected}})\ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ ESP\_LOGI(\mbox{\hyperlink{km__sdir_8c_afc3d101f633a076cc1ca84b85b6224b2}{TAG}},\ \textcolor{stringliteral}{"{}AS5600\ sensor\ initialized\ successfully"{}});}
+\DoxyCodeLine{00054\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ ESP\_LOGW(\mbox{\hyperlink{km__sdir_8c_afc3d101f633a076cc1ca84b85b6224b2}{TAG}},\ \textcolor{stringliteral}{"{}AS5600\ sensor\ not\ found!"{}});}
+\DoxyCodeLine{00056\ \ \ \ \ \}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{return}\ sensor-\/>\mbox{\hyperlink{structsensor__struct_a8388f2e09f0e2e3ec6dc4224f06f68c0}{connected}};}
+\DoxyCodeLine{00059\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__sdir_8c_a0785144a38f05da23fcbf18750b22233}\label{km__sdir_8c_a0785144a38f05da23fcbf18750b22233} 
+\index{km\_sdir.c@{km\_sdir.c}!KM\_SDIR\_Init@{KM\_SDIR\_Init}}
+\index{KM\_SDIR\_Init@{KM\_SDIR\_Init}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{KM\_SDIR\_Init()}{KM\_SDIR\_Init()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} KM\+\_\+\+SDIR\+\_\+\+Init (\begin{DoxyParamCaption}\item[{int8\+\_\+t}]{max\+\_\+error\+\_\+count }\end{DoxyParamCaption})}
+
+
+
+Inicializa una conexion i2c. 
+
+\begin{DoxyReturn}{Returns}
+retorna el struct conection i2c inicializado 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00020}{20}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00021\ \ \ \ \ \mbox{\hyperlink{structsensor__struct}{sensor\_struct}}\ sensor;}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \ \ \ \ sensor.\mbox{\hyperlink{structsensor__struct_aabac13860b48ac93bf8bab4417fc3a76}{centerOffset}}\ =\ \mbox{\hyperlink{km__sdir_8h_afbee24912f20fb674c426efe55013de3ad3578e50e29eff99b30967a88b275f59}{SENSOR\_CENTER}};}
+\DoxyCodeLine{00024\ \ \ \ \ sensor.\mbox{\hyperlink{structsensor__struct_a8388f2e09f0e2e3ec6dc4224f06f68c0}{connected}}\ =\ 0;}
+\DoxyCodeLine{00025\ \ \ \ \ sensor.\mbox{\hyperlink{structsensor__struct_abbc0a7ab5d3016f5bc019eed46ea24dd}{errorCount}}\ =\ 0;}
+\DoxyCodeLine{00026\ \ \ \ \ sensor.\mbox{\hyperlink{structsensor__struct_a3aa104f79ff602778009f38b4d4bdd18}{lastRawValue}}\ =\ 0;}
+\DoxyCodeLine{00027\ \ \ \ \ sensor.\mbox{\hyperlink{structsensor__struct_afefedb49da2e40ee6c0b08e3adc8af4a}{lastReadTime}}\ =\ 0;}
+\DoxyCodeLine{00028\ \ \ \ \ sensor.\mbox{\hyperlink{structsensor__struct_ae7288a99c2497a24e98b6d881ec784b8}{max\_error\_count}}\ =\ max\_error\_count;}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \ \ \ \ \textcolor{keywordflow}{return}\ sensor;}
+\DoxyCodeLine{00031\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__sdir_8c_aa051b9fdfa5d5d0cd1d6db174442aeba}\label{km__sdir_8c_aa051b9fdfa5d5d0cd1d6db174442aeba} 
+\index{km\_sdir.c@{km\_sdir.c}!KM\_SDIR\_isConnected@{KM\_SDIR\_isConnected}}
+\index{KM\_SDIR\_isConnected@{KM\_SDIR\_isConnected}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{KM\_SDIR\_isConnected()}{KM\_SDIR\_isConnected()}}
+{\footnotesize\ttfamily int8\+\_\+t KM\+\_\+\+SDIR\+\_\+is\+Connected (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}}]{sensor }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00092}{92}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00093\ \ \ \ \ \textcolor{keywordflow}{return}\ sensor-\/>\mbox{\hyperlink{structsensor__struct_a8388f2e09f0e2e3ec6dc4224f06f68c0}{connected}}\ \&\&\ (sensor-\/>\mbox{\hyperlink{structsensor__struct_abbc0a7ab5d3016f5bc019eed46ea24dd}{errorCount}}\ <\ sensor-\/>\mbox{\hyperlink{structsensor__struct_ae7288a99c2497a24e98b6d881ec784b8}{max\_error\_count}});}
+\DoxyCodeLine{00094\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__sdir_8c_a22c8222e7c0b2db4a0d79b75a1268206}\label{km__sdir_8c_a22c8222e7c0b2db4a0d79b75a1268206} 
+\index{km\_sdir.c@{km\_sdir.c}!KM\_SDIR\_ReadAngle@{KM\_SDIR\_ReadAngle}}
+\index{KM\_SDIR\_ReadAngle@{KM\_SDIR\_ReadAngle}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{KM\_SDIR\_ReadAngle()}{KM\_SDIR\_ReadAngle()}}
+{\footnotesize\ttfamily static float KM\+\_\+\+SDIR\+\_\+\+Read\+Angle (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}}]{sensor }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00161}{161}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00162\ \ \ \ \ uint16\_t\ raw\ =\ \mbox{\hyperlink{km__sdir_8c_aacb41a5a17c035c7e97a7a8f348ba6b9}{KM\_SDIR\_ReadRaw}}(sensor);}
+\DoxyCodeLine{00163\ }
+\DoxyCodeLine{00164\ \ \ \ \ int16\_t\ centered\ =\ (int16\_t)raw\ -\/\ sensor-\/>\mbox{\hyperlink{structsensor__struct_aabac13860b48ac93bf8bab4417fc3a76}{centerOffset}};}
+\DoxyCodeLine{00165\ \ \ \ \ \textcolor{keywordtype}{float}\ angle\ =\ ((float)centered\ /\ (\textcolor{keywordtype}{float})\mbox{\hyperlink{km__sdir_8h_afbee24912f20fb674c426efe55013de3a8380277138b5a174ff67c4a42220a45d}{SENSOR\_MAX}})\ *\ 2.0f\ *\ \mbox{\hyperlink{km__sdir_8h_a601a1105619d4477d766b2e5baef865f}{MAX\_RAD}};}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{keywordflow}{return}\ angle;}
+\DoxyCodeLine{00168\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__sdir_8c_a614387a742f29a940e57bd849f10ce85}\label{km__sdir_8c_a614387a742f29a940e57bd849f10ce85} 
+\index{km\_sdir.c@{km\_sdir.c}!KM\_SDIR\_ReadAngleDegrees@{KM\_SDIR\_ReadAngleDegrees}}
+\index{KM\_SDIR\_ReadAngleDegrees@{KM\_SDIR\_ReadAngleDegrees}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{KM\_SDIR\_ReadAngleDegrees()}{KM\_SDIR\_ReadAngleDegrees()}}
+{\footnotesize\ttfamily float KM\+\_\+\+SDIR\+\_\+\+Read\+Angle\+Degrees (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}}]{sensor }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00087}{87}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{km__sdir_8c_a22c8222e7c0b2db4a0d79b75a1268206}{KM\_SDIR\_ReadAngle}}(sensor)\ *\ 180.0f\ /\ \mbox{\hyperlink{km__sdir_8h_a598a3330b3c21701223ee0ca14316eca}{PI}};}
+\DoxyCodeLine{00089\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__sdir_8c_af8f6747d76355bdc52a8863c2ff66d37}\label{km__sdir_8c_af8f6747d76355bdc52a8863c2ff66d37} 
+\index{km\_sdir.c@{km\_sdir.c}!KM\_SDIR\_ReadAngleRadians@{KM\_SDIR\_ReadAngleRadians}}
+\index{KM\_SDIR\_ReadAngleRadians@{KM\_SDIR\_ReadAngleRadians}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{KM\_SDIR\_ReadAngleRadians()}{KM\_SDIR\_ReadAngleRadians()}}
+{\footnotesize\ttfamily float KM\+\_\+\+SDIR\+\_\+\+Read\+Angle\+Radians (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}}]{sensor }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00082}{82}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00083\ \ \ \ \ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{km__sdir_8c_a22c8222e7c0b2db4a0d79b75a1268206}{KM\_SDIR\_ReadAngle}}(sensor);}
+\DoxyCodeLine{00084\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__sdir_8c_aacb41a5a17c035c7e97a7a8f348ba6b9}\label{km__sdir_8c_aacb41a5a17c035c7e97a7a8f348ba6b9} 
+\index{km\_sdir.c@{km\_sdir.c}!KM\_SDIR\_ReadRaw@{KM\_SDIR\_ReadRaw}}
+\index{KM\_SDIR\_ReadRaw@{KM\_SDIR\_ReadRaw}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{KM\_SDIR\_ReadRaw()}{KM\_SDIR\_ReadRaw()}}
+{\footnotesize\ttfamily uint16\+\_\+t KM\+\_\+\+SDIR\+\_\+\+Read\+Raw (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}}]{sensor }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00062}{62}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00063\ \ \ \ \ uint8\_t\ data[2];}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__sdir_8c_a327dff7f2676c80d006519af73f7efb0}{KM\_SDIR\_ReadRegisters}}(sensor,\ \mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381adc3acdecb2e12f76b2d69281e5c32377}{AS5600\_ANGLE\_MSB}},\ data,\ 2))\ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ sensor-\/>\mbox{\hyperlink{structsensor__struct_a3aa104f79ff602778009f38b4d4bdd18}{lastRawValue}}\ =\ ((uint16\_t)data[0]\ <<\ 8)\ |\ data[1];}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ sensor-\/>\mbox{\hyperlink{structsensor__struct_afefedb49da2e40ee6c0b08e3adc8af4a}{lastReadTime}}\ =\ esp\_timer\_get\_time();\ \textcolor{comment}{//\ microsegundos\ desde\ boot}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ sensor-\/>\mbox{\hyperlink{structsensor__struct_abbc0a7ab5d3016f5bc019eed46ea24dd}{errorCount}}\ =\ 0;}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ sensor-\/>\mbox{\hyperlink{structsensor__struct_a3aa104f79ff602778009f38b4d4bdd18}{lastRawValue}};}
+\DoxyCodeLine{00070\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ sensor-\/>\mbox{\hyperlink{structsensor__struct_abbc0a7ab5d3016f5bc019eed46ea24dd}{errorCount}}++;}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (sensor-\/>\mbox{\hyperlink{structsensor__struct_abbc0a7ab5d3016f5bc019eed46ea24dd}{errorCount}}\ >=\ sensor-\/>\mbox{\hyperlink{structsensor__struct_ae7288a99c2497a24e98b6d881ec784b8}{max\_error\_count}})\ \{}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \ \ \ \ ESP\_LOGW(\mbox{\hyperlink{km__sdir_8c_afc3d101f633a076cc1ca84b85b6224b2}{TAG}},\ \textcolor{stringliteral}{"{}Error\ reading\ sensor,\ resetting\ I2C"{}});}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__sdir_8c_a6ebe4d9ab446c06878b02fc59001d928}{KM\_SDIR\_ResetI2C}}(sensor);}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ \ \ sensor-\/>\mbox{\hyperlink{structsensor__struct_abbc0a7ab5d3016f5bc019eed46ea24dd}{errorCount}}\ =\ 0;}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ sensor-\/>\mbox{\hyperlink{structsensor__struct_a3aa104f79ff602778009f38b4d4bdd18}{lastRawValue}};}
+\DoxyCodeLine{00078\ \ \ \ \ \}}
+\DoxyCodeLine{00079\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__sdir_8c_a327dff7f2676c80d006519af73f7efb0}\label{km__sdir_8c_a327dff7f2676c80d006519af73f7efb0} 
+\index{km\_sdir.c@{km\_sdir.c}!KM\_SDIR\_ReadRegisters@{KM\_SDIR\_ReadRegisters}}
+\index{KM\_SDIR\_ReadRegisters@{KM\_SDIR\_ReadRegisters}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{KM\_SDIR\_ReadRegisters()}{KM\_SDIR\_ReadRegisters()}}
+{\footnotesize\ttfamily static int8\+\_\+t KM\+\_\+\+SDIR\+\_\+\+Read\+Registers (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}}]{sensor,  }\item[{uint8\+\_\+t}]{reg,  }\item[{uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{data,  }\item[{uint8\+\_\+t}]{len }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00132}{132}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00133\ \ \ \ \ i2c\_cmd\_handle\_t\ cmd\ =\ i2c\_cmd\_link\_create();}
+\DoxyCodeLine{00134\ \ \ \ \ i2c\_master\_start(cmd);}
+\DoxyCodeLine{00135\ \ \ \ \ i2c\_master\_write\_byte(cmd,\ (\mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381add12dffa79f9c9c06ef9bff3fdf0b65b}{AS5600\_ADDR}}\ <<\ 1)\ |\ I2C\_MASTER\_WRITE,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00136\ \ \ \ \ i2c\_master\_write\_byte(cmd,\ reg,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00137\ \ \ \ \ i2c\_master\_stop(cmd);}
+\DoxyCodeLine{00138\ \ \ \ \ esp\_err\_t\ ret\ =\ i2c\_master\_cmd\_begin(I2C\_NUM\_0,\ cmd,\ pdMS\_TO\_TICKS(\mbox{\hyperlink{km__sdir_8c_a7ebc0bc57afc33bd33967be8479690db}{I2C\_MASTER\_TIMEOUT\_MS}}));}
+\DoxyCodeLine{00139\ \ \ \ \ i2c\_cmd\_link\_delete(cmd);}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ !=\ ESP\_OK)\ \{}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00143\ \ \ \ \ \}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ cmd\ =\ i2c\_cmd\_link\_create();}
+\DoxyCodeLine{00146\ \ \ \ \ i2c\_master\_start(cmd);}
+\DoxyCodeLine{00147\ \ \ \ \ i2c\_master\_write\_byte(cmd,\ (\mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381add12dffa79f9c9c06ef9bff3fdf0b65b}{AS5600\_ADDR}}\ <<\ 1)\ |\ I2C\_MASTER\_READ,\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keywordflow}{if}\ (len\ >\ 1)\ \{}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ i2c\_master\_read(cmd,\ data,\ len\ -\/\ 1,\ I2C\_MASTER\_ACK);}
+\DoxyCodeLine{00150\ \ \ \ \ \}}
+\DoxyCodeLine{00151\ \ \ \ \ i2c\_master\_read\_byte(cmd,\ data\ +\ len\ -\/\ 1,\ I2C\_MASTER\_NACK);}
+\DoxyCodeLine{00152\ \ \ \ \ i2c\_master\_stop(cmd);}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ ret\ =\ i2c\_master\_cmd\_begin(I2C\_NUM\_0,\ cmd,\ pdMS\_TO\_TICKS(\mbox{\hyperlink{km__sdir_8c_a7ebc0bc57afc33bd33967be8479690db}{I2C\_MASTER\_TIMEOUT\_MS}}));}
+\DoxyCodeLine{00155\ \ \ \ \ i2c\_cmd\_link\_delete(cmd);}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keywordflow}{return}\ (ret\ ==\ ESP\_OK)\ ?\ 1\ :\ 0;}
+\DoxyCodeLine{00158\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__sdir_8c_a6ebe4d9ab446c06878b02fc59001d928}\label{km__sdir_8c_a6ebe4d9ab446c06878b02fc59001d928} 
+\index{km\_sdir.c@{km\_sdir.c}!KM\_SDIR\_ResetI2C@{KM\_SDIR\_ResetI2C}}
+\index{KM\_SDIR\_ResetI2C@{KM\_SDIR\_ResetI2C}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{KM\_SDIR\_ResetI2C()}{KM\_SDIR\_ResetI2C()}}
+{\footnotesize\ttfamily int8\+\_\+t KM\+\_\+\+SDIR\+\_\+\+Reset\+I2C (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}}]{sensor }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00097}{97}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00098\ \ \ \ \ i2c\_driver\_delete(I2C\_NUM\_0);}
+\DoxyCodeLine{00099\ \ \ \ \ vTaskDelay(pdMS\_TO\_TICKS(100));}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{comment}{//\ Reinstala\ I2C\ con\ los\ mismos\ parámetros\ guardados\ en\ el\ sensor}}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{comment}{//\ Necesitas\ que\ sensor\ tenga\ guardados\ i2c\_port,\ sda,\ scl}}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{comment}{//\ Por\ simplicidad\ vamos\ a\ usar\ I2C\_NUM\_0\ y\ pines\ por\ defecto}}
+\DoxyCodeLine{00104\ \ \ \ \ i2c\_config\_t\ conf\ =\ \{}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ .mode\ =\ I2C\_MODE\_MASTER,}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ .sda\_io\_num\ =\ 21,}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ .sda\_pullup\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ .scl\_io\_num\ =\ 22,}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ .scl\_pullup\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ .master.clk\_speed\ =\ 400000}
+\DoxyCodeLine{00111\ \ \ \ \ \};}
+\DoxyCodeLine{00112\ \ \ \ \ i2c\_param\_config(I2C\_NUM\_0,\ \&conf);}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keywordflow}{if}\ (i2c\_driver\_install(I2C\_NUM\_0,\ I2C\_MODE\_MASTER,\ 0,\ 0,\ 0)\ !=\ ESP\_OK)\ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ ESP\_LOGE(\mbox{\hyperlink{km__sdir_8c_afc3d101f633a076cc1ca84b85b6224b2}{TAG}},\ \textcolor{stringliteral}{"{}Failed\ to\ reinstall\ I2C\ driver"{}});}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00116\ \ \ \ \ \}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00118\ \ \ \ \ uint8\_t\ testData[2];}
+\DoxyCodeLine{00119\ \ \ \ \ sensor-\/>\mbox{\hyperlink{structsensor__struct_a8388f2e09f0e2e3ec6dc4224f06f68c0}{connected}}\ =\ \mbox{\hyperlink{km__sdir_8c_a327dff7f2676c80d006519af73f7efb0}{KM\_SDIR\_ReadRegisters}}(sensor,\ \mbox{\hyperlink{km__sdir_8h_a35aadc3b3b8aed78d2be5c229d70f381adc3acdecb2e12f76b2d69281e5c32377}{AS5600\_ANGLE\_MSB}},\ testData,\ 2);}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keywordflow}{return}\ sensor-\/>\mbox{\hyperlink{structsensor__struct_a8388f2e09f0e2e3ec6dc4224f06f68c0}{connected}};}
+\DoxyCodeLine{00121\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__sdir_8c_a7925c6327f449e320b221661df2c34ac}\label{km__sdir_8c_a7925c6327f449e320b221661df2c34ac} 
+\index{km\_sdir.c@{km\_sdir.c}!KM\_SDIR\_setCenterOffset@{KM\_SDIR\_setCenterOffset}}
+\index{KM\_SDIR\_setCenterOffset@{KM\_SDIR\_setCenterOffset}!km\_sdir.c@{km\_sdir.c}}
+\doxysubsubsection{\texorpdfstring{KM\_SDIR\_setCenterOffset()}{KM\_SDIR\_setCenterOffset()}}
+{\footnotesize\ttfamily void KM\+\_\+\+SDIR\+\_\+set\+Center\+Offset (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structsensor__struct}{sensor\+\_\+struct}} \texorpdfstring{$\ast$}{*}}]{sensor,  }\item[{uint16\+\_\+t}]{offset }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{km__sdir_8c_source_l00124}{124}} of file \mbox{\hyperlink{km__sdir_8c_source}{km\+\_\+sdir.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00125\ \ \ \ \ sensor-\/>\mbox{\hyperlink{structsensor__struct_aabac13860b48ac93bf8bab4417fc3a76}{centerOffset}}\ =\ offset;}
+\DoxyCodeLine{00126\ \ \ \ \ ESP\_LOGI(\mbox{\hyperlink{km__sdir_8c_afc3d101f633a076cc1ca84b85b6224b2}{TAG}},\ \textcolor{stringliteral}{"{}AS5600\ center\ offset\ set\ to:\ \%d"{}},\ offset);}
+\DoxyCodeLine{00127\ \}}
+
+\end{DoxyCode}

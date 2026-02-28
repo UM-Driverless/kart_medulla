@@ -1,0 +1,556 @@
+\doxysection{km\+\_\+rtos.\+h File Reference}
+\hypertarget{km__rtos_8h}{}\label{km__rtos_8h}\index{km\_rtos.h@{km\_rtos.h}}
+{\ttfamily \#include "{}freertos/\+Free\+RTOS.\+h"{}}\newline
+{\ttfamily \#include "{}freertos/task.\+h"{}}\newline
+{\ttfamily \#include $<$stdint.\+h$>$}\newline
+{\ttfamily \#include "{}esp\+\_\+log.\+h"{}}\newline
+Include dependency graph for km\+\_\+rtos.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{km__rtos_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=214pt]{km__rtos_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structRTOS__Task}{RTOS\+\_\+\+Task}}
+\begin{DoxyCompactList}\small\item\em Structure that reperesents a task in Free\+RTOS. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{km__rtos_8h_a89f5ed3f5e14656c4aebaaf5d1c85bc0}{RTOS\+\_\+\+MAX\+\_\+\+TASKS}}~10
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef void(\texorpdfstring{$\ast$}{*} \mbox{\hyperlink{km__rtos_8h_add978c093de2d5db48a0c7aa31396bf6}{KM\+\_\+\+RTOS\+\_\+\+Task\+Function\+\_\+t}}) (void \texorpdfstring{$\ast$}{*}context)
+\begin{DoxyCompactList}\small\item\em Logical task function type (RTOS-\/agnostic) \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{km__rtos_8h_a63ebe5189542c7e70e5d52b54bd416d5}{KM\+\_\+\+RTOS\+\_\+\+Init}} (void)
+\begin{DoxyCompactList}\small\item\em Initializes the RTOS task system. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{km__rtos_8h_a064b054c86ce2d788f4ffe56421c89a1}{KM\+\_\+\+RTOS\+\_\+\+Destroy}} (void)
+\begin{DoxyCompactList}\small\item\em Destroys all tasks managed by the RTOS task system and resets the task array. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{structRTOS__Task}{RTOS\+\_\+\+Task}} \mbox{\hyperlink{km__rtos_8h_a3484843c9cb2d0ad7d15f62d915cafe4}{KM\+\_\+\+COMS\+\_\+\+Create\+Task}} (char \texorpdfstring{$\ast$}{*}name, \mbox{\hyperlink{km__rtos_8h_add978c093de2d5db48a0c7aa31396bf6}{KM\+\_\+\+RTOS\+\_\+\+Task\+Function\+\_\+t}} task\+Fn, void \texorpdfstring{$\ast$}{*}context, uint32\+\_\+t period\+\_\+ms, uint16\+\_\+t stack\+Size, UBase\+Type\+\_\+t priority, uint8\+\_\+t active)
+\begin{DoxyCompactList}\small\item\em Creates and initializes an \doxylink{structRTOS__Task}{RTOS\+\_\+\+Task} structure. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__rtos_8h_a5fa8c2cdbfc6083c17a12ef34938910f}{KM\+\_\+\+RTOS\+\_\+\+Add\+Task}} (\mbox{\hyperlink{structRTOS__Task}{RTOS\+\_\+\+Task}} task)
+\begin{DoxyCompactList}\small\item\em Creates a new Free\+RTOS task and stores it in the internal task array. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__rtos_8h_ab78a8ac9d391833abe59b66cf66c6528}{KM\+\_\+\+RTOS\+\_\+\+Delete\+Task}} (Task\+Handle\+\_\+t handle)
+\begin{DoxyCompactList}\small\item\em Deletes a specific Free\+RTOS task and clears its slot in the internal task array. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__rtos_8h_af2a79120057380fd437eccb5fd54a7bd}{KM\+\_\+\+RTOS\+\_\+\+Suspend\+Task}} (Task\+Handle\+\_\+t handle)
+\begin{DoxyCompactList}\small\item\em Suspends a specific Free\+RTOS task and marks it as inactive in the internal task array. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__rtos_8h_a8b203a317e4546a4b4697abfefeaee31}{KM\+\_\+\+RTOS\+\_\+\+Resume\+Task}} (Task\+Handle\+\_\+t handle)
+\begin{DoxyCompactList}\small\item\em Resumes a specific Free\+RTOS task and marks it as active in the internal task array. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__rtos_8h_a5ffe7d1472bbb6be0b481c57495faa3c}{KM\+\_\+\+RTOS\+\_\+\+Restart\+Task}} (Task\+Handle\+\_\+t handle)
+\begin{DoxyCompactList}\small\item\em Restarts a specific Free\+RTOS task by deleting and recreating it. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{km__rtos_8h_a97a4541969a686d9853a8ae62edb5a57}{KM\+\_\+\+RTOS\+\_\+\+Change\+Priority}} (Task\+Handle\+\_\+t handle, uint8\+\_\+t new\+Priority)
+\begin{DoxyCompactList}\small\item\em Changes the priority of a specific Free\+RTOS task and updates the internal task array. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{km__rtos_8h_a89f5ed3f5e14656c4aebaaf5d1c85bc0}\label{km__rtos_8h_a89f5ed3f5e14656c4aebaaf5d1c85bc0} 
+\index{km\_rtos.h@{km\_rtos.h}!RTOS\_MAX\_TASKS@{RTOS\_MAX\_TASKS}}
+\index{RTOS\_MAX\_TASKS@{RTOS\_MAX\_TASKS}!km\_rtos.h@{km\_rtos.h}}
+\doxysubsubsection{\texorpdfstring{RTOS\_MAX\_TASKS}{RTOS\_MAX\_TASKS}}
+{\footnotesize\ttfamily \#define RTOS\+\_\+\+MAX\+\_\+\+TASKS~10}
+
+
+
+Definition at line \mbox{\hyperlink{km__rtos_8h_source_l00039}{39}} of file \mbox{\hyperlink{km__rtos_8h_source}{km\+\_\+rtos.\+h}}.
+
+
+
+\doxysubsection{Typedef Documentation}
+\Hypertarget{km__rtos_8h_add978c093de2d5db48a0c7aa31396bf6}\label{km__rtos_8h_add978c093de2d5db48a0c7aa31396bf6} 
+\index{km\_rtos.h@{km\_rtos.h}!KM\_RTOS\_TaskFunction\_t@{KM\_RTOS\_TaskFunction\_t}}
+\index{KM\_RTOS\_TaskFunction\_t@{KM\_RTOS\_TaskFunction\_t}!km\_rtos.h@{km\_rtos.h}}
+\doxysubsubsection{\texorpdfstring{KM\_RTOS\_TaskFunction\_t}{KM\_RTOS\_TaskFunction\_t}}
+{\footnotesize\ttfamily typedef void(\texorpdfstring{$\ast$}{*} KM\+\_\+\+RTOS\+\_\+\+Task\+Function\+\_\+t) (void \texorpdfstring{$\ast$}{*}context)}
+
+
+
+Logical task function type (RTOS-\/agnostic) 
+
+This function is executed periodically by the RTOS wrapper. It must NOT contain an infinite loop or call v\+Task\+Delay().
+
+
+\begin{DoxyParams}{Parameters}
+{\em context} & User-\/defined context pointer \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{km__rtos_8h_source_l00049}{49}} of file \mbox{\hyperlink{km__rtos_8h_source}{km\+\_\+rtos.\+h}}.
+
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{km__rtos_8h_a3484843c9cb2d0ad7d15f62d915cafe4}\label{km__rtos_8h_a3484843c9cb2d0ad7d15f62d915cafe4} 
+\index{km\_rtos.h@{km\_rtos.h}!KM\_COMS\_CreateTask@{KM\_COMS\_CreateTask}}
+\index{KM\_COMS\_CreateTask@{KM\_COMS\_CreateTask}!km\_rtos.h@{km\_rtos.h}}
+\doxysubsubsection{\texorpdfstring{KM\_COMS\_CreateTask()}{KM\_COMS\_CreateTask()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structRTOS__Task}{RTOS\+\_\+\+Task}} KM\+\_\+\+COMS\+\_\+\+Create\+Task (\begin{DoxyParamCaption}\item[{char \texorpdfstring{$\ast$}{*}}]{name,  }\item[{\mbox{\hyperlink{km__rtos_8h_add978c093de2d5db48a0c7aa31396bf6}{KM\+\_\+\+RTOS\+\_\+\+Task\+Function\+\_\+t}}}]{task\+Fn,  }\item[{void \texorpdfstring{$\ast$}{*}}]{context,  }\item[{uint32\+\_\+t}]{period\+\_\+ms,  }\item[{uint16\+\_\+t}]{stack\+Size,  }\item[{UBase\+Type\+\_\+t}]{priority,  }\item[{uint8\+\_\+t}]{active }\end{DoxyParamCaption})}
+
+
+
+Creates and initializes an \doxylink{structRTOS__Task}{RTOS\+\_\+\+Task} structure. 
+
+This function fills a {\ttfamily \doxylink{structRTOS__Task}{RTOS\+\_\+\+Task}} structure with the provided parameters, preparing it to be added to the task scheduler or created with {\ttfamily KM\+\_\+\+RTOS\+\_\+\+Create\+Task}.
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & Name of the task (used by Free\+RTOS for debugging/logging) \\
+\hline
+{\em task\+Fn} & Function pointer to the task implementation (of type KM\+\_\+\+RTOS\+\_\+\+Task\+Function\+\_\+t) \\
+\hline
+{\em context} & Pointer to a user-\/defined context or data structure passed to the task \\
+\hline
+{\em period\+\_\+ms} & Task period in milliseconds (used for periodic scheduling) \\
+\hline
+{\em stack\+Size} & Stack size for the Free\+RTOS task \\
+\hline
+{\em priority} & Free\+RTOS task priority \\
+\hline
+{\em active} & 1 to mark the task as active, 0 to mark as inactive\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A fully-\/initialized {\ttfamily \doxylink{structRTOS__Task}{RTOS\+\_\+\+Task}} structure ready to be added to the scheduler.
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+This function does not create the Free\+RTOS task itself; it only prepares the task structure for use with {\ttfamily KM\+\_\+\+RTOS\+\_\+\+Create\+Task}. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__rtos_8c_source_l00062}{62}} of file \mbox{\hyperlink{km__rtos_8c_source}{km\+\_\+rtos.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00064\ }
+\DoxyCodeLine{00065\ \ \ \ \ \mbox{\hyperlink{structRTOS__Task}{RTOS\_Task}}\ task;}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ task.\mbox{\hyperlink{structRTOS__Task_a960cc0b3b28a93fbf954ee56e105cd1b}{name}}\ =\ name;}
+\DoxyCodeLine{00068\ \ \ \ \ task.\mbox{\hyperlink{structRTOS__Task_a9749e2faa9757e4483140a0e772a9332}{taskFn}}\ =\ taskFn;}
+\DoxyCodeLine{00069\ \ \ \ \ task.\mbox{\hyperlink{structRTOS__Task_a3a0d9b13173e264634cbfbf8b6d0256f}{context}}\ =\ context;}
+\DoxyCodeLine{00070\ \ \ \ \ task.\mbox{\hyperlink{structRTOS__Task_ac687c9c565c979754004eda9d648f74a}{period\_ms}}\ =\ period\_ms;}
+\DoxyCodeLine{00071\ \ \ \ \ task.\mbox{\hyperlink{structRTOS__Task_ab346e2bbd2986ec7bc1f23578a7c210b}{stackSize}}\ =\ stackSize;}
+\DoxyCodeLine{00072\ \ \ \ \ task.\mbox{\hyperlink{structRTOS__Task_a6b93e3d1e0845215790b4f50c64e60cf}{priority}}\ =\ priority;}
+\DoxyCodeLine{00073\ \ \ \ \ task.\mbox{\hyperlink{structRTOS__Task_acbee0cc3c70f919b62ce1d0ee61fddc4}{active}}\ =\ active;}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordflow}{return}\ task;}
+\DoxyCodeLine{00076\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__rtos_8h_a5fa8c2cdbfc6083c17a12ef34938910f}\label{km__rtos_8h_a5fa8c2cdbfc6083c17a12ef34938910f} 
+\index{km\_rtos.h@{km\_rtos.h}!KM\_RTOS\_AddTask@{KM\_RTOS\_AddTask}}
+\index{KM\_RTOS\_AddTask@{KM\_RTOS\_AddTask}!km\_rtos.h@{km\_rtos.h}}
+\doxysubsubsection{\texorpdfstring{KM\_RTOS\_AddTask()}{KM\_RTOS\_AddTask()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+RTOS\+\_\+\+Add\+Task (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structRTOS__Task}{RTOS\+\_\+\+Task}}}]{task }\end{DoxyParamCaption})}
+
+
+
+Creates a new Free\+RTOS task and stores it in the internal task array. 
+
+This function searches for a free slot in the internal {\ttfamily tasks} array and attempts to create a new Free\+RTOS task using the provided {\ttfamily \doxylink{structRTOS__Task}{RTOS\+\_\+\+Task}} configuration. It ensures that the task does not already exist and fills in default values for priority, stack size, and period if they are not specified.
+
+Steps performed by the function\+:
+\begin{DoxyEnumerate}
+\item Iterate through the {\ttfamily tasks} array to find an empty slot ({\ttfamily handle == NULL}).
+\item Assign the provided {\ttfamily task} to the slot and mark it as active.
+\item Fill default parameters if {\ttfamily priority}, {\ttfamily stack\+Size}, or {\ttfamily period\+\_\+ms} are zero.
+\item Call {\ttfamily x\+Task\+Create} with {\ttfamily KM\+\_\+\+RTOS\+\_\+\+Task\+Wrapper} as the task function, passing the task structure pointer as the argument.
+\item On success, store the Free\+RTOS task handle in the task structure.
+\item On failure, clear the slot and return 0.
+\end{DoxyEnumerate}
+
+
+\begin{DoxyParams}{Parameters}
+{\em task} & The \doxylink{structRTOS__Task}{RTOS\+\_\+\+Task} structure containing task configuration (name, priority, stack size, period, etc.) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+1 if the task was successfully created 
+
+0 if task creation failed or there was no free slot in the array
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+This function manages tasks in a static array of size {\ttfamily RTOS\+\_\+\+MAX\+\_\+\+TASKS}. 
+
+Task execution is wrapped by {\ttfamily KM\+\_\+\+RTOS\+\_\+\+Task\+Wrapper}. 
+
+Default values are applied for any missing parameters\+:
+\begin{DoxyItemize}
+\item priority\+: {\ttfamily RTOS\+\_\+\+DEFAULT\+\_\+\+PRIORITY}
+\item stack size\+: {\ttfamily RTOS\+\_\+\+DEFAULT\+\_\+\+STACK\+\_\+\+SIZE}
+\item period\+\_\+ms\+: {\ttfamily RTOS\+\_\+\+DEFAULT\+\_\+\+PERIOD\+\_\+\+MS} 
+\end{DoxyItemize}
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__rtos_8c_source_l00078}{78}} of file \mbox{\hyperlink{km__rtos_8c_source}{km\+\_\+rtos.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{//\ Buscar\ hueco\ libre\ en\ array\ y\ comprobar\ que\ no\ exista\ ya\ esa\ tarea}}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordflow}{for}\ (uint8\_t\ i\ =\ 0;\ i\ <\ \mbox{\hyperlink{km__rtos_8h_a89f5ed3f5e14656c4aebaaf5d1c85bc0}{RTOS\_MAX\_TASKS}};\ i++)\ \{}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Hueco\ ocupado}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i].handle\ !=\ NULL)\ \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i]\ =\ task;}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i].\mbox{\hyperlink{structRTOS__Task_acbee0cc3c70f919b62ce1d0ee61fddc4}{active}}\ =\ 1;}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i].priority\ ==\ 0)\ \mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i].\mbox{\hyperlink{structRTOS__Task_a6b93e3d1e0845215790b4f50c64e60cf}{priority}}\ =\ \mbox{\hyperlink{km__rtos_8c_a88ca1325c42538f40698cdc01d81f46f}{RTOS\_DEFAULT\_PRIORITY}};}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i].stackSize\ ==\ 0)\ \mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i].\mbox{\hyperlink{structRTOS__Task_ab346e2bbd2986ec7bc1f23578a7c210b}{stackSize}}\ =\ \mbox{\hyperlink{km__rtos_8c_a3a5cc5aa6668c25f8f217ed3ad82ec98}{RTOS\_DEFAULT\_STACK\_SIZE}};}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i].period\_ms\ ==\ 0)\ \mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i].\mbox{\hyperlink{structRTOS__Task_ac687c9c565c979754004eda9d648f74a}{period\_ms}}\ =\ \mbox{\hyperlink{km__rtos_8c_ab2f26bd31c69d7a5101276220837642e}{RTOS\_DEFAULT\_PERIOD\_MS}};}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ BaseType\_t\ result\ =\ xTaskCreate(}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__rtos_8c_a60636a41152258bacb847f5e82aff035}{KM\_RTOS\_TaskWrapper}},\ \ \textcolor{comment}{//\ Wrapper}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ task.\mbox{\hyperlink{structRTOS__Task_a960cc0b3b28a93fbf954ee56e105cd1b}{name}},}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ task.\mbox{\hyperlink{structRTOS__Task_ab346e2bbd2986ec7bc1f23578a7c210b}{stackSize}},}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \ \ \ \ \&\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i],\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Pointer\ to\ this\ task}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ task.\mbox{\hyperlink{structRTOS__Task_a6b93e3d1e0845215790b4f50c64e60cf}{priority}},}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ \&\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i].\mbox{\hyperlink{structRTOS__Task_a5cbc06a021e71fc467c35eaa7a2f426f}{handle}}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ );}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (result\ !=\ pdPASS)\ \{}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \ \ \ \ memset(\&\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i],\ 0,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{structRTOS__Task}{RTOS\_Task}}));}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_FAIL;\ \textcolor{comment}{//\ Error\ creating\ task}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00105\ }
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_OK;\ \textcolor{comment}{//\ Success}}
+\DoxyCodeLine{00107\ \ \ \ \ \}}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_FAIL;\ \textcolor{comment}{//\ Fail,\ no\ space\ in\ array}}
+\DoxyCodeLine{00110\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__rtos_8h_a97a4541969a686d9853a8ae62edb5a57}\label{km__rtos_8h_a97a4541969a686d9853a8ae62edb5a57} 
+\index{km\_rtos.h@{km\_rtos.h}!KM\_RTOS\_ChangePriority@{KM\_RTOS\_ChangePriority}}
+\index{KM\_RTOS\_ChangePriority@{KM\_RTOS\_ChangePriority}!km\_rtos.h@{km\_rtos.h}}
+\doxysubsubsection{\texorpdfstring{KM\_RTOS\_ChangePriority()}{KM\_RTOS\_ChangePriority()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+RTOS\+\_\+\+Change\+Priority (\begin{DoxyParamCaption}\item[{Task\+Handle\+\_\+t}]{handle,  }\item[{uint8\+\_\+t}]{new\+Priority }\end{DoxyParamCaption})}
+
+
+
+Changes the priority of a specific Free\+RTOS task and updates the internal task array. 
+
+This function searches the internal {\ttfamily tasks} array for the task corresponding to the provided handle. If found, it calls {\ttfamily v\+Task\+Priority\+Set} to update the task\textquotesingle{}s Free\+RTOS priority and updates the {\ttfamily priority} field in the internal {\ttfamily tasks} array.
+
+
+\begin{DoxyParams}{Parameters}
+{\em handle} & The Free\+RTOS task handle whose priority should be changed. \\
+\hline
+{\em new\+Priority} & The new priority value to assign to the task. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK if the priority was successfully updated. 
+
+ESP\+\_\+\+FAIL if the task handle was not found in the internal array.
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+Only affects the specified task; other tasks remain unchanged. 
+
+Safe under normal operation, as it modifies only the targeted task entry. 
+
+The change is immediate from the scheduler\textquotesingle{}s perspective. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__rtos_8c_source_l00181}{181}} of file \mbox{\hyperlink{km__rtos_8c_source}{km\+\_\+rtos.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00183\ \ \ \ \ int8\_t\ index\ =\ \mbox{\hyperlink{km__rtos_8c_a89a12baa32b154c12e1012b5ae4bab96}{KM\_RTOS\_FindTask}}(handle);}
+\DoxyCodeLine{00184\ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ ==\ -\/1)\ \textcolor{keywordflow}{return}\ ESP\_FAIL;}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \ \ \ \ vTaskPrioritySet(\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[index].handle,\ newPriority);}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \ \ \textcolor{comment}{//\ Actualizar\ informacion\ sobre\ tarea}}
+\DoxyCodeLine{00189\ \ \ \ \ \mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[index].\mbox{\hyperlink{structRTOS__Task_a6b93e3d1e0845215790b4f50c64e60cf}{priority}}\ =\ newPriority;}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_OK;}
+\DoxyCodeLine{00192\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__rtos_8h_ab78a8ac9d391833abe59b66cf66c6528}\label{km__rtos_8h_ab78a8ac9d391833abe59b66cf66c6528} 
+\index{km\_rtos.h@{km\_rtos.h}!KM\_RTOS\_DeleteTask@{KM\_RTOS\_DeleteTask}}
+\index{KM\_RTOS\_DeleteTask@{KM\_RTOS\_DeleteTask}!km\_rtos.h@{km\_rtos.h}}
+\doxysubsubsection{\texorpdfstring{KM\_RTOS\_DeleteTask()}{KM\_RTOS\_DeleteTask()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+RTOS\+\_\+\+Delete\+Task (\begin{DoxyParamCaption}\item[{Task\+Handle\+\_\+t}]{handle }\end{DoxyParamCaption})}
+
+
+
+Deletes a specific Free\+RTOS task and clears its slot in the internal task array. 
+
+This function searches the internal {\ttfamily tasks} array for a task that matches the provided Free\+RTOS task handle. If found, the task is deleted using {\ttfamily v\+Task\+Delete} and the corresponding slot in the array is cleared with {\ttfamily memset}, marking it as free.
+
+
+\begin{DoxyParams}{Parameters}
+{\em handle} & The Free\+RTOS task handle to delete. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK if the task was successfully deleted. 
+
+ESP\+\_\+\+FAIL if the task handle was not found in the internal array.
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+After this function, the task slot is fully reset and can be reused for new tasks. 
+
+Thread-\/safd calling this while other tasks may concurrently access the {\ttfamily tasks} array. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__rtos_8c_source_l00113}{113}} of file \mbox{\hyperlink{km__rtos_8c_source}{km\+\_\+rtos.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{comment}{//\ Search\ for\ task\ in\ array}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \ \ \ \ int8\_t\ index\ =\ \mbox{\hyperlink{km__rtos_8c_a89a12baa32b154c12e1012b5ae4bab96}{KM\_RTOS\_FindTask}}(handle);}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ ==\ -\/1)\ \textcolor{keywordflow}{return}\ ESP\_FAIL;}
+\DoxyCodeLine{00118\ }
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[index].handle\ ==\ handle)\ \{}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ vTaskDelete(handle);}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ memset(\&\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[index],\ 0,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{structRTOS__Task}{RTOS\_Task}}));}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_OK;}
+\DoxyCodeLine{00123\ \ \ \ \ \}}
+\DoxyCodeLine{00124\ }
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{comment}{//\ NO\ se\ ha\ encontrado\ la\ tarea}}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_FAIL;}
+\DoxyCodeLine{00127\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__rtos_8h_a064b054c86ce2d788f4ffe56421c89a1}\label{km__rtos_8h_a064b054c86ce2d788f4ffe56421c89a1} 
+\index{km\_rtos.h@{km\_rtos.h}!KM\_RTOS\_Destroy@{KM\_RTOS\_Destroy}}
+\index{KM\_RTOS\_Destroy@{KM\_RTOS\_Destroy}!km\_rtos.h@{km\_rtos.h}}
+\doxysubsubsection{\texorpdfstring{KM\_RTOS\_Destroy()}{KM\_RTOS\_Destroy()}}
+{\footnotesize\ttfamily void KM\+\_\+\+RTOS\+\_\+\+Destroy (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Destroys all tasks managed by the RTOS task system and resets the task array. 
+
+This function iterates through the internal {\ttfamily tasks} array and deletes all active Free\+RTOS tasks using {\ttfamily v\+Task\+Delete}. After deleting tasks, it clears the {\ttfamily tasks} array to mark all slots as free and inactive.
+
+The function wraps the entire operation in a critical section ({\ttfamily task\+ENTER\+\_\+\+CRITICAL} / {\ttfamily task\+EXIT\+\_\+\+CRITICAL}) to prevent the scheduler from switching tasks while the array is being modified. This ensures thread-\/safety during the destruction process.
+
+\begin{DoxyNote}{Note}
+All tasks created through {\ttfamily KM\+\_\+\+RTOS\+\_\+\+Create\+Task} will be stopped. 
+
+After calling this function, the internal task array is fully reset and ready for re-\/initialization. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__rtos_8c_source_l00052}{52}} of file \mbox{\hyperlink{km__rtos_8c_source}{km\+\_\+rtos.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{int}\ i\ =\ 0;\ i\ <\ \mbox{\hyperlink{km__rtos_8h_a89f5ed3f5e14656c4aebaaf5d1c85bc0}{RTOS\_MAX\_TASKS}};\ i++)\ \{}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i].name\ !=\ NULL)\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \ \ vTaskDelete(\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[i].handle);}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00057\ \ \ \ \ \}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \ \ memset(\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}},\ 0,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}));}
+\DoxyCodeLine{00060\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__rtos_8h_a63ebe5189542c7e70e5d52b54bd416d5}\label{km__rtos_8h_a63ebe5189542c7e70e5d52b54bd416d5} 
+\index{km\_rtos.h@{km\_rtos.h}!KM\_RTOS\_Init@{KM\_RTOS\_Init}}
+\index{KM\_RTOS\_Init@{KM\_RTOS\_Init}!km\_rtos.h@{km\_rtos.h}}
+\doxysubsubsection{\texorpdfstring{KM\_RTOS\_Init()}{KM\_RTOS\_Init()}}
+{\footnotesize\ttfamily void KM\+\_\+\+RTOS\+\_\+\+Init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Initializes the RTOS task system. 
+
+This function resets the internal {\ttfamily tasks} array by zeroing all entries, effectively marking all task slots as free and inactive. It should be called once at system startup before creating or managing any tasks.
+
+\begin{DoxyNote}{Note}
+This function does not create any Free\+RTOS tasks; it only prepares the internal task array for use. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__rtos_8c_source_l00047}{47}} of file \mbox{\hyperlink{km__rtos_8c_source}{km\+\_\+rtos.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00048\ \ \ \ \ memset(\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}},\ 0,\ \textcolor{keyword}{sizeof}(\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}));}
+\DoxyCodeLine{00049\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__rtos_8h_a5ffe7d1472bbb6be0b481c57495faa3c}\label{km__rtos_8h_a5ffe7d1472bbb6be0b481c57495faa3c} 
+\index{km\_rtos.h@{km\_rtos.h}!KM\_RTOS\_RestartTask@{KM\_RTOS\_RestartTask}}
+\index{KM\_RTOS\_RestartTask@{KM\_RTOS\_RestartTask}!km\_rtos.h@{km\_rtos.h}}
+\doxysubsubsection{\texorpdfstring{KM\_RTOS\_RestartTask()}{KM\_RTOS\_RestartTask()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+RTOS\+\_\+\+Restart\+Task (\begin{DoxyParamCaption}\item[{Task\+Handle\+\_\+t}]{handle }\end{DoxyParamCaption})}
+
+
+
+Restarts a specific Free\+RTOS task by deleting and recreating it. 
+
+This function searches the internal {\ttfamily tasks} array for the task matching the provided handle. If found, it performs the following steps\+:
+\begin{DoxyEnumerate}
+\item Makes a copy of the task structure to preserve its configuration.
+\item Deletes the task using {\ttfamily KM\+\_\+\+RTOS\+\_\+\+Delete\+Task}.
+\item Re-\/adds the task using {\ttfamily KM\+\_\+\+RTOS\+\_\+\+Add\+Task} with the preserved configuration.
+\end{DoxyEnumerate}
+
+
+\begin{DoxyParams}{Parameters}
+{\em handle} & The Free\+RTOS task handle to restart. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK if the task was successfully restarted. 
+
+ESP\+\_\+\+FAIL if the task handle was not found, deletion failed, or creation failed.
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+This operation temporarily stops the task and replaces it with a new instance. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__rtos_8c_source_l00163}{163}} of file \mbox{\hyperlink{km__rtos_8c_source}{km\+\_\+rtos.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \ \ \ \ int8\_t\ index\ =\ \mbox{\hyperlink{km__rtos_8c_a89a12baa32b154c12e1012b5ae4bab96}{KM\_RTOS\_FindTask}}(handle);}
+\DoxyCodeLine{00166\ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ ==\ -\/1)\ \textcolor{keywordflow}{return}\ ESP\_FAIL;}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \ \ \ \ \mbox{\hyperlink{structRTOS__Task}{RTOS\_Task}}\ copy\ =\ \mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[index];}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{comment}{//\ Destruir\ tarea}}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{keywordflow}{if}(\mbox{\hyperlink{km__rtos_8c_ab78a8ac9d391833abe59b66cf66c6528}{KM\_RTOS\_DeleteTask}}(handle)\ ==\ ESP\_FAIL)\ \textcolor{keywordflow}{return}\ ESP\_FAIL;}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \ \ \textcolor{comment}{//\ Crear\ tarea}}
+\DoxyCodeLine{00174\ \ \ \ \ \textcolor{keywordflow}{if}(\mbox{\hyperlink{km__rtos_8c_a5fa8c2cdbfc6083c17a12ef34938910f}{KM\_RTOS\_AddTask}}(copy)\ ==\ ESP\_FAIL)\ \textcolor{keywordflow}{return}\ ESP\_FAIL;}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{comment}{//\ Reiniciado\ correctamente}}
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_OK;}
+\DoxyCodeLine{00178\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__rtos_8h_a8b203a317e4546a4b4697abfefeaee31}\label{km__rtos_8h_a8b203a317e4546a4b4697abfefeaee31} 
+\index{km\_rtos.h@{km\_rtos.h}!KM\_RTOS\_ResumeTask@{KM\_RTOS\_ResumeTask}}
+\index{KM\_RTOS\_ResumeTask@{KM\_RTOS\_ResumeTask}!km\_rtos.h@{km\_rtos.h}}
+\doxysubsubsection{\texorpdfstring{KM\_RTOS\_ResumeTask()}{KM\_RTOS\_ResumeTask()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+RTOS\+\_\+\+Resume\+Task (\begin{DoxyParamCaption}\item[{Task\+Handle\+\_\+t}]{handle }\end{DoxyParamCaption})}
+
+
+
+Resumes a specific Free\+RTOS task and marks it as active in the internal task array. 
+
+This function searches the internal {\ttfamily tasks} array for the task corresponding to the provided Free\+RTOS handle. If found and the task is currently suspended, it calls {\ttfamily v\+Task\+Resume} to restart the task\textquotesingle{}s execution and sets its {\ttfamily active} flag to 1.
+
+
+\begin{DoxyParams}{Parameters}
+{\em handle} & The Free\+RTOS task handle to resume. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK if the task was successfully resumed. 
+
+ESP\+\_\+\+FAIL if the task handle was not found or the task was already active.
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+Only affects the specified task; other tasks and array slots remain untouched. 
+
+Safe to call under normal operation, as it modifies only the targeted task entry. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__rtos_8c_source_l00146}{146}} of file \mbox{\hyperlink{km__rtos_8c_source}{km\+\_\+rtos.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ int8\_t\ index\ =\ \mbox{\hyperlink{km__rtos_8c_a89a12baa32b154c12e1012b5ae4bab96}{KM\_RTOS\_FindTask}}(handle);}
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ ==\ -\/1)\ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[index].handle\ ==\ handle\ \&\&\ !\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[index].active)\ \{}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ vTaskResume(handle);}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[index].\mbox{\hyperlink{structRTOS__Task_acbee0cc3c70f919b62ce1d0ee61fddc4}{active}}\ =\ 1;}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_OK;}
+\DoxyCodeLine{00156\ \ \ \ \ \}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ \textcolor{comment}{//\ No\ se\ ha\ encontrado\ la\ tarea\ o\ ya\ estaba\ activa}}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_FAIL;}
+\DoxyCodeLine{00160\ \}}
+
+\end{DoxyCode}
+\Hypertarget{km__rtos_8h_af2a79120057380fd437eccb5fd54a7bd}\label{km__rtos_8h_af2a79120057380fd437eccb5fd54a7bd} 
+\index{km\_rtos.h@{km\_rtos.h}!KM\_RTOS\_SuspendTask@{KM\_RTOS\_SuspendTask}}
+\index{KM\_RTOS\_SuspendTask@{KM\_RTOS\_SuspendTask}!km\_rtos.h@{km\_rtos.h}}
+\doxysubsubsection{\texorpdfstring{KM\_RTOS\_SuspendTask()}{KM\_RTOS\_SuspendTask()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t KM\+\_\+\+RTOS\+\_\+\+Suspend\+Task (\begin{DoxyParamCaption}\item[{Task\+Handle\+\_\+t}]{handle }\end{DoxyParamCaption})}
+
+
+
+Suspends a specific Free\+RTOS task and marks it as inactive in the internal task array. 
+
+This function searches the internal {\ttfamily tasks} array for the task corresponding to the provided Free\+RTOS handle. If found and the task is currently active, it calls {\ttfamily v\+Task\+Suspend} to pause the task\textquotesingle{}s execution and sets its {\ttfamily active} flag to 0.
+
+
+\begin{DoxyParams}{Parameters}
+{\em handle} & The Free\+RTOS task handle to suspend. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ESP\+\_\+\+OK if the task was successfully suspended. 
+
+ESP\+\_\+\+FAIL if the task handle was not found or the task was already suspended.
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+Only affects the specified task; other tasks and array slots remain untouched. 
+
+Safe to call under normal operation, as it modifies only the targeted task entry. 
+\end{DoxyNote}
+
+
+Definition at line \mbox{\hyperlink{km__rtos_8c_source_l00130}{130}} of file \mbox{\hyperlink{km__rtos_8c_source}{km\+\_\+rtos.\+c}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00132\ \ \ \ \ int8\_t\ index\ =\ \mbox{\hyperlink{km__rtos_8c_a89a12baa32b154c12e1012b5ae4bab96}{KM\_RTOS\_FindTask}}(handle);}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ ==\ -\/1)\ \textcolor{keywordflow}{return}\ ESP\_FAIL;}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[index].handle\ ==\ handle\ \&\&\ \mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[index].active)\ \{}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ vTaskSuspend(handle);}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__rtos_8c_a321f1b933df45af20be0aff5165466e7}{tasks}}[index].\mbox{\hyperlink{structRTOS__Task_acbee0cc3c70f919b62ce1d0ee61fddc4}{active}}\ =\ 0;}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_OK;}
+\DoxyCodeLine{00139\ \ \ \ \ \}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ \textcolor{comment}{//\ No\ se\ ha\ encontrado\ la\ tarea\ o\ ya\ estaba\ suspendida}}
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_FAIL;}
+\DoxyCodeLine{00143\ \}}
+
+\end{DoxyCode}

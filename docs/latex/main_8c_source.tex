@@ -1,0 +1,154 @@
+\doxysection{main.\+c}
+\hypertarget{main_8c_source}{}\label{main_8c_source}\index{main.c@{main.c}}
+\mbox{\hyperlink{main_8c}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00001}00001\ \textcolor{preprocessor}{\#include\ "{}nvs\_flash.h"{}}\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Obligatorio\ para\ almacenar\ parámetros\ BT/WiFi}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00002}00002\ \textcolor{preprocessor}{\#include\ "{}esp\_system.h"{}}\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Funciones\ básicas\ de\ ESP32}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00003}00003\ \textcolor{preprocessor}{\#include\ "{}esp\_log.h"{}}\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Logging}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00004}00004\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00005}00005\ \textcolor{preprocessor}{\#include\ "{}esp\_bt.h"{}}\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Core\ BT}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00006}00006\ \textcolor{comment}{//\ \#include\ "{}esp\_bt\_main.h"{}\ \ \ \ \ \ \ \ //\ Funciones\ de\ inicio\ BT}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00007}00007\ \textcolor{comment}{//\ \#include\ "{}esp\_bt\_device.h"{}\ \ \ \ \ \ //\ Información\ del\ dispositivo}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00008}00008\ \textcolor{comment}{//\ \#include\ "{}esp\_gap\_ble\_api.h"{}\ \ \ \ //\ GAP\ BLE\ (escaneo,\ publicidad)}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00009}00009\ \textcolor{comment}{//\ \#include\ "{}esp\_gatts\_api.h"{}\ \ \ \ \ \ //\ Servidor\ GATT}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00010}00010\ \textcolor{comment}{//\ \#include\ "{}esp\_gatt\_common\_api.h"{}//\ Funciones\ GATT\ comunes}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00011}00011\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00012}00012\ \textcolor{preprocessor}{\#include\ <btstack\_port\_esp32.h>}\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Puerto\ BTstack\ para\ ESP32}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00013}00013\ \textcolor{preprocessor}{\#include\ <btstack\_run\_loop.h>}\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Loop\ de\ BTstack}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00014}00014\ \textcolor{preprocessor}{\#include\ <btstack\_stdio\_esp32.h>}\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Consola\ BTstack}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00015}00015\ \textcolor{preprocessor}{\#include\ <uni.h>}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Core\ Bluepad32\ (unijoysticle)}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00016}00016\ \textcolor{comment}{//\ \#include\ <platform/esp32/uni\_platform\_esp32.h>\ //\ Adaptación\ a\ ESP32}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00017}00017\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00018}00018\ \textcolor{preprocessor}{\#include\ "{}esp\_timer.h"{}}\ \ \ \ \ \ \ \textcolor{comment}{//\ Temporizadores\ de\ alta\ resolución}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00019}00019\ \textcolor{preprocessor}{\#include\ "{}esp\_wifi.h"{}}\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Para\ WiFi}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00020}00020\ \textcolor{preprocessor}{\#include\ "{}esp\_event.h"{}}\ \ \ \ \ \ \ \textcolor{comment}{//\ Event\ loop\ de\ ESP-\/IDF}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00021}00021\ \textcolor{preprocessor}{\#include\ "{}esp\_netif.h"{}}\ \ \ \ \ \ \ \textcolor{comment}{//\ Configuración\ de\ interfaces\ de\ red}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00022}00022\ \textcolor{preprocessor}{\#include\ "{}esp\_sntp.h"{}}\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Para\ sincronizar\ tiempo}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00023}00023\ \textcolor{preprocessor}{\#include\ "{}esp\_system.h"{}}\ \ \ \ \ \ \textcolor{comment}{//\ Información\ de\ sistema}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00024}00024\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00025}00025\ \textcolor{comment}{//\ Librerias\ propias}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00026}00026\ \textcolor{preprocessor}{\#include\ "{}km\_act.h"{}}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00027}00027\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{km__coms_8h}{km\_coms.h}}"{}}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00028}00028\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{km__gamc_8h}{km\_gamc.h}}"{}}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00029}00029\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{km__pid_8h}{km\_pid.h}}"{}}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00030}00030\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{km__rtos_8h}{km\_rtos.h}}"{}}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00031}00031\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{km__sdir_8h}{km\_sdir.h}}"{}}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00032}00032\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{km__sta_8h}{km\_sta.h}}"{}}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00033}00033\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{km__gpio_8h}{km\_gpio.h}}"{}}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00034}00034\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00035}\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{00035}}\ \textcolor{keyword}{static}\ \textcolor{keyword}{const}\ \textcolor{keywordtype}{char}\ *\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}}\ =\ \textcolor{stringliteral}{"{}MAIN"{}};}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00036}00036\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00037}00037\ \textcolor{comment}{//\ ===========================}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00038}00038\ \textcolor{comment}{//\ Funciones\ auxiliares\ de\ Bluetooth}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00039}00039\ \textcolor{comment}{//\ ===========================}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00040}00040\ \textcolor{comment}{//\ void\ init\_bluetooth(void)\ \{}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00041}00041\ \textcolor{comment}{//\ \ \ \ \ esp\_err\_t\ ret;}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00043}00043\ \textcolor{comment}{//\ \ \ \ \ //\ Inicializar\ NVS\ (necesario\ para\ BT/WiFi)}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00044}00044\ \textcolor{comment}{//\ \ \ \ \ ret\ =\ nvs\_flash\_init();}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00045}00045\ \textcolor{comment}{//\ \ \ \ \ if\ (ret\ ==\ ESP\_ERR\_NVS\_NO\_FREE\_PAGES\ ||\ ret\ ==\ ESP\_ERR\_NVS\_NEW\_VERSION\_FOUND)\ \{}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00046}00046\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ ESP\_ERROR\_CHECK(nvs\_flash\_erase());}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00047}00047\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ ret\ =\ nvs\_flash\_init();}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00048}00048\ \textcolor{comment}{//\ \ \ \ \ \}}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00049}00049\ \textcolor{comment}{//\ \ \ \ \ ESP\_ERROR\_CHECK(ret);}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00050}00050\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00051}00051\ \textcolor{comment}{//\ \ \ \ \ //\ Inicializar\ controlador\ BT}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00052}00052\ \textcolor{comment}{//\ \ \ \ \ esp\_bt\_controller\_config\_t\ bt\_cfg\ =\ BT\_CONTROLLER\_INIT\_CONFIG\_DEFAULT();}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00053}00053\ \textcolor{comment}{//\ \ \ \ \ ESP\_ERROR\_CHECK(esp\_bt\_controller\_init(\&bt\_cfg));}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00054}00054\ \textcolor{comment}{//\ \ \ \ \ ESP\_ERROR\_CHECK(esp\_bt\_controller\_enable(ESP\_BT\_MODE\_BTDM));\ //\ BLE\ +\ Classic}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00055}00055\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00056}00056\ \textcolor{comment}{//\ \ \ \ \ //\ Inicializar\ Bluedroid}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00057}00057\ \textcolor{comment}{//\ \ \ \ \ ESP\_ERROR\_CHECK(esp\_bluedroid\_init());}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00058}00058\ \textcolor{comment}{//\ \ \ \ \ ESP\_ERROR\_CHECK(esp\_bluedroid\_enable());}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00059}00059\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00060}00060\ \textcolor{comment}{//\ \ \ \ \ //\ Inicializar\ consola\ BTstack}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00061}00061\ \textcolor{comment}{//\ \ \ \ \ btstack\_stdio\_init();}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00063}00063\ \textcolor{comment}{//\ \ \ \ \ //\ Configurar\ plataforma\ ESP32\ para\ Bluepad32}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00064}00064\ \textcolor{comment}{//\ \ \ \ \ uni\_platform\_set\_custom(get\_esp32\_platform());}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00065}00065\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00066}00066\ \textcolor{comment}{//\ \ \ \ \ //\ Inicializar\ Bluepad32}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00067}00067\ \textcolor{comment}{//\ \ \ \ \ uni\_init(0,\ NULL);}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00068}00068\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00069}00069\ \textcolor{comment}{//\ \ \ \ \ ESP\_LOGI(TAG,\ "{}Bluetooth\ y\ Bluepad32\ inicializados"{});}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00070}00070\ \textcolor{comment}{//\ \}}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00071}00071\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00072}\mbox{\hyperlink{main_8c_ae926ecdafab792fa60f183627cb03f88}{00072}}\ \textcolor{preprocessor}{\#define\ MAX\_ERROR\_COUNT\_SDIR\ 10}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00073}00073\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00074}\mbox{\hyperlink{main_8c_a43f5e0d6db0fb41a437cc9096b32e9b5}{00074}}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{main_8c_a43f5e0d6db0fb41a437cc9096b32e9b5}{system\_init}}(\textcolor{keywordtype}{void})\ \{}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00075}00075\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00076}00076\ \ \ \ \ \textcolor{comment}{//\ Initialize\ hardware}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00077}00077\ \ \ \ \ \textcolor{keywordflow}{if}(\mbox{\hyperlink{km__gpio_8c_a4467a661ca6fe29f12f392cb58b386f3}{KM\_GPIO\_Init}}()\ !=\ ESP\_OK)}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00078}00078\ \ \ \ \ \ \ \ \ ESP\_LOGE(\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}},\ \textcolor{stringliteral}{"{}Error\ inicializando\ libreria\ gpio\(\backslash\)n"{}});}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00079}00079\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00080}00080\ \ \ \ \ \textcolor{comment}{//\ Initialize\ I2C}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00081}00081\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__gpio_8c_a292bd05e9fda7632e0e0b4aab966d28b}{KM\_GPIO\_I2CInit}}()\ !=\ ESP\_OK)}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00082}00082\ \ \ \ \ \ \ \ \ ESP\_LOGE(\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}},\ \textcolor{stringliteral}{"{}Error\ inicializando\ libreria\ i2c\(\backslash\)n"{}});}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00083}00083\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00084}00084\ \ \ \ \ \textcolor{comment}{//\ Initialise\ tasks}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00085}00085\ \ \ \ \ \mbox{\hyperlink{km__rtos_8c_a63ebe5189542c7e70e5d52b54bd416d5}{KM\_RTOS\_Init}}();}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00086}00086\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00087}00087\ \ \ \ \ \textcolor{comment}{//\ Initialise\ comunications\ on\ UART0\ (USB\ to\ Orin)}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00088}00088\ \ \ \ \ \textcolor{keywordflow}{if}\ (\mbox{\hyperlink{km__coms_8c_ab76bebe5e423f1067e670d62a730e721}{KM\_COMS\_Init}}(UART\_NUM\_0)\ !=\ ESP\_OK)}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00089}00089\ \ \ \ \ \ \ \ \ ESP\_LOGE(\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}},\ \textcolor{stringliteral}{"{}Error\ inicializando\ libreria\ de\ comunicaciones"{}});}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00090}00090\ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00091}00091\ \ \ \ \ \textcolor{comment}{//\ KM\_SDIR\_Init(MAX\_ERROR\_COUNT\_SDIR);}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00092}00092\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00093}00093\ \ \ \ \ \textcolor{comment}{//\ KM\_ACT\_Begin();}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00094}00094\ \ \ \ \ \textcolor{comment}{//\ KM\_PID\_Init();}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00095}00095\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00096}00096\ \ \ \ \ \textcolor{comment}{//\ Test\ bidirectional:\ send\ heartbeat\ +\ receive\ from\ Orin}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00097}00097\ \ \ \ \ uint8\_t\ payload[4]\ =\ \{0xDE,\ 0xAD,\ 0xBE,\ 0xEF\};}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00098}00098\ \ \ \ \ uint32\_t\ loop\_count\ =\ 0;}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00099}00099\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00100}00100\ \ \ \ \ \textcolor{keywordflow}{while}\ (\textcolor{keyword}{true})\ \{}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00101}00101\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ TX:\ send\ heartbeat\ to\ Orin\ every\ 10\ iterations\ (\string~1s)}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00102}00102\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (loop\_count\ \%\ 10\ ==\ 0)\ \{}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__coms_8c_a1761afbf51adcb8c23f3c6b5e0db2ead}{KM\_COMS\_SendMsg}}(\mbox{\hyperlink{km__coms_8h_a78b97fef55da786a15a849fd9d7e557ca41bbcc90bbab89a5de8fb6a87eb8b1de}{ESP\_HEARTBEAT}},\ payload,\ \textcolor{keyword}{sizeof}(payload));}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ ESP\_LOGI(\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}},\ \textcolor{stringliteral}{"{}TX:\ heartbeat\ sent"{}});}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00105}00105\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00106}00106\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00107}00107\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ RX:\ read\ bytes\ from\ UART2\ into\ internal\ buffer}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00108}00108\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__coms_8c_a88b2405843415e6bf9a03b36048890d4}{km\_coms\_ReceiveMsg}}();}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00109}00109\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00110}00110\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ RX:\ parse\ complete\ frames\ and\ dispatch\ to\ objects}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00111}00111\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{km__coms_8c_ac4c6ccd77f6a2289dc69ff18629e516f}{KM\_COMS\_ProccessMsgs}}();}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00112}00112\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00113}00113\ \ \ \ \ \ \ \ \ loop\_count++;}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00114}00114\ \ \ \ \ \ \ \ \ vTaskDelay(pdMS\_TO\_TICKS(100));}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00115}00115\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00116}00116\ \}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00117}00117\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00118}00118\ \textcolor{comment}{//\ ===========================}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00119}00119\ \textcolor{comment}{//\ app\_main\ -\/\ punto\ de\ entrada}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00120}00120\ \textcolor{comment}{//\ ===========================}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00121}\mbox{\hyperlink{main_8c_a630544a7f0a2cc40d8a7fefab7e2fe70}{00121}}\ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{main_8c_a630544a7f0a2cc40d8a7fefab7e2fe70}{app\_main}}(\textcolor{keywordtype}{void})\ \{}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00122}00122\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00123}00123\ \ \ \ \ \textcolor{comment}{//\ Habilitar\ logs\ por\ UART0\ (USB)\ para\ debug}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00124}00124\ \ \ \ \ esp\_log\_level\_set(\textcolor{stringliteral}{"{}*"{}},\ ESP\_LOG\_INFO);}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00125}00125\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00126}00126\ \ \ \ \ ESP\_LOGI(\mbox{\hyperlink{main_8c_a5a85b9c772bbeb480b209a3e6ea92b4c}{TAG}},\ \textcolor{stringliteral}{"{}ESP\ iniciando..."{}});}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00127}00127\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00128}00128\ \ \ \ \ \textcolor{comment}{//\ Inicializa\ Bluetooth,\ Bluepad32,\ NVS,\ etc.}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00129}00129\ \ \ \ \ \textcolor{comment}{//\ init\_bluetooth();}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00130}00130\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00131}00131\ \ \ \ \ \textcolor{comment}{//\ Inicia\ todas\ las\ librerias\ que\ se\ necesitan}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00132}00132\ \ \ \ \ \mbox{\hyperlink{main_8c_a43f5e0d6db0fb41a437cc9096b32e9b5}{system\_init}}();}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00133}00133\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00134}00134\ \ \ \ \ \textcolor{comment}{//\ Creacion\ de\ toda\ las\ tareas\ de\ FreeRTOS}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00135}00135\ \ \ \ \ \textcolor{comment}{//\ Tareas\ de\ libreria\ de\ comunicaciones}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00136}00136\ \ \ \ \ \textcolor{comment}{//\ Tareas\ de\ libreria\ de\ maquina\ de\ estado}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00137}00137\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00138}00138\ \ \ \ \ \textcolor{comment}{//\ Ejecutar\ loop\ de\ BTstack\ (bloquea\ dentro\ de\ app\_main,\ pero\ otras\ tareas\ siguen)}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00139}00139\ \ \ \ \ \textcolor{comment}{//btstack\_run\_loop\_execute();}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00140}00140\ \}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00141}00141\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00142}00142\ \textcolor{comment}{//\ ESP\_LOGI(TAG,\ "{}Mensaje:\ \%d"{},\ valor);\ →\ Información\ normal}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00143}00143\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00144}00144\ \textcolor{comment}{//\ ESP\_LOGW(TAG,\ "{}Mensaje:\ \%s"{},\ cadena);\ →\ Advertencia}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00145}00145\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00146}00146\ \textcolor{comment}{//\ ESP\_LOGE(TAG,\ "{}Mensaje:\ \%s"{},\ cadena);\ →\ Error}}
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00147}00147\ }
+\DoxyCodeLine{\Hypertarget{main_8c_source_l00148}00148\ \textcolor{comment}{//\ ESP\_LOGD(TAG,\ "{}Mensaje\ debug"{});\ →\ Debug\ (solo\ si\ está\ habilitado)}}
+
+\end{DoxyCode}

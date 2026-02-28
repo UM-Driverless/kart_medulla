@@ -1,0 +1,149 @@
+\doxysection{PID\+\_\+\+Controller Struct Reference}
+\hypertarget{structPID__Controller}{}\label{structPID__Controller}\index{PID\_Controller@{PID\_Controller}}
+
+
+Structure that reperesents a PID.  
+
+
+
+
+{\ttfamily \#include $<$km\+\_\+pid.\+h$>$}
+
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+float \mbox{\hyperlink{structPID__Controller_a9608eb2661d299170269a2560dde9e2c}{kp}}
+\item 
+float \mbox{\hyperlink{structPID__Controller_a46825e324bc672616adf8108d0776c2a}{ki}}
+\item 
+float \mbox{\hyperlink{structPID__Controller_a0b1969e9aa059699242c549384e38f89}{kd}}
+\item 
+float \mbox{\hyperlink{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad}{integral}}
+\item 
+float \mbox{\hyperlink{structPID__Controller_a7c9dda89aaf1f41326a57d2d11588676}{last\+Error}}
+\item 
+uint64\+\_\+t \mbox{\hyperlink{structPID__Controller_ad0f1712ca259d7c008286c04292e9322}{last\+Time}}
+\item 
+float \mbox{\hyperlink{structPID__Controller_a5bdb5bfc0f41c98753088c6ff0c2a3da}{output\+Min}}
+\item 
+float \mbox{\hyperlink{structPID__Controller_a6eba90b0ad2463a0ebfe0df94efe23d8}{output\+Max}}
+\item 
+float \mbox{\hyperlink{structPID__Controller_a313b1bbe802e1067941d65ef5f9b3c23}{integral\+Min}}
+\item 
+float \mbox{\hyperlink{structPID__Controller_ab67ed2fd91789b7d7412b95af3031f1d}{integral\+Max}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Structure that reperesents a PID. 
+
+Definition at line \mbox{\hyperlink{km__pid_8h_source_l00024}{24}} of file \mbox{\hyperlink{km__pid_8h_source}{km\+\_\+pid.\+h}}.
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad}\label{structPID__Controller_a2ce7343fd371c7d1a81ce3418cb19bad} 
+\index{PID\_Controller@{PID\_Controller}!integral@{integral}}
+\index{integral@{integral}!PID\_Controller@{PID\_Controller}}
+\doxysubsubsection{\texorpdfstring{integral}{integral}}
+{\footnotesize\ttfamily float PID\+\_\+\+Controller\+::integral}
+
+Integral accumulator 
+
+Definition at line \mbox{\hyperlink{km__pid_8h_source_l00028}{28}} of file \mbox{\hyperlink{km__pid_8h_source}{km\+\_\+pid.\+h}}.
+
+\Hypertarget{structPID__Controller_ab67ed2fd91789b7d7412b95af3031f1d}\label{structPID__Controller_ab67ed2fd91789b7d7412b95af3031f1d} 
+\index{PID\_Controller@{PID\_Controller}!integralMax@{integralMax}}
+\index{integralMax@{integralMax}!PID\_Controller@{PID\_Controller}}
+\doxysubsubsection{\texorpdfstring{integralMax}{integralMax}}
+{\footnotesize\ttfamily float PID\+\_\+\+Controller\+::integral\+Max}
+
+
+
+Definition at line \mbox{\hyperlink{km__pid_8h_source_l00036}{36}} of file \mbox{\hyperlink{km__pid_8h_source}{km\+\_\+pid.\+h}}.
+
+\Hypertarget{structPID__Controller_a313b1bbe802e1067941d65ef5f9b3c23}\label{structPID__Controller_a313b1bbe802e1067941d65ef5f9b3c23} 
+\index{PID\_Controller@{PID\_Controller}!integralMin@{integralMin}}
+\index{integralMin@{integralMin}!PID\_Controller@{PID\_Controller}}
+\doxysubsubsection{\texorpdfstring{integralMin}{integralMin}}
+{\footnotesize\ttfamily float PID\+\_\+\+Controller\+::integral\+Min}
+
+Anti-\/windup limits 
+
+Definition at line \mbox{\hyperlink{km__pid_8h_source_l00035}{35}} of file \mbox{\hyperlink{km__pid_8h_source}{km\+\_\+pid.\+h}}.
+
+\Hypertarget{structPID__Controller_a0b1969e9aa059699242c549384e38f89}\label{structPID__Controller_a0b1969e9aa059699242c549384e38f89} 
+\index{PID\_Controller@{PID\_Controller}!kd@{kd}}
+\index{kd@{kd}!PID\_Controller@{PID\_Controller}}
+\doxysubsubsection{\texorpdfstring{kd}{kd}}
+{\footnotesize\ttfamily float PID\+\_\+\+Controller\+::kd}
+
+Derivative gain 
+
+Definition at line \mbox{\hyperlink{km__pid_8h_source_l00027}{27}} of file \mbox{\hyperlink{km__pid_8h_source}{km\+\_\+pid.\+h}}.
+
+\Hypertarget{structPID__Controller_a46825e324bc672616adf8108d0776c2a}\label{structPID__Controller_a46825e324bc672616adf8108d0776c2a} 
+\index{PID\_Controller@{PID\_Controller}!ki@{ki}}
+\index{ki@{ki}!PID\_Controller@{PID\_Controller}}
+\doxysubsubsection{\texorpdfstring{ki}{ki}}
+{\footnotesize\ttfamily float PID\+\_\+\+Controller\+::ki}
+
+Integral gain 
+
+Definition at line \mbox{\hyperlink{km__pid_8h_source_l00026}{26}} of file \mbox{\hyperlink{km__pid_8h_source}{km\+\_\+pid.\+h}}.
+
+\Hypertarget{structPID__Controller_a9608eb2661d299170269a2560dde9e2c}\label{structPID__Controller_a9608eb2661d299170269a2560dde9e2c} 
+\index{PID\_Controller@{PID\_Controller}!kp@{kp}}
+\index{kp@{kp}!PID\_Controller@{PID\_Controller}}
+\doxysubsubsection{\texorpdfstring{kp}{kp}}
+{\footnotesize\ttfamily float PID\+\_\+\+Controller\+::kp}
+
+Proportional gain 
+
+Definition at line \mbox{\hyperlink{km__pid_8h_source_l00025}{25}} of file \mbox{\hyperlink{km__pid_8h_source}{km\+\_\+pid.\+h}}.
+
+\Hypertarget{structPID__Controller_a7c9dda89aaf1f41326a57d2d11588676}\label{structPID__Controller_a7c9dda89aaf1f41326a57d2d11588676} 
+\index{PID\_Controller@{PID\_Controller}!lastError@{lastError}}
+\index{lastError@{lastError}!PID\_Controller@{PID\_Controller}}
+\doxysubsubsection{\texorpdfstring{lastError}{lastError}}
+{\footnotesize\ttfamily float PID\+\_\+\+Controller\+::last\+Error}
+
+Previous error for derivative 
+
+Definition at line \mbox{\hyperlink{km__pid_8h_source_l00029}{29}} of file \mbox{\hyperlink{km__pid_8h_source}{km\+\_\+pid.\+h}}.
+
+\Hypertarget{structPID__Controller_ad0f1712ca259d7c008286c04292e9322}\label{structPID__Controller_ad0f1712ca259d7c008286c04292e9322} 
+\index{PID\_Controller@{PID\_Controller}!lastTime@{lastTime}}
+\index{lastTime@{lastTime}!PID\_Controller@{PID\_Controller}}
+\doxysubsubsection{\texorpdfstring{lastTime}{lastTime}}
+{\footnotesize\ttfamily uint64\+\_\+t PID\+\_\+\+Controller\+::last\+Time}
+
+Last update time 
+
+Definition at line \mbox{\hyperlink{km__pid_8h_source_l00030}{30}} of file \mbox{\hyperlink{km__pid_8h_source}{km\+\_\+pid.\+h}}.
+
+\Hypertarget{structPID__Controller_a6eba90b0ad2463a0ebfe0df94efe23d8}\label{structPID__Controller_a6eba90b0ad2463a0ebfe0df94efe23d8} 
+\index{PID\_Controller@{PID\_Controller}!outputMax@{outputMax}}
+\index{outputMax@{outputMax}!PID\_Controller@{PID\_Controller}}
+\doxysubsubsection{\texorpdfstring{outputMax}{outputMax}}
+{\footnotesize\ttfamily float PID\+\_\+\+Controller\+::output\+Max}
+
+
+
+Definition at line \mbox{\hyperlink{km__pid_8h_source_l00034}{34}} of file \mbox{\hyperlink{km__pid_8h_source}{km\+\_\+pid.\+h}}.
+
+\Hypertarget{structPID__Controller_a5bdb5bfc0f41c98753088c6ff0c2a3da}\label{structPID__Controller_a5bdb5bfc0f41c98753088c6ff0c2a3da} 
+\index{PID\_Controller@{PID\_Controller}!outputMin@{outputMin}}
+\index{outputMin@{outputMin}!PID\_Controller@{PID\_Controller}}
+\doxysubsubsection{\texorpdfstring{outputMin}{outputMin}}
+{\footnotesize\ttfamily float PID\+\_\+\+Controller\+::output\+Min}
+
+
+
+Definition at line \mbox{\hyperlink{km__pid_8h_source_l00033}{33}} of file \mbox{\hyperlink{km__pid_8h_source}{km\+\_\+pid.\+h}}.
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{km__pid_8h}{km\+\_\+pid.\+h}}\end{DoxyCompactItemize}

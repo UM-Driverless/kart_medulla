@@ -1,0 +1,305 @@
+\doxysection{km\+\_\+gpio.\+c}
+\hypertarget{km__gpio_8c_source}{}\label{km__gpio_8c_source}\index{km\_gpio.c@{km\_gpio.c}}
+\mbox{\hyperlink{km__gpio_8c}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00001}00001\ \textcolor{comment}{/******************************************************************************}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00002}00002\ \textcolor{comment}{\ *\ @file\ \ \ \ km\_gpio.c}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00003}00003\ \textcolor{comment}{\ *\ @brief\ \ \ Implementación\ de\ la\ librería.}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00004}00004\ \textcolor{comment}{\ *****************************************************************************/}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00005}00005\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00006}00006\ \textcolor{preprocessor}{\#include\ "{}\mbox{\hyperlink{km__gpio_8h}{km\_gpio.h}}"{}}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00007}00007\ \textcolor{preprocessor}{\#include\ "{}esp\_log.h"{}}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00008}00008\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00009}00009\ \textcolor{comment}{/*******************************\ INCLUDES\ INTERNOS\ ****************************/}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00010}00010\ \textcolor{comment}{//\ Headers\ internos\ opcionales,\ dependencias\ privadas}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00011}00011\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00012}00012\ \textcolor{comment}{/*******************************\ MACROS\ PRIVADAS\ ********************************/}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00013}00013\ \textcolor{comment}{//\ Constantes\ internas,\ flags\ de\ debug}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00014}00014\ \textcolor{comment}{//\ \#define\ LIBRERIA\_DEBUG\ 1}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00015}00015\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00016}00016\ \textcolor{comment}{/*******************************\ VARIABLES\ PRIVADAS\ ***************************/}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00017}00017\ \textcolor{comment}{//\ Variables\ globales\ internas\ (static)}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00018}00018\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00019}00019\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ USB\ (UART0\ to\ ORIN)\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00020}\mbox{\hyperlink{km__gpio_8c_a22cf3a004d95b68f395f32ecdfe6ba15}{00020}}\ \textcolor{keyword}{const}\ uart\_config\_t\ \mbox{\hyperlink{km__gpio_8c_a22cf3a004d95b68f395f32ecdfe6ba15}{uart\_config}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00021}00021\ \ \ \ \ .baud\_rate\ =\ 115200,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00022}00022\ \ \ \ \ .data\_bits\ =\ UART\_DATA\_8\_BITS,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00023}00023\ \ \ \ \ .parity\ \ \ \ =\ UART\_PARITY\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00024}00024\ \ \ \ \ .stop\_bits\ =\ UART\_STOP\_BITS\_1,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00025}00025\ \ \ \ \ .flow\_ctrl\ =\ UART\_HW\_FLOWCTRL\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00026}00026\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00027}00027\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00028}00028\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ ADC\ INPUTS\ (Sensors)\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00029}00029\ \textcolor{comment}{/*\ ADC1\ -\/\ input\ only\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00030}\mbox{\hyperlink{km__gpio_8c_acf7d9b0ed84a4be88f862dd6fd4a489e}{00030}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_acf7d9b0ed84a4be88f862dd6fd4a489e}{pin\_pressure\_1}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00031}00031\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a8fb25f688edbd078b029114028fa41ed}{PIN\_PRESSURE\_1}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00032}00032\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00033}00033\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00034}00034\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00035}00035\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00036}00036\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00037}00037\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00038}\mbox{\hyperlink{km__gpio_8c_ac593b1fde53672b7ecbef1a07bdeaa93}{00038}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_ac593b1fde53672b7ecbef1a07bdeaa93}{pin\_pressure\_2}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00039}00039\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a827e8af645597dd0445cf4e83d4d2b05}{PIN\_PRESSURE\_2}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00040}00040\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00041}00041\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00042}00042\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00043}00043\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00044}00044\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00045}00045\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00046}\mbox{\hyperlink{km__gpio_8c_ad4b10105bedc4fc224baf7d4aee9fa45}{00046}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_ad4b10105bedc4fc224baf7d4aee9fa45}{pin\_pressure\_3}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00047}00047\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a05bc33a8db7db441ce92d1370eaa1084}{PIN\_PRESSURE\_3}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00048}00048\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00049}00049\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00050}00050\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00051}00051\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00052}00052\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00054}\mbox{\hyperlink{km__gpio_8c_aeef04eeac4de585060c973234f4c423e}{00054}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_aeef04eeac4de585060c973234f4c423e}{pin\_pedal\_acc}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00055}00055\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_aac397306d13562ded89fe827f967ea25}{PIN\_PEDAL\_ACC}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00056}00056\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00057}00057\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00058}00058\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00059}00059\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00060}00060\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00061}00061\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00062}\mbox{\hyperlink{km__gpio_8c_ad03c660364d890d9ff02283049ccba0e}{00062}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_ad03c660364d890d9ff02283049ccba0e}{pin\_pedal\_brake}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00063}00063\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_ab7d4554dcbbe1bf0cae780014b928428}{PIN\_PEDAL\_BRAKE}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00064}00064\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00065}00065\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00066}00066\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00067}00067\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00068}00068\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00069}00069\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00070}\mbox{\hyperlink{km__gpio_8c_a0de7c1b9d4e548cef48401c51522a206}{00070}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_a0de7c1b9d4e548cef48401c51522a206}{pin\_hydraulic\_1}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00071}00071\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a7eb88311c5bbc031e2fcaf00a64ae53e}{PIN\_HYDRAULIC\_1}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00072}00072\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00073}00073\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00074}00074\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00075}00075\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00076}00076\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00077}00077\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00078}00078\ \textcolor{comment}{/*\ ADC2\ -\/\ allowed\ (WiFi\ not\ used)\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00079}\mbox{\hyperlink{km__gpio_8c_a627853334cbc7b666d21aa9802492ece}{00079}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_a627853334cbc7b666d21aa9802492ece}{pin\_hydraulic\_2}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00080}00080\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a1773691aaf6fc0b7ca31a8e8b414c588}{PIN\_HYDRAULIC\_2}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00081}00081\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00082}00082\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00083}00083\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00084}00084\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00085}00085\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00086}00086\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00087}00087\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ DAC\ OUTPUTS\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00088}\mbox{\hyperlink{km__gpio_8c_ab7ea71722ed6ad46cc7b0b60ee816ad9}{00088}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_ab7ea71722ed6ad46cc7b0b60ee816ad9}{pin\_cmd\_acc}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00089}00089\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a0108eb94d0a806a3bf5f1f9fba8b5bea}{PIN\_CMD\_ACC}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00090}00090\ \ \ \ \ .mode\ =\ GPIO\_MODE\_OUTPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00091}00091\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00092}00092\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00093}00093\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00094}00094\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00095}00095\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00096}\mbox{\hyperlink{km__gpio_8c_ad32a127f101a5b0b29b9b450ed44350a}{00096}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_ad32a127f101a5b0b29b9b450ed44350a}{pin\_cmd\_brake}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00097}00097\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a76984f952d1a68611235af5de185bd8b}{PIN\_CMD\_BRAKE}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00098}00098\ \ \ \ \ .mode\ =\ GPIO\_MODE\_OUTPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00099}00099\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00100}00100\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00101}00101\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00102}00102\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00103}00103\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00104}00104\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ STEERING\ MOTOR\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00105}\mbox{\hyperlink{km__gpio_8c_a0205eceb6d3184bd73a9406a50c49844}{00105}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_a0205eceb6d3184bd73a9406a50c49844}{pin\_steer\_pwm}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00106}00106\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a05033af15135c5ccb8a14c8d721be821}{PIN\_STEER\_PWM}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00107}00107\ \ \ \ \ .mode\ =\ GPIO\_MODE\_OUTPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00108}00108\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00109}00109\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00110}00110\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00111}00111\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00112}00112\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00113}\mbox{\hyperlink{km__gpio_8c_ae759f073dbed9c97c7bf1ffc36b2de7e}{00113}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_ae759f073dbed9c97c7bf1ffc36b2de7e}{pin\_steer\_dir}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00114}00114\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a58b08a11ef75b28f24e49ce4b1dfa18c}{PIN\_STEER\_DIR}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00115}00115\ \ \ \ \ .mode\ =\ GPIO\_MODE\_OUTPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00116}00116\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00117}00117\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00118}00118\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00119}00119\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00120}00120\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00121}00121\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ HALL\ SENSORS\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00122}\mbox{\hyperlink{km__gpio_8c_a9700211b14d87a634e6d6ef74f041bd0}{00122}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_a9700211b14d87a634e6d6ef74f041bd0}{pin\_motor\_hall\_1}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00123}00123\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_aed25264bde8243d833e5f688ccd75b4e}{PIN\_MOTOR\_HALL\_1}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00124}00124\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00125}00125\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00126}00126\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00127}00127\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_POSEDGE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00128}00128\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00129}00129\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00130}\mbox{\hyperlink{km__gpio_8c_a2c4c3025b5eab823e846d92390bd8613}{00130}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_a2c4c3025b5eab823e846d92390bd8613}{pin\_motor\_hall\_2}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00131}00131\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a02a5236b09e27d22de4e677a073f21eb}{PIN\_MOTOR\_HALL\_2}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00132}00132\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00133}00133\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00134}00134\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00135}00135\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_POSEDGE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00136}00136\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00137}00137\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00138}\mbox{\hyperlink{km__gpio_8c_ae9d9a382b8ca89e0ef570c13e4db1468}{00138}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_ae9d9a382b8ca89e0ef570c13e4db1468}{pin\_motor\_hall\_3}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00139}00139\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a64ffcf99e8b7e94eab9ab6bafb32b8dc}{PIN\_MOTOR\_HALL\_3}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00140}00140\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00141}00141\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00142}00142\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00143}00143\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_POSEDGE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00144}00144\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00145}00145\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00146}00146\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ I2C\ (AS5600)\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00147}\mbox{\hyperlink{km__gpio_8c_ae45bc9ae2a0dc4803f1e9f1d030d16bc}{00147}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_ae45bc9ae2a0dc4803f1e9f1d030d16bc}{pin\_i2c\_scl}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00148}00148\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a6b5cc0023af0923f5e57d107bdd8f985}{PIN\_I2C\_SCL}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00149}00149\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT\_OUTPUT\_OD,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00150}00150\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00151}00151\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00152}00152\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00153}00153\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00154}00154\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00155}\mbox{\hyperlink{km__gpio_8c_aa70681f2b4add7d570969eb391cd5336}{00155}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_aa70681f2b4add7d570969eb391cd5336}{pin\_i2c\_sda}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00156}00156\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_afd84f048502b749115c9e05262ed6753}{PIN\_I2C\_SDA}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00157}00157\ \ \ \ \ .mode\ =\ GPIO\_MODE\_INPUT\_OUTPUT\_OD,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00158}00158\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00159}00159\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00160}00160\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00161}00161\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00162}00162\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00163}00163\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ STATUS\ LED\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00164}\mbox{\hyperlink{km__gpio_8c_ab30e317aef245ee83e4f960bd49c0a59}{00164}}\ \textcolor{keyword}{const}\ gpio\_config\_t\ \mbox{\hyperlink{km__gpio_8c_ab30e317aef245ee83e4f960bd49c0a59}{pin\_status\_led}}\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00165}00165\ \ \ \ \ .pin\_bit\_mask\ =\ 1ULL\ <<\ \mbox{\hyperlink{km__gpio_8h_a9cccc3fd0833b8971461317cc3750096}{PIN\_STATUS\_LED}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00166}00166\ \ \ \ \ .mode\ =\ GPIO\_MODE\_OUTPUT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00167}00167\ \ \ \ \ .pull\_up\_en\ =\ GPIO\_PULLUP\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00168}00168\ \ \ \ \ .pull\_down\_en\ =\ GPIO\_PULLDOWN\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00169}00169\ \ \ \ \ .intr\_type\ =\ GPIO\_INTR\_DISABLE}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00170}00170\ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00171}00171\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00172}00172\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00173}00173\ \textcolor{comment}{/*******************************\ DECLARACION\ FUNCIONES\ PRIVADAS\ ***************/}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00174}00174\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00175}00175\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00176}00176\ \textcolor{comment}{/*******************************\ FUNCIONES\ PÚBLICAS\ ***************************/}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00177}00177\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00178}00178\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ Initialization\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00179}\mbox{\hyperlink{km__gpio_8c_a4467a661ca6fe29f12f392cb58b386f3}{00179}}\ esp\_err\_t\ \mbox{\hyperlink{km__gpio_8c_a4467a661ca6fe29f12f392cb58b386f3}{KM\_GPIO\_Init}}(\textcolor{keywordtype}{void})}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00180}00180\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00181}00181\ \ \ \ \ esp\_err\_t\ ret;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00182}00182\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00183}00183\ \ \ \ \ \textcolor{comment}{//\ Enable\ DAC\ channels}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00184}00184\ \ \ \ \ ret\ =\ dac\_output\_enable(DAC\_CHAN\_0);\ \textcolor{comment}{//\ CMD\_ACC}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00185}00185\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ !=\ ESP\_OK)\ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00186}00186\ \ \ \ \ ret\ =\ dac\_output\_enable(DAC\_CHAN\_1);\ \textcolor{comment}{//\ CMD\_BRAKE}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00187}00187\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ !=\ ESP\_OK)\ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00188}00188\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00189}00189\ \ \ \ \ \textcolor{comment}{//\ Setup\ PWM\ (LEDC)}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00190}00190\ \ \ \ \ ledc\_timer\_config\_t\ pwm\_timer\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00191}00191\ \ \ \ \ \ \ \ \ .speed\_mode\ =\ \mbox{\hyperlink{km__gpio_8h_a5f0a132f2e2cf7864f8bd7d1d2ec64ee}{LEDC\_HIGH\_SPEED\_MODE}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00192}00192\ \ \ \ \ \ \ \ \ .duty\_resolution\ =\ LEDC\_TIMER\_8\_BIT,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00193}00193\ \ \ \ \ \ \ \ \ .timer\_num\ =\ LEDC\_TIMER\_0,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00194}00194\ \ \ \ \ \ \ \ \ .freq\_hz\ =\ 1000,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00195}00195\ \ \ \ \ \ \ \ \ .clk\_cfg\ =\ LEDC\_AUTO\_CLK}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00196}00196\ \ \ \ \ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00197}00197\ \ \ \ \ ret\ =\ ledc\_timer\_config(\&pwm\_timer);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00198}00198\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ !=\ ESP\_OK)\ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00199}00199\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00200}00200\ \ \ \ \ ledc\_channel\_config\_t\ pwm\_channel\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00201}00201\ \ \ \ \ \ \ \ \ .gpio\_num\ =\ (gpio\_num\_t)\mbox{\hyperlink{km__gpio_8h_a05033af15135c5ccb8a14c8d721be821}{PIN\_STEER\_PWM}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00202}00202\ \ \ \ \ \ \ \ \ .speed\_mode\ =\ \mbox{\hyperlink{km__gpio_8h_a5f0a132f2e2cf7864f8bd7d1d2ec64ee}{LEDC\_HIGH\_SPEED\_MODE}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00203}00203\ \ \ \ \ \ \ \ \ .channel\ =\ LEDC\_CHANNEL\_0,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00204}00204\ \ \ \ \ \ \ \ \ .intr\_type\ =\ LEDC\_INTR\_DISABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00205}00205\ \ \ \ \ \ \ \ \ .timer\_sel\ =\ LEDC\_TIMER\_0,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00206}00206\ \ \ \ \ \ \ \ \ .duty\ =\ 0}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00207}00207\ \ \ \ \ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00208}00208\ \ \ \ \ ret\ =\ ledc\_channel\_config(\&pwm\_channel);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00209}00209\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ !=\ ESP\_OK)\ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00210}00210\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00211}00211\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_OK;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00212}00212\ \}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00213}00213\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00214}00214\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ Digital\ GPIO\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00215}\mbox{\hyperlink{km__gpio_8c_a9197f579c88c677da941107c9a4b3b3a}{00215}}\ uint8\_t\ \mbox{\hyperlink{km__gpio_8c_a9197f579c88c677da941107c9a4b3b3a}{KM\_GPIO\_ReadPin}}(\textcolor{keyword}{const}\ gpio\_config\_t\ *pin)}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00216}00216\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00217}00217\ \ \ \ \ \textcolor{keywordflow}{return}\ gpio\_get\_level((gpio\_num\_t)(pin-\/>pin\_bit\_mask));}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00218}00218\ \}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00219}00219\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00220}\mbox{\hyperlink{km__gpio_8c_ac6c6f297041b14cb0ad1cd7d9aa6f2b2}{00220}}\ esp\_err\_t\ \mbox{\hyperlink{km__gpio_8c_ac6c6f297041b14cb0ad1cd7d9aa6f2b2}{KM\_GPIO\_WritePinHigh}}(\textcolor{keyword}{const}\ gpio\_config\_t\ *pin)}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00221}00221\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00222}00222\ \ \ \ \ \textcolor{keywordflow}{return}\ gpio\_set\_level((gpio\_num\_t)(pin-\/>pin\_bit\_mask),\ 1);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00223}00223\ \}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00224}00224\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00225}\mbox{\hyperlink{km__gpio_8c_ad7bcfffee3a58a8dabcb0cfeea0178ad}{00225}}\ esp\_err\_t\ \mbox{\hyperlink{km__gpio_8c_ad7bcfffee3a58a8dabcb0cfeea0178ad}{KM\_GPIO\_WritePinLow}}(\textcolor{keyword}{const}\ gpio\_config\_t\ *pin)}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00226}00226\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00227}00227\ \ \ \ \ \textcolor{keywordflow}{return}\ gpio\_set\_level((gpio\_num\_t)(pin-\/>pin\_bit\_mask),\ 0);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00228}00228\ \}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00229}00229\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00230}00230\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ ADC\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00231}\mbox{\hyperlink{km__gpio_8c_a048a9f0aea71f71f2f863a38bce87ba9}{00231}}\ uint16\_t\ \mbox{\hyperlink{km__gpio_8c_a048a9f0aea71f71f2f863a38bce87ba9}{KM\_GPIO\_ReadADC}}(\textcolor{keyword}{const}\ gpio\_config\_t\ *pin)}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00232}00232\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00233}00233\ \ \ \ \ gpio\_num\_t\ gpio\ =\ (gpio\_num\_t)(pin-\/>pin\_bit\_mask);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00234}00234\ \ \ \ \ \textcolor{keywordtype}{int}\ raw\_out\_adc2\ =\ 0;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00235}00235\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00236}00236\ \ \ \ \ \textcolor{keywordflow}{switch}\ (gpio)}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00237}00237\ \ \ \ \ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00238}00238\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_36:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_0);\ \textcolor{comment}{//\ pressure\ 1}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00239}00239\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_39:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_3);\ \textcolor{comment}{//\ pressure\ 2}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00240}00240\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_34:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_6);\ \textcolor{comment}{//\ pressure\ 3}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00241}00241\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_35:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_7);\ \textcolor{comment}{//\ pedal\ acc}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00242}00242\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_32:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_4);\ \textcolor{comment}{//\ pedal\ brake}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00243}00243\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_33:\ \textcolor{keywordflow}{return}\ (uint16\_t)adc1\_get\_raw(ADC1\_CHANNEL\_5);\ \textcolor{comment}{//\ hydraulic\ 1}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00244}00244\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{case}\ GPIO\_NUM\_13:\ \ \ \ \textcolor{comment}{//\ hydraulic\ 2}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00245}00245\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (adc2\_get\_raw(ADC2\_CHANNEL\_4,\ ADC\_WIDTH\_BIT\_12,\ \&raw\_out\_adc2)\ ==\ ESP\_OK)}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00246}00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ raw\_out\_adc2;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00247}00247\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00248}00248\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00249}00249\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{default}:\ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00250}00250\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00251}00251\ \}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00252}00252\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00253}00253\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ DAC\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00254}\mbox{\hyperlink{km__gpio_8c_a94f396afe846586cd4f01fbf23043fcb}{00254}}\ esp\_err\_t\ \mbox{\hyperlink{km__gpio_8c_a94f396afe846586cd4f01fbf23043fcb}{KM\_GPIO\_WriteDAC}}(\textcolor{keyword}{const}\ gpio\_config\_t\ *pin,\ uint8\_t\ value)}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00255}00255\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00256}00256\ \ \ \ \ gpio\_num\_t\ gpio\ =\ (gpio\_num\_t)(pin-\/>pin\_bit\_mask);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00257}00257\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00258}00258\ \ \ \ \ \textcolor{keywordflow}{if}\ (gpio\ ==\ \mbox{\hyperlink{km__gpio_8h_a0108eb94d0a806a3bf5f1f9fba8b5bea}{PIN\_CMD\_ACC}})\ \textcolor{keywordflow}{return}\ dac\_output\_voltage(DAC\_CHAN\_0,\ value);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00259}00259\ \ \ \ \ \textcolor{keywordflow}{if}\ (gpio\ ==\ \mbox{\hyperlink{km__gpio_8h_a76984f952d1a68611235af5de185bd8b}{PIN\_CMD\_BRAKE}})\ \textcolor{keywordflow}{return}\ dac\_output\_voltage(DAC\_CHAN\_1,\ value);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00260}00260\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00261}00261\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_ERR\_INVALID\_ARG;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00262}00262\ \}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00263}00263\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00264}00264\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ PWM\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00265}\mbox{\hyperlink{km__gpio_8c_a8b7f6b445c202fffdafa04bd0a98f809}{00265}}\ esp\_err\_t\ \mbox{\hyperlink{km__gpio_8c_a8b7f6b445c202fffdafa04bd0a98f809}{KM\_GPIO\_WritePWM}}(\textcolor{keyword}{const}\ gpio\_config\_t\ *pin,\ uint8\_t\ duty)}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00266}00266\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00267}00267\ \ \ \ \ gpio\_num\_t\ gpio\ =\ (gpio\_num\_t)(pin-\/>pin\_bit\_mask);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00268}00268\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00269}00269\ \ \ \ \ \textcolor{keywordflow}{if}\ (gpio\ ==\ GPIO\_NUM\_27)\ \textcolor{comment}{//\ Steering\ PWM}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00270}00270\ \ \ \ \ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00271}00271\ \ \ \ \ \ \ \ \ ledc\_set\_duty(\mbox{\hyperlink{km__gpio_8h_a5f0a132f2e2cf7864f8bd7d1d2ec64ee}{LEDC\_HIGH\_SPEED\_MODE}},\ LEDC\_CHANNEL\_0,\ duty);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00272}00272\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ledc\_update\_duty(\mbox{\hyperlink{km__gpio_8h_a5f0a132f2e2cf7864f8bd7d1d2ec64ee}{LEDC\_HIGH\_SPEED\_MODE}},\ LEDC\_CHANNEL\_0);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00273}00273\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00274}00274\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00275}00275\ \ \ \ \ \textcolor{keywordflow}{return}\ ESP\_ERR\_INVALID\_ARG;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00276}00276\ \}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00277}00277\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00278}00278\ \textcolor{comment}{/*\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ I2C\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ */}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00279}\mbox{\hyperlink{km__gpio_8c_a292bd05e9fda7632e0e0b4aab966d28b}{00279}}\ esp\_err\_t\ \mbox{\hyperlink{km__gpio_8c_a292bd05e9fda7632e0e0b4aab966d28b}{KM\_GPIO\_I2CInit}}(\textcolor{keywordtype}{void})}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00280}00280\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00281}00281\ \ \ \ \ i2c\_config\_t\ conf\ =\ \{}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00282}00282\ \ \ \ \ \ \ \ \ .mode\ =\ I2C\_MODE\_MASTER,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00283}00283\ \ \ \ \ \ \ \ \ .sda\_io\_num\ =\ \mbox{\hyperlink{km__gpio_8h_afd84f048502b749115c9e05262ed6753}{PIN\_I2C\_SDA}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00284}00284\ \ \ \ \ \ \ \ \ .scl\_io\_num\ =\ \mbox{\hyperlink{km__gpio_8h_a6b5cc0023af0923f5e57d107bdd8f985}{PIN\_I2C\_SCL}},}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00285}00285\ \ \ \ \ \ \ \ \ .sda\_pullup\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00286}00286\ \ \ \ \ \ \ \ \ .scl\_pullup\_en\ =\ GPIO\_PULLUP\_ENABLE,}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00287}00287\ \ \ \ \ \ \ \ \ .master.clk\_speed\ =\ 400000}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00288}00288\ \ \ \ \ \};}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00289}00289\ \ \ \ \ esp\_err\_t\ ret\ =\ i2c\_param\_config(I2C\_NUM\_0,\ \&conf);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00290}00290\ \ \ \ \ \textcolor{keywordflow}{if}\ (ret\ !=\ ESP\_OK)\ \textcolor{keywordflow}{return}\ ret;}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00291}00291\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00292}00292\ \ \ \ \ \textcolor{keywordflow}{return}\ i2c\_driver\_install(I2C\_NUM\_0,\ conf.mode,\ 0,\ 0,\ 0);}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00293}00293\ \}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00294}00294\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00295}00295\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00296}00296\ \textcolor{comment}{/*******************************\ FUNCIONES\ PRIVADAS\ ***************************/}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00300}00300\ \textcolor{comment}{//\ \ void\ funcion\_privada(void);}}
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00301}00301\ }
+\DoxyCodeLine{\Hypertarget{km__gpio_8c_source_l00302}00302\ \textcolor{comment}{/*******************************\ FIN\ DE\ ARCHIVO\ ********************************/}}
+
+\end{DoxyCode}

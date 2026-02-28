@@ -1,0 +1,289 @@
+\@ifundefined {etoctocstyle}{\let \etoc@startlocaltoc \@gobble \let \etoc@settocdepth \@gobble \let \etoc@depthtag \@gobble \let \etoc@setlocaltop \@gobble }{}
+\contentsline {chapter}{\numberline {1}Class Index}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Class List}{1}{section.1.1}%
+\contentsline {chapter}{\numberline {2}File Index}{3}{chapter.2}%
+\contentsline {section}{\numberline {2.1}File List}{3}{section.2.1}%
+\contentsline {chapter}{\numberline {3}Class Documentation}{5}{chapter.3}%
+\contentsline {section}{\numberline {3.1}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}coms\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}msg Struct Reference}{5}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Detailed Description}{5}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Member Data Documentation}{6}{subsection.3.1.2}%
+\contentsline {subsubsection}{\numberline {3.1.2.1}crc}{6}{subsubsection.3.1.2.1}%
+\contentsline {subsubsection}{\numberline {3.1.2.2}len}{6}{subsubsection.3.1.2.2}%
+\contentsline {subsubsection}{\numberline {3.1.2.3}payload}{6}{subsubsection.3.1.2.3}%
+\contentsline {subsubsection}{\numberline {3.1.2.4}type}{6}{subsubsection.3.1.2.4}%
+\contentsline {section}{\numberline {3.2}PID\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}Controller Struct Reference}{6}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Detailed Description}{7}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Member Data Documentation}{7}{subsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.2.1}integral}{7}{subsubsection.3.2.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2.2}integralMax}{7}{subsubsection.3.2.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.2.3}integralMin}{7}{subsubsection.3.2.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.2.4}kd}{7}{subsubsection.3.2.2.4}%
+\contentsline {subsubsection}{\numberline {3.2.2.5}ki}{8}{subsubsection.3.2.2.5}%
+\contentsline {subsubsection}{\numberline {3.2.2.6}kp}{8}{subsubsection.3.2.2.6}%
+\contentsline {subsubsection}{\numberline {3.2.2.7}lastError}{8}{subsubsection.3.2.2.7}%
+\contentsline {subsubsection}{\numberline {3.2.2.8}lastTime}{8}{subsubsection.3.2.2.8}%
+\contentsline {subsubsection}{\numberline {3.2.2.9}outputMax}{8}{subsubsection.3.2.2.9}%
+\contentsline {subsubsection}{\numberline {3.2.2.10}outputMin}{8}{subsubsection.3.2.2.10}%
+\contentsline {section}{\numberline {3.3}RTOS\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}Task Struct Reference}{9}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Detailed Description}{9}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Member Data Documentation}{9}{subsection.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.2.1}active}{9}{subsubsection.3.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.3.2.2}context}{9}{subsubsection.3.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.3.2.3}handle}{9}{subsubsection.3.3.2.3}%
+\contentsline {subsubsection}{\numberline {3.3.2.4}name}{10}{subsubsection.3.3.2.4}%
+\contentsline {subsubsection}{\numberline {3.3.2.5}period\_ms}{10}{subsubsection.3.3.2.5}%
+\contentsline {subsubsection}{\numberline {3.3.2.6}priority}{10}{subsubsection.3.3.2.6}%
+\contentsline {subsubsection}{\numberline {3.3.2.7}stackSize}{10}{subsubsection.3.3.2.7}%
+\contentsline {subsubsection}{\numberline {3.3.2.8}taskFn}{10}{subsubsection.3.3.2.8}%
+\contentsline {section}{\numberline {3.4}sensor\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}struct Struct Reference}{10}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Detailed Description}{11}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Member Data Documentation}{11}{subsection.3.4.2}%
+\contentsline {subsubsection}{\numberline {3.4.2.1}centerOffset}{11}{subsubsection.3.4.2.1}%
+\contentsline {subsubsection}{\numberline {3.4.2.2}connected}{11}{subsubsection.3.4.2.2}%
+\contentsline {subsubsection}{\numberline {3.4.2.3}errorCount}{11}{subsubsection.3.4.2.3}%
+\contentsline {subsubsection}{\numberline {3.4.2.4}lastRawValue}{11}{subsubsection.3.4.2.4}%
+\contentsline {subsubsection}{\numberline {3.4.2.5}lastReadTime}{11}{subsubsection.3.4.2.5}%
+\contentsline {subsubsection}{\numberline {3.4.2.6}max\_error\_count}{11}{subsubsection.3.4.2.6}%
+\contentsline {chapter}{\numberline {4}File Documentation}{13}{chapter.4}%
+\contentsline {section}{\numberline {4.1}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}coms.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c File Reference}{13}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Macro Definition Documentation}{14}{subsection.4.1.1}%
+\contentsline {subsubsection}{\numberline {4.1.1.1}KM\_COMS\_WAIT\_SEM\_AVAILABLE}{14}{subsubsection.4.1.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Function Documentation}{14}{subsection.4.1.2}%
+\contentsline {subsubsection}{\numberline {4.1.2.1}KM\_COMS\_crc8()}{14}{subsubsection.4.1.2.1}%
+\contentsline {subsubsection}{\numberline {4.1.2.2}KM\_COMS\_Init()}{15}{subsubsection.4.1.2.2}%
+\contentsline {subsubsection}{\numberline {4.1.2.3}KM\_COMS\_ProccessMsgs()}{16}{subsubsection.4.1.2.3}%
+\contentsline {subsubsection}{\numberline {4.1.2.4}KM\_COMS\_ProccessPayload()}{17}{subsubsection.4.1.2.4}%
+\contentsline {subsubsection}{\numberline {4.1.2.5}km\_coms\_ReceiveMsg()}{19}{subsubsection.4.1.2.5}%
+\contentsline {subsubsection}{\numberline {4.1.2.6}KM\_COMS\_SendMsg()}{20}{subsubsection.4.1.2.6}%
+\contentsline {subsection}{\numberline {4.1.3}Variable Documentation}{21}{subsection.4.1.3}%
+\contentsline {subsubsection}{\numberline {4.1.3.1}km\_coms\_mutex}{21}{subsubsection.4.1.3.1}%
+\contentsline {subsubsection}{\numberline {4.1.3.2}km\_coms\_uart}{21}{subsubsection.4.1.3.2}%
+\contentsline {subsubsection}{\numberline {4.1.3.3}rx\_buffer}{22}{subsubsection.4.1.3.3}%
+\contentsline {subsubsection}{\numberline {4.1.3.4}rx\_buffer\_len}{22}{subsubsection.4.1.3.4}%
+\contentsline {section}{\numberline {4.2}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}coms.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c}{22}{section.4.2}%
+\contentsline {section}{\numberline {4.3}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}coms.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h File Reference}{26}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Macro Definition Documentation}{27}{subsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.1.1}BUF\_SIZE\_RX}{27}{subsubsection.4.3.1.1}%
+\contentsline {subsubsection}{\numberline {4.3.1.2}BUF\_SIZE\_TX}{27}{subsubsection.4.3.1.2}%
+\contentsline {subsubsection}{\numberline {4.3.1.3}KM\_COMS\_MSG\_MAX\_LEN}{28}{subsubsection.4.3.1.3}%
+\contentsline {subsubsection}{\numberline {4.3.1.4}KM\_COMS\_RX\_CHUNK}{28}{subsubsection.4.3.1.4}%
+\contentsline {subsubsection}{\numberline {4.3.1.5}KM\_COMS\_SOM}{28}{subsubsection.4.3.1.5}%
+\contentsline {subsection}{\numberline {4.3.2}Enumeration Type Documentation}{28}{subsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.2.1}message\_type\_t}{28}{subsubsection.4.3.2.1}%
+\contentsline {subsection}{\numberline {4.3.3}Function Documentation}{29}{subsection.4.3.3}%
+\contentsline {subsubsection}{\numberline {4.3.3.1}KM\_COMS\_Init()}{29}{subsubsection.4.3.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.3.2}KM\_COMS\_ProccessMsgs()}{30}{subsubsection.4.3.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.3.3}km\_coms\_ReceiveMsg()}{31}{subsubsection.4.3.3.3}%
+\contentsline {subsubsection}{\numberline {4.3.3.4}KM\_COMS\_SendMsg()}{32}{subsubsection.4.3.3.4}%
+\contentsline {section}{\numberline {4.4}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}coms.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h}{33}{section.4.4}%
+\contentsline {section}{\numberline {4.5}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}gamc.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c File Reference}{35}{section.4.5}%
+\contentsline {section}{\numberline {4.6}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}gamc.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c}{35}{section.4.6}%
+\contentsline {section}{\numberline {4.7}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}gamc.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h File Reference}{36}{section.4.7}%
+\contentsline {section}{\numberline {4.8}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}gamc.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h}{37}{section.4.8}%
+\contentsline {section}{\numberline {4.9}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}gpio.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c File Reference}{37}{section.4.9}%
+\contentsline {subsection}{\numberline {4.9.1}Function Documentation}{39}{subsection.4.9.1}%
+\contentsline {subsubsection}{\numberline {4.9.1.1}KM\_GPIO\_I2CInit()}{39}{subsubsection.4.9.1.1}%
+\contentsline {subsubsection}{\numberline {4.9.1.2}KM\_GPIO\_Init()}{39}{subsubsection.4.9.1.2}%
+\contentsline {subsubsection}{\numberline {4.9.1.3}KM\_GPIO\_ReadADC()}{40}{subsubsection.4.9.1.3}%
+\contentsline {subsubsection}{\numberline {4.9.1.4}KM\_GPIO\_ReadPin()}{41}{subsubsection.4.9.1.4}%
+\contentsline {subsubsection}{\numberline {4.9.1.5}KM\_GPIO\_WriteDAC()}{41}{subsubsection.4.9.1.5}%
+\contentsline {subsubsection}{\numberline {4.9.1.6}KM\_GPIO\_WritePinHigh()}{42}{subsubsection.4.9.1.6}%
+\contentsline {subsubsection}{\numberline {4.9.1.7}KM\_GPIO\_WritePinLow()}{42}{subsubsection.4.9.1.7}%
+\contentsline {subsubsection}{\numberline {4.9.1.8}KM\_GPIO\_WritePWM()}{42}{subsubsection.4.9.1.8}%
+\contentsline {subsection}{\numberline {4.9.2}Variable Documentation}{43}{subsection.4.9.2}%
+\contentsline {subsubsection}{\numberline {4.9.2.1}pin\_cmd\_acc}{43}{subsubsection.4.9.2.1}%
+\contentsline {subsubsection}{\numberline {4.9.2.2}pin\_cmd\_brake}{43}{subsubsection.4.9.2.2}%
+\contentsline {subsubsection}{\numberline {4.9.2.3}pin\_hydraulic\_1}{44}{subsubsection.4.9.2.3}%
+\contentsline {subsubsection}{\numberline {4.9.2.4}pin\_hydraulic\_2}{44}{subsubsection.4.9.2.4}%
+\contentsline {subsubsection}{\numberline {4.9.2.5}pin\_i2c\_scl}{44}{subsubsection.4.9.2.5}%
+\contentsline {subsubsection}{\numberline {4.9.2.6}pin\_i2c\_sda}{45}{subsubsection.4.9.2.6}%
+\contentsline {subsubsection}{\numberline {4.9.2.7}pin\_motor\_hall\_1}{45}{subsubsection.4.9.2.7}%
+\contentsline {subsubsection}{\numberline {4.9.2.8}pin\_motor\_hall\_2}{45}{subsubsection.4.9.2.8}%
+\contentsline {subsubsection}{\numberline {4.9.2.9}pin\_motor\_hall\_3}{46}{subsubsection.4.9.2.9}%
+\contentsline {subsubsection}{\numberline {4.9.2.10}pin\_pedal\_acc}{46}{subsubsection.4.9.2.10}%
+\contentsline {subsubsection}{\numberline {4.9.2.11}pin\_pedal\_brake}{46}{subsubsection.4.9.2.11}%
+\contentsline {subsubsection}{\numberline {4.9.2.12}pin\_pressure\_1}{47}{subsubsection.4.9.2.12}%
+\contentsline {subsubsection}{\numberline {4.9.2.13}pin\_pressure\_2}{47}{subsubsection.4.9.2.13}%
+\contentsline {subsubsection}{\numberline {4.9.2.14}pin\_pressure\_3}{47}{subsubsection.4.9.2.14}%
+\contentsline {subsubsection}{\numberline {4.9.2.15}pin\_status\_led}{48}{subsubsection.4.9.2.15}%
+\contentsline {subsubsection}{\numberline {4.9.2.16}pin\_steer\_dir}{48}{subsubsection.4.9.2.16}%
+\contentsline {subsubsection}{\numberline {4.9.2.17}pin\_steer\_pwm}{48}{subsubsection.4.9.2.17}%
+\contentsline {subsubsection}{\numberline {4.9.2.18}uart\_config}{49}{subsubsection.4.9.2.18}%
+\contentsline {section}{\numberline {4.10}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}gpio.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c}{49}{section.4.10}%
+\contentsline {section}{\numberline {4.11}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}gpio.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h File Reference}{52}{section.4.11}%
+\contentsline {subsection}{\numberline {4.11.1}Macro Definition Documentation}{54}{subsection.4.11.1}%
+\contentsline {subsubsection}{\numberline {4.11.1.1}LEDC\_HIGH\_SPEED\_MODE}{54}{subsubsection.4.11.1.1}%
+\contentsline {subsubsection}{\numberline {4.11.1.2}LEDC\_LOW\_SPEED\_MODE}{55}{subsubsection.4.11.1.2}%
+\contentsline {subsubsection}{\numberline {4.11.1.3}PIN\_CMD\_ACC}{55}{subsubsection.4.11.1.3}%
+\contentsline {subsubsection}{\numberline {4.11.1.4}PIN\_CMD\_BRAKE}{55}{subsubsection.4.11.1.4}%
+\contentsline {subsubsection}{\numberline {4.11.1.5}PIN\_HYDRAULIC\_1}{55}{subsubsection.4.11.1.5}%
+\contentsline {subsubsection}{\numberline {4.11.1.6}PIN\_HYDRAULIC\_2}{55}{subsubsection.4.11.1.6}%
+\contentsline {subsubsection}{\numberline {4.11.1.7}PIN\_I2C\_SCL}{55}{subsubsection.4.11.1.7}%
+\contentsline {subsubsection}{\numberline {4.11.1.8}PIN\_I2C\_SDA}{55}{subsubsection.4.11.1.8}%
+\contentsline {subsubsection}{\numberline {4.11.1.9}PIN\_MOTOR\_HALL\_1}{55}{subsubsection.4.11.1.9}%
+\contentsline {subsubsection}{\numberline {4.11.1.10}PIN\_MOTOR\_HALL\_2}{56}{subsubsection.4.11.1.10}%
+\contentsline {subsubsection}{\numberline {4.11.1.11}PIN\_MOTOR\_HALL\_3}{56}{subsubsection.4.11.1.11}%
+\contentsline {subsubsection}{\numberline {4.11.1.12}PIN\_ORIN\_UART\_RX}{56}{subsubsection.4.11.1.12}%
+\contentsline {subsubsection}{\numberline {4.11.1.13}PIN\_ORIN\_UART\_TX}{56}{subsubsection.4.11.1.13}%
+\contentsline {subsubsection}{\numberline {4.11.1.14}PIN\_PEDAL\_ACC}{56}{subsubsection.4.11.1.14}%
+\contentsline {subsubsection}{\numberline {4.11.1.15}PIN\_PEDAL\_BRAKE}{56}{subsubsection.4.11.1.15}%
+\contentsline {subsubsection}{\numberline {4.11.1.16}PIN\_PRESSURE\_1}{56}{subsubsection.4.11.1.16}%
+\contentsline {subsubsection}{\numberline {4.11.1.17}PIN\_PRESSURE\_2}{56}{subsubsection.4.11.1.17}%
+\contentsline {subsubsection}{\numberline {4.11.1.18}PIN\_PRESSURE\_3}{57}{subsubsection.4.11.1.18}%
+\contentsline {subsubsection}{\numberline {4.11.1.19}PIN\_STATUS\_LED}{57}{subsubsection.4.11.1.19}%
+\contentsline {subsubsection}{\numberline {4.11.1.20}PIN\_STEER\_DIR}{57}{subsubsection.4.11.1.20}%
+\contentsline {subsubsection}{\numberline {4.11.1.21}PIN\_STEER\_PWM}{57}{subsubsection.4.11.1.21}%
+\contentsline {subsubsection}{\numberline {4.11.1.22}PIN\_USB\_UART\_RX}{57}{subsubsection.4.11.1.22}%
+\contentsline {subsubsection}{\numberline {4.11.1.23}PIN\_USB\_UART\_TX}{57}{subsubsection.4.11.1.23}%
+\contentsline {subsection}{\numberline {4.11.2}Function Documentation}{58}{subsection.4.11.2}%
+\contentsline {subsubsection}{\numberline {4.11.2.1}KM\_GPIO\_I2CInit()}{58}{subsubsection.4.11.2.1}%
+\contentsline {subsubsection}{\numberline {4.11.2.2}KM\_GPIO\_Init()}{58}{subsubsection.4.11.2.2}%
+\contentsline {subsubsection}{\numberline {4.11.2.3}KM\_GPIO\_ReadADC()}{59}{subsubsection.4.11.2.3}%
+\contentsline {subsubsection}{\numberline {4.11.2.4}KM\_GPIO\_ReadPin()}{60}{subsubsection.4.11.2.4}%
+\contentsline {subsubsection}{\numberline {4.11.2.5}KM\_GPIO\_WriteDAC()}{60}{subsubsection.4.11.2.5}%
+\contentsline {subsubsection}{\numberline {4.11.2.6}KM\_GPIO\_WritePinHigh()}{61}{subsubsection.4.11.2.6}%
+\contentsline {subsubsection}{\numberline {4.11.2.7}KM\_GPIO\_WritePinLow()}{61}{subsubsection.4.11.2.7}%
+\contentsline {subsubsection}{\numberline {4.11.2.8}KM\_GPIO\_WritePWM()}{61}{subsubsection.4.11.2.8}%
+\contentsline {subsection}{\numberline {4.11.3}Variable Documentation}{62}{subsection.4.11.3}%
+\contentsline {subsubsection}{\numberline {4.11.3.1}pin\_cmd\_acc}{62}{subsubsection.4.11.3.1}%
+\contentsline {subsubsection}{\numberline {4.11.3.2}pin\_cmd\_brake}{62}{subsubsection.4.11.3.2}%
+\contentsline {subsubsection}{\numberline {4.11.3.3}pin\_hydraulic\_1}{62}{subsubsection.4.11.3.3}%
+\contentsline {subsubsection}{\numberline {4.11.3.4}pin\_hydraulic\_2}{63}{subsubsection.4.11.3.4}%
+\contentsline {subsubsection}{\numberline {4.11.3.5}pin\_i2c\_scl}{63}{subsubsection.4.11.3.5}%
+\contentsline {subsubsection}{\numberline {4.11.3.6}pin\_i2c\_sda}{63}{subsubsection.4.11.3.6}%
+\contentsline {subsubsection}{\numberline {4.11.3.7}pin\_motor\_hall\_1}{63}{subsubsection.4.11.3.7}%
+\contentsline {subsubsection}{\numberline {4.11.3.8}pin\_motor\_hall\_2}{63}{subsubsection.4.11.3.8}%
+\contentsline {subsubsection}{\numberline {4.11.3.9}pin\_motor\_hall\_3}{64}{subsubsection.4.11.3.9}%
+\contentsline {subsubsection}{\numberline {4.11.3.10}pin\_pedal\_acc}{64}{subsubsection.4.11.3.10}%
+\contentsline {subsubsection}{\numberline {4.11.3.11}pin\_pedal\_brake}{64}{subsubsection.4.11.3.11}%
+\contentsline {subsubsection}{\numberline {4.11.3.12}pin\_pressure\_1}{64}{subsubsection.4.11.3.12}%
+\contentsline {subsubsection}{\numberline {4.11.3.13}pin\_pressure\_2}{64}{subsubsection.4.11.3.13}%
+\contentsline {subsubsection}{\numberline {4.11.3.14}pin\_pressure\_3}{65}{subsubsection.4.11.3.14}%
+\contentsline {subsubsection}{\numberline {4.11.3.15}pin\_status\_led}{65}{subsubsection.4.11.3.15}%
+\contentsline {subsubsection}{\numberline {4.11.3.16}pin\_steer\_dir}{65}{subsubsection.4.11.3.16}%
+\contentsline {subsubsection}{\numberline {4.11.3.17}pin\_steer\_pwm}{65}{subsubsection.4.11.3.17}%
+\contentsline {subsubsection}{\numberline {4.11.3.18}uart\_config}{65}{subsubsection.4.11.3.18}%
+\contentsline {section}{\numberline {4.12}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}gpio.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h}{66}{section.4.12}%
+\contentsline {section}{\numberline {4.13}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}objects.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c File Reference}{67}{section.4.13}%
+\contentsline {subsection}{\numberline {4.13.1}Function Documentation}{68}{subsection.4.13.1}%
+\contentsline {subsubsection}{\numberline {4.13.1.1}KM\_OBJ\_GetObjectValue()}{68}{subsubsection.4.13.1.1}%
+\contentsline {subsubsection}{\numberline {4.13.1.2}KM\_OBJ\_SetObjectValue()}{69}{subsubsection.4.13.1.2}%
+\contentsline {subsection}{\numberline {4.13.2}Variable Documentation}{69}{subsection.4.13.2}%
+\contentsline {subsubsection}{\numberline {4.13.2.1}km\_objects\_values}{69}{subsubsection.4.13.2.1}%
+\contentsline {section}{\numberline {4.14}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}objects.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c}{69}{section.4.14}%
+\contentsline {section}{\numberline {4.15}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}objects.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h File Reference}{70}{section.4.15}%
+\contentsline {subsection}{\numberline {4.15.1}Macro Definition Documentation}{71}{subsection.4.15.1}%
+\contentsline {subsubsection}{\numberline {4.15.1.1}OBJECT\_VALUE\_ERROR}{71}{subsubsection.4.15.1.1}%
+\contentsline {subsection}{\numberline {4.15.2}Enumeration Type Documentation}{71}{subsection.4.15.2}%
+\contentsline {subsubsection}{\numberline {4.15.2.1}km\_objects\_t}{71}{subsubsection.4.15.2.1}%
+\contentsline {subsection}{\numberline {4.15.3}Function Documentation}{72}{subsection.4.15.3}%
+\contentsline {subsubsection}{\numberline {4.15.3.1}KM\_OBJ\_GetObjectValue()}{72}{subsubsection.4.15.3.1}%
+\contentsline {subsubsection}{\numberline {4.15.3.2}KM\_OBJ\_SetObjectValue()}{72}{subsubsection.4.15.3.2}%
+\contentsline {section}{\numberline {4.16}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}objects.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h}{73}{section.4.16}%
+\contentsline {section}{\numberline {4.17}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}pid.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c File Reference}{74}{section.4.17}%
+\contentsline {subsection}{\numberline {4.17.1}Function Documentation}{74}{subsection.4.17.1}%
+\contentsline {subsubsection}{\numberline {4.17.1.1}KM\_PID\_Calculate()}{74}{subsubsection.4.17.1.1}%
+\contentsline {subsubsection}{\numberline {4.17.1.2}KM\_PID\_GetIntegral()}{75}{subsubsection.4.17.1.2}%
+\contentsline {subsubsection}{\numberline {4.17.1.3}KM\_PID\_GetTunings()}{75}{subsubsection.4.17.1.3}%
+\contentsline {subsubsection}{\numberline {4.17.1.4}KM\_PID\_Init()}{75}{subsubsection.4.17.1.4}%
+\contentsline {subsubsection}{\numberline {4.17.1.5}KM\_PID\_Reset()}{76}{subsubsection.4.17.1.5}%
+\contentsline {subsubsection}{\numberline {4.17.1.6}KM\_PID\_SetIntegralLimits()}{76}{subsubsection.4.17.1.6}%
+\contentsline {subsubsection}{\numberline {4.17.1.7}KM\_PID\_SetOutputLimits()}{76}{subsubsection.4.17.1.7}%
+\contentsline {subsubsection}{\numberline {4.17.1.8}KM\_PID\_SetTunings()}{76}{subsubsection.4.17.1.8}%
+\contentsline {section}{\numberline {4.18}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}pid.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c}{77}{section.4.18}%
+\contentsline {section}{\numberline {4.19}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}pid.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h File Reference}{78}{section.4.19}%
+\contentsline {subsection}{\numberline {4.19.1}Function Documentation}{79}{subsection.4.19.1}%
+\contentsline {subsubsection}{\numberline {4.19.1.1}KM\_PID\_Calculate()}{79}{subsubsection.4.19.1.1}%
+\contentsline {subsubsection}{\numberline {4.19.1.2}KM\_PID\_GetIntegral()}{80}{subsubsection.4.19.1.2}%
+\contentsline {subsubsection}{\numberline {4.19.1.3}KM\_PID\_GetTunings()}{80}{subsubsection.4.19.1.3}%
+\contentsline {subsubsection}{\numberline {4.19.1.4}KM\_PID\_Init()}{80}{subsubsection.4.19.1.4}%
+\contentsline {subsubsection}{\numberline {4.19.1.5}KM\_PID\_Reset()}{81}{subsubsection.4.19.1.5}%
+\contentsline {subsubsection}{\numberline {4.19.1.6}KM\_PID\_SetIntegralLimits()}{81}{subsubsection.4.19.1.6}%
+\contentsline {subsubsection}{\numberline {4.19.1.7}KM\_PID\_SetOutputLimits()}{81}{subsubsection.4.19.1.7}%
+\contentsline {subsubsection}{\numberline {4.19.1.8}KM\_PID\_SetTunings()}{81}{subsubsection.4.19.1.8}%
+\contentsline {section}{\numberline {4.20}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}pid.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h}{82}{section.4.20}%
+\contentsline {section}{\numberline {4.21}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}rtos.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c File Reference}{82}{section.4.21}%
+\contentsline {subsection}{\numberline {4.21.1}Detailed Description}{84}{subsection.4.21.1}%
+\contentsline {subsection}{\numberline {4.21.2}Macro Definition Documentation}{84}{subsection.4.21.2}%
+\contentsline {subsubsection}{\numberline {4.21.2.1}RTOS\_DEFAULT\_PERIOD\_MS}{84}{subsubsection.4.21.2.1}%
+\contentsline {subsubsection}{\numberline {4.21.2.2}RTOS\_DEFAULT\_PRIORITY}{84}{subsubsection.4.21.2.2}%
+\contentsline {subsubsection}{\numberline {4.21.2.3}RTOS\_DEFAULT\_STACK\_SIZE}{84}{subsubsection.4.21.2.3}%
+\contentsline {subsection}{\numberline {4.21.3}Function Documentation}{85}{subsection.4.21.3}%
+\contentsline {subsubsection}{\numberline {4.21.3.1}KM\_COMS\_CreateTask()}{85}{subsubsection.4.21.3.1}%
+\contentsline {subsubsection}{\numberline {4.21.3.2}KM\_RTOS\_AddTask()}{85}{subsubsection.4.21.3.2}%
+\contentsline {subsubsection}{\numberline {4.21.3.3}KM\_RTOS\_ChangePriority()}{87}{subsubsection.4.21.3.3}%
+\contentsline {subsubsection}{\numberline {4.21.3.4}KM\_RTOS\_DeleteTask()}{88}{subsubsection.4.21.3.4}%
+\contentsline {subsubsection}{\numberline {4.21.3.5}KM\_RTOS\_Destroy()}{88}{subsubsection.4.21.3.5}%
+\contentsline {subsubsection}{\numberline {4.21.3.6}KM\_RTOS\_FindTask()}{89}{subsubsection.4.21.3.6}%
+\contentsline {subsubsection}{\numberline {4.21.3.7}KM\_RTOS\_Init()}{89}{subsubsection.4.21.3.7}%
+\contentsline {subsubsection}{\numberline {4.21.3.8}KM\_RTOS\_RestartTask()}{90}{subsubsection.4.21.3.8}%
+\contentsline {subsubsection}{\numberline {4.21.3.9}KM\_RTOS\_ResumeTask()}{91}{subsubsection.4.21.3.9}%
+\contentsline {subsubsection}{\numberline {4.21.3.10}KM\_RTOS\_SuspendTask()}{91}{subsubsection.4.21.3.10}%
+\contentsline {subsubsection}{\numberline {4.21.3.11}KM\_RTOS\_TaskWrapper()}{92}{subsubsection.4.21.3.11}%
+\contentsline {subsection}{\numberline {4.21.4}Variable Documentation}{93}{subsection.4.21.4}%
+\contentsline {subsubsection}{\numberline {4.21.4.1}tasks}{93}{subsubsection.4.21.4.1}%
+\contentsline {section}{\numberline {4.22}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}rtos.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c}{93}{section.4.22}%
+\contentsline {section}{\numberline {4.23}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}rtos.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h File Reference}{95}{section.4.23}%
+\contentsline {subsection}{\numberline {4.23.1}Macro Definition Documentation}{97}{subsection.4.23.1}%
+\contentsline {subsubsection}{\numberline {4.23.1.1}RTOS\_MAX\_TASKS}{97}{subsubsection.4.23.1.1}%
+\contentsline {subsection}{\numberline {4.23.2}Typedef Documentation}{97}{subsection.4.23.2}%
+\contentsline {subsubsection}{\numberline {4.23.2.1}KM\_RTOS\_TaskFunction\_t}{97}{subsubsection.4.23.2.1}%
+\contentsline {subsection}{\numberline {4.23.3}Function Documentation}{98}{subsection.4.23.3}%
+\contentsline {subsubsection}{\numberline {4.23.3.1}KM\_COMS\_CreateTask()}{98}{subsubsection.4.23.3.1}%
+\contentsline {subsubsection}{\numberline {4.23.3.2}KM\_RTOS\_AddTask()}{98}{subsubsection.4.23.3.2}%
+\contentsline {subsubsection}{\numberline {4.23.3.3}KM\_RTOS\_ChangePriority()}{100}{subsubsection.4.23.3.3}%
+\contentsline {subsubsection}{\numberline {4.23.3.4}KM\_RTOS\_DeleteTask()}{101}{subsubsection.4.23.3.4}%
+\contentsline {subsubsection}{\numberline {4.23.3.5}KM\_RTOS\_Destroy()}{101}{subsubsection.4.23.3.5}%
+\contentsline {subsubsection}{\numberline {4.23.3.6}KM\_RTOS\_Init()}{102}{subsubsection.4.23.3.6}%
+\contentsline {subsubsection}{\numberline {4.23.3.7}KM\_RTOS\_RestartTask()}{102}{subsubsection.4.23.3.7}%
+\contentsline {subsubsection}{\numberline {4.23.3.8}KM\_RTOS\_ResumeTask()}{103}{subsubsection.4.23.3.8}%
+\contentsline {subsubsection}{\numberline {4.23.3.9}KM\_RTOS\_SuspendTask()}{104}{subsubsection.4.23.3.9}%
+\contentsline {section}{\numberline {4.24}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}rtos.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h}{104}{section.4.24}%
+\contentsline {section}{\numberline {4.25}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}sdir.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c File Reference}{106}{section.4.25}%
+\contentsline {subsection}{\numberline {4.25.1}Macro Definition Documentation}{106}{subsection.4.25.1}%
+\contentsline {subsubsection}{\numberline {4.25.1.1}I2C\_MASTER\_TIMEOUT\_MS}{106}{subsubsection.4.25.1.1}%
+\contentsline {subsubsection}{\numberline {4.25.1.2}TAG}{107}{subsubsection.4.25.1.2}%
+\contentsline {subsection}{\numberline {4.25.2}Function Documentation}{107}{subsection.4.25.2}%
+\contentsline {subsubsection}{\numberline {4.25.2.1}KM\_SDIR\_Begin()}{107}{subsubsection.4.25.2.1}%
+\contentsline {subsubsection}{\numberline {4.25.2.2}KM\_SDIR\_Init()}{107}{subsubsection.4.25.2.2}%
+\contentsline {subsubsection}{\numberline {4.25.2.3}KM\_SDIR\_isConnected()}{108}{subsubsection.4.25.2.3}%
+\contentsline {subsubsection}{\numberline {4.25.2.4}KM\_SDIR\_ReadAngle()}{108}{subsubsection.4.25.2.4}%
+\contentsline {subsubsection}{\numberline {4.25.2.5}KM\_SDIR\_ReadAngleDegrees()}{108}{subsubsection.4.25.2.5}%
+\contentsline {subsubsection}{\numberline {4.25.2.6}KM\_SDIR\_ReadAngleRadians()}{108}{subsubsection.4.25.2.6}%
+\contentsline {subsubsection}{\numberline {4.25.2.7}KM\_SDIR\_ReadRaw()}{108}{subsubsection.4.25.2.7}%
+\contentsline {subsubsection}{\numberline {4.25.2.8}KM\_SDIR\_ReadRegisters()}{109}{subsubsection.4.25.2.8}%
+\contentsline {subsubsection}{\numberline {4.25.2.9}KM\_SDIR\_ResetI2C()}{109}{subsubsection.4.25.2.9}%
+\contentsline {subsubsection}{\numberline {4.25.2.10}KM\_SDIR\_setCenterOffset()}{110}{subsubsection.4.25.2.10}%
+\contentsline {section}{\numberline {4.26}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}sdir.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c}{110}{section.4.26}%
+\contentsline {section}{\numberline {4.27}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}sdir.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h File Reference}{112}{section.4.27}%
+\contentsline {subsection}{\numberline {4.27.1}Macro Definition Documentation}{113}{subsection.4.27.1}%
+\contentsline {subsubsection}{\numberline {4.27.1.1}PI}{113}{subsubsection.4.27.1.1}%
+\contentsline {subsection}{\numberline {4.27.2}Enumeration Type Documentation}{113}{subsection.4.27.2}%
+\contentsline {subsubsection}{\numberline {4.27.2.1}conection\_constans}{113}{subsubsection.4.27.2.1}%
+\contentsline {subsubsection}{\numberline {4.27.2.2}sensor\_constans}{114}{subsubsection.4.27.2.2}%
+\contentsline {subsection}{\numberline {4.27.3}Function Documentation}{114}{subsection.4.27.3}%
+\contentsline {subsubsection}{\numberline {4.27.3.1}KM\_SDIR\_Begin()}{114}{subsubsection.4.27.3.1}%
+\contentsline {subsubsection}{\numberline {4.27.3.2}KM\_SDIR\_Init()}{115}{subsubsection.4.27.3.2}%
+\contentsline {subsubsection}{\numberline {4.27.3.3}KM\_SDIR\_isConnected()}{115}{subsubsection.4.27.3.3}%
+\contentsline {subsubsection}{\numberline {4.27.3.4}KM\_SDIR\_ReadAngleDegrees()}{115}{subsubsection.4.27.3.4}%
+\contentsline {subsubsection}{\numberline {4.27.3.5}KM\_SDIR\_ReadAngleRadians()}{115}{subsubsection.4.27.3.5}%
+\contentsline {subsubsection}{\numberline {4.27.3.6}KM\_SDIR\_ReadRaw()}{116}{subsubsection.4.27.3.6}%
+\contentsline {subsubsection}{\numberline {4.27.3.7}KM\_SDIR\_ResetI2C()}{116}{subsubsection.4.27.3.7}%
+\contentsline {subsubsection}{\numberline {4.27.3.8}KM\_SDIR\_setCenterOffset()}{116}{subsubsection.4.27.3.8}%
+\contentsline {subsection}{\numberline {4.27.4}Variable Documentation}{117}{subsection.4.27.4}%
+\contentsline {subsubsection}{\numberline {4.27.4.1}MAX\_RAD}{117}{subsubsection.4.27.4.1}%
+\contentsline {section}{\numberline {4.28}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}sdir.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h}{117}{section.4.28}%
+\contentsline {section}{\numberline {4.29}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}sta.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c File Reference}{118}{section.4.29}%
+\contentsline {section}{\numberline {4.30}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}sta.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c}{118}{section.4.30}%
+\contentsline {section}{\numberline {4.31}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}sta.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h File Reference}{119}{section.4.31}%
+\contentsline {section}{\numberline {4.32}km\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}sta.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}h}{119}{section.4.32}%
+\contentsline {section}{\numberline {4.33}main.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c File Reference}{120}{section.4.33}%
+\contentsline {subsection}{\numberline {4.33.1}Macro Definition Documentation}{121}{subsection.4.33.1}%
+\contentsline {subsubsection}{\numberline {4.33.1.1}MAX\_ERROR\_COUNT\_SDIR}{121}{subsubsection.4.33.1.1}%
+\contentsline {subsection}{\numberline {4.33.2}Function Documentation}{121}{subsection.4.33.2}%
+\contentsline {subsubsection}{\numberline {4.33.2.1}app\_main()}{121}{subsubsection.4.33.2.1}%
+\contentsline {subsubsection}{\numberline {4.33.2.2}system\_init()}{122}{subsubsection.4.33.2.2}%
+\contentsline {subsection}{\numberline {4.33.3}Variable Documentation}{122}{subsection.4.33.3}%
+\contentsline {subsubsection}{\numberline {4.33.3.1}TAG}{122}{subsubsection.4.33.3.1}%
+\contentsline {section}{\numberline {4.34}main.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}c}{122}{section.4.34}%
+\contentsline {chapter}{Index}{125}{section*.67}%

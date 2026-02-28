@@ -1,0 +1,726 @@
+\begin{theindex}
+
+  \item {active}
+    \subitem {RTOS\_Task}, \hyperpage{9}
+  \item {ACTUAL\_ACCERELATION}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {ACTUAL\_BRAKING}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {ACTUAL\_SHUTDOWN}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {ACTUAL\_SPEED}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {ACTUAL\_STEERING}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {app\_main}
+    \subitem {main.c}, \hyperpage{121}
+  \item {AS5600\_ADDR}
+    \subitem {km\_sdir.h}, \hyperpage{114}
+  \item {AS5600\_ANGLE\_LSB}
+    \subitem {km\_sdir.h}, \hyperpage{114}
+  \item {AS5600\_ANGLE\_MSB}
+    \subitem {km\_sdir.h}, \hyperpage{114}
+
+  \indexspace
+
+  \item {BUF\_SIZE\_RX}
+    \subitem {km\_coms.h}, \hyperpage{27}
+  \item {BUF\_SIZE\_TX}
+    \subitem {km\_coms.h}, \hyperpage{27}
+
+  \indexspace
+
+  \item {centerOffset}
+    \subitem {sensor\_struct}, \hyperpage{11}
+  \item {conection\_constans}
+    \subitem {km\_sdir.h}, \hyperpage{113}
+  \item {connected}
+    \subitem {sensor\_struct}, \hyperpage{11}
+  \item {context}
+    \subitem {RTOS\_Task}, \hyperpage{9}
+  \item {crc}
+    \subitem {km\_coms\_msg}, \hyperpage{6}
+
+  \indexspace
+
+  \item {errorCount}
+    \subitem {sensor\_struct}, \hyperpage{11}
+  \item {ESP\_ACT\_BRAKING}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ESP\_ACT\_SHUTDOWN}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ESP\_ACT\_SPEED}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ESP\_ACT\_STEERING}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ESP\_ACT\_THROTTLE}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ESP\_COMPLETE}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ESP\_HEARTBEAT}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ESP\_MACHINE\_STATE}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ESP\_MISION}
+    \subitem {km\_coms.h}, \hyperpage{28}
+
+  \indexspace
+
+  \item {handle}
+    \subitem {RTOS\_Task}, \hyperpage{9}
+
+  \indexspace
+
+  \item {I2C\_MASTER\_TIMEOUT\_MS}
+    \subitem {km\_sdir.c}, \hyperpage{106}
+  \item {integral}
+    \subitem {PID\_Controller}, \hyperpage{7}
+  \item {integralMax}
+    \subitem {PID\_Controller}, \hyperpage{7}
+  \item {integralMin}
+    \subitem {PID\_Controller}, \hyperpage{7}
+
+  \indexspace
+
+  \item {kd}
+    \subitem {PID\_Controller}, \hyperpage{7}
+  \item {ki}
+    \subitem {PID\_Controller}, \hyperpage{7}
+  \item {km\_coms.c}, \hyperpage{13}, \hyperpage{22}
+    \subitem {KM\_COMS\_crc8}, \hyperpage{14}
+    \subitem {KM\_COMS\_Init}, \hyperpage{15}
+    \subitem {km\_coms\_mutex}, \hyperpage{21}
+    \subitem {KM\_COMS\_ProccessMsgs}, \hyperpage{16}
+    \subitem {KM\_COMS\_ProccessPayload}, \hyperpage{17}
+    \subitem {km\_coms\_ReceiveMsg}, \hyperpage{19}
+    \subitem {KM\_COMS\_SendMsg}, \hyperpage{20}
+    \subitem {km\_coms\_uart}, \hyperpage{21}
+    \subitem {KM\_COMS\_WAIT\_SEM\_AVAILABLE}, \hyperpage{14}
+    \subitem {rx\_buffer}, \hyperpage{21}
+    \subitem {rx\_buffer\_len}, \hyperpage{22}
+  \item {km\_coms.h}, \hyperpage{26}, \hyperpage{33}
+    \subitem {BUF\_SIZE\_RX}, \hyperpage{27}
+    \subitem {BUF\_SIZE\_TX}, \hyperpage{27}
+    \subitem {ESP\_ACT\_BRAKING}, \hyperpage{28}
+    \subitem {ESP\_ACT\_SHUTDOWN}, \hyperpage{28}
+    \subitem {ESP\_ACT\_SPEED}, \hyperpage{28}
+    \subitem {ESP\_ACT\_STEERING}, \hyperpage{28}
+    \subitem {ESP\_ACT\_THROTTLE}, \hyperpage{28}
+    \subitem {ESP\_COMPLETE}, \hyperpage{28}
+    \subitem {ESP\_HEARTBEAT}, \hyperpage{28}
+    \subitem {ESP\_MACHINE\_STATE}, \hyperpage{28}
+    \subitem {ESP\_MISION}, \hyperpage{28}
+    \subitem {KM\_COMS\_Init}, \hyperpage{29}
+    \subitem {KM\_COMS\_MSG\_MAX\_LEN}, \hyperpage{27}
+    \subitem {KM\_COMS\_ProccessMsgs}, \hyperpage{30}
+    \subitem {km\_coms\_ReceiveMsg}, \hyperpage{31}
+    \subitem {KM\_COMS\_RX\_CHUNK}, \hyperpage{28}
+    \subitem {KM\_COMS\_SendMsg}, \hyperpage{32}
+    \subitem {KM\_COMS\_SOM}, \hyperpage{28}
+    \subitem {message\_type\_t}, \hyperpage{28}
+    \subitem {ORIN\_COMPLETE}, \hyperpage{28}
+    \subitem {ORIN\_HEARTBEAT}, \hyperpage{28}
+    \subitem {ORIN\_MACHINE\_STATE}, \hyperpage{28}
+    \subitem {ORIN\_MISION}, \hyperpage{28}
+    \subitem {ORIN\_SHUTDOWN}, \hyperpage{28}
+    \subitem {ORIN\_TARG\_BRAKING}, \hyperpage{28}
+    \subitem {ORIN\_TARG\_STEERING}, \hyperpage{28}
+    \subitem {ORIN\_TARG\_THROTTLE}, \hyperpage{28}
+  \item {KM\_COMS\_crc8}
+    \subitem {km\_coms.c}, \hyperpage{14}
+  \item {KM\_COMS\_CreateTask}
+    \subitem {km\_rtos.c}, \hyperpage{85}
+    \subitem {km\_rtos.h}, \hyperpage{98}
+  \item {KM\_COMS\_Init}
+    \subitem {km\_coms.c}, \hyperpage{15}
+    \subitem {km\_coms.h}, \hyperpage{29}
+  \item {km\_coms\_msg}, \hyperpage{5}
+    \subitem {crc}, \hyperpage{6}
+    \subitem {len}, \hyperpage{6}
+    \subitem {payload}, \hyperpage{6}
+    \subitem {type}, \hyperpage{6}
+  \item {KM\_COMS\_MSG\_MAX\_LEN}
+    \subitem {km\_coms.h}, \hyperpage{27}
+  \item {km\_coms\_mutex}
+    \subitem {km\_coms.c}, \hyperpage{21}
+  \item {KM\_COMS\_ProccessMsgs}
+    \subitem {km\_coms.c}, \hyperpage{16}
+    \subitem {km\_coms.h}, \hyperpage{30}
+  \item {KM\_COMS\_ProccessPayload}
+    \subitem {km\_coms.c}, \hyperpage{17}
+  \item {km\_coms\_ReceiveMsg}
+    \subitem {km\_coms.c}, \hyperpage{19}
+    \subitem {km\_coms.h}, \hyperpage{31}
+  \item {KM\_COMS\_RX\_CHUNK}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {KM\_COMS\_SendMsg}
+    \subitem {km\_coms.c}, \hyperpage{20}
+    \subitem {km\_coms.h}, \hyperpage{32}
+  \item {KM\_COMS\_SOM}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {km\_coms\_uart}
+    \subitem {km\_coms.c}, \hyperpage{21}
+  \item {KM\_COMS\_WAIT\_SEM\_AVAILABLE}
+    \subitem {km\_coms.c}, \hyperpage{14}
+  \item {km\_gamc.c}, \hyperpage{35}
+  \item {km\_gamc.h}, \hyperpage{36, 37}
+  \item {km\_gpio.c}, \hyperpage{37}, \hyperpage{49}
+    \subitem {KM\_GPIO\_I2CInit}, \hyperpage{39}
+    \subitem {KM\_GPIO\_Init}, \hyperpage{39}
+    \subitem {KM\_GPIO\_ReadADC}, \hyperpage{40}
+    \subitem {KM\_GPIO\_ReadPin}, \hyperpage{41}
+    \subitem {KM\_GPIO\_WriteDAC}, \hyperpage{41}
+    \subitem {KM\_GPIO\_WritePinHigh}, \hyperpage{41}
+    \subitem {KM\_GPIO\_WritePinLow}, \hyperpage{42}
+    \subitem {KM\_GPIO\_WritePWM}, \hyperpage{42}
+    \subitem {pin\_cmd\_acc}, \hyperpage{43}
+    \subitem {pin\_cmd\_brake}, \hyperpage{43}
+    \subitem {pin\_hydraulic\_1}, \hyperpage{43}
+    \subitem {pin\_hydraulic\_2}, \hyperpage{44}
+    \subitem {pin\_i2c\_scl}, \hyperpage{44}
+    \subitem {pin\_i2c\_sda}, \hyperpage{44}
+    \subitem {pin\_motor\_hall\_1}, \hyperpage{45}
+    \subitem {pin\_motor\_hall\_2}, \hyperpage{45}
+    \subitem {pin\_motor\_hall\_3}, \hyperpage{45}
+    \subitem {pin\_pedal\_acc}, \hyperpage{46}
+    \subitem {pin\_pedal\_brake}, \hyperpage{46}
+    \subitem {pin\_pressure\_1}, \hyperpage{46}
+    \subitem {pin\_pressure\_2}, \hyperpage{47}
+    \subitem {pin\_pressure\_3}, \hyperpage{47}
+    \subitem {pin\_status\_led}, \hyperpage{47}
+    \subitem {pin\_steer\_dir}, \hyperpage{48}
+    \subitem {pin\_steer\_pwm}, \hyperpage{48}
+    \subitem {uart\_config}, \hyperpage{48}
+  \item {km\_gpio.h}, \hyperpage{52}, \hyperpage{66}
+    \subitem {KM\_GPIO\_I2CInit}, \hyperpage{58}
+    \subitem {KM\_GPIO\_Init}, \hyperpage{58}
+    \subitem {KM\_GPIO\_ReadADC}, \hyperpage{59}
+    \subitem {KM\_GPIO\_ReadPin}, \hyperpage{60}
+    \subitem {KM\_GPIO\_WriteDAC}, \hyperpage{60}
+    \subitem {KM\_GPIO\_WritePinHigh}, \hyperpage{60}
+    \subitem {KM\_GPIO\_WritePinLow}, \hyperpage{61}
+    \subitem {KM\_GPIO\_WritePWM}, \hyperpage{61}
+    \subitem {LEDC\_HIGH\_SPEED\_MODE}, \hyperpage{54}
+    \subitem {LEDC\_LOW\_SPEED\_MODE}, \hyperpage{54}
+    \subitem {PIN\_CMD\_ACC}, \hyperpage{55}
+    \subitem {pin\_cmd\_acc}, \hyperpage{62}
+    \subitem {PIN\_CMD\_BRAKE}, \hyperpage{55}
+    \subitem {pin\_cmd\_brake}, \hyperpage{62}
+    \subitem {PIN\_HYDRAULIC\_1}, \hyperpage{55}
+    \subitem {pin\_hydraulic\_1}, \hyperpage{62}
+    \subitem {PIN\_HYDRAULIC\_2}, \hyperpage{55}
+    \subitem {pin\_hydraulic\_2}, \hyperpage{62}
+    \subitem {PIN\_I2C\_SCL}, \hyperpage{55}
+    \subitem {pin\_i2c\_scl}, \hyperpage{63}
+    \subitem {PIN\_I2C\_SDA}, \hyperpage{55}
+    \subitem {pin\_i2c\_sda}, \hyperpage{63}
+    \subitem {PIN\_MOTOR\_HALL\_1}, \hyperpage{55}
+    \subitem {pin\_motor\_hall\_1}, \hyperpage{63}
+    \subitem {PIN\_MOTOR\_HALL\_2}, \hyperpage{55}
+    \subitem {pin\_motor\_hall\_2}, \hyperpage{63}
+    \subitem {PIN\_MOTOR\_HALL\_3}, \hyperpage{56}
+    \subitem {pin\_motor\_hall\_3}, \hyperpage{63}
+    \subitem {PIN\_ORIN\_UART\_RX}, \hyperpage{56}
+    \subitem {PIN\_ORIN\_UART\_TX}, \hyperpage{56}
+    \subitem {PIN\_PEDAL\_ACC}, \hyperpage{56}
+    \subitem {pin\_pedal\_acc}, \hyperpage{64}
+    \subitem {PIN\_PEDAL\_BRAKE}, \hyperpage{56}
+    \subitem {pin\_pedal\_brake}, \hyperpage{64}
+    \subitem {PIN\_PRESSURE\_1}, \hyperpage{56}
+    \subitem {pin\_pressure\_1}, \hyperpage{64}
+    \subitem {PIN\_PRESSURE\_2}, \hyperpage{56}
+    \subitem {pin\_pressure\_2}, \hyperpage{64}
+    \subitem {PIN\_PRESSURE\_3}, \hyperpage{56}
+    \subitem {pin\_pressure\_3}, \hyperpage{64}
+    \subitem {PIN\_STATUS\_LED}, \hyperpage{57}
+    \subitem {pin\_status\_led}, \hyperpage{65}
+    \subitem {PIN\_STEER\_DIR}, \hyperpage{57}
+    \subitem {pin\_steer\_dir}, \hyperpage{65}
+    \subitem {PIN\_STEER\_PWM}, \hyperpage{57}
+    \subitem {pin\_steer\_pwm}, \hyperpage{65}
+    \subitem {PIN\_USB\_UART\_RX}, \hyperpage{57}
+    \subitem {PIN\_USB\_UART\_TX}, \hyperpage{57}
+    \subitem {uart\_config}, \hyperpage{65}
+  \item {KM\_GPIO\_I2CInit}
+    \subitem {km\_gpio.c}, \hyperpage{39}
+    \subitem {km\_gpio.h}, \hyperpage{58}
+  \item {KM\_GPIO\_Init}
+    \subitem {km\_gpio.c}, \hyperpage{39}
+    \subitem {km\_gpio.h}, \hyperpage{58}
+  \item {KM\_GPIO\_ReadADC}
+    \subitem {km\_gpio.c}, \hyperpage{40}
+    \subitem {km\_gpio.h}, \hyperpage{59}
+  \item {KM\_GPIO\_ReadPin}
+    \subitem {km\_gpio.c}, \hyperpage{41}
+    \subitem {km\_gpio.h}, \hyperpage{60}
+  \item {KM\_GPIO\_WriteDAC}
+    \subitem {km\_gpio.c}, \hyperpage{41}
+    \subitem {km\_gpio.h}, \hyperpage{60}
+  \item {KM\_GPIO\_WritePinHigh}
+    \subitem {km\_gpio.c}, \hyperpage{41}
+    \subitem {km\_gpio.h}, \hyperpage{60}
+  \item {KM\_GPIO\_WritePinLow}
+    \subitem {km\_gpio.c}, \hyperpage{42}
+    \subitem {km\_gpio.h}, \hyperpage{61}
+  \item {KM\_GPIO\_WritePWM}
+    \subitem {km\_gpio.c}, \hyperpage{42}
+    \subitem {km\_gpio.h}, \hyperpage{61}
+  \item {KM\_OBJ\_GetObjectValue}
+    \subitem {km\_objects.c}, \hyperpage{68}
+    \subitem {km\_objects.h}, \hyperpage{72}
+  \item {KM\_OBJ\_LAST}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {KM\_OBJ\_SetObjectValue}
+    \subitem {km\_objects.c}, \hyperpage{69}
+    \subitem {km\_objects.h}, \hyperpage{72}
+  \item {km\_objects.c}, \hyperpage{67}, \hyperpage{69}
+    \subitem {KM\_OBJ\_GetObjectValue}, \hyperpage{68}
+    \subitem {KM\_OBJ\_SetObjectValue}, \hyperpage{69}
+    \subitem {km\_objects\_values}, \hyperpage{69}
+  \item {km\_objects.h}, \hyperpage{70}, \hyperpage{73}
+    \subitem {ACTUAL\_ACCERELATION}, \hyperpage{71}
+    \subitem {ACTUAL\_BRAKING}, \hyperpage{71}
+    \subitem {ACTUAL\_SHUTDOWN}, \hyperpage{71}
+    \subitem {ACTUAL\_SPEED}, \hyperpage{71}
+    \subitem {ACTUAL\_STEERING}, \hyperpage{71}
+    \subitem {KM\_OBJ\_GetObjectValue}, \hyperpage{72}
+    \subitem {KM\_OBJ\_LAST}, \hyperpage{71}
+    \subitem {KM\_OBJ\_SetObjectValue}, \hyperpage{72}
+    \subitem {km\_objects\_t}, \hyperpage{71}
+    \subitem {MACHINE\_STATE\_ESP}, \hyperpage{71}
+    \subitem {MACHINE\_STATE\_ORIN}, \hyperpage{71}
+    \subitem {MISION\_ESP}, \hyperpage{71}
+    \subitem {MISION\_ORIN}, \hyperpage{71}
+    \subitem {OBJECT\_VALUE\_ERROR}, \hyperpage{71}
+    \subitem {SHUTDOWN\_ORIN}, \hyperpage{71}
+    \subitem {TARGET\_BRAKING}, \hyperpage{71}
+    \subitem {TARGET\_STEERING}, \hyperpage{71}
+    \subitem {TARGET\_THROTTLE}, \hyperpage{71}
+  \item {km\_objects\_t}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {km\_objects\_values}
+    \subitem {km\_objects.c}, \hyperpage{69}
+  \item {km\_pid.c}, \hyperpage{74}, \hyperpage{77}
+    \subitem {KM\_PID\_Calculate}, \hyperpage{74}
+    \subitem {KM\_PID\_GetIntegral}, \hyperpage{75}
+    \subitem {KM\_PID\_GetTunings}, \hyperpage{75}
+    \subitem {KM\_PID\_Init}, \hyperpage{75}
+    \subitem {KM\_PID\_Reset}, \hyperpage{76}
+    \subitem {KM\_PID\_SetIntegralLimits}, \hyperpage{76}
+    \subitem {KM\_PID\_SetOutputLimits}, \hyperpage{76}
+    \subitem {KM\_PID\_SetTunings}, \hyperpage{76}
+  \item {km\_pid.h}, \hyperpage{78}, \hyperpage{82}
+    \subitem {KM\_PID\_Calculate}, \hyperpage{79}
+    \subitem {KM\_PID\_GetIntegral}, \hyperpage{80}
+    \subitem {KM\_PID\_GetTunings}, \hyperpage{80}
+    \subitem {KM\_PID\_Init}, \hyperpage{80}
+    \subitem {KM\_PID\_Reset}, \hyperpage{81}
+    \subitem {KM\_PID\_SetIntegralLimits}, \hyperpage{81}
+    \subitem {KM\_PID\_SetOutputLimits}, \hyperpage{81}
+    \subitem {KM\_PID\_SetTunings}, \hyperpage{81}
+  \item {KM\_PID\_Calculate}
+    \subitem {km\_pid.c}, \hyperpage{74}
+    \subitem {km\_pid.h}, \hyperpage{79}
+  \item {KM\_PID\_GetIntegral}
+    \subitem {km\_pid.c}, \hyperpage{75}
+    \subitem {km\_pid.h}, \hyperpage{80}
+  \item {KM\_PID\_GetTunings}
+    \subitem {km\_pid.c}, \hyperpage{75}
+    \subitem {km\_pid.h}, \hyperpage{80}
+  \item {KM\_PID\_Init}
+    \subitem {km\_pid.c}, \hyperpage{75}
+    \subitem {km\_pid.h}, \hyperpage{80}
+  \item {KM\_PID\_Reset}
+    \subitem {km\_pid.c}, \hyperpage{76}
+    \subitem {km\_pid.h}, \hyperpage{81}
+  \item {KM\_PID\_SetIntegralLimits}
+    \subitem {km\_pid.c}, \hyperpage{76}
+    \subitem {km\_pid.h}, \hyperpage{81}
+  \item {KM\_PID\_SetOutputLimits}
+    \subitem {km\_pid.c}, \hyperpage{76}
+    \subitem {km\_pid.h}, \hyperpage{81}
+  \item {KM\_PID\_SetTunings}
+    \subitem {km\_pid.c}, \hyperpage{76}
+    \subitem {km\_pid.h}, \hyperpage{81}
+  \item {km\_rtos.c}, \hyperpage{82}, \hyperpage{93}
+    \subitem {KM\_COMS\_CreateTask}, \hyperpage{85}
+    \subitem {KM\_RTOS\_AddTask}, \hyperpage{85}
+    \subitem {KM\_RTOS\_ChangePriority}, \hyperpage{87}
+    \subitem {KM\_RTOS\_DeleteTask}, \hyperpage{87}
+    \subitem {KM\_RTOS\_Destroy}, \hyperpage{88}
+    \subitem {KM\_RTOS\_FindTask}, \hyperpage{89}
+    \subitem {KM\_RTOS\_Init}, \hyperpage{89}
+    \subitem {KM\_RTOS\_RestartTask}, \hyperpage{90}
+    \subitem {KM\_RTOS\_ResumeTask}, \hyperpage{90}
+    \subitem {KM\_RTOS\_SuspendTask}, \hyperpage{91}
+    \subitem {KM\_RTOS\_TaskWrapper}, \hyperpage{92}
+    \subitem {RTOS\_DEFAULT\_PERIOD\_MS}, \hyperpage{84}
+    \subitem {RTOS\_DEFAULT\_PRIORITY}, \hyperpage{84}
+    \subitem {RTOS\_DEFAULT\_STACK\_SIZE}, \hyperpage{84}
+    \subitem {tasks}, \hyperpage{93}
+  \item {km\_rtos.h}, \hyperpage{95}, \hyperpage{104}
+    \subitem {KM\_COMS\_CreateTask}, \hyperpage{98}
+    \subitem {KM\_RTOS\_AddTask}, \hyperpage{98}
+    \subitem {KM\_RTOS\_ChangePriority}, \hyperpage{100}
+    \subitem {KM\_RTOS\_DeleteTask}, \hyperpage{100}
+    \subitem {KM\_RTOS\_Destroy}, \hyperpage{101}
+    \subitem {KM\_RTOS\_Init}, \hyperpage{102}
+    \subitem {KM\_RTOS\_RestartTask}, \hyperpage{102}
+    \subitem {KM\_RTOS\_ResumeTask}, \hyperpage{103}
+    \subitem {KM\_RTOS\_SuspendTask}, \hyperpage{104}
+    \subitem {KM\_RTOS\_TaskFunction\_t}, \hyperpage{97}
+    \subitem {RTOS\_MAX\_TASKS}, \hyperpage{97}
+  \item {KM\_RTOS\_AddTask}
+    \subitem {km\_rtos.c}, \hyperpage{85}
+    \subitem {km\_rtos.h}, \hyperpage{98}
+  \item {KM\_RTOS\_ChangePriority}
+    \subitem {km\_rtos.c}, \hyperpage{87}
+    \subitem {km\_rtos.h}, \hyperpage{100}
+  \item {KM\_RTOS\_DeleteTask}
+    \subitem {km\_rtos.c}, \hyperpage{87}
+    \subitem {km\_rtos.h}, \hyperpage{100}
+  \item {KM\_RTOS\_Destroy}
+    \subitem {km\_rtos.c}, \hyperpage{88}
+    \subitem {km\_rtos.h}, \hyperpage{101}
+  \item {KM\_RTOS\_FindTask}
+    \subitem {km\_rtos.c}, \hyperpage{89}
+  \item {KM\_RTOS\_Init}
+    \subitem {km\_rtos.c}, \hyperpage{89}
+    \subitem {km\_rtos.h}, \hyperpage{102}
+  \item {KM\_RTOS\_RestartTask}
+    \subitem {km\_rtos.c}, \hyperpage{90}
+    \subitem {km\_rtos.h}, \hyperpage{102}
+  \item {KM\_RTOS\_ResumeTask}
+    \subitem {km\_rtos.c}, \hyperpage{90}
+    \subitem {km\_rtos.h}, \hyperpage{103}
+  \item {KM\_RTOS\_SuspendTask}
+    \subitem {km\_rtos.c}, \hyperpage{91}
+    \subitem {km\_rtos.h}, \hyperpage{104}
+  \item {KM\_RTOS\_TaskFunction\_t}
+    \subitem {km\_rtos.h}, \hyperpage{97}
+  \item {KM\_RTOS\_TaskWrapper}
+    \subitem {km\_rtos.c}, \hyperpage{92}
+  \item {km\_sdir.c}, \hyperpage{106}, \hyperpage{110}
+    \subitem {I2C\_MASTER\_TIMEOUT\_MS}, \hyperpage{106}
+    \subitem {KM\_SDIR\_Begin}, \hyperpage{107}
+    \subitem {KM\_SDIR\_Init}, \hyperpage{107}
+    \subitem {KM\_SDIR\_isConnected}, \hyperpage{107}
+    \subitem {KM\_SDIR\_ReadAngle}, \hyperpage{108}
+    \subitem {KM\_SDIR\_ReadAngleDegrees}, \hyperpage{108}
+    \subitem {KM\_SDIR\_ReadAngleRadians}, \hyperpage{108}
+    \subitem {KM\_SDIR\_ReadRaw}, \hyperpage{108}
+    \subitem {KM\_SDIR\_ReadRegisters}, \hyperpage{108}
+    \subitem {KM\_SDIR\_ResetI2C}, \hyperpage{109}
+    \subitem {KM\_SDIR\_setCenterOffset}, \hyperpage{109}
+    \subitem {TAG}, \hyperpage{106}
+  \item {km\_sdir.h}, \hyperpage{112}, \hyperpage{117}
+    \subitem {AS5600\_ADDR}, \hyperpage{114}
+    \subitem {AS5600\_ANGLE\_LSB}, \hyperpage{114}
+    \subitem {AS5600\_ANGLE\_MSB}, \hyperpage{114}
+    \subitem {conection\_constans}, \hyperpage{113}
+    \subitem {KM\_SDIR\_Begin}, \hyperpage{114}
+    \subitem {KM\_SDIR\_Init}, \hyperpage{114}
+    \subitem {KM\_SDIR\_isConnected}, \hyperpage{115}
+    \subitem {KM\_SDIR\_ReadAngleDegrees}, \hyperpage{115}
+    \subitem {KM\_SDIR\_ReadAngleRadians}, \hyperpage{115}
+    \subitem {KM\_SDIR\_ReadRaw}, \hyperpage{115}
+    \subitem {KM\_SDIR\_ResetI2C}, \hyperpage{116}
+    \subitem {KM\_SDIR\_setCenterOffset}, \hyperpage{116}
+    \subitem {MAX\_RAD}, \hyperpage{117}
+    \subitem {PI}, \hyperpage{113}
+    \subitem {SENSOR\_CENTER}, \hyperpage{114}
+    \subitem {sensor\_constans}, \hyperpage{114}
+    \subitem {SENSOR\_MAX}, \hyperpage{114}
+    \subitem {SENSOR\_MIN}, \hyperpage{114}
+  \item {KM\_SDIR\_Begin}
+    \subitem {km\_sdir.c}, \hyperpage{107}
+    \subitem {km\_sdir.h}, \hyperpage{114}
+  \item {KM\_SDIR\_Init}
+    \subitem {km\_sdir.c}, \hyperpage{107}
+    \subitem {km\_sdir.h}, \hyperpage{114}
+  \item {KM\_SDIR\_isConnected}
+    \subitem {km\_sdir.c}, \hyperpage{107}
+    \subitem {km\_sdir.h}, \hyperpage{115}
+  \item {KM\_SDIR\_ReadAngle}
+    \subitem {km\_sdir.c}, \hyperpage{108}
+  \item {KM\_SDIR\_ReadAngleDegrees}
+    \subitem {km\_sdir.c}, \hyperpage{108}
+    \subitem {km\_sdir.h}, \hyperpage{115}
+  \item {KM\_SDIR\_ReadAngleRadians}
+    \subitem {km\_sdir.c}, \hyperpage{108}
+    \subitem {km\_sdir.h}, \hyperpage{115}
+  \item {KM\_SDIR\_ReadRaw}
+    \subitem {km\_sdir.c}, \hyperpage{108}
+    \subitem {km\_sdir.h}, \hyperpage{115}
+  \item {KM\_SDIR\_ReadRegisters}
+    \subitem {km\_sdir.c}, \hyperpage{108}
+  \item {KM\_SDIR\_ResetI2C}
+    \subitem {km\_sdir.c}, \hyperpage{109}
+    \subitem {km\_sdir.h}, \hyperpage{116}
+  \item {KM\_SDIR\_setCenterOffset}
+    \subitem {km\_sdir.c}, \hyperpage{109}
+    \subitem {km\_sdir.h}, \hyperpage{116}
+  \item {km\_sta.c}, \hyperpage{118}
+  \item {km\_sta.h}, \hyperpage{119}
+  \item {kp}
+    \subitem {PID\_Controller}, \hyperpage{8}
+
+  \indexspace
+
+  \item {lastError}
+    \subitem {PID\_Controller}, \hyperpage{8}
+  \item {lastRawValue}
+    \subitem {sensor\_struct}, \hyperpage{11}
+  \item {lastReadTime}
+    \subitem {sensor\_struct}, \hyperpage{11}
+  \item {lastTime}
+    \subitem {PID\_Controller}, \hyperpage{8}
+  \item {LEDC\_HIGH\_SPEED\_MODE}
+    \subitem {km\_gpio.h}, \hyperpage{54}
+  \item {LEDC\_LOW\_SPEED\_MODE}
+    \subitem {km\_gpio.h}, \hyperpage{54}
+  \item {len}
+    \subitem {km\_coms\_msg}, \hyperpage{6}
+
+  \indexspace
+
+  \item {MACHINE\_STATE\_ESP}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {MACHINE\_STATE\_ORIN}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {main.c}, \hyperpage{120}, \hyperpage{122}
+    \subitem {app\_main}, \hyperpage{121}
+    \subitem {MAX\_ERROR\_COUNT\_SDIR}, \hyperpage{121}
+    \subitem {system\_init}, \hyperpage{121}
+    \subitem {TAG}, \hyperpage{122}
+  \item {max\_error\_count}
+    \subitem {sensor\_struct}, \hyperpage{11}
+  \item {MAX\_ERROR\_COUNT\_SDIR}
+    \subitem {main.c}, \hyperpage{121}
+  \item {MAX\_RAD}
+    \subitem {km\_sdir.h}, \hyperpage{117}
+  \item {message\_type\_t}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {MISION\_ESP}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {MISION\_ORIN}
+    \subitem {km\_objects.h}, \hyperpage{71}
+
+  \indexspace
+
+  \item {name}
+    \subitem {RTOS\_Task}, \hyperpage{9}
+
+  \indexspace
+
+  \item {OBJECT\_VALUE\_ERROR}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {ORIN\_COMPLETE}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ORIN\_HEARTBEAT}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ORIN\_MACHINE\_STATE}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ORIN\_MISION}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ORIN\_SHUTDOWN}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ORIN\_TARG\_BRAKING}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ORIN\_TARG\_STEERING}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {ORIN\_TARG\_THROTTLE}
+    \subitem {km\_coms.h}, \hyperpage{28}
+  \item {outputMax}
+    \subitem {PID\_Controller}, \hyperpage{8}
+  \item {outputMin}
+    \subitem {PID\_Controller}, \hyperpage{8}
+
+  \indexspace
+
+  \item {payload}
+    \subitem {km\_coms\_msg}, \hyperpage{6}
+  \item {period\_ms}
+    \subitem {RTOS\_Task}, \hyperpage{10}
+  \item {PI}
+    \subitem {km\_sdir.h}, \hyperpage{113}
+  \item {PID\_Controller}, \hyperpage{6}
+    \subitem {integral}, \hyperpage{7}
+    \subitem {integralMax}, \hyperpage{7}
+    \subitem {integralMin}, \hyperpage{7}
+    \subitem {kd}, \hyperpage{7}
+    \subitem {ki}, \hyperpage{7}
+    \subitem {kp}, \hyperpage{8}
+    \subitem {lastError}, \hyperpage{8}
+    \subitem {lastTime}, \hyperpage{8}
+    \subitem {outputMax}, \hyperpage{8}
+    \subitem {outputMin}, \hyperpage{8}
+  \item {PIN\_CMD\_ACC}
+    \subitem {km\_gpio.h}, \hyperpage{55}
+  \item {pin\_cmd\_acc}
+    \subitem {km\_gpio.c}, \hyperpage{43}
+    \subitem {km\_gpio.h}, \hyperpage{62}
+  \item {PIN\_CMD\_BRAKE}
+    \subitem {km\_gpio.h}, \hyperpage{55}
+  \item {pin\_cmd\_brake}
+    \subitem {km\_gpio.c}, \hyperpage{43}
+    \subitem {km\_gpio.h}, \hyperpage{62}
+  \item {PIN\_HYDRAULIC\_1}
+    \subitem {km\_gpio.h}, \hyperpage{55}
+  \item {pin\_hydraulic\_1}
+    \subitem {km\_gpio.c}, \hyperpage{43}
+    \subitem {km\_gpio.h}, \hyperpage{62}
+  \item {PIN\_HYDRAULIC\_2}
+    \subitem {km\_gpio.h}, \hyperpage{55}
+  \item {pin\_hydraulic\_2}
+    \subitem {km\_gpio.c}, \hyperpage{44}
+    \subitem {km\_gpio.h}, \hyperpage{62}
+  \item {PIN\_I2C\_SCL}
+    \subitem {km\_gpio.h}, \hyperpage{55}
+  \item {pin\_i2c\_scl}
+    \subitem {km\_gpio.c}, \hyperpage{44}
+    \subitem {km\_gpio.h}, \hyperpage{63}
+  \item {PIN\_I2C\_SDA}
+    \subitem {km\_gpio.h}, \hyperpage{55}
+  \item {pin\_i2c\_sda}
+    \subitem {km\_gpio.c}, \hyperpage{44}
+    \subitem {km\_gpio.h}, \hyperpage{63}
+  \item {PIN\_MOTOR\_HALL\_1}
+    \subitem {km\_gpio.h}, \hyperpage{55}
+  \item {pin\_motor\_hall\_1}
+    \subitem {km\_gpio.c}, \hyperpage{45}
+    \subitem {km\_gpio.h}, \hyperpage{63}
+  \item {PIN\_MOTOR\_HALL\_2}
+    \subitem {km\_gpio.h}, \hyperpage{55}
+  \item {pin\_motor\_hall\_2}
+    \subitem {km\_gpio.c}, \hyperpage{45}
+    \subitem {km\_gpio.h}, \hyperpage{63}
+  \item {PIN\_MOTOR\_HALL\_3}
+    \subitem {km\_gpio.h}, \hyperpage{56}
+  \item {pin\_motor\_hall\_3}
+    \subitem {km\_gpio.c}, \hyperpage{45}
+    \subitem {km\_gpio.h}, \hyperpage{63}
+  \item {PIN\_ORIN\_UART\_RX}
+    \subitem {km\_gpio.h}, \hyperpage{56}
+  \item {PIN\_ORIN\_UART\_TX}
+    \subitem {km\_gpio.h}, \hyperpage{56}
+  \item {PIN\_PEDAL\_ACC}
+    \subitem {km\_gpio.h}, \hyperpage{56}
+  \item {pin\_pedal\_acc}
+    \subitem {km\_gpio.c}, \hyperpage{46}
+    \subitem {km\_gpio.h}, \hyperpage{64}
+  \item {PIN\_PEDAL\_BRAKE}
+    \subitem {km\_gpio.h}, \hyperpage{56}
+  \item {pin\_pedal\_brake}
+    \subitem {km\_gpio.c}, \hyperpage{46}
+    \subitem {km\_gpio.h}, \hyperpage{64}
+  \item {PIN\_PRESSURE\_1}
+    \subitem {km\_gpio.h}, \hyperpage{56}
+  \item {pin\_pressure\_1}
+    \subitem {km\_gpio.c}, \hyperpage{46}
+    \subitem {km\_gpio.h}, \hyperpage{64}
+  \item {PIN\_PRESSURE\_2}
+    \subitem {km\_gpio.h}, \hyperpage{56}
+  \item {pin\_pressure\_2}
+    \subitem {km\_gpio.c}, \hyperpage{47}
+    \subitem {km\_gpio.h}, \hyperpage{64}
+  \item {PIN\_PRESSURE\_3}
+    \subitem {km\_gpio.h}, \hyperpage{56}
+  \item {pin\_pressure\_3}
+    \subitem {km\_gpio.c}, \hyperpage{47}
+    \subitem {km\_gpio.h}, \hyperpage{64}
+  \item {PIN\_STATUS\_LED}
+    \subitem {km\_gpio.h}, \hyperpage{57}
+  \item {pin\_status\_led}
+    \subitem {km\_gpio.c}, \hyperpage{47}
+    \subitem {km\_gpio.h}, \hyperpage{65}
+  \item {PIN\_STEER\_DIR}
+    \subitem {km\_gpio.h}, \hyperpage{57}
+  \item {pin\_steer\_dir}
+    \subitem {km\_gpio.c}, \hyperpage{48}
+    \subitem {km\_gpio.h}, \hyperpage{65}
+  \item {PIN\_STEER\_PWM}
+    \subitem {km\_gpio.h}, \hyperpage{57}
+  \item {pin\_steer\_pwm}
+    \subitem {km\_gpio.c}, \hyperpage{48}
+    \subitem {km\_gpio.h}, \hyperpage{65}
+  \item {PIN\_USB\_UART\_RX}
+    \subitem {km\_gpio.h}, \hyperpage{57}
+  \item {PIN\_USB\_UART\_TX}
+    \subitem {km\_gpio.h}, \hyperpage{57}
+  \item {priority}
+    \subitem {RTOS\_Task}, \hyperpage{10}
+
+  \indexspace
+
+  \item {RTOS\_DEFAULT\_PERIOD\_MS}
+    \subitem {km\_rtos.c}, \hyperpage{84}
+  \item {RTOS\_DEFAULT\_PRIORITY}
+    \subitem {km\_rtos.c}, \hyperpage{84}
+  \item {RTOS\_DEFAULT\_STACK\_SIZE}
+    \subitem {km\_rtos.c}, \hyperpage{84}
+  \item {RTOS\_MAX\_TASKS}
+    \subitem {km\_rtos.h}, \hyperpage{97}
+  \item {RTOS\_Task}, \hyperpage{9}
+    \subitem {active}, \hyperpage{9}
+    \subitem {context}, \hyperpage{9}
+    \subitem {handle}, \hyperpage{9}
+    \subitem {name}, \hyperpage{9}
+    \subitem {period\_ms}, \hyperpage{10}
+    \subitem {priority}, \hyperpage{10}
+    \subitem {stackSize}, \hyperpage{10}
+    \subitem {taskFn}, \hyperpage{10}
+  \item {rx\_buffer}
+    \subitem {km\_coms.c}, \hyperpage{21}
+  \item {rx\_buffer\_len}
+    \subitem {km\_coms.c}, \hyperpage{22}
+
+  \indexspace
+
+  \item {SENSOR\_CENTER}
+    \subitem {km\_sdir.h}, \hyperpage{114}
+  \item {sensor\_constans}
+    \subitem {km\_sdir.h}, \hyperpage{114}
+  \item {SENSOR\_MAX}
+    \subitem {km\_sdir.h}, \hyperpage{114}
+  \item {SENSOR\_MIN}
+    \subitem {km\_sdir.h}, \hyperpage{114}
+  \item {sensor\_struct}, \hyperpage{10}
+    \subitem {centerOffset}, \hyperpage{11}
+    \subitem {connected}, \hyperpage{11}
+    \subitem {errorCount}, \hyperpage{11}
+    \subitem {lastRawValue}, \hyperpage{11}
+    \subitem {lastReadTime}, \hyperpage{11}
+    \subitem {max\_error\_count}, \hyperpage{11}
+  \item {SHUTDOWN\_ORIN}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {stackSize}
+    \subitem {RTOS\_Task}, \hyperpage{10}
+  \item {system\_init}
+    \subitem {main.c}, \hyperpage{121}
+
+  \indexspace
+
+  \item {TAG}
+    \subitem {km\_sdir.c}, \hyperpage{106}
+    \subitem {main.c}, \hyperpage{122}
+  \item {TARGET\_BRAKING}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {TARGET\_STEERING}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {TARGET\_THROTTLE}
+    \subitem {km\_objects.h}, \hyperpage{71}
+  \item {taskFn}
+    \subitem {RTOS\_Task}, \hyperpage{10}
+  \item {tasks}
+    \subitem {km\_rtos.c}, \hyperpage{93}
+  \item {type}
+    \subitem {km\_coms\_msg}, \hyperpage{6}
+
+  \indexspace
+
+  \item {uart\_config}
+    \subitem {km\_gpio.c}, \hyperpage{48}
+    \subitem {km\_gpio.h}, \hyperpage{65}
+
+\end{theindex}
