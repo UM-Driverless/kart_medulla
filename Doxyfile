@@ -1,0 +1,35 @@
+# Doxyfile - Minimal configuration
+
+# Project information
+PROJECT_NAME           = "KM_Medulla"
+PROJECT_BRIEF          = "Code for an ESP32 integrated into a self-driving kart"
+PROJECT_NUMBER         = "1.0"
+OUTPUT_DIRECTORY       = docs
+
+# Input files and directories
+INPUT                  = components/km_coms components/act components/km_gamc components/km_gpio components/km_objects components/km_pid components/km_rtos components/km_sdir components/km_sta main
+FILE_PATTERNS          = *.c *.h
+
+# Recurse into subdirectories
+RECURSIVE              = YES
+
+# Generate HTML and LaTeX
+GENERATE_HTML          = YES
+GENERATE_LATEX         = YES
+
+# Extract all entities including static/private functions
+EXTRACT_ALL            = YES
+EXTRACT_STATIC         = YES
+EXTRACT_PRIVATE        = YES
+
+# Show detailed descriptions
+FULL_PATH_NAMES        = NO
+INLINE_SOURCES         = YES
+
+# Source code highlighting
+SOURCE_BROWSER         = YES
+VERBATIM_HEADERS       = YES
+
+# Other options
+QUIET                  = NO
+WARNINGS               = YES

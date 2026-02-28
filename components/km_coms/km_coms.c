@@ -1,6 +1,54 @@
 /******************************************************************************
- * @file    KM_COMS.c
- * @brief   Implementación de la librería.
+ * @file    km_coms.c
+ * @brief   Implementation of the KM_COMS communication library for ESP32.
+ *
+ * This file implements the KM_COMS library, providing UART-based communication
+ * between an ESP32 and an NVIDIA Orin (or other host system). The library handles:
+ *  - Initialization and configuration of the UART peripheral
+ *  - Sending and receiving framed messages
+ *  - CRC8 validation for data integrity
+ *  - Processing incoming payloads and updating shared application objects
+ *  - FreeRTOS task integration for periodic message handling
+ *
+ * --------------------------------------------------------------------------
+ * PROTOCOL DETAILS
+ * --------------------------------------------------------------------------
+ * Each message follows a custom framing format:
+ *
+ *   | SOF | LEN | TYPE | PAYLOAD | CRC |
+ *
+ * Fields:
+ *   - SOF    : Start-of-frame byte (0xAA)
+ *   - LEN    : 1-byte payload length
+ *   - TYPE   : 1-byte message type (see message_type_t in km_coms.h)
+ *   - PAYLOAD: N bytes of data up to 251 bytes, content depends on message type
+ *   - CRC    : 1-byte CRC8 (XOR-based) over LEN, TYPE, and PAYLOAD
+ * 
+ * Total size of message is 255 bytes
+ *
+ * The `message_type_t` enum defines all possible message types. Conceptually:
+ *   - ESP32 → Orin messages contain telemetry data such as current speed, throttle,
+ *     braking, steering, mission state, machine state, and shutdown status.
+ *   - Orin → ESP32 messages carry commands such as target throttle, braking,
+ *     steering, mission state, machine state, and heartbeat.
+ *
+ * Using the enum ensures type safety and consistency when sending or processing messages.
+ *
+ * The CRC ensures the integrity of the message. Invalid messages are discarded.
+ *
+ * The library uses internal buffers and a FreeRTOS mutex to provide thread-safe
+ * access to shared objects and message queues.
+ *
+ * --------------------------------------------------------------------------
+ * FREE RTOS INTEGRATION
+ * --------------------------------------------------------------------------
+ * Periodic tasks should call km_coms_ReceiveMsg() and KM_COMS_ProccessMsgs() to
+ * read bytes from UART, assemble messages, validate CRC, and process payloads.
+ * KM_COMS_SendMsg() can be used to transmit messages safely from tasks.
+ *
+ * Author: Adrian Navarredonda Arizaleta
+ * Date:   14-02-2026
+ * Version: 1.0
  *****************************************************************************/
 
 #include "km_coms.h"

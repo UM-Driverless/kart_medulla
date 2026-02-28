@@ -1,6 +1,15 @@
 /******************************************************************************
- * @file    nombre_libreria.h
- * @brief   Interfaz pública de la librería.
+ * @file    km_coms.h
+ * @brief   Public API for the KM_COMS communication library.
+ *
+ * This header defines the interface for the KM_COMS library, which provides:
+ *  - UART-based communication between an ESP32 and NVIDIA Orin (or other host)
+ *  - Message framing, CRC checks, and payload handling
+ *  - Functions to send, receive, and process messages
+ *
+ * The library supports periodic tasks that handle incoming/outgoing messages
+ * safely in a FreeRTOS environment.
+ *
  * @author  Adrian Navarredonda Arizaleta
  * @date    14-02-2026
  * @version 1.0
