@@ -22,16 +22,17 @@
 
 typedef enum
 {
-TARGET_THROTTLE = 0,    // Target throttle send by ORIN
-TARGET_BRAKING,         // Target braking send by ORIN
-TARGET_STEERING,        // Target steering angle send by ORIN
+TARGET_THROTTLE = 0,    // Target throttle send by ORIN in [0-1].       x100
+TARGET_BRAKING,         // Target braking send by ORIN in [0-1]         x100
+TARGET_STEERING,        // Target steering angle send by ORIN in [-1 to 1].   x100
 MISION_ORIN,            // Mision that is executing the ORIN
 MACHINE_STATE_ORIN,     // State inside the state machine of the ORIN
-SHUTDOWN_ORIN,          // Status of the shutdown in the ORIN
-ACTUAL_SPEED,           // Actual speed of the kart
-ACTUAL_THROTTLE,        // Actual value of the throttle
-ACTUAL_BRAKING,         // Actual value of the brake
-ACTUAL_STEERING,        // Actual value of the steering
+SHUTDOWN_ORIN,          // Status of the shutdown in the ORIN 0 or 1
+
+ACTUAL_SPEED,           // Actual speed of the kart in m/s x100
+ACTUAL_ACCERELATION,    // Actual value of the acceleration of the kart m/s^2 x100 
+ACTUAL_BRAKING,         // Actual value of the brake [0-1] interpreted as brake pedal or hydraulic pressure) x100
+ACTUAL_STEERING,        // Actual value of the steering in rad x100
 MISION_ESP,             // Mision that is executing the ESP
 MACHINE_STATE_ESP,      // State inside the state machine of the ESP
 ACTUAL_SHUTDOWN,         // Actual state of the SHUTDOWN

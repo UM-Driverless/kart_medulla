@@ -20,7 +20,6 @@
 // Variables globales internas (static)
 static uint8_t rx_buffer[KM_COMS_MSG_MAX_LEN - 1]; //[0-255]
 static size_t rx_buffer_len = 0;
-QueueHandle_t km_coms_queue;
 static SemaphoreHandle_t km_coms_mutex;
 static uart_port_t km_coms_uart = UART_NUM_0;
 
@@ -97,7 +96,7 @@ int KM_COMS_SendMsg(message_type_t type, uint8_t *payload, uint8_t len) {
     return 1;
 }
 
-// Esta funcion sube los bytes del buffer de la uart al buffer de la libreria
+
 void km_coms_ReceiveMsg(void) {
     uint8_t uart_chunk[KM_COMS_RX_CHUNK];
     size_t len_read = 0;
@@ -131,8 +130,6 @@ void km_coms_ReceiveMsg(void) {
     }
 }
 
-// Esta funcion procesa los bytes que se han dejado en el buffer de la libreria
-// y recrea el mensaje
 void KM_COMS_ProccessMsgs(void) {
     size_t processed = 0;
 
@@ -180,33 +177,73 @@ void KM_COMS_ProccessMsgs(void) {
 
 /******************************* FUNCIONES PRIVADAS ***************************/
 
-// Procesar payload y setear objeto
+/**
+ * @brief Processes the payload of the incoming message and updates the corresponding application objects.
+ *
+ * This function interprets the payload of a received message (`km_coms_msg`) based on its `type`.
+ * Depending on the message type, it extracts the relevant data from the payload, converts it to
+ * a 64-bit integer (`int64_t`), and updates the appropriate shared object using
+ * `KM_OBJ_SetObjectValue()`.
+ *
+ * Supported message types include:
+ * - ORIN_TARG_THROTTLE: 1-byte payload representing the target throttle.
+ * - ORIN_TARG_BRAKING: 1-byte payload representing the target braking.
+ * - ORIN_TARG_STEERING: 2-byte payload where the first byte indicates direction and the
+ *   second byte the magnitude. 0->positive turn, 1->negative turn
+ * - ORIN_MISION: 1-byte payload representing the current mission state.
+ * - ORIN_MACHINE_STATE: 1-byte payload representing the machine's current state.
+ * - ORIN_HEARTBEAT: message indicating heartbeat; currently not processed.
+ * - ORIN_SHUTDOWN: 1-byte payload indicating shutdown command.
+ * - ORIN_COMPLETE: 7-byte payload updating all above objects in a single message.
+ *
+ * Invalid payloads (wrong length or unknown direction for steering) are ignored.
+ *
+ * @param msg The incoming message to process.
+ */
 static void KM_COMS_ProccessPayload(km_coms_msg msg) {
     ESP_LOGI("KM_coms", "RX msg type=0x%02X len=%d crc=0x%02X", msg.type, msg.len, msg.crc);
 
     int64_t object_value = 0;
+    int8_t direction;
 
     switch (msg.type)
     {
     case ORIN_TARG_THROTTLE:
-
+        if (msg.len != 1) return; // Invalid payload
+        
+        object_value = (int64_t)msg.payload[0];
         KM_OBJ_SetObjectValue(TARGET_THROTTLE, object_value);
         break;
 
     case ORIN_TARG_BRAKING:
+        if (msg.len != 1) return; // Invalid payload
+        object_value = (int64_t)msg.payload[0];
         KM_OBJ_SetObjectValue(TARGET_BRAKING, object_value);
-
         break;
 
     case ORIN_TARG_STEERING:
+        if (msg.len != 2) return; // Invalid payload
+        direction = msg.payload[0];
+        if (direction == 0) {
+            object_value = (int64_t)msg.payload[1];
+        } else if (direction == 1){
+            object_value -= (int64_t)msg.payload[1];
+        } else {
+            return; // Invalid payload
+        }
+
         KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
         break;
 
     case ORIN_MISION:
+        if (msg.len != 1) return; // Invalid payload
+        object_value = (int64_t)msg.payload[0];
         KM_OBJ_SetObjectValue(MISION_ORIN, object_value);
         break;
 
     case ORIN_MACHINE_STATE:
+        if (msg.len != 1) return; // Invalid payload
+        object_value = (int64_t)msg.payload[0];
         KM_OBJ_SetObjectValue(MACHINE_STATE_ORIN, object_value);
         break;
 
@@ -215,28 +252,61 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
         break;
 
     case ORIN_SHUTDOWN:
+        if (msg.len != 1) return; // Invalid payload
+        object_value = (int64_t)msg.payload[0];
         KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
         break;
 
     case ORIN_COMPLETE:
-
-        // Procesar todo los datos y mandarlos a libreria de variables
+        if (msg.len != 7) return; // Invalid payload
+        object_value = (int64_t)msg.payload[0];
         KM_OBJ_SetObjectValue(TARGET_THROTTLE, object_value);
+
+        object_value = (int64_t)msg.payload[1];
         KM_OBJ_SetObjectValue(TARGET_BRAKING, object_value);
+
+        direction = msg.payload[2];
+        if (direction == 0) {
+            object_value = (int64_t)msg.payload[3];
+        } else if (direction == 1){
+            object_value -= (int64_t)msg.payload[3];
+        } else {
+            return; // Invalid payload
+        }
         KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
+
+        object_value = (int64_t)msg.payload[4];
         KM_OBJ_SetObjectValue(MISION_ORIN, object_value);
+
+        object_value = (int64_t)msg.payload[5];
         KM_OBJ_SetObjectValue(MACHINE_STATE_ORIN, object_value);
+
+        object_value = (int64_t)msg.payload[6];
         KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
         break;
     
     default:
         break;
     }
-
 }
 
-
-
+/**
+ * @brief Calculates an 8-bit CRC checksum for a message.
+ *
+ * This function computes a CRC-8 checksum using the polynomial 0x07. The calculation
+ * includes the message length (`len`), message type (`type`), and the actual payload data.
+ * The CRC is computed sequentially:
+ * 1. XOR with the message length and process 8 bits.
+ * 2. XOR with the message type and process 8 bits.
+ * 3. XOR each byte of the payload data and process 8 bits per byte.
+ *
+ * This checksum is used for detecting errors in communication messages.
+ *
+ * @param len  Length of the payload data in bytes.
+ * @param type Message type identifier.
+ * @param data Pointer to the payload data array.
+ * @return The computed 8-bit CRC value.
+ */
 static uint8_t KM_COMS_crc8(uint8_t len, uint8_t type, const uint8_t *data) {
     uint8_t crc = 0x00;
 
