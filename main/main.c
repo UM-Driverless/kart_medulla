@@ -126,8 +126,6 @@ void app_main(void) {
     // Sin trazas
     esp_log_level_set("*", ESP_LOG_NONE);
 
-    debug_led_init();
-
 
     ESP_LOGI(TAG, "ESP iniciando...");
 
