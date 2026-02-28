@@ -117,7 +117,7 @@ extern QueueHandle_t km_coms_queue;
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
 // Inicializa UART y la cola
-esp_err_t KM_COMS_Init(gpio_num_t uart_num);
+esp_err_t KM_COMS_Init(uart_port_t uart_port);
 
 // Agrega un mensaje a la cola
 int KM_COMS_SendMsg(message_type_t type, uint8_t *payload, uint8_t len);
