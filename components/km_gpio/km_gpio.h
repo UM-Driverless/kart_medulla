@@ -34,9 +34,13 @@
  *  Pin assignment - NO WiFi
  * ============================================================ */
 
-/* ---------- USB (UART0 to ORIN) ---------- */
+/* ---------- USB (UART0 - debug console) ---------- */
 #define PIN_USB_UART_TX         GPIO_NUM_1   // U0TXD
 #define PIN_USB_UART_RX         GPIO_NUM_3   // U0RXD
+
+/* ---------- UART2 (wired to ORIN) ---------- */
+#define PIN_ORIN_UART_TX        GPIO_NUM_17  // U2TXD
+#define PIN_ORIN_UART_RX        GPIO_NUM_16  // U2RXD
 
 /* ---------- ADC INPUTS (Sensors) ---------- */
 /* ADC1 - input only, WiFi safe */

@@ -84,7 +84,7 @@ void system_init(void) {
     // Initialise tasks
     KM_RTOS_Init();
 
-    // Initialise comunications
+    // Initialise comunications on UART0 (USB to Orin)
     if (KM_COMS_Init(UART_NUM_0) != ESP_OK)
         ESP_LOGE(TAG, "Error inicializando libreria de comunicaciones");
     
@@ -93,28 +93,25 @@ void system_init(void) {
     // KM_ACT_Begin();
     // KM_PID_Init();
 
-    uint8_t payload[31];  // 255 - 4 = 251
-    uint8_t len = 31;     // LEN solo cuenta los bytes del payload
-    for (size_t i = 0; i < 31; i++) {
-        payload[i] = i;
-    }
-    
-    // while (true) {
-    //     ESP_LOGE(TAG, "Antes de enviar mensaje");
-    //     KM_COMS_SendMsg(ESP_HEARTBEAT, payload, len);
-    //     ESP_LOGE(TAG, "Despues de enviar mensaje");
-    //     sys_delay_ms(100);
-    // }
-    km_coms_msg msg;
-    while (true) {
-        km_coms_ReceiveMsg();
-        ESP_LOGI(TAG, "Despues de receive msg");
-    //     KM_COMS_ProccessMsgs();
+    // Test bidirectional: send heartbeat + receive from Orin
+    uint8_t payload[4] = {0xDE, 0xAD, 0xBE, 0xEF};
+    uint32_t loop_count = 0;
 
-    //     if(xQueueReceive(km_coms_queue, &msg, 0) == pdPASS)
-    //         ESP_LOGI(TAG, "El mensaje recibido es de tipo: %d, tiene logitud: %d, y CRC: %d", msg.type, msg.len, msg.crc);
-        //sys_delay_ms(1000);
-        ESP_LOGI(TAG, "Despues de delay");
+    while (true) {
+        // TX: send heartbeat to Orin every 10 iterations (~1s)
+        if (loop_count % 10 == 0) {
+            KM_COMS_SendMsg(ESP_HEARTBEAT, payload, sizeof(payload));
+            ESP_LOGI(TAG, "TX: heartbeat sent");
+        }
+
+        // RX: read bytes from UART2 into internal buffer
+        km_coms_ReceiveMsg();
+
+        // RX: parse complete frames and dispatch to objects
+        KM_COMS_ProccessMsgs();
+
+        loop_count++;
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
@@ -123,9 +120,12 @@ void system_init(void) {
 // ===========================
 void app_main(void) {
 
-    // Sin trazas
-    esp_log_level_set("*", ESP_LOG_NONE);
 
+    // Sin trazas
+    // esp_log_level_set("*", ESP_LOG_NONE);
+
+    // Habilitar logs por UART0 (USB) para debug
+    esp_log_level_set("*", ESP_LOG_INFO);
 
     ESP_LOGI(TAG, "ESP iniciando...");
 
