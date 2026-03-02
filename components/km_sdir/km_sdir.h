@@ -52,8 +52,6 @@ typedef enum {
 /******************************* VARIABLES PÚBLICAS ***************************/
 // Variables globales visibles (si realmente se necesitan)
 
-const float MAX_RAD = PI;
-
 // extern int ejemplo_variable_publica;
 
 /******************************* FUNCIONES PÚBLICAS ***************************/

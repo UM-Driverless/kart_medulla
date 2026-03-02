@@ -162,7 +162,7 @@ static float KM_SDIR_ReadAngle(sensor_struct *sensor) {
     uint16_t raw = KM_SDIR_ReadRaw(sensor);
 
     int16_t centered = (int16_t)raw - sensor->centerOffset;
-    float angle = ((float)centered / (float)SENSOR_MAX) * 2.0f * MAX_RAD;
+    float angle = ((float)centered / (float)SENSOR_MAX) * 2.0f * PI;
 
     return angle;
 }

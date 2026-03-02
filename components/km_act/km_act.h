@@ -1,78 +1,85 @@
 /******************************************************************************
- * @file    km_cont.h
- * @brief   Interfaz pública de la librería.
+ * @file    km_act.h
+ * @brief   Librería de control de actuadores (acelerador, freno y dirección)
+ *
+ * DISEÑO:
+ * - Todo el hardware (pines, SPI, PWM, etc.) se define en km_gpio
+ * - Esta librería SOLO gestiona lógica de control
+ *
+ * SOPORTE:
+ * - ESP32  -> DAC interno para acelerador y freno
+ * - ESP32-S3 -> DAC externo MCP4922 (SPI)
+ * - Dirección -> PWM + pin de dirección
+ *
+ * USO:
+ *   ACT_Controller accel = KM_ACT_Begin(ACT_ACCEL);
+ *   ACT_Controller brake = KM_ACT_Begin(ACT_BRAKE);
+ *   ACT_Controller steer = KM_ACT_Begin(ACT_STEER);
+ *
+ *   KM_ACT_SetOutput(&accel, 0.5f);   // 0–1
+ *   KM_ACT_SetOutput(&steer, -1.0f);  // -1–1
+ *
+ * RANGOS:
+ * - Acelerador/Freno: 0.0 → 1.0
+ * - Dirección:       -1.0 → 1.0
+ *
  * @author  Adrian Navarredonda Arizaleta
- * @date    6-2-2026
- * @version 1.0
-*****************************************************************************/
+ * @date    01-02-2026
+ *****************************************************************************/
 
 #ifndef KM_ACT_H
 #define KM_ACT_H
 
-/******************************* INCLUDES *************************************/
-// Includes necesarios para la API pública
-#include <driver/dac.h>
+#include "km_gpio.h"
 #include <stdint.h>
-#include "esp_log.h" // Para log
+#include <stdbool.h>
 
-/******************************* DEFINES PÚBLICAS *****************************/
-// Constantes, flags o configuraciones visibles desde fuera de la librería
+/*============================== TIPOS =====================================*/
 
-/******************************* TIPOS PÚBLICOS ********************************/
-// Estructuras, enums, typedefs públicos
-/**
- * @brief Structure that reperesents a controller
- */
+typedef enum {
+    ACT_ACCEL = 0,   /**< Acelerador -> DAC canal A */
+    ACT_BRAKE,       /**< Freno      -> DAC canal B */
+    ACT_STEER        /**< Dirección  -> PWM + DIR   */
+} ACT_Type;
+
 typedef struct {
-    uint8_t pwmPin;                 /**< Pin de la PWM a la que esta conectada el controlador*/
-    uint8_t dirPin;                 /**< Pin para marcar la direccion del actuador*/
-    uint8_t pwmChannel;             /**< Canal de la PWM que se usara */
-    uint16_t pwmFreq;               /**< Frecuencia de PWM que se usara */
-    uint8_t pwmResolution;          /**< Resolucion de la PWM*/
-    float outputLimit;              /**< Limitacion de la salida del controlador*/
-    uint8_t dacPin;                 /**< Pin donde esta el DAC a usar */
-    //dac_oneshot_handle_t dacHandle; /**< Manejador del DAC*/
-    dac_channel_t dacChannel;       /**< Canal que usara el DAC*/
+    ACT_Type type;
+    float limit;
+
+    /* PWM (solo dirección) */
+    uint8_t pwmChannel;
+    uint8_t dirPin;
+
+    /* DAC (solo accel/freno) */
+    uint8_t dacChannel;   // 0 = A, 1 = B
+
+    uint8_t outputLimit; // Range of output allow[0-100]
+    uint32_t lastOutput;
 } ACT_Controller;
 
-/******************************* VARIABLES PÚBLICAS ***************************/
-// Variables globales visibles (si realmente se necesitan)
-
-// extern int ejemplo_variable_publica;
-
-/******************************* FUNCIONES PÚBLICAS ***************************/
-/**
- * @brief   Inicializa el controlador del actuador, en caso de que este no tenga
- * una opcion para selecionar la direccion, dejar el campo dirPin a 0.
- * @param   Pin de la PWM a la que esta conectada el controlador
- * @param   Direccion en la que actua un actuador(en caso de no necesitarla poner 0)
- * @param   Canal de la PWM que se usara
- * @param   Frecuencia de PWM que se usara
- * @param   Resolucion de la PWM
- * @param   Limitacion de la salida del controlador
- * @return  Devuelve el struct correspondiente al actuador. 
- * En caso de error devuelve NULL
- */
-ACT_Controller KM_ACT_Begin(uint8_t, uint8_t, uint8_t, uint16_t, uint8_t, float, uint8_t);
+/*=========================== API PÚBLICA ==================================*/
 
 /**
- * @brief   Establece un valor para el controlador.
- * @param   Controlador del actuador que se quiere establecer output
- * @param   valor deseado que se actue [-1 - 1]
+ * @brief Inicializa un actuador según su tipo
  */
-void KM_ACT_SetOutput(ACT_Controller *act_controller, int8_t valor);
+ACT_Controller KM_ACT_Init(ACT_Type type, float limit);
 
 /**
- * @brief   Establece un valor limite para el controlador.
- * @param   Controlador del actuador que se quiere limitar
- * @param   valor deseado que se limite [-1 - 1]
+ * @brief Establece la salida del actuador
+ *
+ * Acelerador/Freno: 0.0 → 1.0  
+ * Dirección:       -1.0 → 1.0
  */
-void KM_ACT_SetOutputLimit(ACT_Controller *act_controller, int8_t limite);
+void KM_ACT_SetOutput(ACT_Controller *act, float value);
 
 /**
- * @brief   Establece un valor limite para el controlador.
- * @param   Controlador del actuador que se quere parar
+ * @brief Limita la salida máxima del actuador
  */
-void KM_ACT_Stop(ACT_Controller *act_controller);
+void KM_ACT_SetLimit(ACT_Controller *act, float limit);
 
-#endif /* KM_ACT_H */
+/**
+ * @brief Detiene el actuador (salida = 0)
+ */
+void KM_ACT_Stop(ACT_Controller *act);
+
+#endif

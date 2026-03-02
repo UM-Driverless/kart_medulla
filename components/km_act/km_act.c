@@ -1,125 +1,139 @@
-/******************************************************************************
- * @file    km_act.c
- * @brief   Implementación de la librería.
- *****************************************************************************/
-
 #include "km_act.h"
-#include <stdio.h>   // solo si es necesario para debug interno
+#include "km_gpio.h"
+#include <math.h>
 
-/******************************* INCLUDES INTERNOS ****************************/
-// Headers internos opcionales, dependencias privadas
+static float clamp(float v, float min, float max)
+{
+    if (v > max) return max;
+    if (v < min) return min;
+    return v;
+}
 
-/******************************* MACROS PRIVADAS ********************************/
-// Constantes internas, flags de debug
-// #define LIBRERIA_DEBUG 1
+ACT_Controller KM_ACT_Init(ACT_Type type, float limit)
+{
+    ACT_Controller act = {0};
 
-/******************************* VARIABLES PRIVADAS ***************************/
-// Variables globales internas (static)
+    act.type = type;
 
-/******************************* DECLARACION FUNCIONES PRIVADAS ***************/
-
-
-/******************************* FUNCIONES PÚBLICAS ***************************/
-
-ACT_Controller KM_ACT_Begin(uint8_t pwmPin, uint8_t dirPin, uint8_t pwmChannel,
-                            uint16_t pwmFreq, uint8_t pwmResolution, float outputLimit, 
-                            uint8_t dacPin){
-
-    ACT_Controller act_controller;
-    int dacChannel;
-
-    // In case of bad input, put default values
-    if (outputLimit < -1 || outputLimit > 1) outputLimit = 1;
-    if (dacPin == 25) {
-        dacChannel = DAC_CHAN_0;  // GPIO 25
-    } else if (dacPin == 26) {
-        dacChannel = DAC_CHAN_1;  // GPIO 26
-    } else {
-        ESP_LOGE("KM_ACT", "Invalid DAC pin %d (must be 25 or 26)\n", dacPin);
-        dacChannel = DAC_CHAN_0;  // Default to GPIO 25
+    switch (type)
+    {
+    case ACT_ACCEL:
+        act.dacChannel = 0; // Canal A
+        act.pwmChannel = 0;
+        act.dirPin = 0;
+        break;
+    case ACT_BRAKE:
+        act.dacChannel = 1; // Canal B
+        act.pwmChannel = 0;
+        act.dirPin = 0;
+        break;
+    case ACT_STEER:
+        act.dacChannel = -1; // Sin DAC
+        act.pwmChannel = PIN_STEER_PWM;
+        act.dirPin = PIN_STEER_DIR;
+        break;
+    
+    default:
+        act.dacChannel = -1;
+        act.pwmChannel = 0;
+        act.dirPin = 0;
+        break;
     }
-    
-    act_controller.pwmPin = pwmPin;
-    act_controller.dirPin = dirPin;
-    act_controller.pwmChannel = pwmChannel;
-    act_controller.pwmFreq = pwmFreq;
-    act_controller.pwmResolution = pwmResolution;
-    act_controller.outputLimit = outputLimit;
-    act_controller.dacChannel = dacChannel;
-    act_controller.dacPin = dacPin;
 
-    // // Configure DAC using new oneshot API
-    // dac_oneshot_config_t dac_cfg;
-    // dac_cfg.chan_id = dacChannel;
+    float limit_clamp = clamp(limit, 0.0f, 1.0f);
+    act.outputLimit = (uint8_t)(limit_clamp * 100);
 
-    // esp_err_t err = dac_oneshot_new_channel(&dac_cfg, &act_controller.dacHandle);
-    // if (err != ESP_OK) {
-    //     ESP_LOGE("KM_ACT", "Failed to initialize DAC channel (error: 0x%x)\n", err);
-    //     act_controller.pwmPin = 0;
-    //     act_controller.dirPin = 0;
-    //     act_controller.pwmChannel = 0;
-    //     act_controller.pwmFreq = 0;
-    //     act_controller.pwmResolution = 0;
-    //     act_controller.outputLimit = 0;
-    //     act_controller.dacChannel = 0;
-    //     act_controller.dacHandle = 0;
-    //     act_controller.dacPin = 0;
-    //     return act_controller;
-    // }
+    act.lastOutput = 0.0f;
 
-    // Set initial voltage to 0
-    //dac_oneshot_output_voltage(act_controller.dacHandle, 0);
-
-    ESP_LOGI("KM_ACT", "Controller initialised: DAC Channel=%d (GPIO %d)\n",
-                    dacChannel, dacChannel == DAC_CHAN_0 ? 25 : 26);
-
-    return act_controller;
+    return act;
 }
 
-void KM_ACT_SetOutput(ACT_Controller *act_controller, int8_t valor){
-
-    uint8_t pwmValue = 0;
-
-    // Clamp to limits
-    if (valor > act_controller->outputLimit) 
-        valor = act_controller->outputLimit;
-    
-
-    if (valor < -act_controller->outputLimit) 
-        valor = -act_controller->outputLimit;
-
-    // Determine direction
-    int direction = (valor >= 0);
-    if (act_controller->dirPin != 0)
-        //digitalWrite(act_controller->dirPin, direction ? 1 : 0);
-
-    // Calculate PWM value (0-255 for 8-bit resolution)
-    pwmValue = (uint8_t)(abs(valor) * ((1 << act_controller->pwmResolution) - 1));
-    //pwmValue = constrain(pwmValue, 0, (1 << act_controller->pwmResolution) - 1);
-
-    // Set PWM (new API uses pin number instead of channel)
-    //ledcWrite(act_controller->pwmPin, pwmValue);
-
-}
-
-void KM_ACT_SetOutputLimit(ACT_Controller *act_controller, int8_t limite){
-
-    if (limite > 1.0f)
-        act_controller->outputLimit = 1.0f;
-
-    if (limite < 0.0f)
-        act_controller->outputLimit = 0.0f;
-
-    ESP_LOGI("KM_ACT", "Brake motor output limit set to: %.2f\n", act_controller->outputLimit);
-}
-
-void KM_ACT_Stop(ACT_Controller *act_controller){
-        dac_output_voltage(act_controller->dacChannel, 0);
-}
-/******************************* FUNCIONES PRIVADAS ***************************/
 /**
- * @brief   Función interna no visible desde fuera
+ * @brief Sets the output of a given actuator.
+ *
+ * This function accepts a normalized floating-point value and converts it
+ * to the appropriate hardware signal depending on the actuator type:
+ *
+ *  - Accelerator / Brake (DAC): value is scaled to [0, 255]
+ *  - Steering (PWM + direction pin):
+ *        - magnitude is scaled to [0, 255] for PWM duty
+ *        - sign determines the digital direction pin
+ *
+ * @note The input value is clamped to the actuator's outputLimit:
+ *       value = clamp(value, -outputLimit, +outputLimit)
+ *
+ * @param act Pointer to the actuator controller structure.
+ * @param value Desired output in normalized units:
+ *              - Accelerator / Brake: [0.0 … 1.0] (negative values are clamped to 0)
+ *              - Steering: [-1.0 … 1.0] (sign sets direction, magnitude sets PWM duty)
+ *
+ * @details
+ *  - DAC outputs are always written as 8-bit values [0–255].
+ *    For internal ESP32 DAC, this is native.
+ *    For external MCP4922 (12-bit), km_gpio handles upscaling.
+ *  - PWM outputs use an 8-bit duty cycle [0–255], matching the LEDC timer
+ *    resolution. Any future PWM resolution change is handled in km_gpio.
  */
-// static void funcion_privada(void);
+void KM_ACT_SetOutput(ACT_Controller *act, float value)
+{
+    if (!act) return;
 
-/******************************* FIN DE ARCHIVO ********************************/
+    value = clamp(value, -act->outputLimit, act->outputLimit);
+    act->lastOutput = value;
+
+    switch (act->type)
+    {
+        case ACT_ACCEL:
+        case ACT_BRAKE:
+        {
+            float v = clamp(value, 0.0f, act->outputLimit);
+            // Depends on resolution of DAC
+            KM_GPIO_WriteDAC(act->dacChannel, (uint8_t)(v * 255)); // salida [0-255]
+            break;
+        }
+
+        case ACT_STEER:
+        {
+            float mag = clamp(fabsf(value), 0.0f, act->outputLimit);
+
+            uint8_t dir = (value >= 0.0f) ? 1 : 0;
+
+            KM_GPIO_WriteDigital(act->dirPin, dir);
+            KM_GPIO_WritePWM(act->pwmChannel, (uint8_t)(mag * 255));
+            break;
+        }
+
+        default:
+            break;
+    }
+}
+
+void KM_ACT_SetLimit(ACT_Controller *act, float limit)
+{
+    if (!act) return;
+
+    float limit_clamp = clamp(limit, 0.0f, 1.0f);
+    act->outputLimit = (uint8_t)(limit_clamp * 100);
+}
+
+void KM_ACT_Stop(ACT_Controller *act)
+{
+    if (!act) return;
+
+    act->lastOutput = 0.0f;
+
+    switch (act->type)
+    {
+        case ACT_ACCEL:
+        case ACT_BRAKE:
+            KM_GPIO_WriteDAC(act->dacChannel, 0);
+            break;
+
+        case ACT_STEER:
+            KM_GPIO_WritePWM(act->pwmChannel, 0);
+            break;
+
+        default:
+            break;
+    }
+}

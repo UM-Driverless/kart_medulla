@@ -16,159 +16,6 @@
 /******************************* VARIABLES PRIVADAS ***************************/
 // Variables globales internas (static)
 
-/* ---------- USB (UART0 to ORIN) ---------- */
-const uart_config_t uart_config = {
-    .baud_rate = 115200,
-    .data_bits = UART_DATA_8_BITS,
-    .parity    = UART_PARITY_DISABLE,
-    .stop_bits = UART_STOP_BITS_1,
-    .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-};
-
-/* ---------- ADC INPUTS (Sensors) ---------- */
-/* ADC1 - input only */
-const gpio_config_t pin_pressure_1 = {
-    .pin_bit_mask = 1ULL << PIN_PRESSURE_1,
-    .mode = GPIO_MODE_INPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-const gpio_config_t pin_pressure_2 = {
-    .pin_bit_mask = 1ULL << PIN_PRESSURE_2,
-    .mode = GPIO_MODE_INPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-const gpio_config_t pin_pressure_3 = {
-    .pin_bit_mask = 1ULL << PIN_PRESSURE_3,
-    .mode = GPIO_MODE_INPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-const gpio_config_t pin_pedal_acc = {
-    .pin_bit_mask = 1ULL << PIN_PEDAL_ACC,
-    .mode = GPIO_MODE_INPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-const gpio_config_t pin_pedal_brake = {
-    .pin_bit_mask = 1ULL << PIN_PEDAL_BRAKE,
-    .mode = GPIO_MODE_INPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-const gpio_config_t pin_hydraulic_1 = {
-    .pin_bit_mask = 1ULL << PIN_HYDRAULIC_1,
-    .mode = GPIO_MODE_INPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-/* ADC2 - allowed (WiFi not used) */
-const gpio_config_t pin_hydraulic_2 = {
-    .pin_bit_mask = 1ULL << PIN_HYDRAULIC_2,
-    .mode = GPIO_MODE_INPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-/* ---------- DAC OUTPUTS ---------- */
-const gpio_config_t pin_cmd_acc = {
-    .pin_bit_mask = 1ULL << PIN_CMD_ACC,
-    .mode = GPIO_MODE_OUTPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-const gpio_config_t pin_cmd_brake = {
-    .pin_bit_mask = 1ULL << PIN_CMD_BRAKE,
-    .mode = GPIO_MODE_OUTPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-/* ---------- STEERING MOTOR ---------- */
-const gpio_config_t pin_steer_pwm = {
-    .pin_bit_mask = 1ULL << PIN_STEER_PWM,
-    .mode = GPIO_MODE_OUTPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-const gpio_config_t pin_steer_dir = {
-    .pin_bit_mask = 1ULL << PIN_STEER_DIR,
-    .mode = GPIO_MODE_OUTPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-/* ---------- HALL SENSORS ---------- */
-const gpio_config_t pin_motor_hall_1 = {
-    .pin_bit_mask = 1ULL << PIN_MOTOR_HALL_1,
-    .mode = GPIO_MODE_INPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_POSEDGE
-};
-
-const gpio_config_t pin_motor_hall_2 = {
-    .pin_bit_mask = 1ULL << PIN_MOTOR_HALL_2,
-    .mode = GPIO_MODE_INPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_POSEDGE
-};
-
-const gpio_config_t pin_motor_hall_3 = {
-    .pin_bit_mask = 1ULL << PIN_MOTOR_HALL_3,
-    .mode = GPIO_MODE_INPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_POSEDGE
-};
-
-/* ---------- I2C (AS5600) ---------- */
-const gpio_config_t pin_i2c_scl = {
-    .pin_bit_mask = 1ULL << PIN_I2C_SCL,
-    .mode = GPIO_MODE_INPUT_OUTPUT_OD,
-    .pull_up_en = GPIO_PULLUP_ENABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-const gpio_config_t pin_i2c_sda = {
-    .pin_bit_mask = 1ULL << PIN_I2C_SDA,
-    .mode = GPIO_MODE_INPUT_OUTPUT_OD,
-    .pull_up_en = GPIO_PULLUP_ENABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
-/* ---------- STATUS LED ---------- */
-const gpio_config_t pin_status_led = {
-    .pin_bit_mask = 1ULL << PIN_STATUS_LED,
-    .mode = GPIO_MODE_OUTPUT,
-    .pull_up_en = GPIO_PULLUP_DISABLE,
-    .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
-
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
 
@@ -180,13 +27,63 @@ esp_err_t KM_GPIO_Init(void)
 {
     esp_err_t ret;
 
-    // Enable DAC channels
+    /* ======================== ADC ======================== */
+    // Configurar ADC1/ADC2 pins como entrada
+    gpio_config_t adc_pin_cfg = {
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+
+    // Lista de ADC1
+    const gpio_num_t adc1_pins[] = {
+        PIN_PEDAL_ACC, PIN_PEDAL_BRAKE, PIN_HYDRAULIC_1,
+        PIN_PRESSURE_1, PIN_PRESSURE_2, PIN_PRESSURE_3
+    };
+    for (int i = 0; i < sizeof(adc1_pins)/sizeof(adc1_pins[0]); i++) {
+        adc_pin_cfg.pin_bit_mask = 1ULL << adc1_pins[i];
+        ret = gpio_config(&adc_pin_cfg);
+        if (ret != ESP_OK) return ret;
+    }
+
+    // ADC2 pins (si se usan)
+    adc_pin_cfg.pin_bit_mask = 1ULL << PIN_HYDRAULIC_2;
+    ret = gpio_config(&adc_pin_cfg);
+    if (ret != ESP_OK) return ret;
+
+    /* ---------- DAC ---------- */
+#ifdef CONFIG_IDF_TARGET_ESP32
     ret = dac_output_enable(DAC_CHAN_0); // CMD_ACC
     if (ret != ESP_OK) return ret;
     ret = dac_output_enable(DAC_CHAN_1); // CMD_BRAKE
     if (ret != ESP_OK) return ret;
+#endif
 
-    // Setup PWM (LEDC)
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+    // SPI config for MCP4922 (DAC externo)
+    static spi_device_handle_t mcp4922_handle = NULL;
+    spi_bus_config_t buscfg = {
+        .miso_io_num = -1,
+        .mosi_io_num = SPI_MOSI_PIN,
+        .sclk_io_num = SPI_SCLK_PIN,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+        .max_transfer_sz = 2
+    };
+    spi_device_interface_config_t devcfg = {
+        .clock_speed_hz = 1000000,
+        .mode = 0,
+        .spics_io_num = SPI_CS_PIN,
+        .queue_size = 1
+    };
+    ret = spi_bus_initialize(SPI_HOST, &buscfg, SPI_DMA_CH_AUTO);
+    if (ret != ESP_OK) return ret;
+    ret = spi_bus_add_device(SPI_HOST, &devcfg, &mcp4922_handle);
+    if (ret != ESP_OK) return ret;
+#endif
+
+    /* ---------- PWM (LEDC) ---------- */
     ledc_timer_config_t pwm_timer = {
         .speed_mode = LEDC_HIGH_SPEED_MODE,
         .duty_resolution = LEDC_TIMER_8_BIT,
@@ -208,29 +105,89 @@ esp_err_t KM_GPIO_Init(void)
     ret = ledc_channel_config(&pwm_channel);
     if (ret != ESP_OK) return ret;
 
+    /* ======================== DIR PIN ======================== */
+    gpio_config_t dir_cfg = {
+        .pin_bit_mask = 1ULL << PIN_STEER_DIR,
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    ret = gpio_config(&dir_cfg);
+    if (ret != ESP_OK) return ret;
+
+    /* ======================== HALL SENSORS ======================== */
+    gpio_config_t hall_cfg = {
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_POSEDGE
+    };
+    const gpio_num_t hall_pins[] = { PIN_MOTOR_HALL_1, PIN_MOTOR_HALL_2, PIN_MOTOR_HALL_3 };
+    for (int i = 0; i < sizeof(hall_pins)/sizeof(hall_pins[0]); i++) {
+        hall_cfg.pin_bit_mask = 1ULL << hall_pins[i];
+        ret = gpio_config(&hall_cfg);
+        if (ret != ESP_OK) return ret;
+    }
+
+    // /* ======================== I2C ======================== */
+    // i2c_config_t i2c_cfg = {
+    //     .mode = I2C_MODE_MASTER,
+    //     .sda_io_num = PIN_I2C_SDA,
+    //     .scl_io_num = PIN_I2C_SCL,
+    //     .sda_pullup_en = GPIO_PULLUP_ENABLE,
+    //     .scl_pullup_en = GPIO_PULLUP_ENABLE,
+    //     .master.clk_speed = 400000
+    // };
+    // ret = i2c_param_config(I2C_NUM_0, &i2c_cfg);
+    // if (ret != ESP_OK) return ret;
+    // ret = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
+    // if (ret != ESP_OK) return ret;
+
+    /* ---------- UART0 (debug) ---------- */
+    const uart_config_t uart0_config = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity    = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+    };
+    ret = uart_param_config(UART_NUM_0, &uart0_config);
+    if (ret != ESP_OK) return ret;
+    ret = uart_driver_install(UART_NUM_0, 1024, 0, 0, NULL, 0);
+    if (ret != ESP_OK) return ret;
+
+    /* ---------- UART2 (ORIN) ---------- */
+    const uart_config_t uart2_config = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity    = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+    };
+    ret = uart_param_config(UART_NUM_2, &uart2_config);
+    if (ret != ESP_OK) return ret;
+    ret = uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
+    if (ret != ESP_OK) return ret;
+
     return ESP_OK;
 }
 
 /* ---------- Digital GPIO ---------- */
-uint8_t KM_GPIO_ReadPin(const gpio_config_t *pin)
+esp_err_t KM_GPIO_WriteDigital(gpio_num_t pin, uint8_t level)
 {
-    return gpio_get_level((gpio_num_t)(pin->pin_bit_mask));
+    return gpio_set_level(pin, level ? 1 : 0);
 }
 
-esp_err_t KM_GPIO_WritePinHigh(const gpio_config_t *pin)
+uint8_t KM_GPIO_ReadDigital(gpio_num_t pin)
 {
-    return gpio_set_level((gpio_num_t)(pin->pin_bit_mask), 1);
-}
-
-esp_err_t KM_GPIO_WritePinLow(const gpio_config_t *pin)
-{
-    return gpio_set_level((gpio_num_t)(pin->pin_bit_mask), 0);
+    return gpio_get_level(pin);
 }
 
 /* ---------- ADC ---------- */
-uint16_t KM_GPIO_ReadADC(const gpio_config_t *pin)
+uint16_t KM_GPIO_ReadADC(gpio_num_t pin)
 {
-    gpio_num_t gpio = (gpio_num_t)(pin->pin_bit_mask);
+    gpio_num_t gpio = (gpio_num_t)(pin);
     int raw_out_adc2 = 0;
 
     switch (gpio)
@@ -246,14 +203,15 @@ uint16_t KM_GPIO_ReadADC(const gpio_config_t *pin)
                 return raw_out_adc2;
             return 0;
             
-        default: return 0;
+        default: 
+            return 0;
     }
 }
 
 /* ---------- DAC ---------- */
-esp_err_t KM_GPIO_WriteDAC(const gpio_config_t *pin, uint8_t value)
+esp_err_t KM_GPIO_WriteDAC(gpio_num_t pin, uint8_t value)
 {
-    gpio_num_t gpio = (gpio_num_t)(pin->pin_bit_mask);
+    gpio_num_t gpio = (gpio_num_t)pin;
 
     if (gpio == PIN_CMD_ACC) return dac_output_voltage(DAC_CHAN_0, value);
     if (gpio == PIN_CMD_BRAKE) return dac_output_voltage(DAC_CHAN_1, value);
@@ -262,9 +220,9 @@ esp_err_t KM_GPIO_WriteDAC(const gpio_config_t *pin, uint8_t value)
 }
 
 /* ---------- PWM ---------- */
-esp_err_t KM_GPIO_WritePWM(const gpio_config_t *pin, uint8_t duty)
+esp_err_t KM_GPIO_WritePWM(gpio_num_t pin, uint32_t duty)
 {
-    gpio_num_t gpio = (gpio_num_t)(pin->pin_bit_mask);
+    gpio_num_t gpio = (gpio_num_t)pin;
 
     if (gpio == GPIO_NUM_27) // Steering PWM
     {
@@ -273,23 +231,6 @@ esp_err_t KM_GPIO_WritePWM(const gpio_config_t *pin, uint8_t duty)
     }
 
     return ESP_ERR_INVALID_ARG;
-}
-
-/* ---------- I2C ---------- */
-esp_err_t KM_GPIO_I2CInit(void)
-{
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = PIN_I2C_SDA,
-        .scl_io_num = PIN_I2C_SCL,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 400000
-    };
-    esp_err_t ret = i2c_param_config(I2C_NUM_0, &conf);
-    if (ret != ESP_OK) return ret;
-
-    return i2c_driver_install(I2C_NUM_0, conf.mode, 0, 0, 0);
 }
 
 

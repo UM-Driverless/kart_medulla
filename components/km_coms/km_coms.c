@@ -84,9 +84,9 @@ esp_err_t KM_COMS_Init(uart_port_t uart_port) {
     if(km_coms_mutex == NULL)
         return ESP_ERR_NO_MEM;
 
-    // Instala el driver UART con buffers TX/RX
-    uart_driver_install(km_coms_uart, BUF_SIZE_RX, BUF_SIZE_TX, 0, NULL, 0);
-    uart_param_config(km_coms_uart, &uart_config);
+    // // Instala el driver UART con buffers TX/RX
+    // uart_driver_install(km_coms_uart, BUF_SIZE_RX, BUF_SIZE_TX, 0, NULL, 0);
+    // uart_param_config(km_coms_uart, &uart_config);
 
     // Asigna pines según el puerto
     if(km_coms_uart == UART_NUM_2) {

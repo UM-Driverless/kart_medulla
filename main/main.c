@@ -31,6 +31,7 @@
 #include "km_sdir.h"
 #include "km_sta.h"
 #include "km_gpio.h"
+#include "km_objects.h"
 
 static const char *TAG = "MAIN";
 
@@ -77,10 +78,6 @@ void system_init(void) {
     if(KM_GPIO_Init() != ESP_OK)
         ESP_LOGE(TAG, "Error inicializando libreria gpio\n");
 
-    // Initialize I2C
-    if (KM_GPIO_I2CInit() != ESP_OK)
-        ESP_LOGE(TAG, "Error inicializando libreria i2c\n");
-
     // Initialise tasks
     KM_RTOS_Init();
 
@@ -88,10 +85,27 @@ void system_init(void) {
     if (KM_COMS_Init(UART_NUM_0) != ESP_OK)
         ESP_LOGE(TAG, "Error inicializando libreria de comunicaciones");
     
-    // KM_SDIR_Init(MAX_ERROR_COUNT_SDIR);
+    sensor_struct sdir = KM_SDIR_Init(MAX_ERROR_COUNT_SDIR);
 
-    // KM_ACT_Begin();
-    // KM_PID_Init();
+    // ------------------------------------------------------
+    // Initialize Motor controllers
+    ACT_Controller dir_act = KM_ACT_Init(ACT_STEER, 0.4);
+    ACT_Controller throttle_act = KM_ACT_Init(ACT_ACCEL, 1.0);
+    ACT_Controller brake_act = KM_ACT_Init(ACT_BRAKE, 1.0);
+
+    KM_ACT_SetLimit(&dir_act, 0.4);
+    KM_ACT_SetLimit(&throttle_act, 1.0);
+    KM_ACT_SetLimit(&brake_act, 1.0);
+
+    // Initialise PIDs
+    float kp = 0.03;
+    float ki = 0.0;
+    float kd = 0.0004;
+    PID_Controller dir_pid = KM_PID_Init(kp, ki, kd);
+
+    // Creation of FreeRTOS task
+
+    // Start state machine
 
     // Test bidirectional: send heartbeat + receive from Orin
     uint8_t payload[4] = {0xDE, 0xAD, 0xBE, 0xEF};
