@@ -18,7 +18,8 @@
 
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
-
+const uart_config_t uart0_config;
+const uart_config_t uart2_config;
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
 
@@ -144,31 +145,31 @@ esp_err_t KM_GPIO_Init(void)
     // ret = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
     // if (ret != ESP_OK) return ret;
 
-    /* ---------- UART0 (debug) ---------- */
-    const uart_config_t uart0_config = {
-        .baud_rate = 115200,
-        .data_bits = UART_DATA_8_BITS,
-        .parity    = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-    };
-    ret = uart_param_config(UART_NUM_0, &uart0_config);
-    if (ret != ESP_OK) return ret;
-    ret = uart_driver_install(UART_NUM_0, 1024, 0, 0, NULL, 0);
-    if (ret != ESP_OK) return ret;
+    /* ---------- UART0 (Orin) ---------- */
+    // uart0_config = {
+    //     .baud_rate = 115200,
+    //     .data_bits = UART_DATA_8_BITS,
+    //     .parity    = UART_PARITY_DISABLE,
+    //     .stop_bits = UART_STOP_BITS_1,
+    //     .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+    // };
+    // ret = uart_param_config(UART_NUM_0, &uart0_config);
+    // if (ret != ESP_OK) return ret;
+    // ret = uart_driver_install(UART_NUM_0, 1024, 0, 0, NULL, 0);
+    // if (ret != ESP_OK) return ret;
 
-    /* ---------- UART2 (ORIN) ---------- */
-    const uart_config_t uart2_config = {
-        .baud_rate = 115200,
-        .data_bits = UART_DATA_8_BITS,
-        .parity    = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-    };
-    ret = uart_param_config(UART_NUM_2, &uart2_config);
-    if (ret != ESP_OK) return ret;
-    ret = uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
-    if (ret != ESP_OK) return ret;
+    // /* ---------- UART2 (debug) ---------- */
+    // uart2_config = {
+    //     .baud_rate = 115200,
+    //     .data_bits = UART_DATA_8_BITS,
+    //     .parity    = UART_PARITY_DISABLE,
+    //     .stop_bits = UART_STOP_BITS_1,
+    //     .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+    // };
+    // ret = uart_param_config(UART_NUM_2, &uart2_config);
+    // if (ret != ESP_OK) return ret;
+    // ret = uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
+    // if (ret != ESP_OK) return ret;
 
     return ESP_OK;
 }

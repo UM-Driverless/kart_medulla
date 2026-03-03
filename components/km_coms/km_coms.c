@@ -84,6 +84,31 @@ esp_err_t KM_COMS_Init(uart_port_t uart_port) {
     if(km_coms_mutex == NULL)
         return ESP_ERR_NO_MEM;
 
+    uart_config_t uart0_config = {
+        .baud_rate = 460800,
+        .data_bits = UART_DATA_8_BITS,
+        .parity    = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+    };
+    esp_err_t ret = uart_param_config(UART_NUM_0, &uart0_config);
+    if (ret != ESP_OK) return ret;
+    ret = uart_driver_install(UART_NUM_0, 1024, 0, 0, NULL, 0);
+    if (ret != ESP_OK) return ret;
+
+    /* ---------- UART2 (debug) ---------- */
+    uart_config_t uart2_config = {
+        .baud_rate = 460800,
+        .data_bits = UART_DATA_8_BITS,
+        .parity    = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+    };
+    ret = uart_param_config(UART_NUM_2, &uart2_config);
+    if (ret != ESP_OK) return ret;
+    ret = uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
+    if (ret != ESP_OK) return ret;
+
     // // Instala el driver UART con buffers TX/RX
     // uart_driver_install(km_coms_uart, BUF_SIZE_RX, BUF_SIZE_TX, 0, NULL, 0);
     // uart_param_config(km_coms_uart, &uart_config);
