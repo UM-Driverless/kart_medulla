@@ -211,7 +211,7 @@ class ControllerGUI:
     def connect_serial(self):
         """Connect to ESP32 serial port"""
         try:
-            self.ser = serial.Serial(self.serial_port, 115200, timeout=0.1)
+            self.ser = serial.Serial(self.serial_port, 460800, timeout=0.1)
             self.ser.reset_input_buffer()
             self.running = True
             self.status_var.set(f"Connected to {self.serial_port}")

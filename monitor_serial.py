@@ -26,7 +26,7 @@ def autodetect_port() -> str:
     return ports[0].device if ports else ""
 
 
-def open_serial(port: str, baud: int = 115200) -> serial.Serial:
+def open_serial(port: str, baud: int = 460800) -> serial.Serial:
     return serial.Serial(port, baudrate=baud, timeout=1)
 
 
@@ -35,7 +35,7 @@ def monitor(port: str):
         print("No serial ports found. Plug in the ESP32 and try again.")
         sys.exit(1)
 
-    print(f"Connecting to {port} @ 115200...")
+    print(f"Connecting to {port} @ 460800...")
     try:
         with open_serial(port) as ser:
             ser.reset_input_buffer()
