@@ -131,19 +131,19 @@ esp_err_t KM_GPIO_Init(void)
         if (ret != ESP_OK) return ret;
     }
 
-    // /* ======================== I2C ======================== */
-    // i2c_config_t i2c_cfg = {
-    //     .mode = I2C_MODE_MASTER,
-    //     .sda_io_num = PIN_I2C_SDA,
-    //     .scl_io_num = PIN_I2C_SCL,
-    //     .sda_pullup_en = GPIO_PULLUP_ENABLE,
-    //     .scl_pullup_en = GPIO_PULLUP_ENABLE,
-    //     .master.clk_speed = 400000
-    // };
-    // ret = i2c_param_config(I2C_NUM_0, &i2c_cfg);
-    // if (ret != ESP_OK) return ret;
-    // ret = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
-    // if (ret != ESP_OK) return ret;
+    /* ======================== I2C ======================== */
+    i2c_config_t i2c_cfg = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = PIN_I2C_SDA,
+        .scl_io_num = PIN_I2C_SCL,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = 400000
+    };
+    ret = i2c_param_config(I2C_NUM_0, &i2c_cfg);
+    if (ret != ESP_OK) return ret;
+    ret = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
+    if (ret != ESP_OK) return ret;
 
     /* ---------- UART0 (Orin) ---------- */
     // uart0_config = {
