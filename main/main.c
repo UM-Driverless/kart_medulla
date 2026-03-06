@@ -1,26 +1,9 @@
-#include "nvs_flash.h"          // Obligatorio para almacenar parámetros BT/WiFi
-#include "esp_system.h"         // Funciones básicas de ESP32
-#include "esp_log.h"            // Logging
+#include "esp_system.h"
+#include "esp_log.h"
+#include "driver/uart.h"
 
-#include "esp_bt.h"             // Core BT
-// #include "esp_bt_main.h"        // Funciones de inicio BT
-// #include "esp_bt_device.h"      // Información del dispositivo
-// #include "esp_gap_ble_api.h"    // GAP BLE (escaneo, publicidad)
-// #include "esp_gatts_api.h"      // Servidor GATT
-// #include "esp_gatt_common_api.h"// Funciones GATT comunes
-
-#include <btstack_port_esp32.h>           // Puerto BTstack para ESP32
-#include <btstack_run_loop.h>             // Loop de BTstack
-#include <btstack_stdio_esp32.h>          // Consola BTstack
-#include <uni.h>                           // Core Bluepad32 (unijoysticle)
-// #include <platform/esp32/uni_platform_esp32.h> // Adaptación a ESP32
-
-#include "esp_timer.h"       // Temporizadores de alta resolución
-#include "esp_wifi.h"        // Para WiFi
-#include "esp_event.h"       // Event loop de ESP-IDF
-#include "esp_netif.h"       // Configuración de interfaces de red
-#include "esp_sntp.h"        // Para sincronizar tiempo
-#include "esp_system.h"      // Información de sistema
+#include <math.h>
+#include <stdarg.h>
 
 // Librerias propias
 #include "km_act.h"
@@ -35,42 +18,60 @@
 
 static const char *TAG = "MAIN";
 
-// ===========================
-// Funciones auxiliares de Bluetooth
-// ===========================
-// void init_bluetooth(void) {
-//     esp_err_t ret;
-
-//     // Inicializar NVS (necesario para BT/WiFi)
-//     ret = nvs_flash_init();
-//     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-//         ESP_ERROR_CHECK(nvs_flash_erase());
-//         ret = nvs_flash_init();
-//     }
-//     ESP_ERROR_CHECK(ret);
-
-//     // Inicializar controlador BT
-//     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-//     ESP_ERROR_CHECK(esp_bt_controller_init(&bt_cfg));
-//     ESP_ERROR_CHECK(esp_bt_controller_enable(ESP_BT_MODE_BTDM)); // BLE + Classic
-
-//     // Inicializar Bluedroid
-//     ESP_ERROR_CHECK(esp_bluedroid_init());
-//     ESP_ERROR_CHECK(esp_bluedroid_enable());
-
-//     // Inicializar consola BTstack
-//     btstack_stdio_init();
-
-//     // Configurar plataforma ESP32 para Bluepad32
-//     uni_platform_set_custom(get_esp32_platform());
-
-//     // Inicializar Bluepad32
-//     uni_init(0, NULL);
-
-//     ESP_LOGI(TAG, "Bluetooth y Bluepad32 inicializados");
-// }
-
 #define MAX_ERROR_COUNT_SDIR 10
+
+// Context struct shared by control task
+typedef struct {
+    sensor_struct *sdir;
+    ACT_Controller *dir_act;
+    ACT_Controller *throttle_act;
+    ACT_Controller *brake_act;
+    PID_Controller *dir_pid;
+} control_context_t;
+
+// ===========================
+// FreeRTOS task functions
+// ===========================
+
+// 20 Hz — UART RX + parse incoming messages
+void comms_task(void *ctx) {
+    km_coms_ReceiveMsg();
+    KM_COMS_ProccessMsgs();
+}
+
+// 10 Hz — read sensor, run PID, drive actuators, send feedback
+void control_task(void *ctx) {
+    control_context_t *c = (control_context_t *)ctx;
+
+    // Send feedback FIRST (use last known value) so frames arrive even if I2C blocks
+    float actual_rad = (float)KM_OBJ_GetObjectValue(ACTUAL_STEERING) / 1000.0f;
+    int16_t actual_i16 = (int16_t)(actual_rad * 1000.0f);
+    uint8_t fb[2] = {(uint8_t)(actual_i16 >> 8), (uint8_t)(actual_i16 & 0xFF)};
+    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 2);
+
+    // Target from Orin: int16 radians × 1000
+    float target_rad = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
+
+    // Throttle + brake: unchanged (effort commands, 0-255)
+    float thr = (float)KM_OBJ_GetObjectValue(TARGET_THROTTLE) / 255.0f;
+    float brk = (float)KM_OBJ_GetObjectValue(TARGET_BRAKING) / 255.0f;
+    KM_ACT_SetOutput(c->throttle_act, thr);
+    KM_ACT_SetOutput(c->brake_act, brk);
+
+    // Read sensor AFTER sending — if I2C hangs, at least feedback/actuators ran
+    float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
+    KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
+
+    // PID in radians
+    float pid_out = KM_PID_Calculate(c->dir_pid, target_rad, new_rad);
+    KM_ACT_SetOutput(c->dir_act, pid_out);
+}
+
+// 1 Hz — heartbeat to Orin
+void heartbeat_task(void *ctx) {
+    uint8_t payload[4] = {0xDE, 0xAD, 0xBE, 0xEF};
+    KM_COMS_SendMsg(ESP_HEARTBEAT, payload, sizeof(payload));
+}
 
 void system_init(void) {
 
@@ -86,6 +87,16 @@ void system_init(void) {
         ESP_LOGE(TAG, "Error inicializando libreria de comunicaciones");
     
     sensor_struct sdir = KM_SDIR_Init(MAX_ERROR_COUNT_SDIR);
+    KM_SDIR_Begin(&sdir, GPIO_NUM_21, GPIO_NUM_22);
+
+    // Test AS5600 connectivity and seed initial angle
+    float init_rad = KM_SDIR_ReadAngleRadians(&sdir);
+    if (sdir.errorCount == 0) {
+        KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(init_rad * 1000));
+        ESP_LOGI(TAG, "AS5600 connected — %.3f rad", init_rad);
+    } else {
+        ESP_LOGW(TAG, "AS5600 NOT responding — steering feedback will be stale");
+    }
 
     // ------------------------------------------------------
     // Initialize Motor controllers
@@ -97,66 +108,71 @@ void system_init(void) {
     KM_ACT_SetLimit(&throttle_act, 1.0);
     KM_ACT_SetLimit(&brake_act, 1.0);
 
-    // Initialise PIDs
+    // Initialise PID for steering
     float kp = 0.03;
     float ki = 0.0;
     float kd = 0.0004;
     PID_Controller dir_pid = KM_PID_Init(kp, ki, kd);
+    KM_PID_SetOutputLimits(&dir_pid, -1.0f, 1.0f);
+    KM_PID_SetIntegralLimits(&dir_pid, -10.0f, 10.0f);
 
-    // Creation of FreeRTOS task
+    // Build control context (static so it outlives system_init)
+    static control_context_t ctrl_ctx;
+    static sensor_struct sdir_static;
+    static ACT_Controller dir_act_static, throttle_act_static, brake_act_static;
+    static PID_Controller dir_pid_static;
 
-    // Start state machine
+    sdir_static = sdir;
+    dir_act_static = dir_act;
+    throttle_act_static = throttle_act;
+    brake_act_static = brake_act;
+    dir_pid_static = dir_pid;
 
-    // Test bidirectional: send heartbeat + receive from Orin
-    uint8_t payload[4] = {0xDE, 0xAD, 0xBE, 0xEF};
-    uint32_t loop_count = 0;
+    ctrl_ctx.sdir = &sdir_static;
+    ctrl_ctx.dir_act = &dir_act_static;
+    ctrl_ctx.throttle_act = &throttle_act_static;
+    ctrl_ctx.brake_act = &brake_act_static;
+    ctrl_ctx.dir_pid = &dir_pid_static;
 
-    while (true) {
-        // TX: send heartbeat to Orin every 10 iterations (~1s)
-        if (loop_count % 10 == 0) {
-            KM_COMS_SendMsg(ESP_HEARTBEAT, payload, sizeof(payload));
-            ESP_LOGI(TAG, "TX: heartbeat sent");
-        }
+    // Register FreeRTOS tasks
+    RTOS_Task t1 = KM_COMS_CreateTask("comms", comms_task, NULL, 10, 2048, 2, 1);
+    RTOS_Task t2 = KM_COMS_CreateTask("control", control_task, &ctrl_ctx, 10, 4096, 1, 1);
+    RTOS_Task t3 = KM_COMS_CreateTask("heartbeat", heartbeat_task, NULL, 1000, 1024, 1, 1);
 
-        // RX: read bytes from UART2 into internal buffer
-        km_coms_ReceiveMsg();
+    KM_RTOS_AddTask(t1);
+    KM_RTOS_AddTask(t2);
+    KM_RTOS_AddTask(t3);
 
-        // RX: parse complete frames and dispatch to objects
-        KM_COMS_ProccessMsgs();
+    ESP_LOGI(TAG, "All tasks registered — scheduler running");
+    // system_init returns, FreeRTOS scheduler keeps tasks alive
+}
 
-        loop_count++;
-        vTaskDelay(pdMS_TO_TICKS(100));
+// Redirect ESP-IDF log output to UART2 so UART0 stays clean for protocol
+static int uart2_vprintf(const char *fmt, va_list args) {
+    char buf[256];
+    int len = vsnprintf(buf, sizeof(buf), fmt, args);
+    if (len > 0) {
+        uart_write_bytes(UART_NUM_2, buf, len > (int)sizeof(buf) ? (int)sizeof(buf) : len);
     }
+    return len;
 }
 
-// ===========================
-// app_main - punto de entrada
-// ===========================
 void app_main(void) {
+    // Init UART2 early for debug logs — before any ESP_LOG calls
+    uart_config_t uart2_cfg = {
+        .baud_rate = 460800,
+        .data_bits = UART_DATA_8_BITS,
+        .parity    = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+    };
+    uart_param_config(UART_NUM_2, &uart2_cfg);
+    uart_set_pin(UART_NUM_2, PIN_ORIN_UART_TX, PIN_ORIN_UART_RX,
+                 UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
+    esp_log_set_vprintf(uart2_vprintf);
 
-    // Habilitar logs por UART0 (USB) para debug
     esp_log_level_set("*", ESP_LOG_INFO);
-
-    ESP_LOGI(TAG, "ESP iniciando...");
-
-    // Inicializa Bluetooth, Bluepad32, NVS, etc.
-    // init_bluetooth();
-
-    // Inicia todas las librerias que se necesitan
+    ESP_LOGI(TAG, "ESP32 starting...");
     system_init();
-
-    // Creacion de toda las tareas de FreeRTOS
-    // Tareas de libreria de comunicaciones
-    // Tareas de libreria de maquina de estado
-
-    // Ejecutar loop de BTstack (bloquea dentro de app_main, pero otras tareas siguen)
-    //btstack_run_loop_execute();
 }
-
-// ESP_LOGI(TAG, "Mensaje: %d", valor); → Información normal
-
-// ESP_LOGW(TAG, "Mensaje: %s", cadena); → Advertencia
-
-// ESP_LOGE(TAG, "Mensaje: %s", cadena); → Error
-
-// ESP_LOGD(TAG, "Mensaje debug"); → Debug (solo si está habilitado)
