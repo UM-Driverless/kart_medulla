@@ -244,7 +244,7 @@ static void KM_RTOS_TaskWrapper(void *params) {
     RTOS_Task *task = (RTOS_Task *)params;
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
-    if (!task || task->taskFn) vTaskDelete(NULL);
+    if (!task || !task->taskFn) vTaskDelete(NULL);
 
     while (1) {
         if (task->active && task->taskFn != NULL) {
