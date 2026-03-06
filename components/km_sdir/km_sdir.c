@@ -9,7 +9,7 @@
 
 /******************************* MACROS PRIVADAS ******************************/
 #define TAG "KM_SDIR"
-#define I2C_MASTER_TIMEOUT_MS 1000
+#define I2C_MASTER_TIMEOUT_MS 5
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
 static int8_t KM_SDIR_ReadRegisters(sensor_struct *sensor, uint8_t reg, uint8_t* data, uint8_t len);
