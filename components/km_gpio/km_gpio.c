@@ -198,9 +198,12 @@ uint16_t KM_GPIO_ReadADC(gpio_num_t pin)
         case GPIO_NUM_34: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_6); // pressure 3
         case GPIO_NUM_35: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_7); // pedal acc
         case GPIO_NUM_32: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_4); // pedal brake
-        case GPIO_NUM_33: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_5); // hydraulic 1
-        case GPIO_NUM_13:    // hydraulic 2
-            if (adc2_get_raw(ADC2_CHANNEL_4, ADC_WIDTH_BIT_12, &raw_out_adc2) == ESP_OK)
+        case GPIO_NUM_27:    // hydraulic 1 (ADC2_CH7)
+            if (adc2_get_raw(ADC2_CHANNEL_7, ADC_WIDTH_BIT_12, &raw_out_adc2) == ESP_OK)
+                return raw_out_adc2;
+            return 0;
+        case GPIO_NUM_14:    // hydraulic 2 (ADC2_CH6)
+            if (adc2_get_raw(ADC2_CHANNEL_6, ADC_WIDTH_BIT_12, &raw_out_adc2) == ESP_OK)
                 return raw_out_adc2;
             return 0;
             
@@ -225,7 +228,7 @@ esp_err_t KM_GPIO_WritePWM(gpio_num_t pin, uint32_t duty)
 {
     gpio_num_t gpio = (gpio_num_t)pin;
 
-    if (gpio == GPIO_NUM_27) // Steering PWM
+    if (gpio == PIN_STEER_PWM) // Steering PWM
     {
         ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, duty);
         return ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);

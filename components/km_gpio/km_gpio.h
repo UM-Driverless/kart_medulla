@@ -38,38 +38,44 @@
 #define PIN_USB_UART_TX         GPIO_NUM_1   // U0TXD
 #define PIN_USB_UART_RX         GPIO_NUM_3   // U0RXD
 
-/* ---------- UART2 (wired to ORIN) ---------- */
-#define PIN_ORIN_UART_TX        GPIO_NUM_17  // U2TXD
-#define PIN_ORIN_UART_RX        GPIO_NUM_16  // U2RXD
+/* ---------- UART2 (debug logs) ---------- */
+/* WARNING: GPIO17/16 conflict with MOTOR_HALL_1/3 in the PCB.
+ * UART2 debug logging unavailable when using the interface PCB.
+ * Orin comms use UART0 (USB, GPIO1/3) for binary protocol. */
+#define PIN_ORIN_UART_TX        GPIO_NUM_17  // U2TXD (conflicts HALL1 on PCB)
+#define PIN_ORIN_UART_RX        GPIO_NUM_16  // U2RXD (conflicts HALL3 on PCB)
 
 /* ---------- ADC INPUTS (Sensors) ---------- */
 /* ADC1 - input only, WiFi safe */
 #define PIN_PEDAL_BRAKE         GPIO_NUM_32  // ADC1_CH4
-#define PIN_HYDRAULIC_1         GPIO_NUM_33  // ADC1_CH5
+#define PIN_HYDRAULIC_1         GPIO_NUM_27  // H2-11, ADC2_CH7
 #define PIN_PRESSURE_3          GPIO_NUM_34  // ADC1_CH6
 #define PIN_PEDAL_ACC           GPIO_NUM_35  // ADC1_CH7
 #define PIN_PRESSURE_1          GPIO_NUM_36  // ADC1_CH0 (VP)
 #define PIN_PRESSURE_2          GPIO_NUM_39  // ADC1_CH3 (VN)
 
 /* ADC2 - allowed (WiFi not used) */
-#define PIN_HYDRAULIC_2         GPIO_NUM_13  // ADC2_CH4 (strap pin)
+#define PIN_HYDRAULIC_2         GPIO_NUM_14  // H2-12, ADC2_CH6
 
 /* ---------- DAC OUTPUTS ---------- */
 #define PIN_CMD_ACC             GPIO_NUM_25  // DAC1 !!!!!!Antes era el 25
 #define PIN_CMD_BRAKE           GPIO_NUM_26  // DAC2
 
 /* ---------- STEERING MOTOR ---------- */
-#define PIN_STEER_PWM           GPIO_NUM_27  // PWM Steering
-#define PIN_STEER_DIR           GPIO_NUM_14  // Direction steering
+#define PIN_STEER_PWM           GPIO_NUM_18  // H1-11, PWM Steering (Cytron H-bridge)
+#define PIN_STEER_DIR           GPIO_NUM_19  // H1-12, Direction steering (Cytron H-bridge)
 
 /* ---------- HALL SENSORS ---------- */
-#define PIN_MOTOR_HALL_1        GPIO_NUM_18  // HALL 1 motor
-#define PIN_MOTOR_HALL_2        GPIO_NUM_19  // HALL 2 motor
-#define PIN_MOTOR_HALL_3        GPIO_NUM_23  // HALL 3 motor !!!!!!!!!Antes era el 23
+#define PIN_MOTOR_HALL_1        GPIO_NUM_17  // H1-9, HALL 1 motor
+#define PIN_MOTOR_HALL_2        GPIO_NUM_33  // H2-8, HALL 2 motor
+#define PIN_MOTOR_HALL_3        GPIO_NUM_16  // H1-8, HALL 3 motor
 
 /* ---------- I2C (AS5600) ---------- */
 #define PIN_I2C_SDA             GPIO_NUM_21  // I2C SDA
 #define PIN_I2C_SCL             GPIO_NUM_22  // I2C SCL !!!!!!!!!!!!Antes era el 22
+
+/* ---------- SDC (Shutdown Circuit) ---------- */
+#define PIN_SDC_NOT_EMERGENCY   GPIO_NUM_13  // H2-15, SDC emergency status
 
 /* ---------- STATUS LED ---------- */
 #define PIN_STATUS_LED          GPIO_NUM_2   // Strap pin (keep LOW at boot)
@@ -127,7 +133,9 @@ extern const uart_config_t uart2_config;
 // extern const gpio_config_t pin_i2c_scl;
 // extern const gpio_config_t pin_i2c_sda;
 
-// /* ---------- STATUS LED ---------- */
+// /* ---------- SDC (Shutdown Circuit) ---------- */
+
+/* ---------- STATUS LED ---------- */
 
 // extern const gpio_config_t pin_status_led;
 
