@@ -91,12 +91,14 @@ esp_err_t KM_COMS_Init(uart_port_t uart_port) {
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
     };
+    uart_driver_delete(UART_NUM_0);
     esp_err_t ret = uart_param_config(UART_NUM_0, &uart0_config);
     if (ret != ESP_OK) return ret;
     ret = uart_driver_install(UART_NUM_0, 1024, 0, 0, NULL, 0);
     if (ret != ESP_OK) return ret;
 
-    /* ---------- UART2 (debug) ---------- */
+    /* ---------- UART2 (debug logging) ---------- */
+    /* May already be installed by app_main for early log redirection */
     uart_config_t uart2_config = {
         .baud_rate = 460800,
         .data_bits = UART_DATA_8_BITS,
@@ -104,10 +106,8 @@ esp_err_t KM_COMS_Init(uart_port_t uart_port) {
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
     };
-    ret = uart_param_config(UART_NUM_2, &uart2_config);
-    if (ret != ESP_OK) return ret;
-    ret = uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
-    if (ret != ESP_OK) return ret;
+    uart_param_config(UART_NUM_2, &uart2_config);
+    uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0); /* OK if already installed */
 
     // // Instala el driver UART con buffers TX/RX
     // uart_driver_install(km_coms_uart, BUF_SIZE_RX, BUF_SIZE_TX, 0, NULL, 0);
@@ -261,8 +261,7 @@ void KM_COMS_ProccessMsgs(void) {
  * Supported message types include:
  * - ORIN_TARG_THROTTLE: 1-byte payload representing the target throttle.
  * - ORIN_TARG_BRAKING: 1-byte payload representing the target braking.
- * - ORIN_TARG_STEERING: 2-byte payload where the first byte indicates direction and the
- *   second byte the magnitude. 0->positive turn, 1->negative turn
+ * - ORIN_TARG_STEERING: 2-byte payload, int16 big-endian representing radians × 1000
  * - ORIN_MISION: 1-byte payload representing the current mission state.
  * - ORIN_MACHINE_STATE: 1-byte payload representing the machine's current state.
  * - ORIN_HEARTBEAT: message indicating heartbeat; currently not processed.
@@ -277,7 +276,6 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
     ESP_LOGI("KM_coms", "RX msg type=0x%02X len=%d crc=0x%02X", msg.type, msg.len, msg.crc);
 
     int64_t object_value = 0;
-    int8_t direction;
 
     switch (msg.type)
     {
@@ -296,15 +294,8 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
 
     case ORIN_TARG_STEERING:
         if (msg.len != 2) return; // Invalid payload
-        direction = msg.payload[0];
-        if (direction == 0) {
-            object_value = (int64_t)msg.payload[1];
-        } else if (direction == 1){
-            object_value -= (int64_t)msg.payload[1];
-        } else {
-            return; // Invalid payload
-        }
-
+        // Decode int16 big-endian: radians × 1000
+        object_value = (int64_t)((int16_t)((msg.payload[0] << 8) | msg.payload[1]));
         KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
         break;
 
@@ -338,14 +329,8 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
         object_value = (int64_t)msg.payload[1];
         KM_OBJ_SetObjectValue(TARGET_BRAKING, object_value);
 
-        direction = msg.payload[2];
-        if (direction == 0) {
-            object_value = (int64_t)msg.payload[3];
-        } else if (direction == 1){
-            object_value -= (int64_t)msg.payload[3];
-        } else {
-            return; // Invalid payload
-        }
+        // Steering: int16 big-endian at payload[2..3], radians × 1000
+        object_value = (int64_t)((int16_t)((msg.payload[2] << 8) | msg.payload[3]));
         KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
 
         object_value = (int64_t)msg.payload[4];
