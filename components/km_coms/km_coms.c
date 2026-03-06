@@ -85,7 +85,7 @@ esp_err_t KM_COMS_Init(uart_port_t uart_port) {
         return ESP_ERR_NO_MEM;
 
     uart_config_t uart0_config = {
-        .baud_rate = 460800,
+        .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
         .parity    = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
@@ -97,30 +97,11 @@ esp_err_t KM_COMS_Init(uart_port_t uart_port) {
     ret = uart_driver_install(UART_NUM_0, 1024, 0, 0, NULL, 0);
     if (ret != ESP_OK) return ret;
 
-    /* ---------- UART2 (debug logging) ---------- */
-    /* May already be installed by app_main for early log redirection */
-    uart_config_t uart2_config = {
-        .baud_rate = 460800,
-        .data_bits = UART_DATA_8_BITS,
-        .parity    = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-    };
-    uart_param_config(UART_NUM_2, &uart2_config);
-    uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0); /* OK if already installed */
+    /* UART2 removed — GPIO17/16 reserved for hall sensors on PCB */
 
-    // // Instala el driver UART con buffers TX/RX
-    // uart_driver_install(km_coms_uart, BUF_SIZE_RX, BUF_SIZE_TX, 0, NULL, 0);
-    // uart_param_config(km_coms_uart, &uart_config);
-
-    // Asigna pines según el puerto
-    if(km_coms_uart == UART_NUM_2) {
-        uart_set_pin(km_coms_uart, PIN_ORIN_UART_TX, PIN_ORIN_UART_RX,
-                     UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    } else {
-        uart_set_pin(km_coms_uart, PIN_USB_UART_TX, PIN_USB_UART_RX,
-                     UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    }
+    /* Pin assignment for UART0 (USB to Orin) */
+    uart_set_pin(km_coms_uart, PIN_USB_UART_TX, PIN_USB_UART_RX,
+                 UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
     return ESP_OK;
 }

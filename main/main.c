@@ -137,7 +137,7 @@ void system_init(void) {
     // Register FreeRTOS tasks
     RTOS_Task t1 = KM_COMS_CreateTask("comms", comms_task, NULL, 10, 2048, 2, 1);
     RTOS_Task t2 = KM_COMS_CreateTask("control", control_task, &ctrl_ctx, 10, 4096, 1, 1);
-    RTOS_Task t3 = KM_COMS_CreateTask("heartbeat", heartbeat_task, NULL, 1000, 1024, 1, 1);
+    RTOS_Task t3 = KM_COMS_CreateTask("heartbeat", heartbeat_task, NULL, 1000, 2048, 1, 1);
 
     KM_RTOS_AddTask(t1);
     KM_RTOS_AddTask(t2);
@@ -147,32 +147,10 @@ void system_init(void) {
     // system_init returns, FreeRTOS scheduler keeps tasks alive
 }
 
-// Redirect ESP-IDF log output to UART2 so UART0 stays clean for protocol
-static int uart2_vprintf(const char *fmt, va_list args) {
-    char buf[256];
-    int len = vsnprintf(buf, sizeof(buf), fmt, args);
-    if (len > 0) {
-        uart_write_bytes(UART_NUM_2, buf, len > (int)sizeof(buf) ? (int)sizeof(buf) : len);
-    }
-    return len;
-}
-
 void app_main(void) {
-    // Init UART2 early for debug logs — before any ESP_LOG calls
-    uart_config_t uart2_cfg = {
-        .baud_rate = 460800,
-        .data_bits = UART_DATA_8_BITS,
-        .parity    = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-    };
-    uart_param_config(UART_NUM_2, &uart2_cfg);
-    uart_set_pin(UART_NUM_2, PIN_ORIN_UART_TX, PIN_ORIN_UART_RX,
-                 UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
-    esp_log_set_vprintf(uart2_vprintf);
-
-    esp_log_level_set("*", ESP_LOG_INFO);
+    /* UART2 removed — GPIO17/16 reserved for hall sensors on PCB.
+       All logs go to UART0 (USB) at 115200. */
+    esp_log_level_set("*", ESP_LOG_NONE);  /* Logs disabled — UART0 shared with binary protocol */
     ESP_LOGI(TAG, "ESP32 starting...");
     system_init();
 }
