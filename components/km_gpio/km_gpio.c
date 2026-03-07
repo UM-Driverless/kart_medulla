@@ -27,9 +27,9 @@ const uart_config_t uart2_config;
 esp_err_t KM_GPIO_Init(void)
 {
     esp_err_t ret;
-    printf("GPIO_Init: PWM=%d DIR=%d H1=%d H2=%d H3=%d HY1=%d HY2=%d\n",
-           PIN_STEER_PWM, PIN_STEER_DIR, PIN_MOTOR_HALL_1,
-           PIN_MOTOR_HALL_2, PIN_MOTOR_HALL_3, PIN_HYDRAULIC_1, PIN_HYDRAULIC_2);
+    printf("GPIO_Init: PWM=%d DIR=%d H2=%d HY1=%d HY2=%d\n",
+           PIN_STEER_PWM, PIN_STEER_DIR,
+           PIN_MOTOR_HALL_2, PIN_HYDRAULIC_1, PIN_HYDRAULIC_2);
 
     /* ======================== ADC ======================== */
     // Configurar ADC1/ADC2 pins como entrada
@@ -120,21 +120,7 @@ esp_err_t KM_GPIO_Init(void)
     ret = gpio_config(&dir_cfg);
     if (ret != ESP_OK) return ret;
 
-    /* HALL SENSORS disabled - GPIO17/16 conflict with UART2 */
-    #if 0
-    gpio_config_t hall_cfg = {
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_POSEDGE
-    };
-    const gpio_num_t hall_pins[] = { PIN_MOTOR_HALL_1, PIN_MOTOR_HALL_2, PIN_MOTOR_HALL_3 };
-    for (int i = 0; i < sizeof(hall_pins)/sizeof(hall_pins[0]); i++) {
-        hall_cfg.pin_bit_mask = 1ULL << hall_pins[i];
-        ret = gpio_config(&hall_cfg);
-        if (ret != ESP_OK) return ret;
-    }
-    #endif
+    /* HALL SENSORS — only HALL2 (GPIO33) available; HALL1/3 pins used by UART2 */
 
     /* ======================== I2C ======================== */
     i2c_config_t i2c_cfg = {

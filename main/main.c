@@ -148,7 +148,9 @@ void system_init(void) {
     ctrl_ctx.brake_act = &brake_act_static;
     ctrl_ctx.dir_pid = &dir_pid_static;
 
-    // Logs redirected to UART2 — safe to keep enabled with binary protocol on UART0
+    // Redirect logs to UART2 now, right before tasks start using UART0 for protocol
+    esp_log_set_vprintf(uart2_vprintf);
+    ESP_LOGI(TAG, "Logs redirected to UART2");
 
     // Register FreeRTOS tasks
     RTOS_Task t1 = KM_COMS_CreateTask("comms", comms_task, NULL, 10, 2048, 2, 1);

@@ -66,9 +66,10 @@
 #define PIN_STEER_DIR           GPIO_NUM_19  // H1-12, Direction steering (Cytron H-bridge)
 
 /* ---------- HALL SENSORS ---------- */
-#define PIN_MOTOR_HALL_1        GPIO_NUM_17  // H1-9, HALL 1 motor
+/* HALL 1/3 disabled — GPIO17/16 used by UART2 (debug to Orin) */
+// #define PIN_MOTOR_HALL_1     GPIO_NUM_17  // conflicts with PIN_ORIN_UART_TX
 #define PIN_MOTOR_HALL_2        GPIO_NUM_33  // H2-8, HALL 2 motor
-#define PIN_MOTOR_HALL_3        GPIO_NUM_16  // H1-8, HALL 3 motor
+// #define PIN_MOTOR_HALL_3     GPIO_NUM_16  // conflicts with PIN_ORIN_UART_RX
 
 /* ---------- I2C (AS5600) ---------- */
 #define PIN_I2C_SDA             GPIO_NUM_21  // I2C SDA
