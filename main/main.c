@@ -198,11 +198,12 @@ void app_main(void) {
     uart_param_config(UART_NUM_2, &uart2_cfg);
     uart_set_pin(UART_NUM_2, PIN_ORIN_UART_TX, PIN_ORIN_UART_RX,
                  UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
+    esp_err_t uart2_ret = uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
 
-    // Direct test write to verify UART2 hardware path
-    const char *test = "UART2 OK\r\n";
-    uart_write_bytes(UART_NUM_2, test, 10);
+    // Direct test — check return value
+    char uart2_msg[64];
+    int uart2_len = snprintf(uart2_msg, sizeof(uart2_msg), "UART2 drv=%d\r\n", (int)uart2_ret);
+    uart_write_bytes(UART_NUM_2, uart2_msg, uart2_len);
     uart_wait_tx_done(UART_NUM_2, pdMS_TO_TICKS(100));
 
     esp_log_set_vprintf(uart2_vprintf);
@@ -217,4 +218,8 @@ void app_main(void) {
     esp_log_level_set("*", ESP_LOG_INFO);
     ESP_LOGI(TAG, "ESP32 starting...");
     system_init();
+
+    // Post-init test on UART2
+    const char *post = "POST-INIT OK\r\n";
+    uart_write_bytes(UART_NUM_2, post, 14);
 }
