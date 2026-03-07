@@ -2,6 +2,8 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "driver/uart.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #include <math.h>
 #include <stdarg.h>
@@ -80,10 +82,36 @@ void control_task(void *ctx) {
 void heartbeat_task(void *ctx) {
     uint8_t payload[4] = {0xDE, 0xAD, 0xBE, 0xEF};
     KM_COMS_SendMsg(ESP_HEARTBEAT, payload, sizeof(payload));
+}
 
-    // Periodic debug on UART2
-    const char *ping = "HB\r\n";
-    uart_write_bytes(UART_NUM_2, ping, 4);
+// One-shot task: read AS5600 diagnostics and print to UART2, then delete self
+void diag_task(void *ctx) {
+    control_context_t *c = (control_context_t *)ctx;
+    char buf[128];
+    int len;
+
+    // Wait a moment for UART2 to be fully ready
+    vTaskDelay(pdMS_TO_TICKS(500));
+
+    // Steering value
+    float rad = (float)KM_OBJ_GetObjectValue(ACTUAL_STEERING) / 1000.0f;
+    uint16_t raw = c->sdir->lastRawValue;
+    uint16_t center = c->sdir->centerOffset;
+    len = snprintf(buf, sizeof(buf), "STR: raw=%d center=%d rad=%.3f\r\n", raw, center, rad);
+    uart_write_bytes(UART_NUM_2, buf, len);
+    uart_wait_tx_done(UART_NUM_2, pdMS_TO_TICKS(50));
+
+    // Read AS5600 registers directly
+    KM_SDIR_ReadDiagnostics(c->sdir);
+
+    // Since ESP_LOG may not work on UART2, read registers and print manually
+    // (ReadDiagnostics uses ESP_LOGI which goes through vprintf redirect)
+    // Just print a marker so we know the task ran
+    len = snprintf(buf, sizeof(buf), "DIAG DONE\r\n");
+    uart_write_bytes(UART_NUM_2, buf, len);
+    uart_wait_tx_done(UART_NUM_2, pdMS_TO_TICKS(50));
+
+    vTaskDelete(NULL);
 }
 
 void system_init(void) {
@@ -168,11 +196,9 @@ void system_init(void) {
 
     ESP_LOGI(TAG, "All tasks registered — scheduler running");
 
-    // Final UART2 test after everything is initialized
-    vTaskDelay(pdMS_TO_TICKS(100));
-    const char *final_test = "FINAL: all init done\r\n";
-    uart_write_bytes(UART_NUM_2, final_test, 21);
-    uart_wait_tx_done(UART_NUM_2, pdMS_TO_TICKS(100));
+    // Launch one-shot diagnostic task (runs from FreeRTOS context, UART2 works there)
+    xTaskCreate(diag_task, "diag", 4096, &ctrl_ctx, 1, NULL);
+
     // system_init returns, FreeRTOS scheduler keeps tasks alive
 }
 
