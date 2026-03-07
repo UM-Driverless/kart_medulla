@@ -167,6 +167,12 @@ void system_init(void) {
     KM_RTOS_AddTask(t3);
 
     ESP_LOGI(TAG, "All tasks registered — scheduler running");
+
+    // Final UART2 test after everything is initialized
+    vTaskDelay(pdMS_TO_TICKS(100));
+    const char *final_test = "FINAL: all init done\r\n";
+    uart_write_bytes(UART_NUM_2, final_test, 21);
+    uart_wait_tx_done(UART_NUM_2, pdMS_TO_TICKS(100));
     // system_init returns, FreeRTOS scheduler keeps tasks alive
 }
 
