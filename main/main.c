@@ -182,6 +182,12 @@ void app_main(void) {
     uart_set_pin(UART_NUM_2, PIN_ORIN_UART_TX, PIN_ORIN_UART_RX,
                  UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
     uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
+
+    // Direct test write to verify UART2 hardware path
+    const char *test = "UART2 OK\r\n";
+    uart_write_bytes(UART_NUM_2, test, 10);
+    uart_wait_tx_done(UART_NUM_2, pdMS_TO_TICKS(100));
+
     esp_log_set_vprintf(uart2_vprintf);
 
     // Init NVS (needed for steering calibration storage)
