@@ -50,8 +50,9 @@ void control_task(void *ctx) {
     // Send feedback FIRST (use last known value) so frames arrive even if I2C blocks
     float actual_rad = (float)KM_OBJ_GetObjectValue(ACTUAL_STEERING) / 1000.0f;
     int16_t actual_i16 = (int16_t)(actual_rad * 1000.0f);
-    uint8_t fb[2] = {(uint8_t)(actual_i16 >> 8), (uint8_t)(actual_i16 & 0xFF)};
-    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 2);
+    uint16_t raw = c->sdir->lastRawValue;
+    uint8_t fb[4] = {(uint8_t)(actual_i16 >> 8), (uint8_t)(actual_i16 & 0xFF), (uint8_t)(raw >> 8), (uint8_t)(raw & 0xFF)};
+    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 4);
 
     // Target from Orin: int16 radians × 1000
     float target_rad = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
