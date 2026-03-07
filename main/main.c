@@ -151,7 +151,11 @@ void system_init(void) {
 
     // Redirect logs to UART2 now, right before tasks start using UART0 for protocol
     esp_log_set_vprintf(uart2_vprintf);
-    ESP_LOGI(TAG, "Logs redirected to UART2");
+
+    // Test: direct write + ESP_LOG to see which works
+    const char *redir_test = "DIRECT: logs redirected\r\n";
+    uart_write_bytes(UART_NUM_2, redir_test, 24);
+    ESP_LOGI(TAG, "ESP_LOGI: logs redirected to UART2");
 
     // Register FreeRTOS tasks
     RTOS_Task t1 = KM_COMS_CreateTask("comms", comms_task, NULL, 10, 2048, 2, 1);
