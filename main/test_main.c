@@ -345,28 +345,18 @@ static void test_as5600_health(void) {
     snprintf(buf, sizeof(buf), "ZMCO = %d (expected 0, OTP burns)", zmco);
     TEST_BOOL(buf, zmco == 0);
 
-    // STATUS register: MD (bit5) should be set, ML/MH should be clear
-    uint8_t status = diag[6];
+    // AGC is the reliable magnet indicator (0=too strong, 255=too weak, mid=good)
+    // STATUS register bits are unreliable on clone AS5600 chips
     uint8_t agc = diag[7];
-    snprintf(buf, sizeof(buf), "STATUS MD=1 magnet detected (0x%02X)", status);
-    TEST_BOOL(buf, status & (1 << 5));
-
-    snprintf(buf, sizeof(buf), "STATUS ML=0 magnet not too weak (0x%02X)", status);
-    TEST_BOOL(buf, !(status & (1 << 4)));
-
-    snprintf(buf, sizeof(buf), "STATUS MH=0 magnet not too strong (0x%02X)", status);
-    TEST_BOOL(buf, !(status & (1 << 3)));
-
-    // AGC should be in a reasonable range (not pegged at 0 or 255)
-    snprintf(buf, sizeof(buf), "AGC = %d (expected 10-200, not saturated)", agc);
-    TEST_BOOL(buf, agc >= 10 && agc <= 200);
+    snprintf(buf, sizeof(buf), "AGC = %d (expected 20-235, not saturated)", agc);
+    TEST_BOOL(buf, agc >= 20 && agc <= 235);
 
     // Quick ReadStatusAGC consistency check
     uint8_t st2, agc2;
     int8_t rok = KM_SDIR_ReadStatusAGC(&sdir, &st2, &agc2);
     TEST_BOOL("ReadStatusAGC succeeds", rok == 1);
-    snprintf(buf, sizeof(buf), "ReadStatusAGC STATUS=0x%02X matches diag STATUS=0x%02X", st2, status);
-    TEST_BOOL(buf, st2 == status);
+    snprintf(buf, sizeof(buf), "ReadStatusAGC AGC=%d matches diag AGC=%d", agc2, agc);
+    TEST_BOOL(buf, agc2 == agc);
 }
 
 /* ============================================================

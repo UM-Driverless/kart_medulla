@@ -84,32 +84,29 @@ void heartbeat_task(void *ctx) {
     KM_COMS_SendMsg(ESP_HEARTBEAT, payload, sizeof(payload));
 }
 
-// 1 Hz — health monitoring: magnet, I2C, heap. Reports to Orin.
-// Payload: [flags, as5600_status, agc, free_heap_h, free_heap_l, i2c_err_count]
-// Flags: bit0=magnet_detected, bit1=magnet_weak, bit2=magnet_strong,
-//        bit3=i2c_ok, bit4=heap_ok (>4KB free)
-#define HEALTH_FLAG_MAGNET_OK    (1 << 0)
-#define HEALTH_FLAG_MAGNET_WEAK  (1 << 1)
-#define HEALTH_FLAG_MAGNET_STRONG (1 << 2)
-#define HEALTH_FLAG_I2C_OK       (1 << 3)
-#define HEALTH_FLAG_HEAP_OK      (1 << 4)
-#define HEALTH_HEAP_MIN_BYTES    4096
+// 1 Hz — health monitoring: magnet (AGC), I2C, heap. Reports to Orin.
+// Payload: [flags, agc, free_heap_h, free_heap_l, i2c_err_count]
+// Flags: bit0=magnet_ok (AGC 20-235), bit1=i2c_ok, bit2=heap_ok (>4KB)
+#define HEALTH_FLAG_MAGNET_OK (1 << 0)
+#define HEALTH_FLAG_I2C_OK    (1 << 1)
+#define HEALTH_FLAG_HEAP_OK   (1 << 2)
+#define HEALTH_HEAP_MIN_BYTES 4096
+#define AGC_MIN 20   // below = magnet too strong
+#define AGC_MAX 235  // above = magnet too weak
 
 void health_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
 
     while (1) {
-        uint8_t payload[6];
+        uint8_t payload[5];
         uint8_t flags = 0;
 
-        // AS5600 magnet status
+        // AGC is the reliable magnet strength indicator (0=too strong, 255=too weak)
         uint8_t as_status = 0, agc = 0;
         int8_t i2c_ok = KM_SDIR_ReadStatusAGC(c->sdir, &as_status, &agc);
 
         if (i2c_ok) flags |= HEALTH_FLAG_I2C_OK;
-        if (as_status & (1 << 5)) flags |= HEALTH_FLAG_MAGNET_OK;   // MD bit
-        if (as_status & (1 << 4)) flags |= HEALTH_FLAG_MAGNET_WEAK; // ML bit
-        if (as_status & (1 << 3)) flags |= HEALTH_FLAG_MAGNET_STRONG; // MH bit
+        if (i2c_ok && agc >= AGC_MIN && agc <= AGC_MAX) flags |= HEALTH_FLAG_MAGNET_OK;
 
         // Heap check
         uint32_t free_heap = esp_get_free_heap_size();
@@ -117,20 +114,19 @@ void health_task(void *ctx) {
         uint16_t heap_kb = (uint16_t)(free_heap / 1024);
 
         payload[0] = flags;
-        payload[1] = as_status;
-        payload[2] = agc;
-        payload[3] = (heap_kb >> 8) & 0xFF;
-        payload[4] = heap_kb & 0xFF;
-        payload[5] = c->sdir->errorCount;
+        payload[1] = agc;
+        payload[2] = (heap_kb >> 8) & 0xFF;
+        payload[3] = heap_kb & 0xFF;
+        payload[4] = c->sdir->errorCount;
 
         KM_COMS_SendMsg(ESP_HEALTH_STATUS, payload, sizeof(payload));
 
         // Log warnings for critical issues
-        if (!(flags & HEALTH_FLAG_MAGNET_OK))
-            ESP_LOGW(TAG, "HEALTH: magnet not detected!");
-        if (flags & HEALTH_FLAG_MAGNET_WEAK)
+        if (i2c_ok && agc < AGC_MIN)
+            ESP_LOGW(TAG, "HEALTH: magnet too strong (AGC=%d)", agc);
+        if (i2c_ok && agc > AGC_MAX)
             ESP_LOGW(TAG, "HEALTH: magnet too weak (AGC=%d)", agc);
-        if (!(flags & HEALTH_FLAG_I2C_OK))
+        if (!i2c_ok)
             ESP_LOGW(TAG, "HEALTH: I2C read failed (err=%d)", c->sdir->errorCount);
         if (!(flags & HEALTH_FLAG_HEAP_OK))
             ESP_LOGW(TAG, "HEALTH: low heap! %lu bytes free", (unsigned long)free_heap);
