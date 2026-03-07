@@ -250,6 +250,9 @@ static float KM_SDIR_ReadAngle(sensor_struct *sensor) {
     uint16_t raw = KM_SDIR_ReadRaw(sensor);
 
     int16_t centered = (int16_t)raw - sensor->centerOffset;
+    // Wrap to ±half range so angle is symmetric around center
+    if (centered > (SENSOR_MAX + 1) / 2) centered -= (SENSOR_MAX + 1);
+    if (centered < -(int16_t)((SENSOR_MAX + 1) / 2)) centered += (SENSOR_MAX + 1);
     float angle = -((float)centered / (float)SENSOR_MAX) * 2.0f * PI;
 
     return angle;
