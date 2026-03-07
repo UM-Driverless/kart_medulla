@@ -18,6 +18,7 @@
 #include "km_objects.h"
 
 static const char *TAG = "MAIN";
+static int uart2_vprintf(const char *fmt, va_list args);
 
 #define MAX_ERROR_COUNT_SDIR 10
 
