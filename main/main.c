@@ -104,13 +104,15 @@ void diag_task(void *ctx) {
     payload[reg_len + 2] = (center >> 8) & 0xFF;
     payload[reg_len + 3] = center & 0xFF;
 
-    // Send 3 times for reliability
-    for (int i = 0; i < 3; i++) {
+    // Send every 2 seconds so it can always be caught
+    while (1) {
+        // Update raw value each iteration
+        raw = c->sdir->lastRawValue;
+        payload[reg_len]     = (raw >> 8) & 0xFF;
+        payload[reg_len + 1] = raw & 0xFF;
         KM_COMS_SendMsg(ESP_DIAG_STEERING, payload, reg_len + 4);
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(2000));
     }
-
-    vTaskDelete(NULL);
 }
 
 void system_init(void) {
