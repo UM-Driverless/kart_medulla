@@ -193,6 +193,27 @@ uint8_t KM_SDIR_ReadDiagnostics(sensor_struct *sensor, uint8_t *out) {
     return pos; // should be 9
 }
 
+int8_t KM_SDIR_ReadStatusAGC(sensor_struct *sensor, uint8_t *status, uint8_t *agc) {
+    uint8_t data;
+    int8_t ok = 1;
+
+    if (KM_SDIR_ReadRegisters(sensor, 0x0B, &data, 1)) {
+        *status = data;
+    } else {
+        *status = 0;
+        ok = 0;
+    }
+
+    if (KM_SDIR_ReadRegisters(sensor, 0x1A, &data, 1)) {
+        *agc = data;
+    } else {
+        *agc = 0;
+        ok = 0;
+    }
+
+    return ok;
+}
+
 /******************************* FUNCIONES PRIVADAS ***************************/
 
 // Leer registros I2C

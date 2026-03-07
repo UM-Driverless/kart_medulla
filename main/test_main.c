@@ -19,6 +19,7 @@
 #include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "nvs_flash.h"
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -69,9 +70,8 @@ static void test_pin_assignments(void) {
     TEST_BOOL("PRESSURE_3 = GPIO34 (H2.5)",   PIN_PRESSURE_3 == 34);
     TEST_BOOL("PEDAL_ACC  = GPIO35 (H2.6)",   PIN_PEDAL_ACC == 35);
     TEST_BOOL("PEDAL_BRAKE= GPIO32 (H2.7)",   PIN_PEDAL_BRAKE == 32);
-    TEST_BOOL("HALL_1     = GPIO17 (H1.9)",   PIN_MOTOR_HALL_1 == 17);
+    /* HALL 1/3 disabled — GPIO17/16 used by UART2 */
     TEST_BOOL("HALL_2     = GPIO33 (H2.8)",   PIN_MOTOR_HALL_2 == 33);
-    TEST_BOOL("HALL_3     = GPIO16 (H1.8)",   PIN_MOTOR_HALL_3 == 16);
     TEST_BOOL("CMD_ACC    = GPIO25 (H2.9)",   PIN_CMD_ACC == 25);
     TEST_BOOL("CMD_BRAKE  = GPIO26 (H2.10)",  PIN_CMD_BRAKE == 26);
     TEST_BOOL("HYDRAULIC_1= GPIO27 (H2.11)",  PIN_HYDRAULIC_1 == 27);
@@ -86,12 +86,9 @@ static void test_pin_assignments(void) {
 static void test_pin_conflicts(void) {
     printf("\n--- Pin conflict detection ---\n");
 
-    /* GPIO16/17 are used for MOTOR_HALL_3/1 on PCB.
-       They are also UART2 TX/RX. Using both crashes the ESP32. */
-    TEST_BOOL("HALL1 (GPIO17) != UART2_TX (GPIO17) conflict documented",
-              PIN_MOTOR_HALL_1 == 17);
-    TEST_BOOL("HALL3 (GPIO16) != UART2_RX (GPIO16) conflict documented",
-              PIN_MOTOR_HALL_3 == 16);
+    /* GPIO16/17 used by UART2 (debug logs). HALL 1/3 disabled. */
+    TEST_BOOL("UART2_TX = GPIO17 (was HALL1)", PIN_ORIN_UART_TX == 17);
+    TEST_BOOL("UART2_RX = GPIO16 (was HALL3)", PIN_ORIN_UART_RX == 16);
 
     /* Verify no two output pins share the same GPIO */
     TEST_BOOL("STEER_PWM != STEER_DIR",  PIN_STEER_PWM != PIN_STEER_DIR);
@@ -316,6 +313,87 @@ static void test_as5600(void) {
 }
 
 /* ============================================================
+ * 9b. AS5600 REGISTER INTEGRITY & MAGNET HEALTH
+ * Catches: ZPOS/MPOS corruption, OTP burns, weak/missing magnet
+ * ============================================================ */
+static void test_as5600_health(void) {
+    printf("\n--- AS5600 register integrity & magnet ---\n");
+    sensor_struct sdir = KM_SDIR_Init(10);
+    int8_t ok = KM_SDIR_Begin(&sdir, PIN_I2C_SDA, PIN_I2C_SCL);
+    if (ok <= 0) {
+        SKIP("AS5600 health", "sensor not detected");
+        return;
+    }
+
+    uint8_t diag[9];
+    uint8_t len = KM_SDIR_ReadDiagnostics(&sdir, diag);
+    TEST_BOOL("ReadDiagnostics returned 9 bytes", len == 9);
+
+    // ZPOS should be 0x0000 (no zero position programmed)
+    uint16_t zpos = ((uint16_t)diag[0] << 8) | diag[1];
+    char buf[80];
+    snprintf(buf, sizeof(buf), "ZPOS = 0x%04X (expected 0x0000)", zpos);
+    TEST_BOOL(buf, zpos == 0);
+
+    // MPOS should be 0x0000
+    uint16_t mpos = ((uint16_t)diag[2] << 8) | diag[3];
+    snprintf(buf, sizeof(buf), "MPOS = 0x%04X (expected 0x0000)", mpos);
+    TEST_BOOL(buf, mpos == 0);
+
+    // ZMCO = OTP burn count, should be 0 (never burned)
+    uint8_t zmco = diag[8];
+    snprintf(buf, sizeof(buf), "ZMCO = %d (expected 0, OTP burns)", zmco);
+    TEST_BOOL(buf, zmco == 0);
+
+    // STATUS register: MD (bit5) should be set, ML/MH should be clear
+    uint8_t status = diag[6];
+    uint8_t agc = diag[7];
+    snprintf(buf, sizeof(buf), "STATUS MD=1 magnet detected (0x%02X)", status);
+    TEST_BOOL(buf, status & (1 << 5));
+
+    snprintf(buf, sizeof(buf), "STATUS ML=0 magnet not too weak (0x%02X)", status);
+    TEST_BOOL(buf, !(status & (1 << 4)));
+
+    snprintf(buf, sizeof(buf), "STATUS MH=0 magnet not too strong (0x%02X)", status);
+    TEST_BOOL(buf, !(status & (1 << 3)));
+
+    // AGC should be in a reasonable range (not pegged at 0 or 255)
+    snprintf(buf, sizeof(buf), "AGC = %d (expected 10-200, not saturated)", agc);
+    TEST_BOOL(buf, agc >= 10 && agc <= 200);
+
+    // Quick ReadStatusAGC consistency check
+    uint8_t st2, agc2;
+    int8_t rok = KM_SDIR_ReadStatusAGC(&sdir, &st2, &agc2);
+    TEST_BOOL("ReadStatusAGC succeeds", rok == 1);
+    snprintf(buf, sizeof(buf), "ReadStatusAGC STATUS=0x%02X matches diag STATUS=0x%02X", st2, status);
+    TEST_BOOL(buf, st2 == status);
+}
+
+/* ============================================================
+ * 9c. NVS CALIBRATION PERSISTENCE
+ * Catches: NVS write/read failures, wrong namespace/key
+ * ============================================================ */
+static void test_nvs_calibration(void) {
+    printf("\n--- NVS steering calibration ---\n");
+    sensor_struct sdir = KM_SDIR_Init(10);
+
+    // Save a known value
+    uint16_t test_val = 1234;
+    KM_SDIR_setCenterOffset(&sdir, test_val);
+    TEST_BOOL("setCenterOffset stores value", sdir.centerOffset == test_val);
+
+    // Re-init and load — should get same value back
+    sensor_struct sdir2 = KM_SDIR_Init(10);
+    KM_SDIR_LoadCalibration(&sdir2);
+    char buf[80];
+    snprintf(buf, sizeof(buf), "LoadCalibration read back %d (expected %d)", sdir2.centerOffset, test_val);
+    TEST_BOOL(buf, sdir2.centerOffset == test_val);
+
+    // Restore default so test doesn't leave stale calibration
+    KM_SDIR_setCenterOffset(&sdir, SENSOR_CENTER);
+}
+
+/* ============================================================
  * 10. PID CONTROLLER SANITY
  * Catches: NaN, unbounded output, wrong sign
  * ============================================================ */
@@ -503,14 +581,21 @@ static void test_status_led(void) {
  * MAIN
  * ============================================================ */
 void app_main(void) {
+    // Init NVS for calibration tests
+    esp_err_t nvs_ret = nvs_flash_init();
+    if (nvs_ret == ESP_ERR_NVS_NO_FREE_PAGES || nvs_ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        nvs_flash_erase();
+        nvs_flash_init();
+    }
+
     printf("\n========================================\n");
-    printf("  KART MEDULLA HARDWARE TEST SUITE v2\n");
+    printf("  KART MEDULLA HARDWARE TEST SUITE v3\n");
     printf("========================================\n");
     printf("Pin config:\n");
     printf("  STEER: PWM=%d DIR=%d\n", PIN_STEER_PWM, PIN_STEER_DIR);
     printf("  DAC:   ACC=%d BRAKE=%d\n", PIN_CMD_ACC, PIN_CMD_BRAKE);
     printf("  I2C:   SDA=%d SCL=%d\n", PIN_I2C_SDA, PIN_I2C_SCL);
-    printf("  HALL:  1=%d 2=%d 3=%d\n", PIN_MOTOR_HALL_1, PIN_MOTOR_HALL_2, PIN_MOTOR_HALL_3);
+    printf("  HALL:  2=%d (1/3 disabled, pins used by UART2)\n", PIN_MOTOR_HALL_2);
     printf("  HYD:   1=%d 2=%d\n", PIN_HYDRAULIC_1, PIN_HYDRAULIC_2);
 
     /* Pure logic tests first (no hardware needed) */
@@ -530,6 +615,8 @@ void app_main(void) {
     test_status_led();
     test_i2c();
     test_as5600();
+    test_as5600_health();
+    test_nvs_calibration();
     test_steering_motor();
 
     printf("\n========================================\n");

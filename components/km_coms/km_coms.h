@@ -96,6 +96,8 @@ typedef enum
     ESP_ACT_SHUTDOWN        = 0x07, /**< Shutdown state */
     ESP_HEARTBEAT           = 0x08, /**< ESP32 heartbeat message */
     ESP_COMPLETE            = 0x09, /**< Full telemetry message */
+    ESP_DIAG_STEERING       = 0x0A, /**< AS5600 diagnostic registers (debug) */
+    ESP_HEALTH_STATUS       = 0x0B, /**< Periodic health: [flags, status, agc, heap_h, heap_l, err_cnt] */
 
     // ==========================
     // Orin --> ESP32 (0x20 - 0x3F)

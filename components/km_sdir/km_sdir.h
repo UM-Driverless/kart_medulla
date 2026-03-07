@@ -92,4 +92,8 @@ void KM_SDIR_LoadCalibration(sensor_struct *sensor);
 // Returns number of bytes written (9 on success)
 uint8_t KM_SDIR_ReadDiagnostics(sensor_struct *sensor, uint8_t *out_buf);
 
+// Read AS5600 STATUS and AGC registers (2 quick I2C reads)
+// Returns STATUS in *status, AGC in *agc. Returns 1 on success, 0 on I2C failure.
+int8_t KM_SDIR_ReadStatusAGC(sensor_struct *sensor, uint8_t *status, uint8_t *agc);
+
 #endif /* KM_SDIR_H */

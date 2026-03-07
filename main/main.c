@@ -84,34 +84,58 @@ void heartbeat_task(void *ctx) {
     KM_COMS_SendMsg(ESP_HEARTBEAT, payload, sizeof(payload));
 }
 
-// One-shot task: read AS5600 diagnostics and send over protocol on UART0
-// Payload: [ZPOS_H,L, MPOS_H,L, CONF_H,L, STATUS, AGC, ZMCO, RAW_H,L, CENTER_H,L]
-#define ESP_DIAG_STEERING 0x0A
-void diag_task(void *ctx) {
+// 1 Hz — health monitoring: magnet, I2C, heap. Reports to Orin.
+// Payload: [flags, as5600_status, agc, free_heap_h, free_heap_l, i2c_err_count]
+// Flags: bit0=magnet_detected, bit1=magnet_weak, bit2=magnet_strong,
+//        bit3=i2c_ok, bit4=heap_ok (>4KB free)
+#define HEALTH_FLAG_MAGNET_OK    (1 << 0)
+#define HEALTH_FLAG_MAGNET_WEAK  (1 << 1)
+#define HEALTH_FLAG_MAGNET_STRONG (1 << 2)
+#define HEALTH_FLAG_I2C_OK       (1 << 3)
+#define HEALTH_FLAG_HEAP_OK      (1 << 4)
+#define HEALTH_HEAP_MIN_BYTES    4096
+
+void health_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
 
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
-    uint8_t payload[13];
-    // Read AS5600 registers (ZPOS, MPOS, CONF, STATUS, AGC, ZMCO = 9 bytes)
-    uint8_t reg_len = KM_SDIR_ReadDiagnostics(c->sdir, payload);
-
-    // Append raw + center (4 bytes)
-    uint16_t raw = c->sdir->lastRawValue;
-    uint16_t center = c->sdir->centerOffset;
-    payload[reg_len]     = (raw >> 8) & 0xFF;
-    payload[reg_len + 1] = raw & 0xFF;
-    payload[reg_len + 2] = (center >> 8) & 0xFF;
-    payload[reg_len + 3] = center & 0xFF;
-
-    // Send every 2 seconds so it can always be caught
     while (1) {
-        // Update raw value each iteration
-        raw = c->sdir->lastRawValue;
-        payload[reg_len]     = (raw >> 8) & 0xFF;
-        payload[reg_len + 1] = raw & 0xFF;
-        KM_COMS_SendMsg(ESP_DIAG_STEERING, payload, reg_len + 4);
-        vTaskDelay(pdMS_TO_TICKS(2000));
+        uint8_t payload[6];
+        uint8_t flags = 0;
+
+        // AS5600 magnet status
+        uint8_t as_status = 0, agc = 0;
+        int8_t i2c_ok = KM_SDIR_ReadStatusAGC(c->sdir, &as_status, &agc);
+
+        if (i2c_ok) flags |= HEALTH_FLAG_I2C_OK;
+        if (as_status & (1 << 5)) flags |= HEALTH_FLAG_MAGNET_OK;   // MD bit
+        if (as_status & (1 << 4)) flags |= HEALTH_FLAG_MAGNET_WEAK; // ML bit
+        if (as_status & (1 << 3)) flags |= HEALTH_FLAG_MAGNET_STRONG; // MH bit
+
+        // Heap check
+        uint32_t free_heap = esp_get_free_heap_size();
+        if (free_heap >= HEALTH_HEAP_MIN_BYTES) flags |= HEALTH_FLAG_HEAP_OK;
+        uint16_t heap_kb = (uint16_t)(free_heap / 1024);
+
+        payload[0] = flags;
+        payload[1] = as_status;
+        payload[2] = agc;
+        payload[3] = (heap_kb >> 8) & 0xFF;
+        payload[4] = heap_kb & 0xFF;
+        payload[5] = c->sdir->errorCount;
+
+        KM_COMS_SendMsg(ESP_HEALTH_STATUS, payload, sizeof(payload));
+
+        // Log warnings for critical issues
+        if (!(flags & HEALTH_FLAG_MAGNET_OK))
+            ESP_LOGW(TAG, "HEALTH: magnet not detected!");
+        if (flags & HEALTH_FLAG_MAGNET_WEAK)
+            ESP_LOGW(TAG, "HEALTH: magnet too weak (AGC=%d)", agc);
+        if (!(flags & HEALTH_FLAG_I2C_OK))
+            ESP_LOGW(TAG, "HEALTH: I2C read failed (err=%d)", c->sdir->errorCount);
+        if (!(flags & HEALTH_FLAG_HEAP_OK))
+            ESP_LOGW(TAG, "HEALTH: low heap! %lu bytes free", (unsigned long)free_heap);
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
@@ -196,8 +220,8 @@ void system_init(void) {
 
     ESP_LOGI(TAG, "All tasks registered — scheduler running");
 
-    // Launch one-shot diagnostic task (runs from FreeRTOS context, UART2 works there)
-    xTaskCreate(diag_task, "diag", 4096, &ctrl_ctx, 1, NULL);
+    // Launch health monitoring task (1 Hz, checks magnet/I2C/heap)
+    xTaskCreate(health_task, "health", 4096, &ctrl_ctx, 1, NULL);
 
     // system_init returns, FreeRTOS scheduler keeps tasks alive
 }
