@@ -1,5 +1,6 @@
 #include "esp_system.h"
 #include "esp_log.h"
+#include "nvs_flash.h"
 #include "driver/uart.h"
 
 #include <math.h>
@@ -65,6 +66,13 @@ void control_task(void *ctx) {
     // PID in radians
     float pid_out = KM_PID_Calculate(c->dir_pid, target_rad, new_rad);
     KM_ACT_SetOutput(c->dir_act, pid_out);
+
+    // Check for pending steering calibration command
+    int64_t cal_cmd = KM_OBJ_GetObjectValue(CALIBRATE_STEERING_CMD);
+    if (cal_cmd > 0) {
+        KM_SDIR_setCenterOffset(c->sdir, (uint16_t)cal_cmd);
+        KM_OBJ_SetObjectValue(CALIBRATE_STEERING_CMD, 0);
+    }
 }
 
 // 1 Hz — heartbeat to Orin
@@ -85,15 +93,17 @@ void system_init(void) {
     // Initialise comunications on UART0 (USB to Orin)
     if (KM_COMS_Init(UART_NUM_0) != ESP_OK)
         ESP_LOGE(TAG, "Error inicializando libreria de comunicaciones");
-    
+
     sensor_struct sdir = KM_SDIR_Init(MAX_ERROR_COUNT_SDIR);
     KM_SDIR_Begin(&sdir, GPIO_NUM_21, GPIO_NUM_22);
+    KM_SDIR_LoadCalibration(&sdir);
 
     // Test AS5600 connectivity and seed initial angle
     float init_rad = KM_SDIR_ReadAngleRadians(&sdir);
     if (sdir.errorCount == 0) {
         KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(init_rad * 1000));
         ESP_LOGI(TAG, "AS5600 connected — %.3f rad", init_rad);
+        KM_SDIR_ReadDiagnostics(&sdir);
     } else {
         ESP_LOGW(TAG, "AS5600 NOT responding — steering feedback will be stale");
     }
@@ -134,6 +144,9 @@ void system_init(void) {
     ctrl_ctx.brake_act = &brake_act_static;
     ctrl_ctx.dir_pid = &dir_pid_static;
 
+    // Disable logs before starting tasks — UART0 shared with binary protocol
+    esp_log_level_set("*", ESP_LOG_NONE);
+
     // Register FreeRTOS tasks
     RTOS_Task t1 = KM_COMS_CreateTask("comms", comms_task, NULL, 10, 2048, 2, 1);
     RTOS_Task t2 = KM_COMS_CreateTask("control", control_task, &ctrl_ctx, 10, 4096, 1, 1);
@@ -148,9 +161,15 @@ void system_init(void) {
 }
 
 void app_main(void) {
-    /* UART2 removed — GPIO17/16 reserved for hall sensors on PCB.
-       All logs go to UART0 (USB) at 115200. */
-    esp_log_level_set("*", ESP_LOG_NONE);  /* Logs disabled — UART0 shared with binary protocol */
+    // Init NVS (needed for steering calibration storage)
+    esp_err_t nvs_ret = nvs_flash_init();
+    if (nvs_ret == ESP_ERR_NVS_NO_FREE_PAGES || nvs_ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        nvs_flash_erase();
+        nvs_flash_init();
+    }
+
+    // Logs enabled during boot for diagnostics — disabled before tasks start
+    esp_log_level_set("*", ESP_LOG_INFO);
     ESP_LOGI(TAG, "ESP32 starting...");
     system_init();
 }

@@ -10,9 +10,10 @@
 #define KM_SDIR_H
 
 /******************************* INCLUDES *************************************/
-// Includes necesarios para la API pública
 #include "driver/i2c.h"
 #include "esp_log.h"
+#include "nvs_flash.h"
+#include "nvs.h"
 #include <math.h>
 #include "esp_timer.h"
  
@@ -80,7 +81,13 @@ int8_t KM_SDIR_isConnected(sensor_struct *sensor);
 // Reset I2C communication if errors occur
 int8_t KM_SDIR_ResetI2C(sensor_struct *sensor);
 
-// Get center offset for calibration
+// Set center offset and save to NVS
 void KM_SDIR_setCenterOffset(sensor_struct *sensor, uint16_t offset);
+
+// Load center offset from NVS (call after KM_SDIR_Init, before KM_SDIR_Begin)
+void KM_SDIR_LoadCalibration(sensor_struct *sensor);
+
+// Read and log AS5600 diagnostic registers (ZPOS, MPOS, CONF, STATUS, ZMCO)
+void KM_SDIR_ReadDiagnostics(sensor_struct *sensor);
 
 #endif /* KM_SDIR_H */

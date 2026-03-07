@@ -108,6 +108,7 @@ typedef enum
     ORIN_HEARTBEAT          = 0x25, /**< Orin heartbeat message */
     ORIN_SHUTDOWN           = 0x26, /**< Shutdown command */
     ORIN_COMPLETE           = 0x27, /**< Complete command with all fields */
+    ORIN_CALIBRATE_STEERING = 0x28, /**< Set steering center offset (uint16 BE) and save to NVS */
 
     // ==========================
     // Others (0x40 - 0xFF)

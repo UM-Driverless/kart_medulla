@@ -120,10 +120,94 @@ int8_t KM_SDIR_ResetI2C(sensor_struct *sensor) {
     return sensor->connected;
 }
 
-// Ajuste de offset
+#define NVS_NAMESPACE "km_sdir"
+#define NVS_KEY_CENTER "center"
+
+// Set center offset and persist to NVS
 void KM_SDIR_setCenterOffset(sensor_struct *sensor, uint16_t offset) {
     sensor->centerOffset = offset;
     ESP_LOGI(TAG, "AS5600 center offset set to: %d", offset);
+
+    nvs_handle_t h;
+    if (nvs_open(NVS_NAMESPACE, NVS_READWRITE, &h) == ESP_OK) {
+        nvs_set_u16(h, NVS_KEY_CENTER, offset);
+        nvs_commit(h);
+        nvs_close(h);
+        ESP_LOGI(TAG, "Center offset saved to NVS");
+    } else {
+        ESP_LOGW(TAG, "Failed to open NVS for writing");
+    }
+}
+
+// Load center offset from NVS; keeps SENSOR_CENTER default if not found
+void KM_SDIR_LoadCalibration(sensor_struct *sensor) {
+    nvs_handle_t h;
+    if (nvs_open(NVS_NAMESPACE, NVS_READONLY, &h) == ESP_OK) {
+        uint16_t val = 0;
+        if (nvs_get_u16(h, NVS_KEY_CENTER, &val) == ESP_OK) {
+            sensor->centerOffset = val;
+            ESP_LOGI(TAG, "Loaded center offset from NVS: %d", val);
+        } else {
+            ESP_LOGI(TAG, "No calibration in NVS, using default %d", sensor->centerOffset);
+        }
+        nvs_close(h);
+    } else {
+        ESP_LOGW(TAG, "Failed to open NVS for reading");
+    }
+}
+
+void KM_SDIR_ReadDiagnostics(sensor_struct *sensor) {
+    uint8_t data[2];
+
+    // ZPOS (0x01-0x02) — zero position, should be 0
+    if (KM_SDIR_ReadRegisters(sensor, 0x01, data, 2)) {
+        uint16_t zpos = ((uint16_t)data[0] << 8) | data[1];
+        ESP_LOGI(TAG, "DIAG ZPOS = %d (0x%04X) — should be 0", zpos, zpos);
+    } else {
+        ESP_LOGW(TAG, "DIAG ZPOS read failed");
+    }
+
+    // MPOS (0x03-0x04) — max position, should be 0
+    if (KM_SDIR_ReadRegisters(sensor, 0x03, data, 2)) {
+        uint16_t mpos = ((uint16_t)data[0] << 8) | data[1];
+        ESP_LOGI(TAG, "DIAG MPOS = %d (0x%04X) — should be 0", mpos, mpos);
+    } else {
+        ESP_LOGW(TAG, "DIAG MPOS read failed");
+    }
+
+    // CONF (0x07-0x08)
+    if (KM_SDIR_ReadRegisters(sensor, 0x07, data, 2)) {
+        uint16_t conf = ((uint16_t)data[0] << 8) | data[1];
+        ESP_LOGI(TAG, "DIAG CONF = 0x%04X", conf);
+    } else {
+        ESP_LOGW(TAG, "DIAG CONF read failed");
+    }
+
+    // STATUS (0x0B) — bits: MD(5)=magnet detected, ML(4)=too weak, MH(3)=too strong
+    if (KM_SDIR_ReadRegisters(sensor, 0x0B, data, 1)) {
+        uint8_t status = data[0];
+        ESP_LOGI(TAG, "DIAG STATUS = 0x%02X — MD=%d ML=%d MH=%d",
+                 status, (status >> 5) & 1, (status >> 4) & 1, (status >> 3) & 1);
+    } else {
+        ESP_LOGW(TAG, "DIAG STATUS read failed");
+    }
+
+    // AGC (0x1A) — automatic gain control
+    if (KM_SDIR_ReadRegisters(sensor, 0x1A, data, 1)) {
+        ESP_LOGI(TAG, "DIAG AGC = %d", data[0]);
+    } else {
+        ESP_LOGW(TAG, "DIAG AGC read failed");
+    }
+
+    // ZMCO (0x00) — number of OTP burns, should be 0
+    if (KM_SDIR_ReadRegisters(sensor, 0x00, data, 1)) {
+        ESP_LOGI(TAG, "DIAG ZMCO = %d — OTP burns (should be 0, max 3)", data[0]);
+        if (data[0] > 0) {
+            ESP_LOGW(TAG, "*** ZMCO > 0: zero position has been burned to OTP! ***");
+        }
+    } else {
+        ESP_LOGW(TAG, "DIAG ZMCO read failed");
+    }
 }
 
 /******************************* FUNCIONES PRIVADAS ***************************/
