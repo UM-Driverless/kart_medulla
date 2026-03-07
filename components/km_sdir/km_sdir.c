@@ -156,58 +156,41 @@ void KM_SDIR_LoadCalibration(sensor_struct *sensor) {
     }
 }
 
-void KM_SDIR_ReadDiagnostics(sensor_struct *sensor) {
+uint8_t KM_SDIR_ReadDiagnostics(sensor_struct *sensor, uint8_t *out) {
     uint8_t data[2];
+    uint8_t pos = 0;
 
-    // ZPOS (0x01-0x02) — zero position, should be 0
+    // ZPOS (0x01-0x02)
     if (KM_SDIR_ReadRegisters(sensor, 0x01, data, 2)) {
-        uint16_t zpos = ((uint16_t)data[0] << 8) | data[1];
-        ESP_LOGI(TAG, "DIAG ZPOS = %d (0x%04X) — should be 0", zpos, zpos);
-    } else {
-        ESP_LOGW(TAG, "DIAG ZPOS read failed");
-    }
+        out[pos++] = data[0]; out[pos++] = data[1];
+    } else { out[pos++] = 0xFF; out[pos++] = 0xFF; }
 
-    // MPOS (0x03-0x04) — max position, should be 0
+    // MPOS (0x03-0x04)
     if (KM_SDIR_ReadRegisters(sensor, 0x03, data, 2)) {
-        uint16_t mpos = ((uint16_t)data[0] << 8) | data[1];
-        ESP_LOGI(TAG, "DIAG MPOS = %d (0x%04X) — should be 0", mpos, mpos);
-    } else {
-        ESP_LOGW(TAG, "DIAG MPOS read failed");
-    }
+        out[pos++] = data[0]; out[pos++] = data[1];
+    } else { out[pos++] = 0xFF; out[pos++] = 0xFF; }
 
     // CONF (0x07-0x08)
     if (KM_SDIR_ReadRegisters(sensor, 0x07, data, 2)) {
-        uint16_t conf = ((uint16_t)data[0] << 8) | data[1];
-        ESP_LOGI(TAG, "DIAG CONF = 0x%04X", conf);
-    } else {
-        ESP_LOGW(TAG, "DIAG CONF read failed");
-    }
+        out[pos++] = data[0]; out[pos++] = data[1];
+    } else { out[pos++] = 0xFF; out[pos++] = 0xFF; }
 
-    // STATUS (0x0B) — bits: MD(5)=magnet detected, ML(4)=too weak, MH(3)=too strong
+    // STATUS (0x0B)
     if (KM_SDIR_ReadRegisters(sensor, 0x0B, data, 1)) {
-        uint8_t status = data[0];
-        ESP_LOGI(TAG, "DIAG STATUS = 0x%02X — MD=%d ML=%d MH=%d",
-                 status, (status >> 5) & 1, (status >> 4) & 1, (status >> 3) & 1);
-    } else {
-        ESP_LOGW(TAG, "DIAG STATUS read failed");
-    }
+        out[pos++] = data[0];
+    } else { out[pos++] = 0xFF; }
 
-    // AGC (0x1A) — automatic gain control
+    // AGC (0x1A)
     if (KM_SDIR_ReadRegisters(sensor, 0x1A, data, 1)) {
-        ESP_LOGI(TAG, "DIAG AGC = %d", data[0]);
-    } else {
-        ESP_LOGW(TAG, "DIAG AGC read failed");
-    }
+        out[pos++] = data[0];
+    } else { out[pos++] = 0xFF; }
 
-    // ZMCO (0x00) — number of OTP burns, should be 0
+    // ZMCO (0x00)
     if (KM_SDIR_ReadRegisters(sensor, 0x00, data, 1)) {
-        ESP_LOGI(TAG, "DIAG ZMCO = %d — OTP burns (should be 0, max 3)", data[0]);
-        if (data[0] > 0) {
-            ESP_LOGW(TAG, "*** ZMCO > 0: zero position has been burned to OTP! ***");
-        }
-    } else {
-        ESP_LOGW(TAG, "DIAG ZMCO read failed");
-    }
+        out[pos++] = data[0];
+    } else { out[pos++] = 0xFF; }
+
+    return pos; // should be 9
 }
 
 /******************************* FUNCIONES PRIVADAS ***************************/

@@ -87,7 +87,9 @@ void KM_SDIR_setCenterOffset(sensor_struct *sensor, uint16_t offset);
 // Load center offset from NVS (call after KM_SDIR_Init, before KM_SDIR_Begin)
 void KM_SDIR_LoadCalibration(sensor_struct *sensor);
 
-// Read and log AS5600 diagnostic registers (ZPOS, MPOS, CONF, STATUS, ZMCO)
-void KM_SDIR_ReadDiagnostics(sensor_struct *sensor);
+// Read AS5600 diagnostic registers into buffer
+// Buffer layout: [ZPOS_H, ZPOS_L, MPOS_H, MPOS_L, CONF_H, CONF_L, STATUS, AGC, ZMCO]
+// Returns number of bytes written (9 on success)
+uint8_t KM_SDIR_ReadDiagnostics(sensor_struct *sensor, uint8_t *out_buf);
 
 #endif /* KM_SDIR_H */

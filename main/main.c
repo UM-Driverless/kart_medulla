@@ -84,32 +84,31 @@ void heartbeat_task(void *ctx) {
     KM_COMS_SendMsg(ESP_HEARTBEAT, payload, sizeof(payload));
 }
 
-// One-shot task: read AS5600 diagnostics and print to UART2, then delete self
+// One-shot task: read AS5600 diagnostics and send over protocol on UART0
+// Payload: [ZPOS_H,L, MPOS_H,L, CONF_H,L, STATUS, AGC, ZMCO, RAW_H,L, CENTER_H,L]
+#define ESP_DIAG_STEERING 0x0A
 void diag_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
-    char buf[128];
-    int len;
 
-    // Wait a moment for UART2 to be fully ready
-    vTaskDelay(pdMS_TO_TICKS(500));
+    vTaskDelay(pdMS_TO_TICKS(1000));
 
-    // Steering value
-    float rad = (float)KM_OBJ_GetObjectValue(ACTUAL_STEERING) / 1000.0f;
+    uint8_t payload[13];
+    // Read AS5600 registers (ZPOS, MPOS, CONF, STATUS, AGC, ZMCO = 9 bytes)
+    uint8_t reg_len = KM_SDIR_ReadDiagnostics(c->sdir, payload);
+
+    // Append raw + center (4 bytes)
     uint16_t raw = c->sdir->lastRawValue;
     uint16_t center = c->sdir->centerOffset;
-    len = snprintf(buf, sizeof(buf), "STR: raw=%d center=%d rad=%.3f\r\n", raw, center, rad);
-    uart_write_bytes(UART_NUM_2, buf, len);
-    uart_wait_tx_done(UART_NUM_2, pdMS_TO_TICKS(50));
+    payload[reg_len]     = (raw >> 8) & 0xFF;
+    payload[reg_len + 1] = raw & 0xFF;
+    payload[reg_len + 2] = (center >> 8) & 0xFF;
+    payload[reg_len + 3] = center & 0xFF;
 
-    // Read AS5600 registers directly
-    KM_SDIR_ReadDiagnostics(c->sdir);
-
-    // Since ESP_LOG may not work on UART2, read registers and print manually
-    // (ReadDiagnostics uses ESP_LOGI which goes through vprintf redirect)
-    // Just print a marker so we know the task ran
-    len = snprintf(buf, sizeof(buf), "DIAG DONE\r\n");
-    uart_write_bytes(UART_NUM_2, buf, len);
-    uart_wait_tx_done(UART_NUM_2, pdMS_TO_TICKS(50));
+    // Send 3 times for reliability
+    for (int i = 0; i < 3; i++) {
+        KM_COMS_SendMsg(ESP_DIAG_STEERING, payload, reg_len + 4);
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
 
     vTaskDelete(NULL);
 }
@@ -136,7 +135,6 @@ void system_init(void) {
     if (sdir.errorCount == 0) {
         KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(init_rad * 1000));
         ESP_LOGI(TAG, "AS5600 connected — %.3f rad", init_rad);
-        KM_SDIR_ReadDiagnostics(&sdir);
     } else {
         ESP_LOGW(TAG, "AS5600 NOT responding — steering feedback will be stale");
     }
