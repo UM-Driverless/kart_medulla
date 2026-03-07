@@ -79,6 +79,10 @@ void control_task(void *ctx) {
 void heartbeat_task(void *ctx) {
     uint8_t payload[4] = {0xDE, 0xAD, 0xBE, 0xEF};
     KM_COMS_SendMsg(ESP_HEARTBEAT, payload, sizeof(payload));
+
+    // Periodic debug on UART2
+    const char *ping = "HB\r\n";
+    uart_write_bytes(UART_NUM_2, ping, 4);
 }
 
 void system_init(void) {
