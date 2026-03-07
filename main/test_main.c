@@ -394,7 +394,7 @@ static void test_pid(void) {
     KM_PID_SetOutputLimits(&pid, -1.0f, 1.0f);
 
     /* Positive error should give positive output */
-    float out = KM_PID_Compute(&pid, 0.5f, 0.0f);
+    float out = KM_PID_Calculate(&pid, 0.5f, 0.0f);
     TEST_BOOL("PID positive error -> positive output", out > 0.0f);
 
     /* Output should be within limits */
@@ -403,19 +403,19 @@ static void test_pid(void) {
     /* Large error should saturate at limit */
     pid = KM_PID_Init(0.03f, 0.0f, 0.0004f);
     KM_PID_SetOutputLimits(&pid, -1.0f, 1.0f);
-    float big_out = KM_PID_Compute(&pid, 100.0f, 0.0f);
+    float big_out = KM_PID_Calculate(&pid, 100.0f, 0.0f);
     TEST_BOOL("PID large error saturates at 1.0", big_out == 1.0f);
 
     /* Negative error should give negative output */
     pid = KM_PID_Init(0.03f, 0.0f, 0.0004f);
     KM_PID_SetOutputLimits(&pid, -1.0f, 1.0f);
-    float neg_out = KM_PID_Compute(&pid, -0.5f, 0.0f);
+    float neg_out = KM_PID_Calculate(&pid, -0.5f, 0.0f);
     TEST_BOOL("PID negative error -> negative output", neg_out < 0.0f);
 
     /* Zero error should give zero output (on first compute) */
     pid = KM_PID_Init(0.03f, 0.0f, 0.0004f);
     KM_PID_SetOutputLimits(&pid, -1.0f, 1.0f);
-    float zero_out = KM_PID_Compute(&pid, 0.0f, 0.0f);
+    float zero_out = KM_PID_Calculate(&pid, 0.0f, 0.0f);
     TEST_BOOL("PID zero error -> zero output", fabsf(zero_out) < 0.001f);
 
     /* NaN check */

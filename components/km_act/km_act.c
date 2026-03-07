@@ -41,7 +41,7 @@ ACT_Controller KM_ACT_Init(ACT_Type type, float limit)
     }
 
     float limit_clamp = clamp(limit, 0.0f, 1.0f);
-    act.outputLimit = (uint8_t)(limit_clamp * 100);
+    act.outputLimit = limit_clamp;
 
     act.lastOutput = 0.0f;
 
@@ -113,7 +113,7 @@ void KM_ACT_SetLimit(ACT_Controller *act, float limit)
     if (!act) return;
 
     float limit_clamp = clamp(limit, 0.0f, 1.0f);
-    act->outputLimit = (uint8_t)(limit_clamp * 100);
+    act->outputLimit = limit_clamp;
 }
 
 void KM_ACT_Stop(ACT_Controller *act)

@@ -53,7 +53,7 @@ typedef struct {
     /* DAC (solo accel/freno) */
     uint8_t dacChannel;   // 0 = A, 1 = B
 
-    uint8_t outputLimit; // Range of output allow[0-100]
+    float outputLimit;
     uint32_t lastOutput;
 } ACT_Controller;
 
