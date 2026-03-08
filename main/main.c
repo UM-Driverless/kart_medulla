@@ -18,6 +18,8 @@
 #include "km_sta.h"
 #include "km_gpio.h"
 #include "km_objects.h"
+#include "kart_msgs.pb.h"
+#include <pb_encode.h>
 
 static const char *TAG = "MAIN";
 static int uart2_vprintf(const char *fmt, va_list args);
@@ -48,40 +50,44 @@ void control_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
 
     // Send feedback FIRST (use last known value) so frames arrive even if I2C blocks
-    float actual_rad = (float)KM_OBJ_GetObjectValue(ACTUAL_STEERING) / 1000.0f;
-    int16_t actual_i16 = (int16_t)(actual_rad * 1000.0f);
-    uint8_t fb[2] = {(uint8_t)(actual_i16 >> 8), (uint8_t)(actual_i16 & 0xFF)};
-    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 2);
+    float actual_rad = KM_OBJ_GetObjectValue(ACTUAL_STEERING);
+    uint16_t raw_val = c->sdir->lastRawValue;
+    kart_ActSteering fb_msg = {.angle_rad = actual_rad, .raw_encoder = raw_val};
+    uint8_t fb_buf[kart_ActSteering_size];
+    pb_ostream_t ostream = pb_ostream_from_buffer(fb_buf, sizeof(fb_buf));
+    pb_encode(&ostream, kart_ActSteering_fields, &fb_msg);
+    KM_COMS_SendMsg(ESP_ACT_STEERING, fb_buf, ostream.bytes_written);
 
-    // Target from Orin: int16 radians × 1000
-    float target_rad = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
-
-    // Throttle + brake: unchanged (effort commands, 0-255)
-    float thr = (float)KM_OBJ_GetObjectValue(TARGET_THROTTLE) / 255.0f;
-    float brk = (float)KM_OBJ_GetObjectValue(TARGET_BRAKING) / 255.0f;
+    // Targets from Orin: native float, no scaling needed
+    float target_rad = KM_OBJ_GetObjectValue(TARGET_STEERING);
+    float thr = KM_OBJ_GetObjectValue(TARGET_THROTTLE);
+    float brk = KM_OBJ_GetObjectValue(TARGET_BRAKING);
     KM_ACT_SetOutput(c->throttle_act, thr);
     KM_ACT_SetOutput(c->brake_act, brk);
 
     // Read sensor AFTER sending — if I2C hangs, at least feedback/actuators ran
     float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
-    KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
+    KM_OBJ_SetObjectValue(ACTUAL_STEERING, new_rad);
 
     // PID in radians
     float pid_out = KM_PID_Calculate(c->dir_pid, target_rad, new_rad);
     KM_ACT_SetOutput(c->dir_act, pid_out);
 
     // Check for pending steering calibration command
-    int64_t cal_cmd = KM_OBJ_GetObjectValue(CALIBRATE_STEERING_CMD);
-    if (cal_cmd > 0) {
+    float cal_cmd = KM_OBJ_GetObjectValue(CALIBRATE_STEERING_CMD);
+    if (cal_cmd > 0.0f) {
         KM_SDIR_setCenterOffset(c->sdir, (uint16_t)cal_cmd);
-        KM_OBJ_SetObjectValue(CALIBRATE_STEERING_CMD, 0);
+        KM_OBJ_SetObjectValue(CALIBRATE_STEERING_CMD, 0.0f);
     }
 }
 
 // 1 Hz — heartbeat to Orin
 void heartbeat_task(void *ctx) {
-    uint8_t payload[4] = {0xDE, 0xAD, 0xBE, 0xEF};
-    KM_COMS_SendMsg(ESP_HEARTBEAT, payload, sizeof(payload));
+    kart_Heartbeat hb = {.uptime_ms = (uint32_t)(xTaskGetTickCount() * portTICK_PERIOD_MS)};
+    uint8_t buf[kart_Heartbeat_size];
+    pb_ostream_t stream = pb_ostream_from_buffer(buf, sizeof(buf));
+    pb_encode(&stream, kart_Heartbeat_fields, &hb);
+    KM_COMS_SendMsg(ESP_HEARTBEAT, buf, stream.bytes_written);
 }
 
 // 1 Hz — health monitoring: magnet (AGC), I2C, heap. Reports to Orin.
@@ -98,28 +104,31 @@ void health_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
 
     while (1) {
-        uint8_t payload[5];
-        uint8_t flags = 0;
-
         // AGC is the reliable magnet strength indicator (0=too strong, 255=too weak)
         uint8_t as_status = 0, agc = 0;
         int8_t i2c_ok = KM_SDIR_ReadStatusAGC(c->sdir, &as_status, &agc);
 
-        if (i2c_ok) flags |= HEALTH_FLAG_I2C_OK;
-        if (i2c_ok && agc >= AGC_MIN && agc <= AGC_MAX) flags |= HEALTH_FLAG_MAGNET_OK;
-
         // Heap check
         uint32_t free_heap = esp_get_free_heap_size();
-        if (free_heap >= HEALTH_HEAP_MIN_BYTES) flags |= HEALTH_FLAG_HEAP_OK;
         uint16_t heap_kb = (uint16_t)(free_heap / 1024);
 
-        payload[0] = flags;
-        payload[1] = agc;
-        payload[2] = (heap_kb >> 8) & 0xFF;
-        payload[3] = heap_kb & 0xFF;
-        payload[4] = c->sdir->errorCount;
+        kart_HealthStatus hs = {
+            .magnet_ok = (agc >= AGC_MIN && agc <= AGC_MAX && i2c_ok),
+            .i2c_ok = i2c_ok,
+            .heap_ok = (free_heap >= HEALTH_HEAP_MIN_BYTES),
+            .agc = agc,
+            .heap_kb = heap_kb,
+            .i2c_errors = c->sdir->errorCount,
+        };
+        uint8_t buf[kart_HealthStatus_size];
+        pb_ostream_t stream = pb_ostream_from_buffer(buf, sizeof(buf));
+        pb_encode(&stream, kart_HealthStatus_fields, &hs);
+        KM_COMS_SendMsg(ESP_HEALTH_STATUS, buf, stream.bytes_written);
 
-        KM_COMS_SendMsg(ESP_HEALTH_STATUS, payload, sizeof(payload));
+        uint8_t flags = 0;
+        if (i2c_ok) flags |= HEALTH_FLAG_I2C_OK;
+        if (i2c_ok && agc >= AGC_MIN && agc <= AGC_MAX) flags |= HEALTH_FLAG_MAGNET_OK;
+        if (free_heap >= HEALTH_HEAP_MIN_BYTES) flags |= HEALTH_FLAG_HEAP_OK;
 
         // Log warnings for critical issues
         if (i2c_ok && agc < AGC_MIN)
@@ -155,7 +164,7 @@ void system_init(void) {
     // Test AS5600 connectivity and seed initial angle
     float init_rad = KM_SDIR_ReadAngleRadians(&sdir);
     if (sdir.errorCount == 0) {
-        KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(init_rad * 1000));
+        KM_OBJ_SetObjectValue(ACTUAL_STEERING, init_rad);
         ESP_LOGI(TAG, "AS5600 connected — %.3f rad", init_rad);
     } else {
         ESP_LOGW(TAG, "AS5600 NOT responding — steering feedback will be stale");

@@ -14,7 +14,7 @@
 
 /******************************* VARIABLES PRIVADAS ***************************/
 // Variables globales internas (static)
-static int64_t km_objects_values[KM_OBJ_LAST];
+static float km_objects_values[KM_OBJ_LAST];
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
 
@@ -23,13 +23,13 @@ static int64_t km_objects_values[KM_OBJ_LAST];
 /**
  * @brief   Implementación de la función pública declarada en el header
  */
-uint8_t KM_OBJ_SetObjectValue(km_objects_t object, int64_t value){
+uint8_t KM_OBJ_SetObjectValue(km_objects_t object, float value){
     if (object >= KM_OBJ_LAST) return 0; // error: objeto inválido
     km_objects_values[object] = value;
     return 1; // éxito
 }
 
-int64_t KM_OBJ_GetObjectValue(km_objects_t object){
+float KM_OBJ_GetObjectValue(km_objects_t object){
     if (object >= KM_OBJ_LAST) return OBJECT_VALUE_ERROR; // Valor de error
     return km_objects_values[object];
 }

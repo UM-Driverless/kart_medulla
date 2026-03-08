@@ -58,6 +58,8 @@
 #include "driver/uart.h"
 #include "freertos/queue.h"
 #include <string.h>
+#include "kart_msgs.pb.h"
+#include <pb_decode.h>
 
 /******************************* MACROS PRIVADAS ********************************/
 // Constantes internas, flags de debug
@@ -256,81 +258,77 @@ void KM_COMS_ProccessMsgs(void) {
 static void KM_COMS_ProccessPayload(km_coms_msg msg) {
     ESP_LOGI("KM_coms", "RX msg type=0x%02X len=%d crc=0x%02X", msg.type, msg.len, msg.crc);
 
-    int64_t object_value = 0;
-
     switch (msg.type)
     {
-    case ORIN_TARG_THROTTLE:
-        if (msg.len != 1) return; // Invalid payload
-        
-        object_value = (int64_t)msg.payload[0];
-        KM_OBJ_SetObjectValue(TARGET_THROTTLE, object_value);
+    case ORIN_TARG_THROTTLE: {
+        kart_TargThrottle pb = kart_TargThrottle_init_zero;
+        pb_istream_t stream = pb_istream_from_buffer(msg.payload, msg.len);
+        if (pb_decode(&stream, kart_TargThrottle_fields, &pb)) {
+            KM_OBJ_SetObjectValue(TARGET_THROTTLE, pb.effort);
+        }
         break;
-
-    case ORIN_TARG_BRAKING:
-        if (msg.len != 1) return; // Invalid payload
-        object_value = (int64_t)msg.payload[0];
-        KM_OBJ_SetObjectValue(TARGET_BRAKING, object_value);
+    }
+    case ORIN_TARG_BRAKING: {
+        kart_TargBraking pb = kart_TargBraking_init_zero;
+        pb_istream_t stream = pb_istream_from_buffer(msg.payload, msg.len);
+        if (pb_decode(&stream, kart_TargBraking_fields, &pb)) {
+            KM_OBJ_SetObjectValue(TARGET_BRAKING, pb.effort);
+        }
         break;
-
-    case ORIN_TARG_STEERING:
-        if (msg.len != 2) return; // Invalid payload
-        // Decode int16 big-endian: radians × 1000
-        object_value = (int64_t)((int16_t)((msg.payload[0] << 8) | msg.payload[1]));
-        KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
+    }
+    case ORIN_TARG_STEERING: {
+        kart_TargSteering pb = kart_TargSteering_init_zero;
+        pb_istream_t stream = pb_istream_from_buffer(msg.payload, msg.len);
+        if (pb_decode(&stream, kart_TargSteering_fields, &pb)) {
+            KM_OBJ_SetObjectValue(TARGET_STEERING, pb.angle_rad);
+        }
         break;
-
-    case ORIN_MISION:
-        if (msg.len != 1) return; // Invalid payload
-        object_value = (int64_t)msg.payload[0];
-        KM_OBJ_SetObjectValue(MISION_ORIN, object_value);
+    }
+    case ORIN_MISION: {
+        // Single uint8 payload — mission enum
+        if (msg.len >= 1) {
+            KM_OBJ_SetObjectValue(MISION_ORIN, (float)msg.payload[0]);
+        }
         break;
-
-    case ORIN_MACHINE_STATE:
-        if (msg.len != 1) return; // Invalid payload
-        object_value = (int64_t)msg.payload[0];
-        KM_OBJ_SetObjectValue(MACHINE_STATE_ORIN, object_value);
+    }
+    case ORIN_MACHINE_STATE: {
+        if (msg.len >= 1) {
+            KM_OBJ_SetObjectValue(MACHINE_STATE_ORIN, (float)msg.payload[0]);
+        }
         break;
-
+    }
     case ORIN_HEARTBEAT:
-        // Ns si guardarlo en la libreria de variables o reinicar algo. ns
+        // Heartbeat received — no action needed
         break;
 
-    case ORIN_SHUTDOWN:
-        if (msg.len != 1) return; // Invalid payload
-        object_value = (int64_t)msg.payload[0];
-        KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
+    case ORIN_SHUTDOWN: {
+        if (msg.len >= 1) {
+            KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, msg.payload[0] ? 1.0f : 0.0f);
+        }
         break;
-
-    case ORIN_CALIBRATE_STEERING:
-        if (msg.len != 2) return; // Invalid payload — uint16 big-endian
-        object_value = (int64_t)((uint16_t)((msg.payload[0] << 8) | msg.payload[1]));
-        KM_OBJ_SetObjectValue(CALIBRATE_STEERING_CMD, object_value);
-        ESP_LOGI("KM_coms", "Steering calibration request: center=%d", (int)object_value);
+    }
+    case ORIN_CALIBRATE_STEERING: {
+        kart_CalibrateSteering pb = kart_CalibrateSteering_init_zero;
+        pb_istream_t stream = pb_istream_from_buffer(msg.payload, msg.len);
+        if (pb_decode(&stream, kart_CalibrateSteering_fields, &pb)) {
+            KM_OBJ_SetObjectValue(CALIBRATE_STEERING_CMD, (float)pb.center_offset);
+            ESP_LOGI("KM_coms", "Steering calibration request: center=%lu", (unsigned long)pb.center_offset);
+        }
         break;
-
-    case ORIN_COMPLETE:
-        if (msg.len != 7) return; // Invalid payload
-        object_value = (int64_t)msg.payload[0];
-        KM_OBJ_SetObjectValue(TARGET_THROTTLE, object_value);
-
-        object_value = (int64_t)msg.payload[1];
-        KM_OBJ_SetObjectValue(TARGET_BRAKING, object_value);
-
-        // Steering: int16 big-endian at payload[2..3], radians × 1000
-        object_value = (int64_t)((int16_t)((msg.payload[2] << 8) | msg.payload[3]));
-        KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
-
-        object_value = (int64_t)msg.payload[4];
-        KM_OBJ_SetObjectValue(MISION_ORIN, object_value);
-
-        object_value = (int64_t)msg.payload[5];
-        KM_OBJ_SetObjectValue(MACHINE_STATE_ORIN, object_value);
-
-        object_value = (int64_t)msg.payload[6];
-        KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
+    }
+    case ORIN_COMPLETE: {
+        kart_OrinComplete pb = kart_OrinComplete_init_zero;
+        pb_istream_t stream = pb_istream_from_buffer(msg.payload, msg.len);
+        if (pb_decode(&stream, kart_OrinComplete_fields, &pb)) {
+            KM_OBJ_SetObjectValue(TARGET_THROTTLE, pb.throttle);
+            KM_OBJ_SetObjectValue(TARGET_BRAKING, pb.braking);
+            KM_OBJ_SetObjectValue(TARGET_STEERING, pb.steering_rad);
+            KM_OBJ_SetObjectValue(MISION_ORIN, (float)pb.mission);
+            KM_OBJ_SetObjectValue(MACHINE_STATE_ORIN, (float)pb.machine_state);
+            KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, pb.shutdown ? 1.0f : 0.0f);
+        }
         break;
-    
+    }
     default:
         break;
     }

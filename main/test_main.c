@@ -31,6 +31,9 @@
 #include "km_pid.h"
 #include "km_act.h"
 #include "km_rtos.h"
+#include "kart_msgs.pb.h"
+#include <pb_encode.h>
+#include <pb_decode.h>
 
 static int pass_count = 0;
 static int fail_count = 0;
@@ -427,36 +430,48 @@ static void test_pid(void) {
  * 11. FRAME PROTOCOL ENCODING
  * Catches: wrong byte order, CRC errors, wrong type codes
  * ============================================================ */
-static void test_frame_encoding(void) {
-    printf("\n--- Frame protocol encoding ---\n");
+static void test_proto_encoding(void) {
+    printf("\n--- Protobuf (nanopb) round-trip ---\n");
 
-    /* Steering encoding: int16 big-endian, radians * 1000 */
-    float steer_rad = 0.25f;
-    int16_t steer_i16 = (int16_t)(steer_rad * 1000.0f);
-    uint8_t hi = (uint8_t)(steer_i16 >> 8);
-    uint8_t lo = (uint8_t)(steer_i16 & 0xFF);
-    TEST_BOOL("0.25 rad -> 250 (int16)", steer_i16 == 250);
-    TEST_BOOL("0.25 rad -> [0x00, 0xFA]", hi == 0x00 && lo == 0xFA);
+    // TargSteering encode → decode
+    kart_TargSteering ts = {.angle_rad = 0.25f};
+    uint8_t buf[kart_TargSteering_size];
+    pb_ostream_t ostream = pb_ostream_from_buffer(buf, sizeof(buf));
+    TEST_BOOL("pb_encode TargSteering", pb_encode(&ostream, kart_TargSteering_fields, &ts));
 
-    /* Negative steering */
-    float neg_steer = -0.3f;
-    int16_t neg_i16 = (int16_t)(neg_steer * 1000.0f);
-    uint8_t neg_hi = (uint8_t)((uint16_t)neg_i16 >> 8);
-    uint8_t neg_lo = (uint8_t)(neg_i16 & 0xFF);
-    TEST_BOOL("-0.3 rad -> -300 (int16)", neg_i16 == -300);
-    TEST_BOOL("-0.3 rad -> [0xFE, 0xD4]", neg_hi == 0xFE && neg_lo == 0xD4);
+    kart_TargSteering ts2 = kart_TargSteering_init_zero;
+    pb_istream_t istream = pb_istream_from_buffer(buf, ostream.bytes_written);
+    TEST_BOOL("pb_decode TargSteering", pb_decode(&istream, kart_TargSteering_fields, &ts2));
+    TEST_BOOL("TargSteering round-trip 0.25", fabsf(ts2.angle_rad - 0.25f) < 1e-6f);
 
-    /* Throttle encoding: 0-255 */
-    float throttle = 0.5f;
-    uint8_t thr_byte = (uint8_t)(throttle * 255.0f);
-    TEST_BOOL("50% throttle -> 127", thr_byte == 127);
+    // HealthStatus encode → decode
+    kart_HealthStatus hs = {.magnet_ok=true, .i2c_ok=true, .heap_ok=true, .agc=50, .heap_kb=200, .i2c_errors=0};
+    uint8_t hbuf[kart_HealthStatus_size];
+    pb_ostream_t ho = pb_ostream_from_buffer(hbuf, sizeof(hbuf));
+    TEST_BOOL("pb_encode HealthStatus", pb_encode(&ho, kart_HealthStatus_fields, &hs));
 
-    /* Type codes match Frame.msg constants */
-    TEST_BOOL("ORIN_TARG_THROTTLE = 0x20", 0x20 == 32);
-    TEST_BOOL("ORIN_TARG_BRAKING = 0x21",  0x21 == 33);
-    TEST_BOOL("ORIN_TARG_STEERING = 0x22", 0x22 == 34);
-    TEST_BOOL("ESP_ACT_STEERING = 0x04",   0x04 == 4);
-    TEST_BOOL("ESP_HEARTBEAT = 0x08",      0x08 == 8);
+    kart_HealthStatus hs2 = kart_HealthStatus_init_zero;
+    pb_istream_t hi = pb_istream_from_buffer(hbuf, ho.bytes_written);
+    TEST_BOOL("pb_decode HealthStatus", pb_decode(&hi, kart_HealthStatus_fields, &hs2));
+    TEST_BOOL("HealthStatus agc round-trip", hs2.agc == 50);
+    TEST_BOOL("HealthStatus heap_kb round-trip", hs2.heap_kb == 200);
+
+    // ActSteering with raw_encoder
+    kart_ActSteering as = {.angle_rad = -0.15f, .raw_encoder = 1900};
+    uint8_t abuf[kart_ActSteering_size];
+    pb_ostream_t ao = pb_ostream_from_buffer(abuf, sizeof(abuf));
+    TEST_BOOL("pb_encode ActSteering", pb_encode(&ao, kart_ActSteering_fields, &as));
+    kart_ActSteering as2 = kart_ActSteering_init_zero;
+    pb_istream_t ai = pb_istream_from_buffer(abuf, ao.bytes_written);
+    TEST_BOOL("pb_decode ActSteering", pb_decode(&ai, kart_ActSteering_fields, &as2));
+    TEST_BOOL("ActSteering angle round-trip", fabsf(as2.angle_rad - (-0.15f)) < 1e-6f);
+    TEST_BOOL("ActSteering raw_encoder round-trip", as2.raw_encoder == 1900);
+
+    // Type codes still match
+    TEST_BOOL("ORIN_TARG_THROTTLE = 0x20", ORIN_TARG_THROTTLE == 0x20);
+    TEST_BOOL("ORIN_TARG_STEERING = 0x22", ORIN_TARG_STEERING == 0x22);
+    TEST_BOOL("ESP_ACT_STEERING = 0x04",   ESP_ACT_STEERING == 0x04);
+    TEST_BOOL("ESP_HEARTBEAT = 0x08",       ESP_HEARTBEAT == 0x08);
 }
 
 /* ============================================================
@@ -591,7 +606,7 @@ void app_main(void) {
     /* Pure logic tests first (no hardware needed) */
     test_pin_assignments();
     test_pin_conflicts();
-    test_frame_encoding();
+    test_proto_encoding();
     test_crc8();
     test_pid();
     test_task_stack();
