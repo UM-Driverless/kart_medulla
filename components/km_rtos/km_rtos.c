@@ -120,7 +120,7 @@ esp_err_t KM_RTOS_DeleteTask(TaskHandle_t handle){
         vTaskDelete(handle);
         memset(&tasks[index], 0, sizeof(RTOS_Task));
         return ESP_OK;
-    }
+    } //prueba
 
     // NO se ha encontrado la tarea
     return ESP_FAIL;
