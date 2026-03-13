@@ -97,8 +97,6 @@ esp_err_t KM_COMS_Init(uart_port_t uart_port) {
     ret = uart_driver_install(UART_NUM_0, 1024, 0, 0, NULL, 0);
     if (ret != ESP_OK) return ret;
 
-    /* UART2 removed — GPIO17/16 reserved for hall sensors on PCB */
-
     /* Pin assignment for UART0 (USB to Orin) */
     uart_set_pin(km_coms_uart, PIN_USB_UART_TX, PIN_USB_UART_RX,
                  UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
@@ -106,50 +104,61 @@ esp_err_t KM_COMS_Init(uart_port_t uart_port) {
     return ESP_OK;
 }
 
-int KM_COMS_SendMsg(message_type_t type, uint8_t *payload, uint8_t len) {
-    km_coms_msg msg;
+int KM_COMS_SendMsg(message_type_t type, int32_t *data, uint8_t count)
+{
     uint8_t frame[KM_COMS_MSG_MAX_LEN - 1];
-    size_t total_sent = 0;
+    uint8_t payload[KM_COMS_MSG_MAX_LEN - 4];
+
+    size_t payload_len = count * sizeof(int32_t);
+
+    uint8_t crc;
+    size_t total_len, total_sent = 0;
+
     int sent, attempts = 0;
 
-    if(len > KM_COMS_MSG_MAX_LEN)
+    if(payload_len > KM_COMS_MSG_MAX_LEN - 5)
         return -1;
 
-    msg.len = (uint8_t)len;
-    msg.type = (uint8_t)type;
+    // Convert the int32_t value to 4 uint8_t
+    for(int i = 0; i < count; i++) {
+        payload[i*4 + 0] = (data[i] >> 24) & 0xFF;
+        payload[i*4 + 1] = (data[i] >> 16) & 0xFF;
+        payload[i*4 + 2] = (data[i] >> 8) & 0xFF;
+        payload[i*4 + 3] = data[i] & 0xFF;
+    }
 
-    memcpy(msg.payload, payload, len);
-    msg.crc = KM_COMS_crc8(msg.len, msg.type, msg.payload); // LEN + TYPE + PAYLOAD
+    /* Construir frame */
+    frame[0] = KM_COMS_SOM;
+    frame[1] = payload_len;
+    frame[2] = type;
 
-    // Armar frame
-    frame[0] = (uint8_t)KM_COMS_SOM;
-    frame[1] = (uint8_t)msg.len;
-    frame[2] = (uint8_t)msg.type;
-    memcpy(&frame[3], msg.payload, msg.len);
-    frame[3 + msg.len] = (uint8_t)msg.crc;
+    memcpy(&frame[3], payload, payload_len);
 
-    // Enviar mensaje, se intenta 5 veces
-    while(total_sent < len+4 && attempts < 5) {
-        sent = uart_write_bytes(km_coms_uart, frame + total_sent, (len + 4) - total_sent);
+    crc = KM_COMS_crc8(payload_len, type, payload);
+
+    frame[3 + payload_len] = crc;
+
+    total_len = payload_len + 4;
+
+    while(total_sent < total_len && attempts < 5) {
+        sent = uart_write_bytes(km_coms_uart, frame + total_sent, total_len - total_sent);
+
         total_sent += sent;
 
-        if(sent < (len - total_sent)) {
-            // buffer lleno, espera a que se vacíe
+        if(sent <= 0) {
             attempts++;
             vTaskDelay(5 / portTICK_PERIOD_MS);
         }
     }
 
-    // NO se ha podido enviar el mensaje correctamente
-    if(attempts >= 5 || total_sent < 4 + len){
-        ESP_LOGE("KM_coms", "El msg no se ha enviado, bytes enviados: %d, bytes que habia que enviar: %d", total_sent, 4+len);
+    if(attempts >= 5 || total_sent < total_len) {
+        ESP_LOGE("KM_coms", "Msg not sent correctly (%d/%d)", total_sent, total_len);
+
         return 0;
     }
 
-    // Se ha enviado el mensaje correctamente
     return 1;
 }
-
 
 void km_coms_ReceiveMsg(void) {
     uint8_t uart_chunk[KM_COMS_RX_CHUNK];
@@ -204,13 +213,22 @@ void KM_COMS_ProccessMsgs(void) {
 
         // Construir mensaje
         km_coms_msg msg;
-        msg.len = payload_len;
+        msg.len = payload_len / 4;
         msg.type = rx_buffer[processed + 2];
-        memcpy(msg.payload, rx_buffer + processed + 3, payload_len);
+        uint8_t *payload_bytes = rx_buffer + processed + 3;
+
+        for(int i = 0; i < msg.len; i++) {
+            msg.payload[i] =
+                ((int32_t)payload_bytes[i*4] << 24) |
+                ((int32_t)payload_bytes[i*4 + 1] << 16) |
+                ((int32_t)payload_bytes[i*4 + 2] << 8) |
+                ((int32_t)payload_bytes[i*4 + 3]);
+        }
+
         msg.crc = rx_buffer[processed + 3 + payload_len];
 
         // Verificar CRC
-        uint8_t crc_calc = KM_COMS_crc8(msg.len, msg.type, msg.payload);
+        uint8_t crc_calc = KM_COMS_crc8(payload_len, msg.type, payload_bytes);
         if(crc_calc == msg.crc) {
             KM_COMS_ProccessPayload(msg);
         }
@@ -274,9 +292,9 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
         break;
 
     case ORIN_TARG_STEERING:
-        if (msg.len != 2) return; // Invalid payload
-        // Decode int16 big-endian: radians × 1000
-        object_value = (int64_t)((int16_t)((msg.payload[0] << 8) | msg.payload[1]));
+        if (msg.len != 1) return; // Invalid payload
+
+        object_value = (int64_t)msg.payload[0];
         KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
         break;
 
@@ -303,35 +321,35 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
         break;
 
     case ORIN_CALIBRATE_STEERING:
-        if (msg.len != 2) return; // Invalid payload — uint16 big-endian
-        object_value = (int64_t)((uint16_t)((msg.payload[0] << 8) | msg.payload[1]));
+        if (msg.len != 1) return; // Invalid payload — uint16 big-endian
+        object_value = (int64_t)msg.payload[0];
         KM_OBJ_SetObjectValue(CALIBRATE_STEERING_CMD, object_value);
         ESP_LOGI("KM_coms", "Steering calibration request: center=%d", (int)object_value);
         break;
 
     case ORIN_COMPLETE:
-        if (msg.len != 7) return; // Invalid payload
+        if (msg.len != 6) return; // Invalid payload
         object_value = (int64_t)msg.payload[0];
         KM_OBJ_SetObjectValue(TARGET_THROTTLE, object_value);
 
         object_value = (int64_t)msg.payload[1];
         KM_OBJ_SetObjectValue(TARGET_BRAKING, object_value);
 
-        // Steering: int16 big-endian at payload[2..3], radians × 1000
-        object_value = (int64_t)((int16_t)((msg.payload[2] << 8) | msg.payload[3]));
+        object_value = (int64_t)msg.payload[2];
         KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
 
-        object_value = (int64_t)msg.payload[4];
+        object_value = (int64_t)msg.payload[3];
         KM_OBJ_SetObjectValue(MISION_ORIN, object_value);
 
-        object_value = (int64_t)msg.payload[5];
+        object_value = (int64_t)msg.payload[4];
         KM_OBJ_SetObjectValue(MACHINE_STATE_ORIN, object_value);
 
-        object_value = (int64_t)msg.payload[6];
+        object_value = (int64_t)msg.payload[5];
         KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
         break;
     
     default:
+        ESP_LOGE("KM_coms", "Type of msg incorrect. %d", msg.type);
         break;
     }
 }

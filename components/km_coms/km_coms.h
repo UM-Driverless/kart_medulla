@@ -132,7 +132,7 @@ typedef enum
 typedef struct {
     uint8_t len;                            /**< Length of the payload */
     uint8_t type;                           /**< Message type (see message_type_t) */
-    uint8_t payload[KM_COMS_MSG_MAX_LEN-5]; /**< Payload data */
+    int32_t payload[KM_COMS_MSG_MAX_LEN-5]; /**< Payload data */
     uint8_t crc;                            /**< CRC checksum of the message */
 } km_coms_msg;
 
@@ -189,7 +189,7 @@ esp_err_t KM_COMS_Init(uart_port_t uart_port);
  *
  * @note This function can be called from a FreeRTOS task periodically or on-demand.
  */
-int KM_COMS_SendMsg(message_type_t type, uint8_t *payload, uint8_t len);
+int KM_COMS_SendMsg(message_type_t type, int32_t *payload, uint8_t len);
 
 /**
  * @brief Reads bytes from the UART and stores them into the internal RX buffer.
