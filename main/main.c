@@ -1,3 +1,13 @@
+/******************************************************************************
+ * @file    main.c
+ * @brief   ESP32 application entry point and FreeRTOS task definitions for
+ *          the kart_medulla firmware.
+ *
+ * @details Brings up all hardware peripherals, initializes controllers and
+ *          sensors, and registers periodic FreeRTOS tasks for communications,
+ *          control, heartbeat, and health monitoring.
+ *****************************************************************************/
+
 #include "esp_system.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
@@ -22,7 +32,9 @@ static const char *TAG = "MAIN";
 
 #define MAX_ERROR_COUNT_SDIR 10
 
-// Context struct shared by control task
+/**
+ * @brief Context shared between the control and health tasks.
+ */
 typedef struct {
     sensor_struct *sdir;
     ACT_Controller *dir_act;
@@ -35,13 +47,32 @@ typedef struct {
 // FreeRTOS task functions
 // ===========================
 
-// 20 Hz — UART RX + parse incoming messages
+/**
+ * @brief   Communications task — receives and processes UART messages from Orin.
+ *
+ * @details Runs at 20 Hz via KM_RTOS periodic wrapper. Reads incoming bytes from
+ *          UART0 and parses complete binary-encoded messages into shared objects.
+ *
+ * @param   ctx  Unused (NULL).
+ */
 void comms_task(void *ctx) {
     km_coms_ReceiveMsg();
     KM_COMS_ProccessMsgs();
 }
 
-// 10 Hz — read sensor, run PID, drive actuators, send feedback
+/**
+ * @brief   Control task — steering PID, actuator output, and sensor feedback.
+ *
+ * @details Runs at 10 Hz (100 ms period). On each cycle:
+ *          1. Sends steering feedback (angle + raw encoder) to Orin FIRST, so
+ *             frames arrive even if the subsequent I2C read blocks.
+ *          2. Applies throttle and brake actuator outputs from Orin targets.
+ *          3. Reads the AS5600 steering angle via I2C.
+ *          4. Runs the steering PID controller and sets the motor output.
+ *          5. Checks for a pending steering calibration command.
+ *
+ * @param   ctx  Pointer to a control_context_t with sensor, actuator, and PID references.
+ */
 void control_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
 
@@ -77,15 +108,36 @@ void control_task(void *ctx) {
     }
 }
 
-// 1 Hz — heartbeat to Orin
+/**
+ * @brief   Heartbeat task — sends a periodic alive signal to Orin.
+ *
+ * @details Runs at 1 Hz. Sends a single int32 payload containing the ESP32
+ *          uptime in milliseconds as an ESP_HEARTBEAT message over UART.
+ *
+ * @param   ctx  Unused (NULL).
+ */
 void heartbeat_task(void *ctx) {
     int32_t payload[1] = {(int32_t)(xTaskGetTickCount() * portTICK_PERIOD_MS)};
     KM_COMS_SendMsg(ESP_HEARTBEAT, payload, 1);
 }
 
-// 1 Hz — health monitoring: magnet (AGC), I2C, heap. Reports to Orin.
-// Payload: [flags, agc, heap_kb, i2c_errors] — 4 int32 values
-// Flags: bit0=magnet_ok (AGC 20-235), bit1=i2c_ok, bit2=heap_ok (>4KB)
+/**
+ * @brief   Health monitoring task — checks magnet, I2C, and heap status.
+ *
+ * @details Runs at 1 Hz in its own FreeRTOS task (not via KM_RTOS wrapper).
+ *          Reports a 4-element int32 payload [flags, agc, heap_kb, i2c_errors]
+ *          to Orin as an ESP_HEALTH_STATUS message.
+ *
+ *          Flag bits:
+ *          - bit 0 (HEALTH_FLAG_MAGNET_OK): AGC in valid range [20, 235].
+ *          - bit 1 (HEALTH_FLAG_I2C_OK): AS5600 I2C read succeeded.
+ *          - bit 2 (HEALTH_FLAG_HEAP_OK): Free heap >= 4 KB.
+ *
+ * @param   ctx  Pointer to a control_context_t (needs sdir for AS5600 access).
+ *
+ * @note    This task contains its own infinite loop with vTaskDelay; it is NOT
+ *          intended for use with KM_RTOS_TaskWrapper.
+ */
 #define HEALTH_FLAG_MAGNET_OK (1 << 0)
 #define HEALTH_FLAG_I2C_OK    (1 << 1)
 #define HEALTH_FLAG_HEAP_OK   (1 << 2)
@@ -129,6 +181,23 @@ void health_task(void *ctx) {
     }
 }
 
+/**
+ * @brief   Initializes all subsystems and registers FreeRTOS tasks.
+ *
+ * @details Performs the full system bring-up sequence:
+ *          1. GPIO peripherals (ADC, DAC, PWM, I2C, direction pin).
+ *          2. RTOS task manager.
+ *          3. UART communications to Orin.
+ *          4. AS5600 steering encoder (I2C) with calibration load.
+ *          5. Actuator controllers (steering, throttle, brake) with output limits.
+ *          6. Steering PID controller.
+ *          7. Registers periodic tasks: comms (20 Hz), control (10 Hz),
+ *             heartbeat (1 Hz), and health monitoring (1 Hz).
+ *
+ * @note    All controller/sensor structs are copied to file-scope statics so
+ *          they outlive this function. The FreeRTOS scheduler keeps tasks alive
+ *          after system_init returns.
+ */
 void system_init(void) {
 
     // Initialize hardware
@@ -211,6 +280,16 @@ void system_init(void) {
     // system_init returns, FreeRTOS scheduler keeps tasks alive
 }
 
+/**
+ * @brief   Application entry point (called by ESP-IDF after boot).
+ *
+ * @details Initializes NVS flash (required for steering calibration storage),
+ *          sets the global log level to INFO, and calls system_init() to
+ *          bring up all subsystems and FreeRTOS tasks.
+ *
+ * @note    If NVS partition is corrupt or has a version mismatch, the flash
+ *          is erased and re-initialized automatically.
+ */
 void app_main(void) {
     // Init NVS (needed for steering calibration storage)
     esp_err_t nvs_ret = nvs_flash_init();

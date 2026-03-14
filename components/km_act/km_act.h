@@ -60,25 +60,55 @@ typedef struct {
 /*=========================== API PÚBLICA ==================================*/
 
 /**
- * @brief Inicializa un actuador según su tipo
+ * @brief Initializes an actuator controller for the given type.
+ *
+ * Configures the internal fields of an ACT_Controller (DAC channel, PWM channel,
+ * direction pin) based on the actuator type and sets the output limit.
+ *
+ * @param type  The actuator type (ACT_ACCEL, ACT_BRAKE, or ACT_STEER).
+ * @param limit Maximum output limit in normalized units [0.0, 1.0].
+ *              Clamped internally to this range.
+ * @return A fully initialized ACT_Controller struct with lastOutput = 0.
+ *
+ * @note The returned struct is stack-allocated; the caller owns the copy.
+ * @note Hardware peripherals (DAC, PWM, GPIO) must be initialized separately
+ *       via km_gpio before using the controller.
  */
 ACT_Controller KM_ACT_Init(ACT_Type type, float limit);
 
 /**
- * @brief Establece la salida del actuador
+ * @brief Sets the output of an actuator.
  *
- * Acelerador/Freno: 0.0 → 1.0  
- * Dirección:       -1.0 → 1.0
+ * Converts a normalized floating-point value to the appropriate hardware signal:
+ *  - Accelerator/Brake (DAC): value scaled to [0, 255].
+ *  - Steering (PWM + direction pin): magnitude scaled to [0, 255], sign sets direction.
+ *
+ * @param act   Pointer to the actuator controller. Must not be NULL.
+ * @param value Desired output in normalized units:
+ *              - Accelerator/Brake: [0.0, 1.0] (negative values clamped to 0).
+ *              - Steering: [-1.0, 1.0] (sign sets direction, magnitude sets duty).
+ *
+ * @note The value is clamped to [-outputLimit, +outputLimit] before conversion.
+ * @note DAC resolution is 8-bit; for external MCP4922, km_gpio handles upscaling.
  */
 void KM_ACT_SetOutput(ACT_Controller *act, float value);
 
 /**
- * @brief Limita la salida máxima del actuador
+ * @brief Updates the maximum output limit of an actuator.
+ *
+ * @param act   Pointer to the actuator controller. Must not be NULL.
+ * @param limit New output limit in normalized units [0.0, 1.0].
+ *              Clamped internally to this range.
  */
 void KM_ACT_SetLimit(ACT_Controller *act, float limit);
 
 /**
- * @brief Detiene el actuador (salida = 0)
+ * @brief Stops the actuator by setting its output to zero.
+ *
+ * Writes 0 to the DAC (accelerator/brake) or PWM (steering) and
+ * resets lastOutput to 0.
+ *
+ * @param act Pointer to the actuator controller. Must not be NULL.
  */
 void KM_ACT_Stop(ACT_Controller *act);
 

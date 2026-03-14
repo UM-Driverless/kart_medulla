@@ -12,11 +12,29 @@
 #define I2C_MASTER_TIMEOUT_MS 5
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
+
+/**
+ * @brief  Read one or more consecutive I2C registers from the AS5600.
+ * @param  sensor  Pointer to the sensor state.
+ * @param  reg     Starting register address.
+ * @param  data    Output buffer for the read bytes.
+ * @param  len     Number of bytes to read.
+ * @return 1 on success, 0 on I2C error.
+ */
 static int8_t KM_SDIR_ReadRegisters(sensor_struct *sensor, uint8_t reg, uint8_t* data, uint8_t len);
+
+/**
+ * @brief  Internal helper: read angle in radians with circular wrapping.
+ * @param  sensor  Pointer to the sensor state.
+ * @return Angle in radians (-PI to +PI), centered around centerOffset.
+ * @note   Applies modular wrapping so readings near the 0/4095 boundary
+ *         do not produce discontinuities.
+ */
 static float KM_SDIR_ReadAngle(sensor_struct *sensor);
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
 
+/** @brief Create and initialize sensor struct. See km_sdir.h for full documentation. */
 sensor_struct KM_SDIR_Init(int8_t max_error_count) {
     sensor_struct sensor;
 
@@ -30,7 +48,7 @@ sensor_struct KM_SDIR_Init(int8_t max_error_count) {
     return sensor;
 }
 
-// Inicializa I2C
+/** @brief Initialize I2C and verify AS5600 presence. See km_sdir.h. */
 int8_t KM_SDIR_Begin(sensor_struct *sensor, gpio_num_t sda, gpio_num_t scl) {
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
@@ -58,7 +76,7 @@ int8_t KM_SDIR_Begin(sensor_struct *sensor, gpio_num_t sda, gpio_num_t scl) {
     return sensor->connected;
 }
 
-// Leer valor crudo (0-4095)
+/** @brief Read raw 12-bit angle from AS5600. See km_sdir.h. */
 uint16_t KM_SDIR_ReadRaw(sensor_struct *sensor) {
     uint8_t data[2];
 
@@ -78,22 +96,22 @@ uint16_t KM_SDIR_ReadRaw(sensor_struct *sensor) {
     }
 }
 
-// Leer ángulo en radianes
+/** @brief Read centered angle in radians. */
 float KM_SDIR_ReadAngleRadians(sensor_struct *sensor) {
     return KM_SDIR_ReadAngle(sensor);
 }
 
-// Leer ángulo en grados
+/** @brief Read centered angle in degrees. */
 float KM_SDIR_ReadAngleDegrees(sensor_struct *sensor) {
     return KM_SDIR_ReadAngle(sensor) * 180.0f / PI;
 }
 
-// Verifica si el sensor está conectado
+/** @brief Check sensor connection health. */
 int8_t KM_SDIR_isConnected(sensor_struct *sensor) {
     return sensor->connected && (sensor->errorCount < sensor->max_error_count);
 }
 
-// Reset de I2C
+/** @brief Delete and reinstall I2C driver, then re-check sensor. */
 int8_t KM_SDIR_ResetI2C(sensor_struct *sensor) {
     i2c_driver_delete(I2C_NUM_0);
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -123,7 +141,7 @@ int8_t KM_SDIR_ResetI2C(sensor_struct *sensor) {
 #define NVS_NAMESPACE "km_sdir"
 #define NVS_KEY_CENTER "center"
 
-// Set center offset and persist to NVS
+/** @brief Set center offset and persist to NVS. */
 void KM_SDIR_setCenterOffset(sensor_struct *sensor, uint16_t offset) {
     sensor->centerOffset = offset;
     ESP_LOGI(TAG, "AS5600 center offset set to: %d", offset);
@@ -139,7 +157,7 @@ void KM_SDIR_setCenterOffset(sensor_struct *sensor, uint16_t offset) {
     }
 }
 
-// Load center offset from NVS; keeps SENSOR_CENTER default if not found
+/** @brief Load center offset from NVS; keeps default if not found. */
 void KM_SDIR_LoadCalibration(sensor_struct *sensor) {
     nvs_handle_t h;
     if (nvs_open(NVS_NAMESPACE, NVS_READONLY, &h) == ESP_OK) {
@@ -156,6 +174,7 @@ void KM_SDIR_LoadCalibration(sensor_struct *sensor) {
     }
 }
 
+/** @brief Read AS5600 diagnostic registers into buffer. See km_sdir.h. */
 uint8_t KM_SDIR_ReadDiagnostics(sensor_struct *sensor, uint8_t *out) {
     uint8_t data[2];
     uint8_t pos = 0;
@@ -193,6 +212,7 @@ uint8_t KM_SDIR_ReadDiagnostics(sensor_struct *sensor, uint8_t *out) {
     return pos; // should be 9
 }
 
+/** @brief Read STATUS and AGC registers. See km_sdir.h. */
 int8_t KM_SDIR_ReadStatusAGC(sensor_struct *sensor, uint8_t *status, uint8_t *agc) {
     uint8_t data;
     int8_t ok = 1;
@@ -216,7 +236,7 @@ int8_t KM_SDIR_ReadStatusAGC(sensor_struct *sensor, uint8_t *status, uint8_t *ag
 
 /******************************* FUNCIONES PRIVADAS ***************************/
 
-// Leer registros I2C
+/** @brief Read consecutive I2C registers from AS5600. See forward declaration. */
 static int8_t KM_SDIR_ReadRegisters(sensor_struct *sensor, uint8_t reg, uint8_t* data, uint8_t len) {
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
@@ -245,7 +265,7 @@ static int8_t KM_SDIR_ReadRegisters(sensor_struct *sensor, uint8_t reg, uint8_t*
     return (ret == ESP_OK) ? 1 : 0;
 }
 
-// Devuelve ángulo en radianes (-PI a PI)
+/** @brief Compute centered angle in radians with circular wrapping. */
 static float KM_SDIR_ReadAngle(sensor_struct *sensor) {
     uint16_t raw = KM_SDIR_ReadRaw(sensor);
 

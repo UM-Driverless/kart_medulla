@@ -1,6 +1,6 @@
 /******************************************************************************
  * @file    km_objects.h
- * @brief   Interfaz pública de la librería.
+ * @brief   Public interface for the KM_OBJECTS shared-state dictionary.
  * @author  Adrian Navarredonda Arizaleta
  * @date    27-02-2026
  * @version 1.0
@@ -48,18 +48,22 @@ KM_OBJ_LAST             // Este debe de ser siempre el ultimo
 // extern int ejemplo_variable_publica;
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
+
 /**
- * @brief   Establece el valor de un objeto.
- * @param ID del objeto a estrablecer
- * @return  0 si tuvo éxito, otro valor si hubo error
+ * @brief   Sets the value of a shared object.
+ *
+ * @param   object  Object identifier (member of km_objects_t).
+ * @param   value   64-bit signed value to store.
+ * @return  1 on success, 0 if the object identifier is out of range.
  */
 uint8_t KM_OBJ_SetObjectValue(km_objects_t object, int64_t value);
 
-
 /**
- * @brief   Operación principal de la librería.
- * @param   valor Parámetro de entrada
- * @return  Resultado
+ * @brief   Gets the current value of a shared object.
+ *
+ * @param   object  Object identifier (member of km_objects_t).
+ * @return  The stored 64-bit value, or OBJECT_VALUE_ERROR if the identifier
+ *          is out of range.
  */
 int64_t KM_OBJ_GetObjectValue(km_objects_t object);
 

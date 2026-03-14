@@ -49,7 +49,7 @@
 typedef void (*KM_RTOS_TaskFunction_t)(void *context);
 
 /**
- * @brief Structure that reperesents a task in FreeRTOS
+ * @brief Structure that represents a task in FreeRTOS
  */
 typedef struct {
     TaskHandle_t handle;            /**< FreeRTOS task handle */
@@ -164,7 +164,7 @@ esp_err_t KM_RTOS_AddTask(RTOS_Task task);
  * @return ESP_FAIL if the task handle was not found in the internal array.
  *
  * @note After this function, the task slot is fully reset and can be reused for new tasks.
- * @note Thread-safd calling this while other tasks may concurrently access the `tasks` array.
+ * @note Not thread-safe if other tasks concurrently access the `tasks` array.
  */
 esp_err_t KM_RTOS_DeleteTask(TaskHandle_t handle);
 
@@ -235,5 +235,5 @@ esp_err_t KM_RTOS_RestartTask(TaskHandle_t handle);
  */
 esp_err_t KM_RTOS_ChangePriority(TaskHandle_t handle, uint8_t newPriority);
 
-#endif /* NOMBRE_LIBRERIA_H */
+#endif /* KM_RTOS_H */
  

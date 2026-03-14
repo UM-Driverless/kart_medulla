@@ -72,11 +72,14 @@ static SemaphoreHandle_t km_coms_mutex;
 static uart_port_t km_coms_uart = UART_NUM_0;
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
+/** @brief Processes a validated incoming message and updates shared objects. */
 static void KM_COMS_ProccessPayload(km_coms_msg msg);
+/** @brief Computes CRC-8 (poly 0x07) over length, type, and payload bytes. */
 static uint8_t KM_COMS_crc8(uint8_t len, uint8_t type, const uint8_t *data);
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
 
+/** @copydoc KM_COMS_Init */
 esp_err_t KM_COMS_Init(uart_port_t uart_port) {
     km_coms_uart = uart_port;
 
@@ -104,6 +107,7 @@ esp_err_t KM_COMS_Init(uart_port_t uart_port) {
     return ESP_OK;
 }
 
+/** @copydoc KM_COMS_SendMsg */
 int KM_COMS_SendMsg(message_type_t type, int32_t *data, uint8_t count)
 {
     uint8_t frame[KM_COMS_MSG_MAX_LEN - 1];
@@ -160,6 +164,7 @@ int KM_COMS_SendMsg(message_type_t type, int32_t *data, uint8_t count)
     return 1;
 }
 
+/** @copydoc km_coms_ReceiveMsg */
 void km_coms_ReceiveMsg(void) {
     uint8_t uart_chunk[KM_COMS_RX_CHUNK];
     size_t len_read = 0;
@@ -193,6 +198,7 @@ void km_coms_ReceiveMsg(void) {
     }
 }
 
+/** @copydoc KM_COMS_ProccessMsgs */
 void KM_COMS_ProccessMsgs(void) {
     size_t processed = 0;
 

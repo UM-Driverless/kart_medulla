@@ -1,6 +1,6 @@
 /******************************************************************************
- * @file    nombre_libreria.h
- * @brief   Interfaz pública de la librería.
+ * @file    km_gamc.h
+ * @brief   Public interface for the KM_GAMC library (template / placeholder).
  * @author  Autor
  * @date    DD-MM-AAAA
  * @version 1.0

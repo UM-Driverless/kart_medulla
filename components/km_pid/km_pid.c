@@ -19,6 +19,8 @@
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
+
+/** @brief Initialize a PID controller. See km_pid.h for full documentation. */
 PID_Controller KM_PID_Init(float kp_val, float ki_val, float kd_val) {
 
     PID_Controller controller;
@@ -34,6 +36,7 @@ PID_Controller KM_PID_Init(float kp_val, float ki_val, float kd_val) {
     return controller;                                                             
 }
 
+/** @brief Compute PID output for one cycle. See km_pid.h for full documentation. */
 float KM_PID_Calculate(PID_Controller *controller, float setpoint, float measurement) {
     unsigned long currentTime = esp_timer_get_time();
     float dt = (currentTime - controller->lastTime) / 1000000.0f;  // Convert to seconds
@@ -81,35 +84,40 @@ float KM_PID_Calculate(PID_Controller *controller, float setpoint, float measure
     return output;
 }
 
+/** @brief Update PID gains at runtime. */
 void KM_PID_SetTunings(PID_Controller *controller, float kp, float ki, float kd) {
     controller->kp = kp;
     controller->ki = ki;
     controller->kd = kd;
 }
 
+/** @brief Set output clamp limits. */
 void KM_PID_SetOutputLimits(PID_Controller *controller, float min, float max) {
     controller->outputMin = min;
     controller->outputMax = max;
 }
 
+/** @brief Set integral accumulator clamp limits (anti-windup). */
 void KM_PID_SetIntegralLimits(PID_Controller *controller, float min, float max) {
     controller->integralMin = min;
     controller->integralMax = max;
 }
 
+/** @brief Reset controller state (integral, error, timestamp). */
 void KM_PID_Reset(PID_Controller *controller){
     controller->integral = 0.0f;
     controller->lastError = 0.0f;
     controller->lastTime = esp_timer_get_time();
 }
 
+/** @brief Overwrite gains (identical to SetTunings). See km_pid.h note. */
 void KM_PID_GetTunings(PID_Controller *controller, float kp, float ki, float kd) {
     controller->kp = kp;
     controller->ki = ki;
     controller->kd = kd;
 }
 
-// Get integral value (for debugging)
+/** @brief Return the current integral accumulator (for debugging). */
 float KM_PID_GetIntegral(PID_Controller *controller){
     return controller->integral;
 }
