@@ -99,7 +99,8 @@ void control_task(void *ctx) {
     KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(-new_rad * 1000));
 
     // PID in sensor's natural frame (both target and actual are in same frame)
-    float pid_out = KM_PID_Calculate(c->dir_pid, target_rad, new_rad);
+    // Negate output: motor wiring is opposite to PID sign convention
+    float pid_out = -KM_PID_Calculate(c->dir_pid, target_rad, new_rad);
     KM_ACT_SetOutput(c->dir_act, pid_out);
 
     // Check for pending steering calibration command
@@ -230,11 +231,12 @@ void system_init(void) {
     // Initialize Motor controllers
     // *** STEERING PWM LIMIT — keep low during testing to protect gears ***
     // Increase gradually once PID is tuned. 1.0 = full power.
-    ACT_Controller dir_act = KM_ACT_Init(ACT_STEER, 0.1);
+    // *** STEERING PWM LIMIT — keep low during testing to protect gears ***
+    ACT_Controller dir_act = KM_ACT_Init(ACT_STEER, 0.25);
     ACT_Controller throttle_act = KM_ACT_Init(ACT_ACCEL, 1.0);
     ACT_Controller brake_act = KM_ACT_Init(ACT_BRAKE, 1.0);
 
-    KM_ACT_SetLimit(&dir_act, 0.1);
+    KM_ACT_SetLimit(&dir_act, 0.25);
     KM_ACT_SetLimit(&throttle_act, 1.0);
     KM_ACT_SetLimit(&brake_act, 1.0);
 
