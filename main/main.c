@@ -298,7 +298,14 @@ void app_main(void) {
         nvs_flash_init();
     }
 
+    // Log init message before disabling logs — UART0 is shared with binary protocol
     esp_log_level_set("*", ESP_LOG_INFO);
     ESP_LOGI(TAG, "ESP32 starting...");
+
     system_init();
+
+    // Disable all logging on UART0 to prevent ASCII text from corrupting
+    // binary protocol frames. Without this, ESP_LOG output interleaves with
+    // protocol bytes and causes CRC mismatches on the Orin side.
+    esp_log_level_set("*", ESP_LOG_NONE);
 }
