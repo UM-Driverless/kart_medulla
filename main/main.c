@@ -93,7 +93,8 @@ void control_task(void *ctx) {
     KM_ACT_SetOutput(c->brake_act, brk);
 
     // Read sensor AFTER sending — if I2C hangs, at least feedback/actuators ran
-    float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
+    // Negate: AS5600 gives negative-left, but our convention is positive-left
+    float new_rad = -KM_SDIR_ReadAngleRadians(c->sdir);
     KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
 
     // PID in radians
