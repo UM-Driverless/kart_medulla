@@ -232,16 +232,16 @@ void system_init(void) {
     // *** STEERING PWM LIMIT — keep low during testing to protect gears ***
     // Increase gradually once PID is tuned. 1.0 = full power.
     // *** STEERING PWM LIMIT — keep low during testing to protect gears ***
-    ACT_Controller dir_act = KM_ACT_Init(ACT_STEER, 0.25);
+    ACT_Controller dir_act = KM_ACT_Init(ACT_STEER, 0.05);
     ACT_Controller throttle_act = KM_ACT_Init(ACT_ACCEL, 1.0);
     ACT_Controller brake_act = KM_ACT_Init(ACT_BRAKE, 1.0);
 
-    KM_ACT_SetLimit(&dir_act, 0.25);
+    KM_ACT_SetLimit(&dir_act, 0.05);
     KM_ACT_SetLimit(&throttle_act, 1.0);
     KM_ACT_SetLimit(&brake_act, 1.0);
 
     // Initialise PID for steering
-    float kp = 0.5;
+    float kp = 0.15;
     float ki = 0.0;
     float kd = 0.01;
     PID_Controller dir_pid = KM_PID_Init(kp, ki, kd);
