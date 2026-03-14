@@ -83,8 +83,9 @@ void control_task(void *ctx) {
     };
     KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 2);
 
-    // Target from Orin: int32 radians × 1000
-    float target_rad = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
+    // Target from Orin uses positive=left convention.
+    // Negate to match AS5600's natural frame (positive=right) for PID.
+    float target_rad = -(float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
 
     // Throttle + brake: int32 effort × 255 (0-255 range)
     float thr = (float)KM_OBJ_GetObjectValue(TARGET_THROTTLE) / 255.0f;
@@ -92,12 +93,12 @@ void control_task(void *ctx) {
     KM_ACT_SetOutput(c->throttle_act, thr);
     KM_ACT_SetOutput(c->brake_act, brk);
 
-    // Read sensor AFTER sending — if I2C hangs, at least feedback/actuators ran
-    // Negate: AS5600 gives negative-left, but our convention is positive-left
-    float new_rad = -KM_SDIR_ReadAngleRadians(c->sdir);
-    KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
+    // Read sensor — no negate, PID works in sensor's natural frame
+    float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
+    // Report to Orin negated (positive=left convention)
+    KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(-new_rad * 1000));
 
-    // PID in radians
+    // PID in sensor's natural frame (both target and actual are in same frame)
     float pid_out = KM_PID_Calculate(c->dir_pid, target_rad, new_rad);
     KM_ACT_SetOutput(c->dir_act, pid_out);
 
