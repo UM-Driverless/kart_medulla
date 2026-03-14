@@ -1,6 +1,6 @@
 /******************************************************************************
  * @file    km_gpio.c
- * @brief   Implementación de la librería.
+ * @brief   Implementation of the KM_GPIO hardware abstraction library.
  *****************************************************************************/
 
 #include "km_gpio.h"
@@ -166,17 +166,20 @@ esp_err_t KM_GPIO_Init(void)
 }
 
 /* ---------- Digital GPIO ---------- */
+/** @copydoc KM_GPIO_WriteDigital */
 esp_err_t KM_GPIO_WriteDigital(gpio_num_t pin, uint8_t level)
 {
     return gpio_set_level(pin, level ? 1 : 0);
 }
 
+/** @copydoc KM_GPIO_ReadDigital */
 uint8_t KM_GPIO_ReadDigital(gpio_num_t pin)
 {
     return gpio_get_level(pin);
 }
 
 /* ---------- ADC ---------- */
+/** @copydoc KM_GPIO_ReadADC */
 uint16_t KM_GPIO_ReadADC(gpio_num_t pin)
 {
     gpio_num_t gpio = (gpio_num_t)(pin);
@@ -204,6 +207,7 @@ uint16_t KM_GPIO_ReadADC(gpio_num_t pin)
 }
 
 /* ---------- DAC ---------- */
+/** @copydoc KM_GPIO_WriteDAC */
 esp_err_t KM_GPIO_WriteDAC(gpio_num_t pin, uint8_t value)
 {
     gpio_num_t gpio = (gpio_num_t)pin;
@@ -215,6 +219,7 @@ esp_err_t KM_GPIO_WriteDAC(gpio_num_t pin, uint8_t value)
 }
 
 /* ---------- PWM ---------- */
+/** @copydoc KM_GPIO_WritePWM */
 esp_err_t KM_GPIO_WritePWM(gpio_num_t pin, uint32_t duty)
 {
     gpio_num_t gpio = (gpio_num_t)pin;

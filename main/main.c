@@ -1,3 +1,13 @@
+/******************************************************************************
+ * @file    main.c
+ * @brief   ESP32 application entry point and FreeRTOS task definitions for
+ *          the kart_medulla firmware.
+ *
+ * @details Brings up all hardware peripherals, initializes controllers and
+ *          sensors, and registers periodic FreeRTOS tasks for communications,
+ *          control, heartbeat, and health monitoring.
+ *****************************************************************************/
+
 #include "esp_system.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
@@ -6,7 +16,6 @@
 #include "freertos/task.h"
 
 #include <math.h>
-#include <stdarg.h>
 
 // Librerias propias
 #include "km_act.h"
@@ -20,11 +29,12 @@
 #include "km_objects.h"
 
 static const char *TAG = "MAIN";
-static int uart2_vprintf(const char *fmt, va_list args);
 
 #define MAX_ERROR_COUNT_SDIR 10
 
-// Context struct shared by control task
+/**
+ * @brief Context shared between the control and health tasks.
+ */
 typedef struct {
     sensor_struct *sdir;
     ACT_Controller *dir_act;
@@ -37,26 +47,46 @@ typedef struct {
 // FreeRTOS task functions
 // ===========================
 
-// 20 Hz — UART RX + parse incoming messages
+/**
+ * @brief   Communications task — receives and processes UART messages from Orin.
+ *
+ * @details Runs at 20 Hz via KM_RTOS periodic wrapper. Reads incoming bytes from
+ *          UART0 and parses complete binary-encoded messages into shared objects.
+ *
+ * @param   ctx  Unused (NULL).
+ */
 void comms_task(void *ctx) {
     km_coms_ReceiveMsg();
     KM_COMS_ProccessMsgs();
 }
 
-// 10 Hz — read sensor, run PID, drive actuators, send feedback
+/**
+ * @brief   Control task — steering PID, actuator output, and sensor feedback.
+ *
+ * @details Runs at 10 Hz (100 ms period). On each cycle:
+ *          1. Sends steering feedback (angle + raw encoder) to Orin FIRST, so
+ *             frames arrive even if the subsequent I2C read blocks.
+ *          2. Applies throttle and brake actuator outputs from Orin targets.
+ *          3. Reads the AS5600 steering angle via I2C.
+ *          4. Runs the steering PID controller and sets the motor output.
+ *          5. Checks for a pending steering calibration command.
+ *
+ * @param   ctx  Pointer to a control_context_t with sensor, actuator, and PID references.
+ */
 void control_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
 
     // Send feedback FIRST (use last known value) so frames arrive even if I2C blocks
-    float actual_rad = (float)KM_OBJ_GetObjectValue(ACTUAL_STEERING) / 1000.0f;
-    int16_t actual_i16 = (int16_t)(actual_rad * 1000.0f);
-    uint8_t fb[2] = {(uint8_t)(actual_i16 >> 8), (uint8_t)(actual_i16 & 0xFF)};
+    int32_t fb[2] = {
+        (int32_t)KM_OBJ_GetObjectValue(ACTUAL_STEERING),  // angle_rad x 1000
+        (int32_t)c->sdir->lastRawValue                     // raw encoder
+    };
     KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 2);
 
-    // Target from Orin: int16 radians × 1000
+    // Target from Orin: int32 radians × 1000
     float target_rad = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
 
-    // Throttle + brake: unchanged (effort commands, 0-255)
+    // Throttle + brake: int32 effort × 255 (0-255 range)
     float thr = (float)KM_OBJ_GetObjectValue(TARGET_THROTTLE) / 255.0f;
     float brk = (float)KM_OBJ_GetObjectValue(TARGET_BRAKING) / 255.0f;
     KM_ACT_SetOutput(c->throttle_act, thr);
@@ -78,15 +108,36 @@ void control_task(void *ctx) {
     }
 }
 
-// 1 Hz — heartbeat to Orin
+/**
+ * @brief   Heartbeat task — sends a periodic alive signal to Orin.
+ *
+ * @details Runs at 1 Hz. Sends a single int32 payload containing the ESP32
+ *          uptime in milliseconds as an ESP_HEARTBEAT message over UART.
+ *
+ * @param   ctx  Unused (NULL).
+ */
 void heartbeat_task(void *ctx) {
-    uint8_t payload[4] = {0xDE, 0xAD, 0xBE, 0xEF};
-    KM_COMS_SendMsg(ESP_HEARTBEAT, payload, sizeof(payload));
+    int32_t payload[1] = {(int32_t)(xTaskGetTickCount() * portTICK_PERIOD_MS)};
+    KM_COMS_SendMsg(ESP_HEARTBEAT, payload, 1);
 }
 
-// 1 Hz — health monitoring: magnet (AGC), I2C, heap. Reports to Orin.
-// Payload: [flags, agc, free_heap_h, free_heap_l, i2c_err_count]
-// Flags: bit0=magnet_ok (AGC 20-235), bit1=i2c_ok, bit2=heap_ok (>4KB)
+/**
+ * @brief   Health monitoring task — checks magnet, I2C, and heap status.
+ *
+ * @details Runs at 1 Hz in its own FreeRTOS task (not via KM_RTOS wrapper).
+ *          Reports a 4-element int32 payload [flags, agc, heap_kb, i2c_errors]
+ *          to Orin as an ESP_HEALTH_STATUS message.
+ *
+ *          Flag bits:
+ *          - bit 0 (HEALTH_FLAG_MAGNET_OK): AGC in valid range [20, 235].
+ *          - bit 1 (HEALTH_FLAG_I2C_OK): AS5600 I2C read succeeded.
+ *          - bit 2 (HEALTH_FLAG_HEAP_OK): Free heap >= 4 KB.
+ *
+ * @param   ctx  Pointer to a control_context_t (needs sdir for AS5600 access).
+ *
+ * @note    This task contains its own infinite loop with vTaskDelay; it is NOT
+ *          intended for use with KM_RTOS_TaskWrapper.
+ */
 #define HEALTH_FLAG_MAGNET_OK (1 << 0)
 #define HEALTH_FLAG_I2C_OK    (1 << 1)
 #define HEALTH_FLAG_HEAP_OK   (1 << 2)
@@ -98,8 +149,7 @@ void health_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
 
     while (1) {
-        uint8_t payload[5];
-        uint8_t flags = 0;
+        int32_t flags = 0;
 
         // AGC is the reliable magnet strength indicator (0=too strong, 255=too weak)
         uint8_t as_status = 0, agc = 0;
@@ -113,13 +163,9 @@ void health_task(void *ctx) {
         if (free_heap >= HEALTH_HEAP_MIN_BYTES) flags |= HEALTH_FLAG_HEAP_OK;
         uint16_t heap_kb = (uint16_t)(free_heap / 1024);
 
-        payload[0] = flags;
-        payload[1] = agc;
-        payload[2] = (heap_kb >> 8) & 0xFF;
-        payload[3] = heap_kb & 0xFF;
-        payload[4] = c->sdir->errorCount;
-
-        KM_COMS_SendMsg(ESP_HEALTH_STATUS, payload, sizeof(payload));
+        // Payload: [flags, agc, heap_kb, i2c_errors] — 4 int32 values
+        int32_t payload[4] = {flags, (int32_t)agc, (int32_t)heap_kb, (int32_t)c->sdir->errorCount};
+        KM_COMS_SendMsg(ESP_HEALTH_STATUS, payload, 4);
 
         // Log warnings for critical issues
         if (i2c_ok && agc < AGC_MIN)
@@ -135,6 +181,23 @@ void health_task(void *ctx) {
     }
 }
 
+/**
+ * @brief   Initializes all subsystems and registers FreeRTOS tasks.
+ *
+ * @details Performs the full system bring-up sequence:
+ *          1. GPIO peripherals (ADC, DAC, PWM, I2C, direction pin).
+ *          2. RTOS task manager.
+ *          3. UART communications to Orin.
+ *          4. AS5600 steering encoder (I2C) with calibration load.
+ *          5. Actuator controllers (steering, throttle, brake) with output limits.
+ *          6. Steering PID controller.
+ *          7. Registers periodic tasks: comms (20 Hz), control (10 Hz),
+ *             heartbeat (1 Hz), and health monitoring (1 Hz).
+ *
+ * @note    All controller/sensor structs are copied to file-scope statics so
+ *          they outlive this function. The FreeRTOS scheduler keeps tasks alive
+ *          after system_init returns.
+ */
 void system_init(void) {
 
     // Initialize hardware
@@ -197,16 +260,11 @@ void system_init(void) {
     ctrl_ctx.brake_act = &brake_act_static;
     ctrl_ctx.dir_pid = &dir_pid_static;
 
-    // Redirect logs to UART2 now, right before tasks start using UART0 for protocol
-    esp_log_set_vprintf(uart2_vprintf);
-
-    // Test: direct write + ESP_LOG to see which works
-    const char *redir_test = "DIRECT: logs redirected\r\n";
-    uart_write_bytes(UART_NUM_2, redir_test, 24);
-    ESP_LOGI(TAG, "ESP_LOGI: logs redirected to UART2");
+    // NOTE: UART2 log redirect removed — it caused crashes and UART0 protocol noise.
+    // Logs go to UART0 at 115200. SerialDriver ignores non-0xAA bytes (SOF filtering).
 
     // Register FreeRTOS tasks
-    RTOS_Task t1 = KM_COMS_CreateTask("comms", comms_task, NULL, 10, 2048, 2, 1);
+    RTOS_Task t1 = KM_COMS_CreateTask("comms", comms_task, NULL, 10, 4096, 2, 1);
     RTOS_Task t2 = KM_COMS_CreateTask("control", control_task, &ctrl_ctx, 10, 4096, 1, 1);
     RTOS_Task t3 = KM_COMS_CreateTask("heartbeat", heartbeat_task, NULL, 1000, 2048, 1, 1);
 
@@ -222,38 +280,17 @@ void system_init(void) {
     // system_init returns, FreeRTOS scheduler keeps tasks alive
 }
 
-// Redirect ESP-IDF log output to UART2 so UART0 stays clean for protocol
-static int uart2_vprintf(const char *fmt, va_list args) {
-    char buf[256];
-    int len = vsnprintf(buf, sizeof(buf), fmt, args);
-    if (len > 0) {
-        uart_write_bytes(UART_NUM_2, buf, len > (int)sizeof(buf) ? (int)sizeof(buf) : len);
-    }
-    return len;
-}
-
+/**
+ * @brief   Application entry point (called by ESP-IDF after boot).
+ *
+ * @details Initializes NVS flash (required for steering calibration storage),
+ *          sets the global log level to INFO, and calls system_init() to
+ *          bring up all subsystems and FreeRTOS tasks.
+ *
+ * @note    If NVS partition is corrupt or has a version mismatch, the flash
+ *          is erased and re-initialized automatically.
+ */
 void app_main(void) {
-    // Init UART2 early for debug logs — before any ESP_LOG calls
-    uart_config_t uart2_cfg = {
-        .baud_rate = 115200,
-        .data_bits = UART_DATA_8_BITS,
-        .parity    = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-    };
-    uart_param_config(UART_NUM_2, &uart2_cfg);
-    uart_set_pin(UART_NUM_2, PIN_ORIN_UART_TX, PIN_ORIN_UART_RX,
-                 UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    esp_err_t uart2_ret = uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
-
-    // Direct test — check return value
-    char uart2_msg[64];
-    int uart2_len = snprintf(uart2_msg, sizeof(uart2_msg), "UART2 drv=%d\r\n", (int)uart2_ret);
-    uart_write_bytes(UART_NUM_2, uart2_msg, uart2_len);
-    uart_wait_tx_done(UART_NUM_2, pdMS_TO_TICKS(100));
-
-    esp_log_set_vprintf(uart2_vprintf);
-
     // Init NVS (needed for steering calibration storage)
     esp_err_t nvs_ret = nvs_flash_init();
     if (nvs_ret == ESP_ERR_NVS_NO_FREE_PAGES || nvs_ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -264,8 +301,4 @@ void app_main(void) {
     esp_log_level_set("*", ESP_LOG_INFO);
     ESP_LOGI(TAG, "ESP32 starting...");
     system_init();
-
-    // Post-init test on UART2
-    const char *post = "POST-INIT OK\r\n";
-    uart_write_bytes(UART_NUM_2, post, 14);
 }

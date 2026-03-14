@@ -2,6 +2,14 @@
 #include "km_gpio.h"
 #include <math.h>
 
+/**
+ * @brief Clamps a float value to [min, max].
+ *
+ * @param v   Value to clamp.
+ * @param min Lower bound.
+ * @param max Upper bound.
+ * @return Clamped value.
+ */
 static float clamp(float v, float min, float max)
 {
     if (v > max) return max;
@@ -9,6 +17,7 @@ static float clamp(float v, float min, float max)
     return v;
 }
 
+/** @copydoc KM_ACT_Init */
 ACT_Controller KM_ACT_Init(ACT_Type type, float limit)
 {
     ACT_Controller act = {0};
@@ -108,6 +117,7 @@ void KM_ACT_SetOutput(ACT_Controller *act, float value)
     }
 }
 
+/** @copydoc KM_ACT_SetLimit */
 void KM_ACT_SetLimit(ACT_Controller *act, float limit)
 {
     if (!act) return;
@@ -116,6 +126,7 @@ void KM_ACT_SetLimit(ACT_Controller *act, float limit)
     act->outputLimit = limit_clamp;
 }
 
+/** @copydoc KM_ACT_Stop */
 void KM_ACT_Stop(ACT_Controller *act)
 {
     if (!act) return;

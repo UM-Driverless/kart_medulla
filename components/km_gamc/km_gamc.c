@@ -1,6 +1,6 @@
 /******************************************************************************
- * @file    nombre_libreria.c
- * @brief   Implementación de la librería.
+ * @file    km_gamc.c
+ * @brief   Implementation of the KM_GAMC library (template / placeholder).
  *****************************************************************************/
 
  #include "km_gamc.h"

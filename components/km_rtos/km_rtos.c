@@ -39,16 +39,19 @@
 static RTOS_Task tasks[RTOS_MAX_TASKS];
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
+/** @brief Finds a task's index in the internal array by its FreeRTOS handle. */
 int8_t KM_RTOS_FindTask(TaskHandle_t handle);
+/** @brief Generic FreeRTOS wrapper that calls the user function at a fixed period. */
 static void KM_RTOS_TaskWrapper(void *params);
 
 /******************************* FUNCIONES PÚBLICAS ***************************/
 
+/** @copydoc KM_RTOS_Init */
 void KM_RTOS_Init(void){
     memset(tasks, 0, sizeof(tasks));
 }
 
-// Destruye todas las tareas
+/** @copydoc KM_RTOS_Destroy */
 void KM_RTOS_Destroy(void){
     for (int i = 0; i < RTOS_MAX_TASKS; i++) {
         if (tasks[i].name != NULL) {
@@ -59,6 +62,7 @@ void KM_RTOS_Destroy(void){
     memset(tasks, 0, sizeof(tasks));
 }
 
+/** @copydoc KM_COMS_CreateTask */
 RTOS_Task KM_COMS_CreateTask(char *name, KM_RTOS_TaskFunction_t taskFn, void *context,
         uint32_t period_ms, uint16_t stackSize, UBaseType_t priority, uint8_t active){
 
@@ -75,6 +79,7 @@ RTOS_Task KM_COMS_CreateTask(char *name, KM_RTOS_TaskFunction_t taskFn, void *co
     return task;
 }
 
+/** @copydoc KM_RTOS_AddTask */
 esp_err_t KM_RTOS_AddTask(RTOS_Task task){
 
     // Buscar hueco libre en array y comprobar que no exista ya esa tarea
@@ -109,7 +114,7 @@ esp_err_t KM_RTOS_AddTask(RTOS_Task task){
     return ESP_FAIL; // Fail, no space in array
 }
 
-// Destruir una tarea existente, devuelve 0 en caso de error, 1 en caso correcto
+/** @copydoc KM_RTOS_DeleteTask */
 esp_err_t KM_RTOS_DeleteTask(TaskHandle_t handle){
     // Search for task in array
 
@@ -120,13 +125,13 @@ esp_err_t KM_RTOS_DeleteTask(TaskHandle_t handle){
         vTaskDelete(handle);
         memset(&tasks[index], 0, sizeof(RTOS_Task));
         return ESP_OK;
-    }
+    } //prueba
 
     // NO se ha encontrado la tarea
     return ESP_FAIL;
 }
 
-// Suspender una tarea, devuelve 0 en caso de error, 1 en caso correcto
+/** @copydoc KM_RTOS_SuspendTask */
 esp_err_t KM_RTOS_SuspendTask(TaskHandle_t handle) {
 
     int8_t index = KM_RTOS_FindTask(handle);
@@ -142,7 +147,7 @@ esp_err_t KM_RTOS_SuspendTask(TaskHandle_t handle) {
     return ESP_FAIL;
 }
 
-// Reanudar una tarea, devuelve 0 en caso de error, 1 en caso correcto
+/** @copydoc KM_RTOS_ResumeTask */
 esp_err_t KM_RTOS_ResumeTask(TaskHandle_t handle){
 
     int8_t index = KM_RTOS_FindTask(handle);
@@ -159,7 +164,7 @@ esp_err_t KM_RTOS_ResumeTask(TaskHandle_t handle){
     return ESP_FAIL;
 }
 
-// Reiniciar una tarea (destruir + volver a crear), devuelve 0 en caso de error, 1 en caso correcto
+/** @copydoc KM_RTOS_RestartTask */
 esp_err_t KM_RTOS_RestartTask(TaskHandle_t handle){
 
     int8_t index = KM_RTOS_FindTask(handle);
@@ -177,7 +182,7 @@ esp_err_t KM_RTOS_RestartTask(TaskHandle_t handle){
     return ESP_OK;
 }
 
-// Cambiar prioridad, devuelve 0 en caso de error, 1 en caso correcto
+/** @copydoc KM_RTOS_ChangePriority */
 esp_err_t KM_RTOS_ChangePriority(TaskHandle_t handle, uint8_t newPriority){
 
     int8_t index = KM_RTOS_FindTask(handle);
