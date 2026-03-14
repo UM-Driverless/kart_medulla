@@ -228,7 +228,6 @@ void system_init(void) {
     // Initialize Motor controllers
     // *** STEERING PWM LIMIT — keep low during testing to protect gears ***
     // Increase gradually once PID is tuned. 1.0 = full power.
-    // *** STEERING PWM LIMIT — keep low during testing to protect gears ***
     ACT_Controller dir_act = KM_ACT_Init(ACT_STEER, 0.1);
     ACT_Controller throttle_act = KM_ACT_Init(ACT_ACCEL, 1.0);
     ACT_Controller brake_act = KM_ACT_Init(ACT_BRAKE, 1.0);
