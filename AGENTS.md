@@ -95,6 +95,15 @@ Frame format: `| SOF(0xAA) | LEN | TYPE | PAYLOAD... | CRC8 |`
 | AS5600 SDA | 21 | I2C | 400kHz, addr 0x36 |
 | AS5600 SCL | 22 | I2C | |
 
+### AS5600 Steering Sensor Wiring (2026-03)
+
+| Wire Color | Signal | ESP32 Pin |
+|------------|--------|-----------|
+| White | 3.3V (power) | 3V3 |
+| Black | GND | GND |
+| Green | SDA (I2C data) | GPIO 21 |
+| Blue | SCL (I2C clock) | GPIO 22 |
+
 ### Safety
 
 - Steering motor limited to **40%** output (`KM_ACT_SetLimit(&dir_act, 0.4)`) for testing
