@@ -239,9 +239,9 @@ void system_init(void) {
     KM_ACT_SetLimit(&brake_act, 1.0);
 
     // Initialise PID for steering
-    float kp = 2.0;
+    float kp = 0.5;
     float ki = 0.0;
-    float kd = 0.005;
+    float kd = 0.01;
     PID_Controller dir_pid = KM_PID_Init(kp, ki, kd);
     KM_PID_SetOutputLimits(&dir_pid, -1.0f, 1.0f);
     KM_PID_SetIntegralLimits(&dir_pid, -10.0f, 10.0f);
