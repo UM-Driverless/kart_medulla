@@ -143,11 +143,11 @@ int KM_COMS_SendMsg(message_type_t type, int32_t *data, uint8_t count)
     while(total_sent < total_len && attempts < 5) {
         sent = uart_write_bytes(km_coms_uart, frame + total_sent, total_len - total_sent);
 
-        total_sent += sent;
-
-        if(sent <= 0) {
+        if(sent > 0) {
+            total_sent += sent;
+        } else {
             attempts++;
-            vTaskDelay(5 / portTICK_PERIOD_MS);
+            vTaskDelay(pdMS_TO_TICKS(5) > 0 ? pdMS_TO_TICKS(5) : 1);
         }
     }
 
