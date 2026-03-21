@@ -37,8 +37,6 @@ MISION_ESP,             // Mision that is executing the ESP
 MACHINE_STATE_ESP,      // State inside the state machine of the ESP
 ACTUAL_SHUTDOWN,         // Actual state of the SHUTDOWN
 
-CALIBRATE_STEERING_CMD,  // Non-zero = pending center offset to save via NVS
-
 KM_OBJ_LAST             // Este debe de ser siempre el ultimo
 } km_objects_t;
 

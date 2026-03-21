@@ -24,11 +24,9 @@
 static int8_t KM_SDIR_ReadRegisters(sensor_struct *sensor, uint8_t reg, uint8_t* data, uint8_t len);
 
 /**
- * @brief  Internal helper: read angle in radians with circular wrapping.
+ * @brief  Internal helper: read angle in radians.
  * @param  sensor  Pointer to the sensor state.
- * @return Angle in radians (-PI to +PI), centered around centerOffset.
- * @note   Applies modular wrapping so readings near the 0/4095 boundary
- *         do not produce discontinuities.
+ * @return Angle in radians (-PI to +PI). Center = 2048 (half of 12-bit range).
  */
 static float KM_SDIR_ReadAngle(sensor_struct *sensor);
 
@@ -38,7 +36,6 @@ static float KM_SDIR_ReadAngle(sensor_struct *sensor);
 sensor_struct KM_SDIR_Init(int8_t max_error_count) {
     sensor_struct sensor;
 
-    sensor.centerOffset = SENSOR_CENTER;
     sensor.connected = 0;
     sensor.errorCount = 0;
     sensor.lastRawValue = 0;
@@ -138,42 +135,6 @@ int8_t KM_SDIR_ResetI2C(sensor_struct *sensor) {
     return sensor->connected;
 }
 
-#define NVS_NAMESPACE "km_sdir"
-#define NVS_KEY_CENTER "center"
-
-/** @brief Set center offset and persist to NVS. */
-void KM_SDIR_setCenterOffset(sensor_struct *sensor, uint16_t offset) {
-    sensor->centerOffset = offset;
-    ESP_LOGI(TAG, "AS5600 center offset set to: %d", offset);
-
-    nvs_handle_t h;
-    if (nvs_open(NVS_NAMESPACE, NVS_READWRITE, &h) == ESP_OK) {
-        nvs_set_u16(h, NVS_KEY_CENTER, offset);
-        nvs_commit(h);
-        nvs_close(h);
-        ESP_LOGI(TAG, "Center offset saved to NVS");
-    } else {
-        ESP_LOGW(TAG, "Failed to open NVS for writing");
-    }
-}
-
-/** @brief Load center offset from NVS; keeps default if not found. */
-void KM_SDIR_LoadCalibration(sensor_struct *sensor) {
-    nvs_handle_t h;
-    if (nvs_open(NVS_NAMESPACE, NVS_READONLY, &h) == ESP_OK) {
-        uint16_t val = 0;
-        if (nvs_get_u16(h, NVS_KEY_CENTER, &val) == ESP_OK) {
-            sensor->centerOffset = val;
-            ESP_LOGI(TAG, "Loaded center offset from NVS: %d", val);
-        } else {
-            ESP_LOGI(TAG, "No calibration in NVS, using default %d", sensor->centerOffset);
-        }
-        nvs_close(h);
-    } else {
-        ESP_LOGW(TAG, "Failed to open NVS for reading");
-    }
-}
-
 /** @brief Read AS5600 diagnostic registers into buffer. See km_sdir.h. */
 uint8_t KM_SDIR_ReadDiagnostics(sensor_struct *sensor, uint8_t *out) {
     uint8_t data[2];
@@ -265,17 +226,12 @@ static int8_t KM_SDIR_ReadRegisters(sensor_struct *sensor, uint8_t reg, uint8_t*
     return (ret == ESP_OK) ? 1 : 0;
 }
 
-/** @brief Compute centered angle in radians with circular wrapping. */
+/** @brief Compute centered angle in radians. Center = 2048 (half of 12-bit range). */
 static float KM_SDIR_ReadAngle(sensor_struct *sensor) {
     uint16_t raw = KM_SDIR_ReadRaw(sensor);
 
-    int16_t centered = (int16_t)raw - sensor->centerOffset;
-    // Wrap to ±half range so angle is symmetric around center
-    if (centered > (SENSOR_MAX + 1) / 2) centered -= (SENSOR_MAX + 1);
-    if (centered < -(int16_t)((SENSOR_MAX + 1) / 2)) centered += (SENSOR_MAX + 1);
-    float angle = -((float)centered / (float)SENSOR_MAX) * 2.0f * PI;
-
-    return angle;
+    int16_t centered = (int16_t)raw - SENSOR_CENTER;
+    return -((float)centered / 4096.0f) * 2.0f * PI;
 }
 
 /******************************* FIN DE ARCHIVO ********************************/

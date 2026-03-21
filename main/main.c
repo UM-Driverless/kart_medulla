@@ -70,7 +70,6 @@ void comms_task(void *ctx) {
  *          2. Applies throttle and brake actuator outputs from Orin targets.
  *          3. Reads the AS5600 steering angle via I2C.
  *          4. Runs the steering PID controller and sets the motor output.
- *          5. Checks for a pending steering calibration command.
  *
  * @param   ctx  Pointer to a control_context_t with sensor, actuator, and PID references.
  */
@@ -104,12 +103,6 @@ void control_task(void *ctx) {
     KM_ACT_SetOutput(c->dir_act, pid_out);
     last_pid_out = pid_out;
 
-    // Check for pending steering calibration command
-    int64_t cal_cmd = KM_OBJ_GetObjectValue(CALIBRATE_STEERING_CMD);
-    if (cal_cmd > 0) {
-        KM_SDIR_setCenterOffset(c->sdir, (uint16_t)cal_cmd);
-        KM_OBJ_SetObjectValue(CALIBRATE_STEERING_CMD, 0);
-    }
 }
 
 /**
@@ -192,7 +185,7 @@ void health_task(void *ctx) {
  *          1. GPIO peripherals (ADC, DAC, PWM, I2C, direction pin).
  *          2. RTOS task manager.
  *          3. UART communications to Orin.
- *          4. AS5600 steering encoder (I2C) with calibration load.
+ *          4. AS5600 steering encoder (I2C).
  *          5. Actuator controllers (steering, throttle, brake) with output limits.
  *          6. Steering PID controller.
  *          7. Registers periodic tasks: comms (20 Hz), control (10 Hz),
@@ -217,7 +210,6 @@ void system_init(void) {
 
     sensor_struct sdir = KM_SDIR_Init(MAX_ERROR_COUNT_SDIR);
     KM_SDIR_Begin(&sdir, GPIO_NUM_21, GPIO_NUM_22);
-    KM_SDIR_LoadCalibration(&sdir);
 
     // Test AS5600 connectivity and seed initial angle
     float init_rad = KM_SDIR_ReadAngleRadians(&sdir);
@@ -294,15 +286,15 @@ void system_init(void) {
 /**
  * @brief   Application entry point (called by ESP-IDF after boot).
  *
- * @details Initializes NVS flash (required for steering calibration storage),
- *          sets the global log level to INFO, and calls system_init() to
- *          bring up all subsystems and FreeRTOS tasks.
+ * @details Initializes NVS flash (required by ESP-IDF internals such as
+ *          WiFi and Bluetooth stacks), sets the global log level to INFO,
+ *          and calls system_init() to bring up all subsystems and FreeRTOS tasks.
  *
  * @note    If NVS partition is corrupt or has a version mismatch, the flash
  *          is erased and re-initialized automatically.
  */
 void app_main(void) {
-    // Init NVS (needed for steering calibration storage)
+    // Init NVS (needed by ESP-IDF internals: WiFi, BT stacks, etc.)
     esp_err_t nvs_ret = nvs_flash_init();
     if (nvs_ret == ESP_ERR_NVS_NO_FREE_PAGES || nvs_ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         nvs_flash_erase();

@@ -327,13 +327,6 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
         KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
         break;
 
-    case ORIN_CALIBRATE_STEERING:
-        if (msg.len != 1) return; // 1 int32 element
-        object_value = (int64_t)msg.payload[0];
-        KM_OBJ_SetObjectValue(CALIBRATE_STEERING_CMD, object_value);
-        ESP_LOGI("KM_coms", "Steering calibration request: center=%d", (int)object_value);
-        break;
-
     case ORIN_COMPLETE:
         if (msg.len != 6) return; // 6 int32 elements
         object_value = (int64_t)msg.payload[0];
