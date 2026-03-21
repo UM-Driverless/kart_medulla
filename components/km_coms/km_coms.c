@@ -264,14 +264,15 @@ void KM_COMS_ProccessMsgs(void) {
  * `KM_OBJ_SetObjectValue()`.
  *
  * Supported message types include:
- * - ORIN_TARG_THROTTLE: 1-byte payload representing the target throttle.
- * - ORIN_TARG_BRAKING: 1-byte payload representing the target braking.
- * - ORIN_TARG_STEERING: 2-byte payload, int16 big-endian representing radians × 1000
- * - ORIN_MISION: 1-byte payload representing the current mission state.
- * - ORIN_MACHINE_STATE: 1-byte payload representing the machine's current state.
- * - ORIN_HEARTBEAT: message indicating heartbeat; currently not processed.
- * - ORIN_SHUTDOWN: 1-byte payload indicating shutdown command.
- * - ORIN_COMPLETE: 7-byte payload updating all above objects in a single message.
+ * All Orin → ESP32 payloads use int32 big-endian encoding (4 bytes per value).
+ * - ORIN_TARG_THROTTLE: int32 (0-255)
+ * - ORIN_TARG_BRAKING: int32 (0-255)
+ * - ORIN_TARG_STEERING: int32 (radians × 1000, signed)
+ * - ORIN_MISION: int32 (mission enum)
+ * - ORIN_MACHINE_STATE: int32 (state enum)
+ * - ORIN_HEARTBEAT: no payload
+ * - ORIN_SHUTDOWN: int32
+ * - ORIN_COMPLETE: 6 × int32 (24 bytes): throttle, brake, steering, mission, state, shutdown
  *
  * Invalid payloads (wrong length or unknown direction for steering) are ignored.
  *
@@ -285,34 +286,32 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
     switch (msg.type)
     {
     case ORIN_TARG_THROTTLE:
-        if (msg.len != 1) return; // Invalid payload
-        
-        object_value = (int64_t)msg.payload[0];
+        if (msg.len != 4) return; // int32 big-endian
+        object_value = (int32_t)((msg.payload[0] << 24) | (msg.payload[1] << 16) | (msg.payload[2] << 8) | msg.payload[3]);
         KM_OBJ_SetObjectValue(TARGET_THROTTLE, object_value);
         break;
 
     case ORIN_TARG_BRAKING:
-        if (msg.len != 1) return; // Invalid payload
-        object_value = (int64_t)msg.payload[0];
+        if (msg.len != 4) return; // int32 big-endian
+        object_value = (int32_t)((msg.payload[0] << 24) | (msg.payload[1] << 16) | (msg.payload[2] << 8) | msg.payload[3]);
         KM_OBJ_SetObjectValue(TARGET_BRAKING, object_value);
         break;
 
     case ORIN_TARG_STEERING:
-        if (msg.len != 1) return; // Invalid payload
-
-        object_value = (int64_t)msg.payload[0];
+        if (msg.len != 4) return; // int32 big-endian
+        object_value = (int32_t)((msg.payload[0] << 24) | (msg.payload[1] << 16) | (msg.payload[2] << 8) | msg.payload[3]);
         KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
         break;
 
     case ORIN_MISION:
-        if (msg.len != 1) return; // Invalid payload
-        object_value = (int64_t)msg.payload[0];
+        if (msg.len != 4) return; // int32 big-endian
+        object_value = (int32_t)((msg.payload[0] << 24) | (msg.payload[1] << 16) | (msg.payload[2] << 8) | msg.payload[3]);
         KM_OBJ_SetObjectValue(MISION_ORIN, object_value);
         break;
 
     case ORIN_MACHINE_STATE:
-        if (msg.len != 1) return; // Invalid payload
-        object_value = (int64_t)msg.payload[0];
+        if (msg.len != 4) return; // int32 big-endian
+        object_value = (int32_t)((msg.payload[0] << 24) | (msg.payload[1] << 16) | (msg.payload[2] << 8) | msg.payload[3]);
         KM_OBJ_SetObjectValue(MACHINE_STATE_ORIN, object_value);
         break;
 
@@ -321,36 +320,36 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
         break;
 
     case ORIN_SHUTDOWN:
-        if (msg.len != 1) return; // Invalid payload
-        object_value = (int64_t)msg.payload[0];
+        if (msg.len != 4) return; // int32 big-endian
+        object_value = (int32_t)((msg.payload[0] << 24) | (msg.payload[1] << 16) | (msg.payload[2] << 8) | msg.payload[3]);
         KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
         break;
 
     case ORIN_CALIBRATE_STEERING:
-        if (msg.len != 1) return; // Invalid payload — uint16 big-endian
-        object_value = (int64_t)msg.payload[0];
+        if (msg.len != 4) return; // int32 big-endian
+        object_value = (int32_t)((msg.payload[0] << 24) | (msg.payload[1] << 16) | (msg.payload[2] << 8) | msg.payload[3]);
         KM_OBJ_SetObjectValue(CALIBRATE_STEERING_CMD, object_value);
         ESP_LOGI("KM_coms", "Steering calibration request: center=%d", (int)object_value);
         break;
 
     case ORIN_COMPLETE:
-        if (msg.len != 6) return; // Invalid payload
-        object_value = (int64_t)msg.payload[0];
+        if (msg.len != 24) return; // 6 x int32 big-endian
+        object_value = (int32_t)((msg.payload[0] << 24) | (msg.payload[1] << 16) | (msg.payload[2] << 8) | msg.payload[3]);
         KM_OBJ_SetObjectValue(TARGET_THROTTLE, object_value);
 
-        object_value = (int64_t)msg.payload[1];
+        object_value = (int32_t)((msg.payload[4] << 24) | (msg.payload[5] << 16) | (msg.payload[6] << 8) | msg.payload[7]);
         KM_OBJ_SetObjectValue(TARGET_BRAKING, object_value);
 
-        object_value = (int64_t)msg.payload[2];
+        object_value = (int32_t)((msg.payload[8] << 24) | (msg.payload[9] << 16) | (msg.payload[10] << 8) | msg.payload[11]);
         KM_OBJ_SetObjectValue(TARGET_STEERING, object_value);
 
-        object_value = (int64_t)msg.payload[3];
+        object_value = (int32_t)((msg.payload[12] << 24) | (msg.payload[13] << 16) | (msg.payload[14] << 8) | msg.payload[15]);
         KM_OBJ_SetObjectValue(MISION_ORIN, object_value);
 
-        object_value = (int64_t)msg.payload[4];
+        object_value = (int32_t)((msg.payload[16] << 24) | (msg.payload[17] << 16) | (msg.payload[18] << 8) | msg.payload[19]);
         KM_OBJ_SetObjectValue(MACHINE_STATE_ORIN, object_value);
 
-        object_value = (int64_t)msg.payload[5];
+        object_value = (int32_t)((msg.payload[20] << 24) | (msg.payload[21] << 16) | (msg.payload[22] << 8) | msg.payload[23]);
         KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
         break;
     

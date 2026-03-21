@@ -27,12 +27,12 @@ ACT_Controller KM_ACT_Init(ACT_Type type, float limit)
     switch (type)
     {
     case ACT_ACCEL:
-        act.dacChannel = 0; // Canal A
+        act.dacChannel = PIN_CMD_ACC;   // GPIO 25 (DAC1)
         act.pwmChannel = 0;
         act.dirPin = 0;
         break;
     case ACT_BRAKE:
-        act.dacChannel = 1; // Canal B
+        act.dacChannel = PIN_CMD_BRAKE; // GPIO 26 (DAC2)
         act.pwmChannel = 0;
         act.dirPin = 0;
         break;

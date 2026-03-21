@@ -12,6 +12,7 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "driver/uart.h"
+#include "driver/dac.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -235,6 +236,11 @@ void system_init(void) {
     KM_ACT_SetLimit(&dir_act, 0.15);
     KM_ACT_SetLimit(&throttle_act, 1.0);
     KM_ACT_SetLimit(&brake_act, 1.0);
+
+    // TEMPORARY TEST: raw ESP-IDF DAC write to GPIO 25 (DAC_CHAN_0)
+    // Bypasses all our abstraction. Should produce ~1.65V.
+    dac_output_enable(DAC_CHAN_0);  // GPIO 25
+    dac_output_voltage(DAC_CHAN_0, 128);  // 128/255 * 3.3V ≈ 1.65V
 
     // Initialise PID for steering
     float kp = 0.15;
