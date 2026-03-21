@@ -12,6 +12,7 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "driver/uart.h"
+#include "driver/dac.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -69,7 +70,6 @@ void comms_task(void *ctx) {
  *          2. Applies throttle and brake actuator outputs from Orin targets.
  *          3. Reads the AS5600 steering angle via I2C.
  *          4. Runs the steering PID controller and sets the motor output.
- *          5. Checks for a pending steering calibration command.
  *
  * @param   ctx  Pointer to a control_context_t with sensor, actuator, and PID references.
  */
@@ -77,35 +77,32 @@ void control_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
 
     // Send feedback FIRST (use last known value) so frames arrive even if I2C blocks
-    int32_t fb[2] = {
+    static float last_pid_out = 0.0f;
+    int32_t fb[3] = {
         (int32_t)KM_OBJ_GetObjectValue(ACTUAL_STEERING),  // angle_rad x 1000
-        (int32_t)c->sdir->lastRawValue                     // raw encoder
+        (int32_t)c->sdir->lastRawValue,                    // raw encoder
+        (int32_t)(last_pid_out * 1000)                     // PID output (PWM duty) x 1000
     };
-    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 2);
+    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 3);
 
-    // Target from Orin: int32 radians × 1000
+    // Target from Orin: positive=left. AS5600 also positive=left. No negate needed.
     float target_rad = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
 
-    // Throttle + brake: int32 effort × 255 (0-255 range)
+    // Throttle + brake: int32 effort (0-255 range from Orin)
     float thr = (float)KM_OBJ_GetObjectValue(TARGET_THROTTLE) / 255.0f;
     float brk = (float)KM_OBJ_GetObjectValue(TARGET_BRAKING) / 255.0f;
     KM_ACT_SetOutput(c->throttle_act, thr);
     KM_ACT_SetOutput(c->brake_act, brk);
 
-    // Read sensor AFTER sending — if I2C hangs, at least feedback/actuators ran
+    // Read sensor — AS5600 already positive=left, matches our convention
     float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
     KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
 
-    // PID in radians
+    // PID: target and actual both positive=left, no negation needed
     float pid_out = KM_PID_Calculate(c->dir_pid, target_rad, new_rad);
     KM_ACT_SetOutput(c->dir_act, pid_out);
+    last_pid_out = pid_out;
 
-    // Check for pending steering calibration command
-    int64_t cal_cmd = KM_OBJ_GetObjectValue(CALIBRATE_STEERING_CMD);
-    if (cal_cmd > 0) {
-        KM_SDIR_setCenterOffset(c->sdir, (uint16_t)cal_cmd);
-        KM_OBJ_SetObjectValue(CALIBRATE_STEERING_CMD, 0);
-    }
 }
 
 /**
@@ -188,7 +185,7 @@ void health_task(void *ctx) {
  *          1. GPIO peripherals (ADC, DAC, PWM, I2C, direction pin).
  *          2. RTOS task manager.
  *          3. UART communications to Orin.
- *          4. AS5600 steering encoder (I2C) with calibration load.
+ *          4. AS5600 steering encoder (I2C).
  *          5. Actuator controllers (steering, throttle, brake) with output limits.
  *          6. Steering PID controller.
  *          7. Registers periodic tasks: comms (20 Hz), control (10 Hz),
@@ -213,7 +210,6 @@ void system_init(void) {
 
     sensor_struct sdir = KM_SDIR_Init(MAX_ERROR_COUNT_SDIR);
     KM_SDIR_Begin(&sdir, GPIO_NUM_21, GPIO_NUM_22);
-    KM_SDIR_LoadCalibration(&sdir);
 
     // Test AS5600 connectivity and seed initial angle
     float init_rad = KM_SDIR_ReadAngleRadians(&sdir);
@@ -226,18 +222,25 @@ void system_init(void) {
 
     // ------------------------------------------------------
     // Initialize Motor controllers
-    ACT_Controller dir_act = KM_ACT_Init(ACT_STEER, 0.4);
+    // *** STEERING PWM LIMIT — keep low during testing to protect gears ***
+    // Increase gradually once PID is tuned. 1.0 = full power.
+    ACT_Controller dir_act = KM_ACT_Init(ACT_STEER, 0.40);
     ACT_Controller throttle_act = KM_ACT_Init(ACT_ACCEL, 1.0);
     ACT_Controller brake_act = KM_ACT_Init(ACT_BRAKE, 1.0);
 
-    KM_ACT_SetLimit(&dir_act, 0.4);
+    KM_ACT_SetLimit(&dir_act, 0.40);
     KM_ACT_SetLimit(&throttle_act, 1.0);
     KM_ACT_SetLimit(&brake_act, 1.0);
 
+    // TEMPORARY TEST: raw ESP-IDF DAC write to GPIO 25 (DAC_CHAN_0)
+    // Bypasses all our abstraction. Should produce ~1.65V.
+    dac_output_enable(DAC_CHAN_0);  // GPIO 25
+    dac_output_voltage(DAC_CHAN_0, 128);  // 128/255 * 3.3V ≈ 1.65V
+
     // Initialise PID for steering
-    float kp = 0.03;
+    float kp = 0.50;
     float ki = 0.0;
-    float kd = 0.0004;
+    float kd = 0.01;
     PID_Controller dir_pid = KM_PID_Init(kp, ki, kd);
     KM_PID_SetOutputLimits(&dir_pid, -1.0f, 1.0f);
     KM_PID_SetIntegralLimits(&dir_pid, -10.0f, 10.0f);
@@ -283,22 +286,29 @@ void system_init(void) {
 /**
  * @brief   Application entry point (called by ESP-IDF after boot).
  *
- * @details Initializes NVS flash (required for steering calibration storage),
- *          sets the global log level to INFO, and calls system_init() to
- *          bring up all subsystems and FreeRTOS tasks.
+ * @details Initializes NVS flash (required by ESP-IDF internals such as
+ *          WiFi and Bluetooth stacks), sets the global log level to INFO,
+ *          and calls system_init() to bring up all subsystems and FreeRTOS tasks.
  *
  * @note    If NVS partition is corrupt or has a version mismatch, the flash
  *          is erased and re-initialized automatically.
  */
 void app_main(void) {
-    // Init NVS (needed for steering calibration storage)
+    // Init NVS (needed by ESP-IDF internals: WiFi, BT stacks, etc.)
     esp_err_t nvs_ret = nvs_flash_init();
     if (nvs_ret == ESP_ERR_NVS_NO_FREE_PAGES || nvs_ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         nvs_flash_erase();
         nvs_flash_init();
     }
 
+    // Log init message before disabling logs — UART0 is shared with binary protocol
     esp_log_level_set("*", ESP_LOG_INFO);
     ESP_LOGI(TAG, "ESP32 starting...");
+
     system_init();
+
+    // Disable all logging on UART0 to prevent ASCII text from corrupting
+    // binary protocol frames. Without this, ESP_LOG output interleaves with
+    // protocol bytes and causes CRC mismatches on the Orin side.
+    esp_log_level_set("*", ESP_LOG_NONE);
 }

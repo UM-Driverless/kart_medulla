@@ -12,8 +12,6 @@
 /******************************* INCLUDES *************************************/
 #include "driver/i2c.h"
 #include "esp_log.h"
-#include "nvs_flash.h"
-#include "nvs.h"
 #include <math.h>
 #include "esp_timer.h"
  
@@ -34,7 +32,6 @@ typedef struct {
     uint8_t max_error_count;  /**< Error threshold before automatic I2C reset */
     uint64_t lastReadTime;    /**< Timestamp of last successful read (microseconds) */
     uint16_t lastRawValue;    /**< Last successfully read raw angle (0-4095) */
-    uint16_t centerOffset;    /**< Raw value that corresponds to center (straight ahead) */
 } sensor_struct;
 
 /** @brief AS5600 I2C address and angle register addresses. */
@@ -63,9 +60,7 @@ typedef enum {
  * @param  max_error_count  Number of consecutive I2C errors before
  *                          automatic I2C bus reset is triggered.
  * @return Initialized sensor_struct (not yet connected to hardware).
- * @note   centerOffset defaults to SENSOR_CENTER (2048). Call
- *         KM_SDIR_LoadCalibration() to restore a saved offset, then
- *         KM_SDIR_Begin() to start I2C communication.
+ * @note   Call KM_SDIR_Begin() after this to start I2C communication.
  */
 sensor_struct KM_SDIR_Init(int8_t max_error_count);
 
@@ -118,22 +113,6 @@ int8_t KM_SDIR_isConnected(sensor_struct *sensor);
  *         hardcoded SDA=21, SCL=22 pins. Includes a 100 ms delay.
  */
 int8_t KM_SDIR_ResetI2C(sensor_struct *sensor);
-
-/**
- * @brief  Set the center offset and persist it to NVS.
- * @param  sensor  Pointer to the sensor state.
- * @param  offset  Raw sensor value that represents the center position.
- */
-void KM_SDIR_setCenterOffset(sensor_struct *sensor, uint16_t offset);
-
-/**
- * @brief  Load the center offset from NVS into the sensor struct.
- * @param  sensor  Pointer to the sensor state.
- * @note   Call after KM_SDIR_Init() and before KM_SDIR_Begin().
- *         If no calibration is found in NVS, the existing centerOffset
- *         (default SENSOR_CENTER) is kept.
- */
-void KM_SDIR_LoadCalibration(sensor_struct *sensor);
 
 /**
  * @brief  Read AS5600 diagnostic registers into a buffer.

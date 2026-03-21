@@ -1,5 +1,9 @@
 # Agent Development Notes
 
+## Files
+- `.agents/error_log.md` — **consult selectively** (grep for relevant entries before working on an area)
+- `.agents/adding_messages.md` — **reference** (read when adding new message types)
+
 ## Repository Structure
 
 **ESP-IDF project with PlatformIO. Source in `main/`, custom libraries in `components/`.**
@@ -29,6 +33,8 @@ kart_medulla/
 1. **NEVER create a `src/` directory** — PlatformIO compiles it instead of `main/`
 2. **Framework is `espidf`** (NOT arduino)
 3. **`src_dir = main`** in platformio.ini tells PIO to use `main/`
+4. **Always check return values from hardware write functions.** Silent failures (like `ESP_ERR_INVALID_ARG` from DAC writes) waste hours. Log or assert on error returns.
+5. **Debug pipelines with binary search, not end-to-end.** Find a test that splits the pipeline in half — the result tells you which half has the bug, guaranteeing progress. For hardware issues, hardcode output at the boundary (e.g., `dac_output_voltage()` directly in `main.c`) to isolate software vs hardware.
 
 ## Flashing
 
@@ -94,6 +100,15 @@ Frame format: `| SOF(0xAA) | LEN | TYPE | PAYLOAD... | CRC8 |`
 | Steering DIR | 14 | Digital | 1=positive, 0=negative |
 | AS5600 SDA | 21 | I2C | 400kHz, addr 0x36 |
 | AS5600 SCL | 22 | I2C | |
+
+### AS5600 Steering Sensor Wiring (2026-03)
+
+| Wire Color | Signal | ESP32 Pin |
+|------------|--------|-----------|
+| White | 3.3V (power) | 3V3 |
+| Black | GND | GND |
+| Green | SDA (I2C data) | GPIO 21 |
+| Blue | SCL (I2C clock) | GPIO 22 |
 
 ### Safety
 
