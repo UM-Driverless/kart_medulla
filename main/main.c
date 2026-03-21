@@ -78,11 +78,13 @@ void control_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
 
     // Send feedback FIRST (use last known value) so frames arrive even if I2C blocks
-    int32_t fb[2] = {
+    static float last_pid_out = 0.0f;
+    int32_t fb[3] = {
         (int32_t)KM_OBJ_GetObjectValue(ACTUAL_STEERING),  // angle_rad x 1000
-        (int32_t)c->sdir->lastRawValue                     // raw encoder
+        (int32_t)c->sdir->lastRawValue,                    // raw encoder
+        (int32_t)(last_pid_out * 1000)                     // PID output (PWM duty) x 1000
     };
-    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 2);
+    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 3);
 
     // Target from Orin: positive=left. AS5600 also positive=left. No negate needed.
     float target_rad = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
@@ -100,6 +102,7 @@ void control_task(void *ctx) {
     // PID: target and actual both positive=left, no negation needed
     float pid_out = KM_PID_Calculate(c->dir_pid, target_rad, new_rad);
     KM_ACT_SetOutput(c->dir_act, pid_out);
+    last_pid_out = pid_out;
 
     // Check for pending steering calibration command
     int64_t cal_cmd = KM_OBJ_GetObjectValue(CALIBRATE_STEERING_CMD);
@@ -229,11 +232,11 @@ void system_init(void) {
     // Initialize Motor controllers
     // *** STEERING PWM LIMIT — keep low during testing to protect gears ***
     // Increase gradually once PID is tuned. 1.0 = full power.
-    ACT_Controller dir_act = KM_ACT_Init(ACT_STEER, 0.15);
+    ACT_Controller dir_act = KM_ACT_Init(ACT_STEER, 0.40);
     ACT_Controller throttle_act = KM_ACT_Init(ACT_ACCEL, 1.0);
     ACT_Controller brake_act = KM_ACT_Init(ACT_BRAKE, 1.0);
 
-    KM_ACT_SetLimit(&dir_act, 0.15);
+    KM_ACT_SetLimit(&dir_act, 0.40);
     KM_ACT_SetLimit(&throttle_act, 1.0);
     KM_ACT_SetLimit(&brake_act, 1.0);
 
@@ -243,7 +246,7 @@ void system_init(void) {
     dac_output_voltage(DAC_CHAN_0, 128);  // 128/255 * 3.3V ≈ 1.65V
 
     // Initialise PID for steering
-    float kp = 0.15;
+    float kp = 0.50;
     float ki = 0.0;
     float kd = 0.01;
     PID_Controller dir_pid = KM_PID_Init(kp, ki, kd);
