@@ -1,5 +1,9 @@
 # Agent Development Notes
 
+## Files
+- `.agents/error_log.md` — **consult selectively** (grep for relevant entries before working on an area)
+- `.agents/adding_messages.md` — **reference** (read when adding new message types)
+
 ## Repository Structure
 
 **ESP-IDF project with PlatformIO. Source in `main/`, custom libraries in `components/`.**
@@ -29,6 +33,8 @@ kart_medulla/
 1. **NEVER create a `src/` directory** — PlatformIO compiles it instead of `main/`
 2. **Framework is `espidf`** (NOT arduino)
 3. **`src_dir = main`** in platformio.ini tells PIO to use `main/`
+4. **Always check return values from hardware write functions.** Silent failures (like `ESP_ERR_INVALID_ARG` from DAC writes) waste hours. Log or assert on error returns.
+5. **Debug pipelines with binary search, not end-to-end.** Find a test that splits the pipeline in half — the result tells you which half has the bug, guaranteeing progress. For hardware issues, hardcode output at the boundary (e.g., `dac_output_voltage()` directly in `main.c`) to isolate software vs hardware.
 
 ## Flashing
 
