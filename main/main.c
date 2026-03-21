@@ -87,7 +87,7 @@ void control_task(void *ctx) {
     // Target from Orin: positive=left. AS5600 also positive=left. No negate needed.
     float target_rad = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
 
-    // Throttle + brake: int32 effort × 255 (0-255 range)
+    // Throttle + brake: int32 effort (0-255 range from Orin)
     float thr = (float)KM_OBJ_GetObjectValue(TARGET_THROTTLE) / 255.0f;
     float brk = (float)KM_OBJ_GetObjectValue(TARGET_BRAKING) / 255.0f;
     KM_ACT_SetOutput(c->throttle_act, thr);
