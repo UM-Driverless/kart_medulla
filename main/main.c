@@ -85,8 +85,11 @@ void control_task(void *ctx) {
     };
     KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 3);
 
-    // Target from Orin: positive=left. AS5600 also positive=left. No negate needed.
-    float target_rad = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
+    // Steering mode: 0=PID (default), 1=direct PWM
+    int steer_mode = (int)KM_OBJ_GetObjectValue(STEER_MODE);
+
+    // Target from Orin: interpretation depends on mode
+    float target_raw = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
 
     // Throttle + brake: int32 effort (0-255 range from Orin)
     float thr = (float)KM_OBJ_GetObjectValue(TARGET_THROTTLE) / 255.0f;
@@ -98,10 +101,18 @@ void control_task(void *ctx) {
     float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
     KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
 
-    // PID: target and actual both positive=left, no negation needed
-    float pid_out = KM_PID_Calculate(c->dir_pid, target_rad, new_rad);
-    KM_ACT_SetOutput(c->dir_act, pid_out);
-    last_pid_out = pid_out;
+    float steer_out;
+    if (steer_mode == 1) {
+        // Direct PWM mode: target_raw is PWM value [-1.0, 1.0]
+        steer_out = target_raw;
+        // Reset PID integral so it doesn't wind up while inactive
+        KM_PID_Reset(c->dir_pid);
+    } else {
+        // PID mode: target_raw is angle in radians
+        steer_out = KM_PID_Calculate(c->dir_pid, target_raw, new_rad);
+    }
+    KM_ACT_SetOutput(c->dir_act, steer_out);
+    last_pid_out = steer_out;
 
 }
 
