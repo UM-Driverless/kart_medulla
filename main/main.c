@@ -279,7 +279,7 @@ void system_init(void) {
 
     // Register FreeRTOS tasks
     RTOS_Task t1 = KM_COMS_CreateTask("comms", comms_task, NULL, 10, 4096, 2, 1);
-    RTOS_Task t2 = KM_COMS_CreateTask("control", control_task, &ctrl_ctx, 10, 4096, 1, 1);
+    RTOS_Task t2 = KM_COMS_CreateTask("control", control_task, &ctrl_ctx, 2, 4096, 1, 1);
     RTOS_Task t3 = KM_COMS_CreateTask("heartbeat", heartbeat_task, NULL, 1000, 2048, 1, 1);
 
     KM_RTOS_AddTask(t1);
