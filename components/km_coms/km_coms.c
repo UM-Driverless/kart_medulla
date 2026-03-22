@@ -327,6 +327,12 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
         KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
         break;
 
+    case ORIN_STEER_MODE:
+        if (msg.len != 1) return; // 1 int32 element: 0=PID, 1=direct PWM
+        object_value = (int64_t)msg.payload[0];
+        KM_OBJ_SetObjectValue(STEER_MODE, object_value);
+        break;
+
     case ORIN_COMPLETE:
         if (msg.len != 6) return; // 6 int32 elements
         object_value = (int64_t)msg.payload[0];
