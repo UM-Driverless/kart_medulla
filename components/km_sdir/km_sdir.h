@@ -45,7 +45,7 @@ typedef enum {
 typedef enum {
     SENSOR_MIN = 0,            /**< Minimum raw sensor value */
     SENSOR_MAX = 4095,         /**< Maximum raw sensor value */
-    SENSOR_CENTER = 2048,      /**< Default center (half of 12-bit range) */
+    SENSOR_CENTER = 2277,      /**< Calibrated center (measured straight-ahead position) */
 } sensor_constans;
 
 /******************************* VARIABLES PÚBLICAS ***************************/
