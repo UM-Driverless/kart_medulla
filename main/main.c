@@ -266,9 +266,9 @@ void system_init(void) {
     dac_output_voltage(DAC_CHAN_0, 128);  // 128/255 * 3.3V ≈ 1.65V
 
     // Initialise PID for steering
-    float kp = 0.65;
+    float kp = 0.80;
     float ki = 0.0;
-    float kd = 0.01;
+    float kd = 0.03;
     PID_Controller dir_pid = KM_PID_Init(kp, ki, kd);
     KM_PID_SetOutputLimits(&dir_pid, -1.0f, 1.0f);
     KM_PID_SetIntegralLimits(&dir_pid, -10.0f, 10.0f);
