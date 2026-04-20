@@ -32,6 +32,8 @@
 static const char *TAG = "MAIN";
 
 #define MAX_ERROR_COUNT_SDIR 10
+#define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
+#define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
 
 /**
  * @brief Context shared between the control and health tasks.
@@ -85,8 +87,31 @@ void control_task(void *ctx) {
     };
     KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 3);
 
-    // Target from Orin: positive=left. AS5600 also positive=left. No negate needed.
-    float target_rad = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
+    // Read sensor — AS5600 already positive=left, matches our convention
+    float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
+    KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
+
+    // --- Safety: comms watchdog + manual mode ---
+    TickType_t last_cmd = KM_COMS_GetLastCmdTick();
+    TickType_t now = xTaskGetTickCount();
+    int mission = (int)KM_OBJ_GetObjectValue(MISION_ORIN);
+    int comms_stale = (last_cmd == 0) || ((now - last_cmd) > pdMS_TO_TICKS(COMMS_WATCHDOG_MS));
+
+    if (comms_stale || mission == MISSION_MANUAL) {
+        // No commands received recently OR manual mode → zero all outputs
+        KM_ACT_Stop(c->throttle_act);
+        KM_ACT_Stop(c->brake_act);
+        KM_ACT_Stop(c->dir_act);
+        KM_PID_Reset(c->dir_pid);
+        last_pid_out = 0.0f;
+        return;
+    }
+
+    // Steering mode: 0=PID (default), 1=direct PWM
+    int steer_mode = (int)KM_OBJ_GetObjectValue(STEER_MODE);
+
+    // Target from Orin: interpretation depends on mode
+    float target_raw = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
 
     // Throttle + brake: int32 effort (0-255 range from Orin)
     float thr = (float)KM_OBJ_GetObjectValue(TARGET_THROTTLE) / 255.0f;
@@ -94,15 +119,18 @@ void control_task(void *ctx) {
     KM_ACT_SetOutput(c->throttle_act, thr);
     KM_ACT_SetOutput(c->brake_act, brk);
 
-    // Read sensor — AS5600 already positive=left, matches our convention
-    float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
-    KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
-
-    // PID: target and actual both positive=left, no negation needed
-    float pid_out = KM_PID_Calculate(c->dir_pid, target_rad, new_rad);
-    KM_ACT_SetOutput(c->dir_act, pid_out);
-    last_pid_out = pid_out;
-
+    float steer_out;
+    if (steer_mode == 1) {
+        // Direct PWM mode: target_raw is PWM value [-1.0, 1.0]
+        steer_out = target_raw;
+        // Reset PID integral so it doesn't wind up while inactive
+        KM_PID_Reset(c->dir_pid);
+    } else {
+        // PID mode: target_raw is angle in radians
+        steer_out = KM_PID_Calculate(c->dir_pid, target_raw, new_rad);
+    }
+    KM_ACT_SetOutput(c->dir_act, steer_out);
+    last_pid_out = steer_out;
 }
 
 /**
@@ -228,7 +256,7 @@ void system_init(void) {
     ACT_Controller throttle_act = KM_ACT_Init(ACT_ACCEL, 1.0);
     ACT_Controller brake_act = KM_ACT_Init(ACT_BRAKE, 1.0);
 
-    KM_ACT_SetLimit(&dir_act, 0.40);
+    KM_ACT_SetLimit(&dir_act, 0.35);
     KM_ACT_SetLimit(&throttle_act, 1.0);
     KM_ACT_SetLimit(&brake_act, 1.0);
 
@@ -268,7 +296,7 @@ void system_init(void) {
 
     // Register FreeRTOS tasks
     RTOS_Task t1 = KM_COMS_CreateTask("comms", comms_task, NULL, 10, 4096, 2, 1);
-    RTOS_Task t2 = KM_COMS_CreateTask("control", control_task, &ctrl_ctx, 10, 4096, 1, 1);
+    RTOS_Task t2 = KM_COMS_CreateTask("control", control_task, &ctrl_ctx, 2, 4096, 1, 1);
     RTOS_Task t3 = KM_COMS_CreateTask("heartbeat", heartbeat_task, NULL, 1000, 2048, 1, 1);
 
     KM_RTOS_AddTask(t1);

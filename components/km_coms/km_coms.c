@@ -70,6 +70,7 @@ static uint8_t rx_buffer[KM_COMS_MSG_MAX_LEN - 1]; //[0-255]
 static size_t rx_buffer_len = 0;
 static SemaphoreHandle_t km_coms_mutex;
 static uart_port_t km_coms_uart = UART_NUM_0;
+static TickType_t last_cmd_tick = 0;  // Tick of last received Orin command
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
 /** @brief Processes a validated incoming message and updates shared objects. */
@@ -283,6 +284,11 @@ void KM_COMS_ProccessMsgs(void) {
 static void KM_COMS_ProccessPayload(km_coms_msg msg) {
     ESP_LOGI("KM_coms", "RX msg type=0x%02X len=%d crc=0x%02X", msg.type, msg.len, msg.crc);
 
+    // Update watchdog timestamp on any Orin→ESP32 message
+    if (msg.type >= 0x20 && msg.type <= 0x3F) {
+        last_cmd_tick = xTaskGetTickCount();
+    }
+
     int64_t object_value = 0;
 
     switch (msg.type)
@@ -325,6 +331,12 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
         if (msg.len != 1) return; // 1 int32 element
         object_value = (int64_t)msg.payload[0];
         KM_OBJ_SetObjectValue(SHUTDOWN_ORIN, object_value);
+        break;
+
+    case ORIN_STEER_MODE:
+        if (msg.len != 1) return; // 1 int32 element: 0=PID, 1=direct PWM
+        object_value = (int64_t)msg.payload[0];
+        KM_OBJ_SetObjectValue(STEER_MODE, object_value);
         break;
 
     case ORIN_COMPLETE:
@@ -392,6 +404,11 @@ static uint8_t KM_COMS_crc8(uint8_t len, uint8_t type, const uint8_t *data) {
     }
 
     return crc;
+}
+
+/** @copydoc KM_COMS_GetLastCmdTick */
+TickType_t KM_COMS_GetLastCmdTick(void) {
+    return last_cmd_tick;
 }
 
 /******************************* FIN DE ARCHIVO ********************************/

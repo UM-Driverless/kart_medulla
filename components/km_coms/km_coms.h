@@ -21,6 +21,8 @@
 /******************************* INCLUDES *************************************/
 // Includes necesarios para la API pública
 #include "esp_log.h" // Para log
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "km_gpio.h"
 #include "km_objects.h"
 #include <stdint.h>
@@ -110,6 +112,8 @@ typedef enum
     ORIN_HEARTBEAT          = 0x25, /**< Orin heartbeat message */
     ORIN_SHUTDOWN           = 0x26, /**< Shutdown command */
     ORIN_COMPLETE           = 0x27, /**< Complete command with all fields */
+    ORIN_CALIBRATE_STEERING = 0x28, /**< Calibrate steering sensor */
+    ORIN_STEER_MODE         = 0x29, /**< Steering mode: 0=PID, 1=direct PWM */
 
     // ==========================
     // Others (0x40 - 0xFF)
@@ -239,5 +243,16 @@ void km_coms_ReceiveMsg(void);
  * @note This function is intended to be called periodically from a FreeRTOS task.
  */
 void KM_COMS_ProccessMsgs(void);
+
+/**
+ * @brief Returns the FreeRTOS tick count of the last received Orin command.
+ *
+ * Used by the control task to implement a comms watchdog: if no command has
+ * been received within a timeout (e.g. 1 second), actuator outputs should be
+ * zeroed for safety.
+ *
+ * @return Tick count of the last Orin→ESP32 message, or 0 if none received yet.
+ */
+TickType_t KM_COMS_GetLastCmdTick(void);
 
 #endif /* KM_COMS_H */

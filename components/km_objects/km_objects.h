@@ -37,6 +37,8 @@ MISION_ESP,             // Mision that is executing the ESP
 MACHINE_STATE_ESP,      // State inside the state machine of the ESP
 ACTUAL_SHUTDOWN,         // Actual state of the SHUTDOWN
 
+STEER_MODE,             // 0 = PID (default), 1 = direct PWM
+
 KM_OBJ_LAST             // Este debe de ser siempre el ultimo
 } km_objects_t;
 
