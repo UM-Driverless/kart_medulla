@@ -256,7 +256,7 @@ void system_init(void) {
     ACT_Controller throttle_act = KM_ACT_Init(ACT_ACCEL, 1.0);
     ACT_Controller brake_act = KM_ACT_Init(ACT_BRAKE, 1.0);
 
-    KM_ACT_SetLimit(&dir_act, 0.35);
+    KM_ACT_SetLimit(&dir_act, 0.65);
     KM_ACT_SetLimit(&throttle_act, 1.0);
     KM_ACT_SetLimit(&brake_act, 1.0);
 
