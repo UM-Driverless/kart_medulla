@@ -1,5 +1,16 @@
 # Agent Development Notes
 
+
+## Branch Workflow (READ THIS)
+
+**All day-to-day work happens on `dev`.** `main` is a protected release branch — it only receives merges from `dev` (or feature branches) *after* the change has been physically validated on the kart. Same convention as `kart_brain` and the other UM-Driverless repos.
+
+- **Default working branch on the Mac and the Orin is `dev`.** Every `git checkout` / `git pull` should be on `dev` unless you have a specific reason (e.g. inspecting `main`).
+- **Commit and push to `dev` first**, every time. Never push directly to `main` — the protection rule will reject you and create cleanup work.
+- **Merge `dev` → `main` only after the ESP32 has been flashed and driven**, and the change has been confirmed working on the kart. Open a PR (`gh pr create --base main --head dev`), validate, merge. Admins can bypass approval but peer review is preferred.
+- **If you discover `main` is ahead of `dev`** (someone pushed straight to main, or a merge bypassed `dev`), merge `main` into `dev` immediately before adding new commits so `dev` stays the "latest + in-progress" snapshot.
+- **Flashing the ESP32 does NOT replace the validation step.** A flash puts code on the chip; validation means the kart actually drove with it and nothing regressed. Only then does `main` move.
+
 ## Files
 - `.agents/error-log.md` — **consult selectively** (grep for relevant entries before working on an area)
 - `.agents/adding-messages.md` — **reference** (read when adding new message types)
