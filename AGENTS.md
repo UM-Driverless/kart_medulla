@@ -3,7 +3,7 @@
 
 ## Branch Workflow (READ THIS)
 
-**All day-to-day work happens on `dev`.** `main` is a protected release branch — it only receives merges from `dev` (or feature branches) *after* the change has been physically validated on the kart. Same convention as `kart_brain` and the other UM-Driverless repos.
+**All day-to-day work happens on `dev`.** `main` is a protected release branch — it only receives merges from `dev` (or feature branches) *after* the change has been physically validated on the kart. Same convention as `kart-brain` and the other UM-Driverless repos.
 
 - **Default working branch on the Mac and the Orin is `dev`.** Every `git checkout` / `git pull` should be on `dev` unless you have a specific reason (e.g. inspecting `main`).
 - **Commit and push to `dev` first**, every time. Never push directly to `main` — the protection rule will reject you and create cleanup work.
@@ -20,7 +20,7 @@
 **ESP-IDF project with PlatformIO. Source in `main/`, custom libraries in `components/`.**
 
 ```
-kart_medulla/
+kart-medulla/
 ├── main/
 │   ├── main.c              # ESP-IDF entry point (app_main + FreeRTOS tasks)
 │   ├── sketch.cpp          # Legacy Bluepad32 gamepad app (NOT used by main.c)
@@ -50,7 +50,7 @@ kart_medulla/
 ## Flashing
 
 ```bash
-cd ~/Desktop/kart_medulla && ~/.local/bin/pio run --target upload --environment esp32dev
+cd ~/Desktop/kart-medulla && ~/.local/bin/pio run --target upload --environment esp32dev
 ```
 
 - **Upload baud must be 115200** — the CP2102 USB-UART bridge fails at higher speeds during flash (460800 works fine for runtime comms, just not for esptool upload)

@@ -1,7 +1,7 @@
 /******************************************************************************
  * @file    main.c
  * @brief   ESP32 application entry point and FreeRTOS task definitions for
- *          the kart_medulla firmware.
+ *          the kart-medulla firmware.
  *
  * @details Brings up all hardware peripherals, initializes controllers and
  *          sensors, and registers periodic FreeRTOS tasks for communications,
@@ -53,8 +53,10 @@ typedef struct {
 /**
  * @brief   Communications task — receives and processes UART messages from Orin.
  *
- * @details Runs at 20 Hz via KM_RTOS periodic wrapper. Reads incoming bytes from
- *          UART0 and parses complete binary-encoded messages into shared objects.
+ * @details Registered with a 10 ms period (100 Hz target) via the KM_RTOS periodic
+ *          wrapper — see period_ms arg in main(). Actual rate is bounded by UART RX
+ *          latency per cycle. Reads incoming bytes from UART0 and parses complete
+ *          binary-encoded messages into shared objects.
  *
  * @param   ctx  Unused (NULL).
  */
@@ -66,12 +68,16 @@ void comms_task(void *ctx) {
 /**
  * @brief   Control task — steering PID, actuator output, and sensor feedback.
  *
- * @details Runs at 10 Hz (100 ms period). On each cycle:
- *          1. Sends steering feedback (angle + raw encoder) to Orin FIRST, so
- *             frames arrive even if the subsequent I2C read blocks.
- *          2. Applies throttle and brake actuator outputs from Orin targets.
- *          3. Reads the AS5600 steering angle via I2C.
- *          4. Runs the steering PID controller and sets the motor output.
+ * @details Registered with a 2 ms period (500 Hz target) via the KM_RTOS periodic
+ *          wrapper — see period_ms arg in main(). Actual rate is bounded by the
+ *          I2C AS5600 read and UART send latency per cycle; measure before tuning.
+ *          On each cycle:
+ *          1. Sends steering feedback (angle + raw encoder + last PID output) to
+ *             Orin FIRST, so frames arrive even if the subsequent I2C read blocks.
+ *          2. Reads the AS5600 steering angle via I2C.
+ *          3. Applies comms watchdog / manual-mission safety (zero outputs).
+ *          4. Applies throttle and brake actuator outputs from Orin targets.
+ *          5. Runs the steering PID controller and sets the motor output.
  *
  * @param   ctx  Pointer to a control_context_t with sensor, actuator, and PID references.
  */
@@ -136,8 +142,10 @@ void control_task(void *ctx) {
 /**
  * @brief   Heartbeat task — sends a periodic alive signal to Orin.
  *
- * @details Runs at 1 Hz. Sends a single int32 payload containing the ESP32
- *          uptime in milliseconds as an ESP_HEARTBEAT message over UART.
+ * @details Registered with a 1000 ms period (1 Hz) via the KM_RTOS periodic
+ *          wrapper — see period_ms arg in main(). Sends a single int32 payload
+ *          containing the ESP32 uptime in milliseconds as an ESP_HEARTBEAT
+ *          message over UART.
  *
  * @param   ctx  Unused (NULL).
  */
@@ -295,6 +303,11 @@ void system_init(void) {
     // Logs go to UART0 at 115200. SerialDriver ignores non-0xAA bytes (SOF filtering).
 
     // Register FreeRTOS tasks
+    // KM_COMS_CreateTask args: (name, fn, ctx, period_ms, stackWords, priority, active)
+    //                                          ^^^^^^^^^ period is in MILLISECONDS, not Hz.
+    //   comms:     10 ms  →  100 Hz target
+    //   control:    2 ms  →  500 Hz target (I2C AS5600 read caps real rate; measure it)
+    //   heartbeat: 1000 ms →    1 Hz
     RTOS_Task t1 = KM_COMS_CreateTask("comms", comms_task, NULL, 10, 4096, 2, 1);
     RTOS_Task t2 = KM_COMS_CreateTask("control", control_task, &ctrl_ctx, 2, 4096, 1, 1);
     RTOS_Task t3 = KM_COMS_CreateTask("heartbeat", heartbeat_task, NULL, 1000, 2048, 1, 1);

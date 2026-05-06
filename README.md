@@ -62,7 +62,7 @@ All pin assignments are defined in [`components/km_gpio/km_gpio.h`](components/k
 ## Project Structure
 
 ```
-kart_medulla/
+kart-medulla/
 ├── main/
 │   └── main.c                     # Entry point, FreeRTOS tasks
 ├── components/
