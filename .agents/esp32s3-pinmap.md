@@ -1,0 +1,74 @@
+<!-- reference — read when porting firmware to the ESP32-S3 -->
+
+# ESP32-S3 pin map for the kart-medulla PCB
+
+Derived 2026-07-10 by exporting a fresh netlist from `dv-hardware/projects/kart-medulla/kart-medulla.kicad_sch`
+(`kicad-cli sch export netlist`) and cross-checking every pin against
+`dv-hardware/projects/kart-medulla/docs/pinout-esp32-s3.md`. All 44 module pins agreed. The
+schematic is authoritative; this file is a convenience for firmware work.
+
+**This is NOT the pin map the firmware currently uses.** `components/km_gpio/km_gpio.h` still holds
+the classic-ESP32 (WROOM-32E) map, which this repo builds. See `.agents/error-log.md` 2026-07-10 —
+most importantly, the classic map puts `PIN_STEER_PWM` on GPIO 18, which on the S3 board is the
+gate of Q3, the shutdown-circuit MOSFET.
+
+## Signals
+
+| Signal | GPIO | Notes |
+|---|---|---|
+| `PRESSURE_3` | 1 | analog in (ADC1) |
+| `HYDRAULIC_2` | 2 | analog in (ADC1) |
+| `BUZZER` | 3 | digital out. Strap pin (JTAG src select), idles high at boot — acceptable |
+| `PEDAL_ACC` | 4 | analog in (ADC1) |
+| `PEDAL_BRAKE` | 5 | analog in (ADC1) |
+| `PRESSURE_1` | 6 | analog in (ADC1) |
+| `PRESSURE_2` | 7 | analog in (ADC1) |
+| `SDA` | 8 | I²C — AS5600 (off-board, 0x36) + U25 PCF8574 (on-board, 0x20) |
+| `SCL` | 9 | I²C |
+| `HYDRAULIC_1` | 10 | analog in (ADC1) |
+| `MOSI` | 11 | SPI → MCP4922 DAC |
+| `CLK` | 12 | SPI → MCP4922 DAC |
+| `MISO` | 13 | SPI → MCP4922 DAC |
+| `CMD_DAC_CS` | 14 | SPI chip-select → MCP4922 DAC |
+| `SELECT_THROTTLE` | 15 | digital out → MAX4660 (U14) pin 6. 10 kΩ pulldown (R32) on the net |
+| `MOTOR_HALL_1` | 16 | digital in (via U5 level shifter) |
+| `CMD_STEER_DIR` | 17 | digital out → Cytron H-bridge |
+| `SDC_NOT_EMERGENCY` | 18 | **SAFETY.** Gate of Q3 (IRLZ44N) via R22 100 Ω. HIGH = Q3 conducts = shutdown chain closed = *no emergency*. R23 100 kΩ pulldown holds it OFF at boot |
+| `MOTOR_HALL_3` | 21 | digital in (via U5) |
+| `CMD_STEER_PWM` | 40 | LEDC PWM → Cytron H-bridge |
+| `MOTOR_HALL_2` | 47 | digital in (via U5) |
+
+Every analog input lands on GPIO 1–10, which is exactly ADC1 on the S3. Deliberate — ADC2 is
+unusable when Wi-Fi is active.
+
+## Do not use
+
+| GPIO | Why |
+|---|---|
+| 33, 34, 35, 36, 37 | Octal PSRAM. The fitted module is an **N16R8** — these are wired to the in-package PSRAM die and are physically unusable. Never assign them |
+| 43, 44 | UART0 — the dev board's USB-UART bridge owns these |
+| 48 | Dev board's on-board RGB LED |
+| 19, 20 | USB D−/D+ |
+| 0, 45, 46 | Strap pins (BOOT, VDD_SPI, ROM-print). Reclaimable post-boot only if the signal's idle state matches the strap default |
+| 41, 42 | Held for future CAN |
+
+## Free
+
+**GPIO 38** and **GPIO 39** are unconstrained and unconnected in the schematic (verified: netlist
+shows `unconnected-(U24-Pad13)` and `unconnected-(U24-Pad14)`). GPIO 38 is the recommended gate pin
+for the EBS compressor PWM driver — see `dv/tasks/compressor-motor-wiring.md`.
+
+## Known firmware gaps against this hardware
+
+1. **The S3 build does not exist.** `platformio.ini` has only `esp32dev` and `native`. The
+   `CONFIG_IDF_TARGET_ESP32S3` branch in `km_gpio.c` references `SPI_MOSI_PIN` / `SPI_SCLK_PIN` /
+   `SPI_CS_PIN`, which are defined nowhere. Those are GPIO 11 / 12 / 14 (MISO 13) per the table above.
+2. **Nothing drives `SELECT_THROTTLE` (GPIO 15).** The schematic routes it to the MAX4660 mux with a
+   10 kΩ pulldown, so the default state is pedal pass-through (safe). Firmware must drive it HIGH to
+   hand throttle to the DAC.
+3. **Nothing drives `SDC_NOT_EMERGENCY` (GPIO 18).** Until firmware drives it HIGH, Q3 stays off and
+   the kart sits in the emergency state. Fail-safe, but it means the kart cannot be armed.
+4. **No PCF8574 driver.** `CMD_REVERSE` is PCF8574 P0 over I²C; no code writes it.
+5. **Comms-watchdog releases the brake rather than applying it.** On stale comms or
+   `MISSION_MANUAL`, `main.c` calls `KM_ACT_Stop()` on throttle, brake and steering — zeroing the
+   brake command. For a driverless kart, loss of comms should *assert* braking / drop the SDC.

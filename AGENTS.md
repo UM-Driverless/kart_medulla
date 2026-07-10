@@ -50,8 +50,17 @@ kart-medulla/
 ## Flashing
 
 ```bash
-cd ~/Desktop/kart-medulla && ~/.local/bin/pio run --target upload --environment esp32dev
+cd ~/repos/kart-medulla && pio run --target upload --environment esp32dev
 ```
+
+> **Stale-path warning (checked 2026-07-10):** this used to read `~/Desktop/kart-medulla` and
+> `~/.local/bin/pio`. The repo lives at `~/repos/kart-medulla`, and **no PlatformIO or ESP-IDF
+> is currently installed on the Mac** — only `esptool` (5.2.0, at `~/.local/bin/esptool.py`).
+> Install a toolchain before expecting the command above to work.
+>
+> The S3 board's USB-UART bridge is a **WCH CH343/CH9102** (VID `0x1A86`), not a CP2102 — it
+> enumerates as `/dev/cu.usbmodem*`, not `/dev/cu.SLAB_USBtoUART`. The board's two USB-C ports
+> are silkscreened `COM` (the bridge) and `USB` (native USB-OTG / USB-Serial-JTAG on GPIO 19/20).
 
 - **Upload baud must be 115200** — the CP2102 USB-UART bridge fails at higher speeds during flash (460800 works fine for runtime comms, just not for esptool upload)
 - `upload_speed = 115200` is set in `platformio.ini`
@@ -103,6 +112,19 @@ Frame format: `| SOF(0xAA) | LEN | TYPE | PAYLOAD... | CRC8 |`
 
 ### Hardware
 
+> **The table below is the CLASSIC-ESP32 pin map (ESP32-WROOM-32E), and it is the only one
+> this repo builds. The kart-medulla PCB now carries an ESP32-S3 (WROOM-1-N16R8).**
+> The S3 port does not exist yet: `platformio.ini` has only the `esp32dev` and `native` envs,
+> and the `CONFIG_IDF_TARGET_ESP32S3` branch in `km_gpio.c` references `SPI_MOSI_PIN` /
+> `SPI_SCLK_PIN` / `SPI_CS_PIN`, which are defined nowhere — it cannot compile.
+>
+> **Do not port by switching the board target.** The pin numbers below mean different things
+> on the S3. Most dangerous: `PIN_STEER_PWM = 18`, but on the S3 board **GPIO 18 is the gate of
+> Q3, the shutdown-circuit MOSFET**. See `.agents/error-log.md` (2026-07-10).
+>
+> Authoritative S3 pinout: `dv-hardware/projects/kart-medulla/docs/pinout-esp32-s3.md`
+> (the schematic wins where they disagree). GPIO 33-37 are consumed by the S3's octal PSRAM.
+
 | Actuator | GPIO | Type | Notes |
 |----------|------|------|-------|
 | Throttle | 26   | DAC2 | 0-255 output |
@@ -125,7 +147,13 @@ Frame format: `| SOF(0xAA) | LEN | TYPE | PAYLOAD... | CRC8 |`
 
 - Steering motor limited to **40%** output (`KM_ACT_SetLimit(&dir_act, 0.4)`) for testing
 - Increase to 1.0 when system is validated
-- ESP32 watchdog: if no Orin heartbeat received, should apply brakes (TODO — not yet implemented)
+- **Comms watchdog IS implemented** (`COMMS_WATCHDOG_MS = 1000`, `main/main.c:100-115`). This line
+  previously claimed it was not — corrected 2026-07-10. But note *what* it does: on stale comms or
+  `MISSION_MANUAL` it calls `KM_ACT_Stop()` on throttle, brake **and** steering, which zeroes the
+  brake command. It therefore **releases the brake and coasts** rather than braking.
+- **Still TODO: make loss-of-comms assert braking / drop the SDC chain**, rather than zeroing
+  outputs. On the S3 board the SDC is GPIO 18; firmware does not drive it at all yet, so the kart
+  currently cannot be armed *or* commanded to brake by the medulla.
 
 ## Debugging
 
