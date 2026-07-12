@@ -18,3 +18,11 @@
 - Rule: **The pin map is board-specific. When porting to the S3, do not reuse a single flat `PIN_*` block** — guard it with `#if CONFIG_IDF_TARGET_ESP32S3` / `#elif CONFIG_IDF_TARGET_ESP32` and take the S3 values from the authoritative source, `dv-hardware/projects/kart-medulla/docs/pinout-esp32-s3.md` (and the schematic, which wins over the doc).
 - Rule: **GPIO 18 on the S3 board is safety-critical.** It drives the SDC MOSFET. Driving it HIGH asserts "no emergency" and closes the kart's shutdown chain. Never assign it to an actuator, and never toggle it on a live kart.
 - The S3's octal PSRAM makes **GPIO 33-37 unusable**. Do not assign them in firmware, ever.
+
+## 2026-07-12 - Invisible serial: the devkit's UART connector is a CH343 that shows up as /dev/cu.usbmodem* on macOS
+**What happened:** During the AS5600 bench session, the freshly flashed bench firmware produced no serial output and answered no commands, on any open. Flashing worked, ROM boot messages appeared, and IDF error logs appeared once — but never a `Serial.print`. Burned ~1 h on CDC/DTR/RTS theories.
+**Root cause:** The USB cable was in the devkit's **UART connector** (CH343 bridge). On macOS the CH343 enumerates as `/dev/cu.usbmodem…` with product name "USB Single Serial" — a name that looks exactly like the S3's native USB-Serial-JTAG port. The build had `ARDUINO_USB_CDC_ON_BOOT=1`, which routes Arduino `Serial` to the native USB connector — which was unplugged. ROM/IDF logs still go to UART0, which is why *some* output got through and masked the problem.
+**How we found it:** `ioreg -p IOUSB` showed the device as "USB Single Serial" (CH343) instead of "USB JTAG/serial debug unit" (native S3 USB).
+**Prevention:**
+- Rule: **Don't infer the connector from the /dev name.** `usbmodem` ≠ native USB. Check `ioreg -p IOUSB`: "USB Single Serial" = CH343 UART bridge → `Serial` must stay on UART0 (no `ARDUINO_USB_CDC_ON_BOOT`); "USB JTAG/serial debug unit" = native port → CDC flags fine.
+- Rule: **"Logs appear but my prints don't" means two different consoles are in play** (UART0 vs USB-CDC), not a broken bus or driver.

@@ -13,6 +13,7 @@
 
 ## Files
 - `.agents/error-log.md` — **consult selectively** (grep for relevant entries before working on an area)
+- `history.md` (repo root, NOT `.agents/`) — **consult selectively** (dated log of what happened/was learned; append-only, newest at the end)
 - `.agents/adding-messages.md` — **reference** (read when adding new message types)
 
 ## Repository Structure

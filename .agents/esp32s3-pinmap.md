@@ -55,8 +55,18 @@ unusable when Wi-Fi is active.
 ## Free
 
 **GPIO 38** and **GPIO 39** are unconstrained and unconnected in the schematic (verified: netlist
-shows `unconnected-(U24-Pad13)` and `unconnected-(U24-Pad14)`). GPIO 38 is the recommended gate pin
-for the EBS compressor PWM driver — see `dv/tasks/compressor-motor-wiring.md`.
+shows `unconnected-(U24-Pad13)` and `unconnected-(U24-Pad14)`).
+
+**Correction 2026-07-11:** GPIO 38 is *not* the compressor pin. The EBS compressor PWM was
+**finalized on CN8.2 / GPIO 3** (the ex-`BUZZER` MOSFET — buzzer dropped, net renamed
+`CMD_COMPRESSOR_PWM`) because the compressor gate has to reach a screw terminal and GPIO 38 isn't on
+a CN — see `dv/kart/pneumatics/history.md` 2026-07-10. So **both GPIO 38 and 39 are genuinely free.**
+
+**Correction 2026-07-11 (supersedes the GPIO 39 plan):** the AS5600 steering-angle PWM lands on
+**CN5.2 → GPIO 1** (the ex-`PRESSURE_3` input; keep R8 series, remove R9+R10 pulldown) — decided in
+`dv/kart/steering/as5600-pwm-burn-runbook.md` because the signal must arrive on an existing screw
+terminal, and GPIO 39 isn't on a CN. **GPIO 38 and 39 both remain spare.** Capture routes via the
+GPIO matrix (MCPWM/PCNT/RMT), so the choice of pin doesn't constrain the peripheral.
 
 ## Known firmware gaps against this hardware
 
