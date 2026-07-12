@@ -30,6 +30,18 @@ Followed `~/dv/kart/steering/as5600-pwm-burn-runbook.md` on the bench: ESP32-S3 
 10. **Magnet held near**: MAGNITUDE 2 → 20 (still ML=1). **Closer**: STATUS 0x37 (MD=1, ML=1, MH=0), AGC=128, MAGNITUDE=1415. Learned: **at 3.3 V AGC's range is 0–128** (not 0–255), so AGC=128 = gain maxed, field still weak. Rubén: good enough for the bench — the goal is the PWM config, not magnet quality; the real magnet is mounted on the kart shaft. Full-travel sweep (`a`) skipped accordingly.
 11. **Phase 1 (`p`)**: CONF lo 0x00 → 0xE0, read-back CONF = 0x00E0 → PWMF=11 (920 Hz), OUTS=10 (PWM), HYST=0, PM=0, SF=0, FTH=0, WD=0. Verified in RAM; volatile until burned.
 
+### Session outcome (end of day): AS5600 abandoned, switching to MPS MagAlpha MA732
+
+The PWM output was **never observed working**, and the session established why the AS5600 is the wrong part for this installation:
+
+- **The magnet physics is the blocker, not the electronics.** The AS5600 senses the *variation* of Bz across a 1 mm Hall circle (spec: 30–90 mT of variation, detect threshold 8 mT, magnet centered ±0.25 mm, air gap 0.5–3 mm — datasheet saved at `~/dv/kart/steering/resources/as5600-datasheet-DS000365-v1.06.pdf`). The kart's shaft magnet is two large magnets stuck sideways; large magnets produce a locally uniform field (surface field is fixed by remanence at ~0.3–0.6 T regardless of size, so variation across 1 mm ≈ B × 1 mm/L). Even touching the chip, MAGNITUDE peaked ~274–2000 with MD mostly 0, ML=1 always. With MD=0 the chip gates/garbages OUT by design ("output driven low… without regard to output mode", datasheet p.31; in practice we also saw the analog DAC pinned at garbage-ANGLE≈4095 → 3.3 V).
+- **Volatility proven** (runbook step 10): power-cycle reverted CONF to 0x0000; rewrote fine. RAM config write path is solid.
+- **Unresolved anomalies, moot after the switch:** (1) with MD=1/MAG≈700, analog OUT measured 2.65 V where ANGLE=149 predicted 0.12 V; (2) at session end GPIO 1 read a stiff ~3.2 V that the internal pulldown couldn't budge — i.e. a hard 3V3 rail, not a sensor output through the 20 k series path. Prime suspect: the OUT wire re-landed in a +3V3 terminal (CN6.3 is a neighbour) after the rework unplug/replug; not confirmed before stopping.
+- **Decision (Rubén): stop, buy an MPS MagAlpha MA732** (board TBMA732-Q-RD-00A, Mouser/DigiKey ES; fallback Melexis MLX90316 factory-PWM variant) + a proper 6 mm diametric magnet. The MA732 senses in-plane field *direction* at a point → tolerant of big magnets and sloppy centering, native PWM ~1 kHz duty=angle/360 at 3.3 V, no OTP burn needed. Full comparison: `~/dv/kart/steering/sensor-alternatives-research.md`.
+
+**Sourcing correction (2026-07-12): the part actually going in the AliExpress ~€10 cart is the MT6701 module, NOT the MA732.** Link: `https://es.aliexpress.com/item/1005004216051325.html` — the "MT6701 magnetic encoder, perfectly replace AS5600" board, which is the same **-22 mm / -42 mm** breakout the very-first question in this session was about. The MA732 was the sensor-research *pick* (Mouser/DigiKey), but the MT6701 is the same in-plane-direction sensing class (verified `datasheets/MT6701_datasheet.pdf`), so it solves the identical big-uniform-field-magnet problem and is far cheaper/available on AliExpress. MA732 kept as the documented alternative/fallback. Verify on arrival: (1) genuine part, (2) whether it ships with a **diametric** magnet (many of these boards include only a small one or an axially-magnetized one).
+- **Everything reusable survives:** CN5.2 → GPIO 1 path with R10 removed (R8+R9 = 20 k series, full-swing verified topology), the bench tool (`~/dv/kart/steering/as5600-bench/`, works for any PWM sensor via `w`/`d`; I²C commands are AS5600-specific), and the kart-brain firmware plan (MCPWM capture on GPIO 1, period sanity check, median-of-5) — unchanged by the sensor swap.
+
 ## 2026-07-12 — ESP32 (legacy board) failure report
 
 **Board:** Legacy / spare ESP32-WROOM dev board (UM-Driverless kart project). **Reported symptom:** board "stopped working several days ago"; not detected when connected to the computer. Diagnosed on Jorge's laptop (`jorge-Aspire-A315-51`, Linux 6.17.0-35-generic / Ubuntu).
@@ -144,3 +156,92 @@ USB-UART adapter        ESP32 board
 - **Never** connect the ESP32 to laptop USB while it is also powered/grounded by the kart — this ground loop is the #1 risk. Use USB isolation, or unplug kart power before connecting USB.
 - Add **flyback diodes / isolation** on any inductive load (motors, solenoids) near the ESP32's lines.
 - Keep a common, solid ground; never put 5 V on any 3.3 V pin.
+
+## 2026-07-12 — magnet sizing idea for encoders (big magnet + large air gap for vibration tolerance)
+
+Idea for **vector / multi-Hall angle sensors like the MT6701** (3-axis-style sensing — measures the *direction* of the in-plane field, not its magnitude): you can deliberately run a **bigger, stronger magnet at a larger air gap** to buy mechanical robustness on a vibrating kart, as long as the flux at the die still lands in the sensor's recommended band. Why it helps, both axes:
+- **Axial (gap) wobble:** at a large gap the magnet sits on the flatter part of the field-vs-distance curve, so a given wobble changes die flux by a smaller fraction → more margin before it drifts out of band.
+- **Lateral (off-center) wobble:** angle error from a sideways shift δ scales roughly as δ / gap, so a bigger gap means less angular error per unit of sideways play.
+
+Requirements that don't change: magnet must stay **diametrically magnetized** (poles across the diameter) and **centered on the rotation axis, facing the chip** (on-axis). Caveats: going well outside the datasheet's recommended magnet size / gap range means the 14-bit accuracy isn't characterized (bench-verify); and a physically bigger/stronger magnet couples more to nearby ferrous parts (chassis, motor iron), which can skew the field direction at the die — geometry-dependent, check in place.
+
+**Correction to an earlier wrong instinct:** at *equal die flux*, a far magnet does NOT have worse signal-to-stray-field ratio than a close one — signal amplitude is the same, so stray-field robustness is the same. The "far magnet = weaker signal" reasoning only holds if you *don't* size the magnet up to compensate.
+
+**Why the AS5600 is different — VERIFIED from its datasheet** (`datasheets/AS5600_datasheet.pdf`, ams v1-06 2018-Jun-20). The AS5600 does NOT get the big-magnet-large-gap benefit, and the datasheet says why:
+- **Detailed Description (p9):** "The AS5600 is a Hall-based rotary magnetic position sensor using **planar sensors that convert the magnetic field component perpendicular to the surface of the chip** into a voltage." So it senses **Bz — the axial (perpendicular) field component**, not the in-plane direction.
+- **Magnetic Characteristics (Fig 11, p8):** the spec is **Bz = required orthogonal component of the field "measured at the die's surface along a circle of 1 mm", 30–90 mT** (min for magnet detection Bz_ERROR = 8 mT). Note on p5 calls out "typical magnetic field (60 mT)".
+
+Mechanism: the AS5600 has planar Hall plates arranged around a **1 mm-diameter circle** and reconstructs the angle from how the *axial* field Bz varies azimuthally around that tiny circle (a diametric magnet makes Bz go +/− across the die; the phase of that pattern = the angle). For this to work the field must have real **spatial structure at the ~1 mm scale** over the die. A **small magnet, close in** gives strong Bz variation over the 1 mm footprint → in the 30–90 mT band. A **big magnet far away** makes the field too spatially uniform over 1 mm, so the orthogonal component over the circle drops below 30 mT → weak/failing signal, even if the raw field magnitude elsewhere is high. That is the physical reason the AS5600 wants a small magnet at a close, specified gap — the "big-and-far for vibration tolerance" trick does NOT transfer to it.
+
+**MT6701 mechanism — VERIFIED from its datasheet** (`datasheets/MT6701_datasheet.pdf`, MagnTek Rev 1.5 2021.03). General Description (p1): *"an IC based on Hall sensing technology. A **rotating magnetic field in the x-y sensor plane** delivers two sinusoidal output signals indicating the **angle (α) between the sensor and the magnetic field direction**."* So it measures the **in-plane (x-y) field direction at a point** — no 1 mm gradient required, unlike the AS5600's Bz-over-a-circle scheme. Magnetic Input Specs (§5, p8): Bpk = in-plane field amplitude at the IC surface **200–1000 Gauss (20–100 mT)**, recommended magnet **Ø6 × 2.5 mm** diametric, air gap **0.5–2.0 mm** (typ 1.0), off-axis misalignment **≤ 0.3 mm**.
+
+**Correction to my earlier "big magnet + large gap" framing (above):** the MT6701 datasheet recommends essentially the *same* small magnet, tight air gap and centering as the AS5600 — it does **not** license running an arbitrarily large magnet at a big gap. The robustness that matters is not "bigger/farther is fine" but the **sensing principle**: direction-sensing doesn't collapse when the field over the die is strong-and-uniform, whereas the AS5600's gradient-sensing does. Treat the big-and-far idea as a mild vibration-margin lever within the spec'd range, not a licence to ignore the recommended magnet/gap.
+
+### Team comparison — why the MA732 (and the MT6701 class) fits the kart and the AS5600 does not
+
+Both families are 3.3 V magnetic rotary angle chips reading a diametric magnet on the shaft end, and both datasheets recommend a similar Ø6 mm magnet at ~0.5–2 mm gap. The difference is **what physical quantity each one measures**, and that decides everything on our crude mount:
+
+| | AS5600 (tried, abandoned) | MA732 (our pick) / MT6701 (same class) |
+|---|---|---|
+| Sensing principle | Variation of the **perpendicular** field (Bz) sampled around a **1 mm circle** on the die | **Direction** of the **in-plane** (x-y) field at a point |
+| Needs a field *gradient* over ~1 mm? | **Yes** — that gradient *is* the signal | **No** — only the field's direction matters |
+| Big / uniform-field magnet | **Breaks it** — uniform field = no Bz variation → chip reports "no magnet" (MD=0) → output gated to garbage | **Fine** — a strong uniform field still has a well-defined direction |
+| Off-center / sloppy mount | Punishing (±0.25 mm) | More forgiving in practice; direction survives offset better |
+| Output for us | I²C / analog / PWM, **needs OTP burn** to set PWM | Native **PWM ~1 kHz at 3.3 V, no burn** (MA732); MT6701 adds ABZ/SSI/UVW, 14-bit |
+| Verified from | `datasheets/AS5600_datasheet.pdf` p8–9 | `datasheets/MT6701_datasheet.pdf` p1, p8 |
+
+**Why this is the whole story for our kart:** our shaft "magnet" is two large magnets stuck sideways, which produces a locally **uniform** field over the chip. The AS5600 needs the field to *change* across its 1 mm sensing circle to compute an angle — a uniform field gives it nothing, so it read MD=0 and never produced a valid output on the bench. The MA732/MT6701 only need the field's **direction**, which a big magnet defines strongly and cleanly, so the same crude mount that starves the AS5600 works for them. That mechanism difference — not resolution or price — is why we switch. (Caveat kept honest: the MA732/MT6701 still want a reasonably centered magnet at a sane gap; they tolerate our *big-uniform-field* problem, not arbitrary sloppiness.)
+
+### Off-axis tolerance — what happens past the misalignment spec (and MA732's edge)
+
+Question that came up: if the magnet sits outside the MT6701's ≤ 0.3 mm off-axis spec, does it fail? **No — it degrades gracefully, not a cliff.** Off-axis misalignment on a direction sensor adds a **smooth, systematic angle error** (mostly a once-per-rev sinusoidal distortion) that grows gradually with displacement; the angle stays continuous, repeatable, and usable — it does *not* drop out or go to noise. This is a different failure class from the AS5600's magnet problem, which was a *detection* failure (MD=0 → gated garbage). The ≤ 0.3 mm number is only where the datasheet **guarantees rated accuracy**; past it you lose degrees of accuracy, not function. Two mitigations already in play: a **bigger magnet is more off-axis-tolerant** (more uniform field direction across the offset), and the error is systematic so it can be **calibrated out** if ever needed. For kart steering (a few degrees is acceptable), this is fine.
+
+**MA732 fallback — VERIFIED from its datasheet** (`datasheets/MA732_datasheet.pdf`, MPS Rev 1.1, 2022-08-08). Notably more tolerant than the MT6701 for our crude mount:
+- Description (p1): *"detects the absolute angular position of a permanent magnet, typically a diametrically magnetized cylinder… supports a **wide range of magnetic field strengths and spatial configurations. Both end-of-shaft and off-axis (side-shaft mounting) configurations are supported.**"* So for the MA732, **off-axis is a designed-for mode, not out-of-spec** — a real edge over the MT6701 (which specs on-axis, ≤ 0.3 mm). But it is **not automatic**: side-shaft use requires configuring the **BCT** register (8-bit bias-current-trim) plus the **ETX/ETY** enables (Table 9, p18) to rebalance the X vs Y Hall-element gains for the off-axis field asymmetry (an elliptical field locus). It's a one-time manual calibration — a trim value tuned empirically (MPS eval board + GUI), stored in NVM — not a distance you enter. The MT6701 has **no equivalent trim**, so if the mount ends up off-axis, the MA732 is the only one of the two that can be corrected.
+- Electrical (p4): Applied magnetic field **B = 40 (min) / 60 (typ) mT**; VDD 3.0–3.6 V, IDD ~11.7 mA typ. Same in-plane direction-sensing principle as the MT6701.
+- Outputs (pins, p3): native **PWM (14-bit) on pin 9**, ABZ incremental (12-bit, 1–1024 PPR) on A/B/Z, SPI + SSI for absolute readout, plus **MGL/MGH** field-strength flags (pins 11/16) for magnet diagnostics. No OTP burn needed. QFN-16 3×3 mm.
+- Trade-off vs the €2.59 MT6701 board: MA732 is a bare QFN chip from Mouser/DigiKey (needs a breakout/PCB), pricier and slower to get. **Plan: run the cheap MT6701 module first; if its on-axis mounting fights our sideways-magnet geometry, the MA732's off-axis support is the fallback.**
+
+## 2026-07-12 — why the PlatformIO venv is pinned to setuptools<81 (kept on purpose)
+
+`pio run` for any **espidf** env (e.g. `esp32dev`) was failing instantly with `ModuleNotFoundError: No module named 'pkg_resources'`. Root cause: the pinned **espressif32@6.4.0** platform builder does `import pkg_resources` (used once, at `~/.platformio/platforms/espressif32/builder/frameworks/espidf.py:1157`, to enumerate installed packages via `pkg_resources.working_set`). `pkg_resources` ships with setuptools, and **setuptools 81 removed it**; the venv had setuptools 82.0.0, so the import blew up before compiling anything. (Arduino-framework builds were unaffected — only the espidf builder imports it, which is why the standalone AS5600 bench sketches flashed fine while the firmware build didn't.)
+
+**Fix applied and kept:** `pip install "setuptools<81"` into `~/.platformio/penv`. This restores `pkg_resources`; `pio run -e esp32dev` then builds (verified: SUCCESS, RAM 7.2% / Flash 26.3%).
+
+**Why we keep the pin instead of "modernizing":**
+- The `pkg_resources` line is **not our code** — it's inside the installed espressif32@6.4.0 platform under `~/.platformio/`. Hand-patching it is untracked and gets overwritten on any platform reinstall/update, so it's not durable.
+- The real modernize path is **upgrading the espressif32 platform** to a release that dropped `pkg_resources`. But `platformio.ini` pins `espressif32@6.4.0` deliberately: that pin locks the **ESP-IDF 5.1 toolchain the firmware was validated against**. Bumping it moves the compiler/IDF under the firmware — a rebuild-and-re-validate-on-the-kart event (per the branch workflow, that gates `main`), not a dependency cleanup.
+- Pinning `setuptools<81` is **isolated to `~/.platformio/penv`** (doesn't touch system Python or other projects), reversible, and changes nothing about the firmware toolchain.
+
+Decision (Rubén, 2026-07-12): keep the setuptools pin as-is. Revisit only as a deliberate platform-upgrade task if/when we choose to move off espressif32@6.4.0, at which point the pin can be dropped.
+
+## 2026-07-12 — AS5600 PWM bench: chip + firmware good, but OUT→GPIO1 is an OPEN circuit
+
+Bench state during this session (medulla PCB, ESP32-S3 = U24, AS5600 module external): I²C on GPIO8/9, AS5600 OUT wired into **CN5.2**. **R10 already removed** (per the steering runbook rework); **R8 + R9 remain**.
+
+**Verified board topology (from live netlist export of `dv-hardware/.../kart-medulla.kicad_sch`):**
+`CN5.2 —[R8 10k]— nodeA —[R9 10k]— GPIO1 (U24.19) —[R10 10k]— GND`. So R8 **and R9 are both series**; **only R10 was the shunt/pulldown to GND**. (Correcting the runbook, which called "R9+R10 the pulldown pair" — wrong; removing R9 would break the signal path. The rework actually done — remove R10 only, keep R8+R9 — is the correct one.)
+
+**Diagnosis (all software, no scope):** AS5600 is healthy — I²C responds at 0x36, STATUS MD=1/ML=0/MH=0, AGC=53 (mid-range), RAW tracks the magnet. CONF `OUTS` was set to PWM (and toggled PWM↔analog) — register readback confirms. **But GPIO1 never follows OUT:** it reads a constant HIGH in both PWM and analog modes (in analog at ~21° it should read LOW), and the decisive test — enabling the ESP32 **internal pulldown** on GPIO1 — pulls it to 0, i.e. the node is **floating, nothing driving it**. Conclusion: the OUT signal does not reach GPIO1 → an **open connection** in `OUT pad → wire → CN5.2 → R8 → R9 → GPIO1`. Most likely an R8/R9 joint disturbed when R10 was desoldered, or the OUT wire not truly clamped at CN5.2. Needs a physical continuity check / reflow — not a firmware fix.
+
+**Also fixed this session:** PlatformIO espidf builds (setuptools<81 pin — see earlier entry). Bench test harness = standalone PlatformIO arduino project in scratchpad, flashed to `/dev/cu.usbmodem*`.
+
+**Context flag:** the steering runbook (`dv/kart/steering/as5600-pwm-burn-runbook.md`) is marked SUPERSEDED 2026-07-12 — AS5600 retired for the kart (can't handle the large shaft magnet), MA732 chosen. This PWM bench work is proving the path/firmware on a small bench magnet, not committing the AS5600 to the kart.
+
+### 2026-07-12 (cont.) — AS5600 CONFIG burned to PWM; confirms the fault is wiring, not config
+
+At Rubén's request (module expendable — MT6701 modules already bought), performed the one-shot **BURN_SETTING** (0x40→0xFF) to commit OUTS=PWM + PWMF=920 Hz to OTP. Preconditions clean: ZMCO=0, MD=1. Verified with the datasheet's OTP-reload sequence (write 0x01,0x11,0x10 → 0xFF, then read CONF): **CONF persisted = 0x00E0 (OUTS=2 PWM, PWMF=3 920 Hz).** Burn successful and permanent.
+
+**Result: GPIO 1 still floats (lvl=1, no PWM edges) even with PWM permanently burned.** This is the definitive proof — the sensor is healthy and permanently emitting PWM on OUT, yet nothing reaches GPIO 1 → the fault is a physical **open connection** in `OUT pad → wire → CN5.2 → R8 → R9 → GPIO 1` (most likely an R8/R9 joint disturbed when R10 was desoldered, or the OUT-wire contact). Confirmed by datasheet p24 "Output Stage": a volatile OUTS write already drives OUT ("effective at the output ≥1 ms later"), so OTP was never the blocker.
+
+Note: module is still I²C-usable (ANGLE readable regardless of output mode) and now hard-wired to PWM on OUT. Per the superseded runbook, the kart path is the **MT6701** anyway. To actually get PWM here: bypass test (land OUT directly on a bare GPIO) to localize the open, then reflow R8/R9 / reseat — or move to MT6701.
+
+## 2026-07-12 — MT6701 PWM signal: cabling distance (decided: <2 m, fine)
+
+The MT6701 PWM output (`datasheets/MT6701_datasheet.pdf` §6.6) is a **single-ended 3.3 V CMOS square wave**, frame rate **994.4 Hz** (or 497.2 Hz via PWM_FREQ=1). Angle is encoded in the **duty cycle**: frame = 4119 clock periods, 12-bit, **1 clock period = 0.088° = 244 ns** (or 488 ns if slowed). So the **angle LSB is a 244 ns slice of edge timing** — that, not signal presence, is what limits cable length.
+
+Distance is capped by **edge-timing integrity**, not whether the wave arrives: cable capacitance (~50–100 pF/m) rounds edges → systematic duty (angle) offset; EMI jitter on the threshold crossing → direct angle noise (a kart is noisy). It degrades *gracefully* — you lose LSBs / gain jitter before you lose the signal. No max length is spec'd; it's application-dependent.
+
+Guidance: short harness ~1–3 m plain wire is fine in a quiet setting; **on the kart keep it short + shielded/twisted-pair (signal twisted with its ground) + solid common ground.** To stretch: drop to 497 Hz (488 ns LSB = 2× timing margin) and/or a Schmitt buffer at the receiver. For a truly long run: use ABZ-into-counter or digitize-at-sensor over CAN — don't run PWM across the kart. The ESP32 MCPWM capture (~12.5 ns tick on GPIO 1) resolves the 244 ns LSB easily, so the bottleneck is the cable/noise, not the MCU.
+
+**Decision (Rubén): the steering sensor → medulla run is < 2 m, so plain PWM is fine** — no CAN/line-driver needed. Keep the lead short and ideally shielded.
