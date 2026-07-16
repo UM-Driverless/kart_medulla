@@ -44,3 +44,36 @@
 **Root cause.** Treated one URL as the only source and burned attempts on it. A datasheet for a real part is mirrored on many sites (alldatasheet, LCSC, Mouser, manufacturer, distributor PDFs).
 
 **Prevention.** When a datasheet/spec URL fails once, immediately WebSearch for "<part> datasheet pdf" and try a different host — don't retry the dead link or hand it back to the user. Two hosts max before switching strategy. (Pairs with the same-day entry above: verify in-turn, don't park.)
+
+## 2026-07-16 — invented a rationale for a hardware number instead of asking what it was for
+
+**What happened.** Rubén asked for a compressor soft-start, and to "test as an experiment something
+like 60% pwm and see if the mosfet gets too warm or not". I implemented the ramp, then wrote the
+60% figure into the code, the commit message and `history.md` as *a MOSFET thermal experiment* —
+complete with the advice to "raise toward 255 once it runs cool, since 100% duty is DC with no
+switching loss at all". Rubén: "the idea of 60% duty is to not cook the motor. it's designed for
+7.5V, not 12V."
+
+The real reason: the motor is a 7.5 V part on a 12 V rail, so duty is a permanent voltage divider —
+0.60 x 12 = 7.2 V. Full duty would overvolt it by 60%. My advice was the exact opposite of correct,
+and I had written it into three places as settled fact.
+
+**Root cause.** His sentence contained two things: an instruction (use 60%) and a thing he wanted to
+learn (does the MOSFET get warm). I collapsed them into one, assuming the observation *was* the
+motive. The number had an electrical reason that firmware alone cannot reveal — nothing in the
+repo states the motor's voltage rating — so the gap was unfillable by reading code, exactly the
+case where a question is cheap and a guess is expensive. Plausibility did the rest: switching loss
+is a real phenomenon, so the invented story sounded like analysis rather than a guess.
+
+**Prevention.** When a spec number arrives without a stated reason — a duty cap, a current limit, a
+voltage, a timeout — *ask what sets it* before writing a rationale for it into code comments, docs
+or commits. "Test X and see if Y" gives X and Y; it does not give the reason for X. And note the
+tell: if a rationale for a hardware constant can't be traced to a datasheet, a measurement, or the
+user's own words, it is a guess no matter how good the physics sounds. Same failure family as the
+2026-07-12 entries above — supply the missing fact, don't route around it.
+
+**Related, same session:** I also flagged the compressor gate as a boot hazard (strap pin, undriven
+until `KM_GPIO_Init()`) and wrote it up as an open hardware issue. There is a gate pulldown; it was
+a false alarm. That one was defensible — the pinmap note said "idles high at boot — acceptable" and
+the exported netlist was stale — but the lesson is the same: the schematic and the person holding
+the board are the authority on hardware, not an inference from firmware plus a stale export.

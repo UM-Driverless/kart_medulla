@@ -151,18 +151,23 @@
 
 /* ============================================================
  *  COMPRESSOR PWM
- *  The MOSFET gate is driven straight from a 3.3 V GPIO through a series
- *  resistor, so it switches slowly and never fully enhances. Both effects
- *  push us to a LOW carrier frequency: every edge costs energy, and the
- *  fewer edges per second, the less the MOSFET heats.
+ *  This carrier runs whenever the compressor runs: the duty is what
+ *  keeps a 7.5 V motor at its rated voltage off a 12 V rail, so it never
+ *  reaches 100% and the MOSFET never rests at DC (see COMPRESSOR_DUTY_RUN
+ *  in main.c). Switching loss is therefore permanent, not a transient.
+ *  That matters because the gate is driven straight from a 3.3 V GPIO
+ *  through a series resistor: it switches slowly and never fully
+ *  enhances, so every edge costs real energy.
  *  500 Hz (2 ms period) sits between the two limits:
  *   - Switching loss: edges take a few µs, so <1% of the period is spent
  *     in transition. At 20 kHz that would be ~10% and the MOSFET cooks.
  *   - Current ripple: the motor's electrical time constant is a few ms,
- *     so a 2 ms period still filters into fairly smooth current. Going
- *     much below ~200 Hz lets current pulse hard again, which is exactly
- *     the 12 V rail disturbance the soft-start exists to avoid.
- *  If the MOSFET runs hot, lower this before touching the duty cap.
+ *     so a 2 ms period keeps current continuous — which is also what
+ *     makes the motor see duty x rail as a clean average. Going much
+ *     below ~200 Hz lets current go discontinuous: it pulses hard again
+ *     (the 12 V rail disturbance the soft-start exists to avoid) AND the
+ *     average-voltage assumption behind the 60% duty stops holding.
+ *  If the MOSFET runs hot, lower this. Do not raise the duty instead.
  * ============================================================ */
 #define COMPRESSOR_PWM_FREQ_HZ  500
 

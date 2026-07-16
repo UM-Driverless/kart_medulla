@@ -432,7 +432,7 @@ longer a digital on/off output; it is now an LEDC PWM output on its own timer.
   the steering PWM on `LEDC_TIMER_0` runs at a different frequency (1 kHz), and an LEDC timer
   carries one frequency for every channel attached to it. `KM_GPIO_WritePWM()` now dispatches on
   the pin, so it drives either output.
-- `main/main.c`: `control_task` ramps the duty linearly 0 → `COMPRESSOR_DUTY_MAX` over
+- `main/main.c`: `control_task` ramps the duty linearly 0 → `COMPRESSOR_DUTY_RUN` over
   `COMPRESSOR_SOFT_START_MS` (1000 ms) starting from the rising edge of the pressure hysteresis.
   The ramp is computed from elapsed ticks, not a fixed per-cycle increment, so it stays a 1 s ramp
   if the control task period is ever retuned. (The original plan said "+2% per tick at 100 Hz", but
@@ -450,20 +450,40 @@ pulsing hard again, which is the 12 V rail disturbance the soft-start exists to 
 MOSFET runs hot, lower the frequency before lowering the duty cap — it cuts switching loss without
 cutting airflow.
 
-**`COMPRESSOR_DUTY_MAX` = 153 (60%) is an experiment, not a final value.** Because the gate only
-gets 3.3 V, Rds(on) is worse than the datasheet's Vgs=10 V figure and the part will run hotter than
-the numbers suggest. Bench procedure: run a full pump-up cycle, feel the MOSFET, then decide.
-Note 100% duty is actually the *coolest* switching case (DC, no edges at all) — the interesting
-question the 60% test answers is whether continuous switching at partial duty is survivable.
+**`COMPRESSOR_DUTY_RUN` = 153 (60%) is the permanent operating point, not a cap to lift later.**
+*(Corrected same day — this entry first claimed 60% was a MOSFET thermal experiment that could be
+raised toward 255 once the part ran cool. That was wrong, and dangerously so. Recording the error
+because the mistake is instructive: the duty had an electrical purpose that firmware alone doesn't
+reveal, and I invented a plausible reason for the number instead of asking what it was for.)*
 
-**Open hardware issue found while doing this (NOT fixed, needs a hardware change):**
-GPIO 3 is an ESP32-S3 strapping pin (JTAG source select) and nothing drives it until
-`KM_GPIO_Init()` runs, roughly 200 ms into boot. `.agents/esp32s3-pinmap.md` carried the note
-"idles high at boot — acceptable", which was written when the net was a buzzer — a boot chirp is
-harmless. Driving a compressor MOSFET gate, an undriven gate through that window means the
-compressor can get full 12 V into a stalled motor on *every reset*: exactly the 40-50 A inrush the
-soft-start was built to eliminate. Worse, that spike is itself a plausible cause of a brownout
-reset, which would loop. Firmware cannot fix this — the gate state before `app_main` is hardware.
-It needs a gate pulldown to source (the SDC MOSFET Q3 already does this with R23 100 kΩ on
-GPIO 18). Until a pulldown exists, do not leave the compressor connected to 12 V across a reboot
-unattended. The pinmap note has been corrected.
+The real reason: **the compressor motor is a 7.5 V part and the rail is 12 V.** The duty cycle is
+what steps the voltage down. With the motor's few-ms electrical time constant filtering the 2 ms
+carrier, current stays continuous and the motor sees the average — duty x rail = 0.60 x 12 V =
+7.2 V, just under its 7.5 V rating. Full duty would put 12 V on a 7.5 V motor (+60%) and cook it.
+So the compressor is *always* PWM'd; it never runs DC. Two consequences:
+- Raising the duty is never the fix for anything. If the MOSFET runs hot, lower
+  `COMPRESSOR_PWM_FREQ_HZ` or add a gate driver.
+- The duty is tied to the *actual* rail voltage. If the rail measures 13.8 V rather than 12 V, 60%
+  delivers 8.3 V and the duty needs lowering. Worth measuring the rail before trusting 153.
+
+Because the run duty is permanent, the MOSFET switches continuously forever and never gets to rest
+at DC — so switching loss is a standing condition, not a transient. That is the genuine open
+question for the bench test: with the gate driven from 3.3 V through a series resistor, Rds(on) is
+worse than the datasheet's Vgs=10 V figure. Run a full pump-up cycle at 60% and feel the MOSFET.
+
+**Boot-window gate state — checked, and it is fine (recording the false alarm).**
+GPIO 3 is an ESP32-S3 strapping pin and firmware does not drive it until `KM_GPIO_Init()` runs,
+~200 ms into boot. `.agents/esp32s3-pinmap.md` carried the note "idles high at boot — acceptable",
+written when the net was a buzzer, where a boot chirp is harmless. That note made this look like a
+hazard: an undriven gate on a compressor MOSFET would mean full 12 V into a stalled motor on every
+reset — the exact inrush the soft-start exists to remove, and a plausible brownout-reset loop.
+
+**There is a pulldown on the MOSFET gate**, so the MOSFET is held off through the boot window and
+on a firmware crash. Not a hazard. The pinmap note has been rewritten to say so, since the old
+wording invites this same wrong conclusion again.
+
+Note the exported netlist could not settle this either way: `dv-hardware`
+`projects/kart-medulla/output/netlist.net` is dated 7 May while the schematic was edited 9 May, and
+the stale export shows *both* Q3's and Q4's gates on no net at all — which cannot be true of a board
+where the SDC MOSFET demonstrably works. Do not trust that netlist for connectivity questions until
+it is re-exported.

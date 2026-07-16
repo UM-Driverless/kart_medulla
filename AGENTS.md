@@ -22,6 +22,9 @@
 - **Flashing the ESP32 does NOT replace the validation step.** A flash puts code on the chip; validation means the kart actually drove with it and nothing regressed. Only then does `main` move.
 
 ## Files
+- `tasks.md` (repo root) — **the repo's task board, the only one.** Read it before starting work.
+  Only Rubén moves a task to Done; on this repo that gate means flashed *and* driven, per the branch
+  workflow above. (Replaced the old `TODO.md` on 2026-07-16.)
 - `.agents/error-log.md` — **consult selectively** (grep for relevant entries before working on an area)
 - `history.md` (repo root, NOT `.agents/`) — **MANDATORY: All progress, issues encountered, how they were solved, and what was learned MUST be noted here** (append-only, newest at the end)
 - `.agents/adding-messages.md` — **reference** (read when adding new message types)

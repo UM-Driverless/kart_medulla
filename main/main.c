@@ -35,24 +35,35 @@ static const char *TAG = "MAIN";
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
 #define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
 
-/* ---------- EBS compressor soft-start ----------
- * Snapping the compressor to full duty is a near-short: the motor is stationary,
- * so it produces no back-EMF and the only thing limiting current is the winding
- * resistance (~40-50 A). That spike browns out the 12 V regulator and drops the
- * USB ground loop. Ramping the duty gives the motor time to spin up and generate
- * back-EMF, which chokes the current off on its own.
+/* ---------- EBS compressor drive ----------
+ * The duty cycle does two jobs here.
  *
- * COMPRESSOR_DUTY_MAX is an EXPERIMENT, not a final value. The MOSFET gate is
- * driven from a 3.3 V GPIO through a series resistor, so it never fully enhances
- * and its Rds(on) is worse than the datasheet's Vgs=10 V figure — it will run
- * hotter than the numbers suggest. Start at 60%, feel the MOSFET after a full
- * pump-up cycle, and only then decide whether to go toward 255 (100% = DC, no
- * switching loss at all) or add a gate driver. If it is too hot at 60%, lower
- * COMPRESSOR_PWM_FREQ_HZ (km_gpio.h) first — that cuts switching loss without
- * cutting airflow.
+ * 1. It steps the voltage down, permanently. The compressor motor is rated for
+ *    7.5 V and the rail is 12 V, so it must NEVER see full duty: PWM is what
+ *    keeps it at its design voltage. With the motor's electrical time constant
+ *    (a few ms) filtering a 2 ms carrier, current stays continuous and the motor
+ *    sees the average, duty x rail = 0.60 x 12 V = 7.2 V, just under its 7.5 V
+ *    rating. So COMPRESSOR_DUTY_RUN is the operating point, not a cap to lift
+ *    later — raising it to 255 would put 12 V on a 7.5 V motor and cook it.
+ *    Note this ties the duty to the actual rail voltage: if the rail is really
+ *    13.8 V rather than 12 V, 60% gives 8.3 V and this needs lowering.
+ *
+ * 2. Ramping it in provides the soft-start. Snapping a stationary motor to its
+ *    running duty is a near-short: with no back-EMF, only the winding resistance
+ *    limits current (~40-50 A). That spike browns out the 12 V regulator and
+ *    drops the USB ground loop. Ramping gives the motor time to spin up and
+ *    generate back-EMF, which chokes the current off on its own.
+ *
+ * Because the run duty is permanent, the MOSFET switches forever — it never gets
+ * to rest at DC. That makes switching loss a standing condition, and it is the
+ * open question on this hardware: the gate is driven from a 3.3 V GPIO through a
+ * series resistor, so it switches slowly and never fully enhances, and its
+ * Rds(on) is worse than the datasheet's Vgs=10 V figure. If the MOSFET runs hot,
+ * lower COMPRESSOR_PWM_FREQ_HZ (km_gpio.h) or add a gate driver. Do not "fix" it
+ * by raising the duty — that trades a hot MOSFET for a burnt motor.
  */
-#define COMPRESSOR_DUTY_MAX      153   // 60% of 255 (8-bit LEDC duty)
-#define COMPRESSOR_SOFT_START_MS 1000  // linear 0 → COMPRESSOR_DUTY_MAX over this long
+#define COMPRESSOR_DUTY_RUN      153   // 60% of 255 → 7.2 V average from a 12 V rail
+#define COMPRESSOR_SOFT_START_MS 1000  // linear 0 → COMPRESSOR_DUTY_RUN over this long
 
 /**
  * @brief Context shared between the control and health tasks.
@@ -141,13 +152,14 @@ void control_task(void *ctx) {
     }
 
     // Ramp off elapsed time rather than a per-cycle step, so the profile stays a
-    // 1 s ramp regardless of how the control task period is retuned.
+    // 1 s ramp regardless of how the control task period is retuned. The ramp
+    // tops out at the run duty (7.2 V equivalent), never at full 12 V.
     uint32_t comp_duty = 0;
     if (compressor_active) {
         uint32_t elapsed_ms = (uint32_t)(now - compressor_start_tick) * portTICK_PERIOD_MS;
         comp_duty = (elapsed_ms >= COMPRESSOR_SOFT_START_MS)
-                  ? COMPRESSOR_DUTY_MAX
-                  : (COMPRESSOR_DUTY_MAX * elapsed_ms) / COMPRESSOR_SOFT_START_MS;
+                  ? COMPRESSOR_DUTY_RUN
+                  : (COMPRESSOR_DUTY_RUN * elapsed_ms) / COMPRESSOR_SOFT_START_MS;
     }
     last_comp_duty = (uint8_t)comp_duty;
 
