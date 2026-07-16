@@ -86,16 +86,38 @@ void control_task(void *ctx) {
 
     // Send feedback FIRST (use last known value) so frames arrive even if I2C blocks
     static float last_pid_out = 0.0f;
-    int32_t fb[3] = {
+    static uint16_t last_pres1_adc = 0; // Keep track for telemetry
+    int32_t fb[4] = {
         (int32_t)KM_OBJ_GetObjectValue(ACTUAL_STEERING),  // angle_rad x 1000
         (int32_t)c->sdir->lastRawValue,                    // raw encoder
-        (int32_t)(last_pid_out * 1000)                     // PID output (PWM duty) x 1000
+        (int32_t)(last_pid_out * 1000),                    // PID output (PWM duty) x 1000
+        (int32_t)last_pres1_adc                            // Pressure ADC value
     };
-    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 3);
+    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 4);
 
     // Read sensor — AS5600 already positive=left, matches our convention
     float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
     KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
+
+    // --- Compressor control logic (Hysteresis) ---
+    // Assuming 5V/3.3V sensor mapping, calibrate ADC_1_BAR and ADC_2_BAR for your exact sensor.
+    // 0-4095 range. Here we assume a rough map where 1 bar = 819 and 2 bar = 1638.
+    const uint16_t ADC_1_BAR = 819; 
+    const uint16_t ADC_2_BAR = 1638; 
+    
+    uint16_t pres1_adc = KM_GPIO_ReadADC(PIN_PRESSURE_1);
+    last_pres1_adc = pres1_adc;
+    static bool compressor_active = false;
+
+    if (pres1_adc < ADC_1_BAR) {
+        compressor_active = true;
+    } else if (pres1_adc > ADC_2_BAR) {
+        compressor_active = false;
+    }
+    
+#ifdef PIN_CMD_COMPRESSOR
+    KM_GPIO_WriteDigital(PIN_CMD_COMPRESSOR, compressor_active ? 1 : 0);
+#endif
 
     // --- Safety: comms watchdog + manual mode ---
     TickType_t last_cmd = KM_COMS_GetLastCmdTick();
@@ -135,6 +157,9 @@ void control_task(void *ctx) {
         // PID mode: target_raw is angle in radians
         steer_out = KM_PID_Calculate(c->dir_pid, target_raw, new_rad);
     }
+    KM_ACT_SetOutput(c->dir_act, steer_out);
+    last_pid_out = steer_out;
+
     KM_ACT_SetOutput(c->dir_act, steer_out);
     last_pid_out = steer_out;
 }
@@ -245,7 +270,7 @@ void system_init(void) {
         ESP_LOGE(TAG, "Error inicializando libreria de comunicaciones");
 
     sensor_struct sdir = KM_SDIR_Init(MAX_ERROR_COUNT_SDIR);
-    KM_SDIR_Begin(&sdir, GPIO_NUM_21, GPIO_NUM_22);
+    KM_SDIR_Begin(&sdir, PIN_I2C_SDA, PIN_I2C_SCL);
 
     // Test AS5600 connectivity and seed initial angle
     float init_rad = KM_SDIR_ReadAngleRadians(&sdir);
@@ -270,8 +295,10 @@ void system_init(void) {
 
     // TEMPORARY TEST: raw ESP-IDF DAC write to GPIO 25 (DAC_CHAN_0)
     // Bypasses all our abstraction. Should produce ~1.65V.
+#ifdef CONFIG_IDF_TARGET_ESP32
     dac_output_enable(DAC_CHAN_0);  // GPIO 25
     dac_output_voltage(DAC_CHAN_0, 128);  // 128/255 * 3.3V ≈ 1.65V
+#endif
 
     // Initialise PID for steering
     float kp = 1.50;

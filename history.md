@@ -245,3 +245,146 @@ Distance is capped by **edge-timing integrity**, not whether the wave arrives: c
 Guidance: short harness ~1–3 m plain wire is fine in a quiet setting; **on the kart keep it short + shielded/twisted-pair (signal twisted with its ground) + solid common ground.** To stretch: drop to 497 Hz (488 ns LSB = 2× timing margin) and/or a Schmitt buffer at the receiver. For a truly long run: use ABZ-into-counter or digitize-at-sensor over CAN — don't run PWM across the kart. The ESP32 MCPWM capture (~12.5 ns tick on GPIO 1) resolves the 244 ns LSB easily, so the bottleneck is the cable/noise, not the MCU.
 
 **Decision (Rubén): the steering sensor → medulla run is < 2 m, so plain PWM is fine** — no CAN/line-driver needed. Keep the lead short and ideally shielded.
+
+### 2026-07-12 (correction) — AS5600 OUT is STUCK HIGH (3.3 V), not open; output stage is the fault
+
+Earlier this session I concluded the OUT→GPIO1 path was an open circuit. **That was wrong** — corrected by Rubén's multimeter: OUT pad measures a constant **3.3 V** while powered, and the OUT→GPIO1 path is a continuous **20 kΩ** (R8+R9, R10 removed). Both together mean OUT is being **held at 3.3 V**, not floating.
+
+Why my "floating" test misled me: I read GPIO1 with the ESP32's internal pulldown (~45 kΩ). A hard 3.3 V source through the 20 kΩ series, divided by 45 kΩ, sits at **2.28 V** — just under the S3's V_IH (0.7×3.3 = 2.31 V) — so it read as 0 and I mis-called it a float. Lesson: **a high-value series R (20 kΩ) makes a driven line look floating under an internal pulldown — account for the divider before concluding "open."**
+
+Corrected diagnosis: the AS5600 digital core is healthy (I²C, RAW angle tracks, MD=1), but its **OUT output stage is stuck at 3.3 V** — no PWM toggling (confirmed: no edges on any pin, ADC pinned 4095, DMM = 3.3 V), and not valid analog either (should be ~1.8 V at 195°). Everything on our side is verified good — wire (20 kΩ), pin (GPIO 1 = physical pin 19 per kart-docs `assembly/electronics/kart-medulla/index.md`), config (OUTS=PWM burned), firmware. The fault is the module's OUT driver (defective, or a module pull-up its ±0.5 mA output can't beat). Note: this was true **before** the burn too, so the burn didn't cause it.
+
+**Resolution:** AS5600 OUT is unusable → switch to the **MT6701** (already in hand, plan of record). This matches the runbook's superseded decision.
+
+## 2026-07-15 — AS5600 re-wired via I²C: whole bus reads NACK (shared-bus fault, physical)
+
+Rubén re-wired the AS5600 to the medulla PCB over I²C (SDA=GPIO8, SCL=GPIO9) and asked to
+confirm it. Flashed the existing Arduino bench tool (`~/dv/kart/steering/as5600-bench/`, board on
+`/dev/cu.usbmodem5C372070281`) and ran the `s` health check. Note: `pio` IS installed at
+`~/.platformio/penv/bin/pio` — the AGENTS.md "no PlatformIO on the Mac" note is stale for the
+Arduino-framework bench project (the espidf `pkg_resources` bug is separate).
+
+**Symptom:** I²C address scan ACKs the real devices (`0x20` PCF8574, `0x36` AS5600) but **every
+register read NACKs** — first transaction gives a genuine "I2C hardware NACK detected", then the
+ESP-IDF new-`i2c_master` driver wedges into `ESP_ERR_INVALID_STATE` (err 259) for the rest of the
+run. Consistent across 3 power-cycles. Scan also grows **phantom addresses** (`0x08`, then
+`0x08`+`0x09`) — a marginal/noisy bus.
+
+**Key diagnostic:** the **on-board PCF8574 (0x20) fails its reads too**, not just the AS5600. The
+PCF8574 wasn't touched by the re-wire, and this same bench tool read AS5600 registers fine on
+2026-07-12 (STATUS MD=1, AGC=53, RAW tracking). So the fault is the **shared I²C bus, introduced by
+the re-wiring** — not the AS5600 module and not firmware. Address-ACK-but-data-NACK for *all*
+devices = the bus survives one lenient byte but not a repeated-start multi-byte read → weak/missing
+pull-ups or a loose/shorted line.
+
+**Physical checks to run (DMM, power off), in likelihood order:**
+1. **SDA↔SCL short** (GPIO8↔GPIO9) from a solder bridge / pinched wire — must not be continuous.
+2. **Pull-ups**: SDA→3V3 and SCL→3V3 should read ~2.2k–10k. Did the re-wire drop whatever module
+   carried the bus pull-ups?
+3. **Marginal SDA/SCL joint** — re-seat/reflow the GPIO8/GPIO9 run from module to CN.
+4. **Common GND** between AS5600 module and board.
+
+Not diagnosed further in software — no firmware flash fixes a bus-level electrical fault. Left for
+a continuity/pull-up check on the bench.
+
+(Reminder of the bigger picture: the AS5600 stays retired for the *kart* — big shaft magnet →
+MD=0; MT6701 is plan of record. This I²C bench work is proving path/firmware on a small bench
+magnet, so a working I²C read here is still useful.)
+
+### 2026-07-15 (cont.) — Confirmed: the 1 m AS5600 branch was poisoning the bus
+
+Binary-search test. Rubén checked #1 (3.3 V present; **no SDA↔SCL short** — continuity clear), then
+**unplugged the AS5600** and re-scanned. Result: scan finds **only 0x20 (PCF8574)** and the **phantom
+addresses 0x08/0x09 are gone**. So the ~1 m unplugged branch was the fault — with it removed the
+on-board bus is clean. (The tool's trailing `STATUS read failed` is now expected: the `s` health
+check reads AS5600 registers at 0x36, which is absent while unplugged.)
+
+**Root cause: plain I²C over ~1 m.** Cable capacitance slows SDA/SCL rise times so the ACK bit is
+misread → data-phase NACK for every device on the shared bus, plus phantom addresses from the sloppy
+edges. On-board I²C is fine; the metre of wire is the whole problem.
+
+Bench gotchas learned this session:
+- The board's reset button is silkscreened **RST** (not EN) — same function. Buttons are RST + BOOT.
+- Toggling DTR/RTS from pyserial to "reset" the board wedged it into a non-responsive state (no boot
+  banner, esptool "No serial data received"). Recovery was a physical **USB unplug/replug** power
+  cycle. Prefer a plain power cycle or the RST button over scripted DTR/RTS toggling for this board.
+
+**Fix options for reading the sensor 1 m away (unchanged from the analysis):** slow I²C to 100/50 kHz,
+stronger pull-ups (~1–2.2 k), an I²C buffer (P82B715 / LTC4311), or — best — use a distance-friendly
+output (MT6701 SSI/ABZ/PWM) instead of I²C. The MT6701 is already plan of record for the kart.
+
+### 2026-07-15 — Plan for tomorrow (bench layout change)
+
+Move everything back to the **front** and run the **compressor wiring** (which stays in the back)
+through an **extender**, so the steering system and compressor pressures can both be exercised on the
+bench.
+
+Implication: this puts the AS5600 **close to the medulla → short I²C run**, which should make today's
+1 m bus-poisoning problem (NACKs + phantom 0x08/0x09) go away without any buffer/pull-up changes. The
+long run shifts to the **compressor on GPIO 3** (`CMD_COMPRESSOR_PWM`, CN8.2) — a MOSFET-gate on/off
+PWM signal that tolerates an extender fine (keep its ground solid). Goal for the session: bench the
+steering loop (I²C AS5600) and play with compressor pressures.
+
+## 2026-07-16 — Short I²C run CONFIRMED fixed; AS5600 now reads clean but sees NO MAGNET
+
+The bench-layout change worked as predicted. With the ESP32-S3 moved to the front and the AS5600
+wired over a short I²C run (SDA=GPIO8, SCL=GPIO9, bus at 100 kHz), the AS5600 bench tool
+(`~/dv/kart/steering/as5600-bench/`) reports:
+
+- **I²C scan finds `0x20` (PCF8574) + `0x36` (AS5600), no phantom `0x08`/`0x09`, and every register
+  read succeeds.** This closes the 2026-07-15 fault: the data-phase NACK on *every* device was
+  cable capacitance on the ~1 m branch, and shortening the run fixed it with **no buffer, no
+  pull-up change, no I²C speed workaround**. `d` (pin diag) shows GPIO8/GPIO9 both held HIGH
+  externally = bus connected.
+- **But `STATUS = 0x13` → MD=0 (NO MAGNET), ML=1 (field TOO WEAK).** `MAGNITUDE ≈ 20` and
+  `AGC = 128` (gain pushed high, i.e. hunting for a field that isn't there). `RAW_ANGLE` sits at
+  ~2140–2156, jittering ±10 counts on the spot — **noise, not tracking**. With MD=0 the AS5600
+  gates its output, so this angle is garbage, not a reading.
+- For contrast, the same tool on 2026-07-12 with a small bench magnet read **MD=1, AGC=53, RAW
+  tracking**. So the chip and the firmware are fine; the *magnetic coupling* is what's absent now.
+
+**Two candidate causes, not yet distinguished:** (a) no magnet is physically near the die at the
+moment (nothing mounted / gap far too large), or (b) the known AS5600-vs-big-shaft-magnet failure —
+a large magnet makes the field spatially uniform over the 1 mm sensing circle, so Bz variation
+collapses and the chip reports MD=0 (mechanism verified from the datasheet, see the 2026-07-12
+entries above). MAGNITUDE ≈ 20 is low enough that (a) is the more likely reading — a big-but-uniform
+field usually still registers *some* magnitude.
+
+**Discrepancy worth flagging: `CONF` reads back `0x0000` (OUTS=analog 0-100%, PWMF=115 Hz).** On
+2026-07-12 a permanent one-shot `BURN_SETTING` committed `CONF = 0x00E0` (OUTS=PWM, PWMF=920 Hz) to
+OTP on the module in use then, verified after an OTP reload. An OTP burn cannot revert. Therefore
+**the module now on the bench is a different physical AS5600 than the one burned on 2026-07-12** —
+which also means the "OUT output stage stuck at 3.3 V" verdict from that session does not
+automatically apply to this unit. `ZMCO = 0` (no angle burns) is consistent with a fresh module.
+
+Also note `GPIO1` (the PWM-angle input, CN5.2) reads pullup=3095 mV / pulldown=12 mV / open=14 mV →
+**floating**, as expected: this module's OUT is in analog mode and nothing is landed on CN5.2. The
+PWM path is not in play here; this session is the **I²C** path only.
+
+**Status: the I²C transport is proven working — the sensor is not, because no magnet reaches it.**
+Next step is mechanical, not electrical: confirm what magnet (if any) is in front of the chip and at
+what gap. A small diametric magnet at ~1 mm should immediately flip MD to 1 and make RAW track;
+`m` (live monitor) shows this in real time. (Bigger picture unchanged: the AS5600 stays retired for
+the *kart* — the MT6701 is plan of record. This bench work proves the path and firmware.)
+
+## 2026-07-16 — Compressor control and ESP32-S3 build fixes
+
+**Compressor Logic Implemented**:
+Added hysteresis logic in `main.c` `control_task` to read `PIN_PRESSURE_1` via ADC and toggle `PIN_CMD_COMPRESSOR`. The logic turns the compressor on below 1 bar and off above 2 bar. (ADC thresholds `ADC_1_BAR` and `ADC_2_BAR` are placeholder integers assuming a linear 3.3V map and require calibration).
+
+**S3 Build Environment Fixed**:
+The S3 build (`esp32-s3-devkitc-1` target in PlatformIO) was previously broken due to unmapped pins and missing drivers for the S3 chip. Fixed the following to make the S3 the fully supported, primary build:
+- Disabled the onboard DAC calls (`dac_output_voltage`) via `#ifdef CONFIG_IDF_TARGET_ESP32`, as the S3 lacks an internal DAC and relies on the external MCP4922 via SPI.
+- Replaced hardcoded classic ESP32 I2C pins (`GPIO_NUM_21` and `GPIO_NUM_22`) with the macros `PIN_I2C_SDA` and `PIN_I2C_SCL` in the AS5600 `KM_SDIR_Begin` initializer so it dynamically maps correctly for the S3.
+- Fixed an SPI undeclared macro error by replacing `SPI_HOST` with `SPI2_HOST` in `km_gpio.c` and including `driver/spi_master.h` to satisfy the `spi_device_handle_t` requirement.
+
+The firmware now builds successfully for `esp32-s3-devkitc-1`.
+### 2026-07-16 (cont.) — Fixed ESP32-S3 ADC readings and Compressor Logic
+
+The `pres_adc` readings were continuously showing exactly `0`, and the compressor control loop was failing to operate. Both issues were root-caused and fixed:
+
+1. **ADC Pin Mapping:** The `KM_GPIO_ReadADC` function in `km_gpio.c` was hardcoded to a switch statement mapping the *classic* ESP32 pins. `PIN_PRESSURE_1` (GPIO6 on the S3) was falling through to the `default` case and returning `0`. Added an `#if defined(CONFIG_IDF_TARGET_ESP32S3)` block to map the S3 GPIO pins to their correct `ADC1` channels (e.g., GPIO6 to `ADC1_CHANNEL_5`).
+2. **Missing ADC Initialization:** The ESP-IDF requires explicit configuration of the internal ADC before it can return raw readings (`gpio_config` for input mode is not enough). The code was completely missing `adc1_config_width()` and `adc1_config_channel_atten()`. These were added to `KM_GPIO_Init` in `km_gpio.c`, initializing all configured analog pins to 12-bit width and `ADC_ATTEN_DB_11` (0-3.3V range).
+3. **Safety Watchdog Skip:** The compressor control logic in `main.c` was originally placed at the very bottom of `control_task`. A safety watchdog placed above it was returning early `if (comms_stale || mission == MISSION_MANUAL)`. During bench-testing without an Orin connected, `comms_stale` evaluated to true, meaning the ADC read and compressor toggle logic was *never* executing. Moved the compressor logic above the safety watchdog. The compressor now builds pressure regardless of the Orin heartbeat (safety-critical since brake pressure is required even in manual/idle modes).
+
+With these fixes flashed, the bench setup successfully reads valid analog ADC pressure values and turns the compressor on until target pressure is reached.

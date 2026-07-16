@@ -45,10 +45,29 @@ esp_err_t KM_GPIO_Init(void)
         PIN_PEDAL_ACC, PIN_PEDAL_BRAKE, PIN_HYDRAULIC_1,
         PIN_PRESSURE_1, PIN_PRESSURE_2, PIN_PRESSURE_3
     };
+    
+    adc1_config_width(ADC_WIDTH_BIT_12);
+    
     for (int i = 0; i < sizeof(adc1_pins)/sizeof(adc1_pins[0]); i++) {
         adc_pin_cfg.pin_bit_mask = 1ULL << adc1_pins[i];
         ret = gpio_config(&adc_pin_cfg);
         if (ret != ESP_OK) return ret;
+        
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+        if (adc1_pins[i] == GPIO_NUM_1) adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11);
+        else if (adc1_pins[i] == GPIO_NUM_2) adc1_config_channel_atten(ADC1_CHANNEL_1, ADC_ATTEN_DB_11);
+        else if (adc1_pins[i] == GPIO_NUM_4) adc1_config_channel_atten(ADC1_CHANNEL_3, ADC_ATTEN_DB_11);
+        else if (adc1_pins[i] == GPIO_NUM_5) adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_11);
+        else if (adc1_pins[i] == GPIO_NUM_6) adc1_config_channel_atten(ADC1_CHANNEL_5, ADC_ATTEN_DB_11); // PRESSURE_1
+        else if (adc1_pins[i] == GPIO_NUM_7) adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_DB_11);
+        else if (adc1_pins[i] == GPIO_NUM_10) adc1_config_channel_atten(ADC1_CHANNEL_9, ADC_ATTEN_DB_11);
+#else
+        if (adc1_pins[i] == GPIO_NUM_36) adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11); // PRESSURE_1
+        else if (adc1_pins[i] == GPIO_NUM_39) adc1_config_channel_atten(ADC1_CHANNEL_3, ADC_ATTEN_DB_11);
+        else if (adc1_pins[i] == GPIO_NUM_34) adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_DB_11);
+        else if (adc1_pins[i] == GPIO_NUM_35) adc1_config_channel_atten(ADC1_CHANNEL_7, ADC_ATTEN_DB_11);
+        else if (adc1_pins[i] == GPIO_NUM_32) adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_11);
+#endif
     }
 
     // ADC2 pins (si se usan)
@@ -81,9 +100,9 @@ esp_err_t KM_GPIO_Init(void)
         .spics_io_num = SPI_CS_PIN,
         .queue_size = 1
     };
-    ret = spi_bus_initialize(SPI_HOST, &buscfg, SPI_DMA_CH_AUTO);
+    ret = spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO);
     if (ret != ESP_OK) return ret;
-    ret = spi_bus_add_device(SPI_HOST, &devcfg, &mcp4922_handle);
+    ret = spi_bus_add_device(SPI2_HOST, &devcfg, &mcp4922_handle);
     if (ret != ESP_OK) return ret;
 #endif
 
@@ -162,6 +181,19 @@ esp_err_t KM_GPIO_Init(void)
     // ret = uart_driver_install(UART_NUM_2, 1024, 0, 0, NULL, 0);
     // if (ret != ESP_OK) return ret;
 
+#ifdef PIN_CMD_COMPRESSOR
+    gpio_config_t comp_cfg = {
+        .pin_bit_mask = 1ULL << PIN_CMD_COMPRESSOR,
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    ret = gpio_config(&comp_cfg);
+    if (ret != ESP_OK) return ret;
+    KM_GPIO_WriteDigital(PIN_CMD_COMPRESSOR, 0); // Turn off by default
+#endif
+
     return ESP_OK;
 }
 
@@ -187,6 +219,15 @@ uint16_t KM_GPIO_ReadADC(gpio_num_t pin)
 
     switch (gpio)
     {
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+        case GPIO_NUM_1: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_0); // pressure 3 / AS5600 PWM
+        case GPIO_NUM_2: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_1); // hydraulic 2
+        case GPIO_NUM_4: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_3); // pedal acc
+        case GPIO_NUM_5: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_4); // pedal brake
+        case GPIO_NUM_6: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_5); // pressure 1
+        case GPIO_NUM_7: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_6); // pressure 2
+        case GPIO_NUM_10: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_9); // hydraulic 1
+#else
         case GPIO_NUM_36: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_0); // pressure 1
         case GPIO_NUM_39: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_3); // pressure 2
         case GPIO_NUM_34: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_6); // pressure 3
@@ -200,6 +241,7 @@ uint16_t KM_GPIO_ReadADC(gpio_num_t pin)
             if (adc2_get_raw(ADC2_CHANNEL_6, ADC_WIDTH_BIT_12, &raw_out_adc2) == ESP_OK)
                 return raw_out_adc2;
             return 0;
+#endif
             
         default: 
             return 0;
@@ -212,8 +254,20 @@ esp_err_t KM_GPIO_WriteDAC(gpio_num_t pin, uint8_t value)
 {
     gpio_num_t gpio = (gpio_num_t)pin;
 
-    if (gpio == PIN_CMD_ACC) return dac_output_voltage(DAC_CHAN_0, value);
-    if (gpio == PIN_CMD_BRAKE) return dac_output_voltage(DAC_CHAN_1, value);
+    if (gpio == PIN_CMD_ACC) {
+#ifdef CONFIG_IDF_TARGET_ESP32
+        return dac_output_voltage(DAC_CHAN_0, value);
+#else
+        return ESP_OK; // TODO: Implement MCP4922 SPI write for S3
+#endif
+    }
+    if (gpio == PIN_CMD_BRAKE) {
+#ifdef CONFIG_IDF_TARGET_ESP32
+        return dac_output_voltage(DAC_CHAN_1, value);
+#else
+        return ESP_OK; // TODO: Implement MCP4922 SPI write for S3
+#endif
+    }
 
     return ESP_ERR_INVALID_ARG;
 }

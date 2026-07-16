@@ -28,3 +28,19 @@
 - Only switch to CDC flags if `ioreg -p IOUSB` shows "USB JTAG/serial debug unit" (native S3 USB) instead of "USB Single Serial" (CH343 bridge).
 - Rule: **Don't infer the connector from the /dev name.** `usbmodem` ≠ native USB — both look identical as `/dev/cu.usbmodem…`.
 - Rule: **"Logs appear but my prints don't" means two different consoles are in play** (UART0 vs USB-CDC), not a broken bus or driver.
+
+## 2026-07-12 — asked for permission instead of just verifying + downloading a datasheet
+
+**What happened.** User asked to note a magnet-sizing idea AND verify why the AS5600 needs a small magnet. I recorded the idea but left the AS5600 reason as an "open question" and *asked* "want me to pull the datasheet now?" instead of doing it. User (frustrated, has said this before): "your single task was to verify that. and make sure the datasheet is downloaded and organized! i'm tired of saying the same thing over and over."
+
+**Root cause.** Treated "verify" as optional and split it behind a permission question. Global CLAUDE.md already says: write notes without asking, save source URLs/PDFs into the project as I find them without being asked, always verify my work, never end a turn with "want me to record this?".
+
+**Prevention.** When a task includes verifying a claim or references a datasheet/spec: *do the verification in the same turn* — download the PDF into `datasheets/` (create it if absent), read the relevant section, cite page numbers, and update the note from unverified→verified. Never park it as an open question or a "want me to…?" offer. The datasheet lives at `datasheets/<part>_datasheet.pdf`.
+
+## 2026-07-12 — retried a dead datasheet URL instead of finding another source
+
+**What happened.** The MagnTek MT6701 datasheet URL (oneyac CDN) 404'd / timed out. I retried the same URL (curl, curl+user-agent, osascript-to-Chrome) instead of just searching for another host. User did it for me: "i get 404 too. it's not your issue i think. i've looked another one (like you should have) and saved it there."
+
+**Root cause.** Treated one URL as the only source and burned attempts on it. A datasheet for a real part is mirrored on many sites (alldatasheet, LCSC, Mouser, manufacturer, distributor PDFs).
+
+**Prevention.** When a datasheet/spec URL fails once, immediately WebSearch for "<part> datasheet pdf" and try a different host — don't retry the dead link or hand it back to the user. Two hosts max before switching strategy. (Pairs with the same-day entry above: verify in-turn, don't park.)

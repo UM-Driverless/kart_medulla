@@ -17,6 +17,7 @@
 #include "driver/ledc.h"
 #include "driver/i2c.h"
 #include "driver/uart.h"
+#include "driver/spi_master.h"
 #include "esp_err.h"
 
 /******************************* DEFINES PÚBLICAS *****************************/
@@ -33,6 +34,71 @@
  *  ESP32-DevKitC V4  (ESP32-WROOM-32E)
  *  Pin assignment - NO WiFi
  * ============================================================ */
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+/* ============================================================
+ *  ESP32-S3 — kart-medulla PCB (the real bench/kart hardware)
+ *  Authoritative map: .agents/esp32s3-pinmap.md (from the schematic).
+ *  Pin count/functions differ from the classic map below — this is a
+ *  remap, not a renumber. Several functional gaps remain (see the
+ *  GAP notes); the classic ESP32 build is still the one that runs today.
+ * ============================================================ */
+
+/* ---------- UART0 (USB bridge / CH343) — debug console + Orin binary comms ---------- */
+#define PIN_USB_UART_TX         GPIO_NUM_43  // U0TXD (dev-board USB-UART bridge)
+#define PIN_USB_UART_RX         GPIO_NUM_44  // U0RXD
+/* No separate UART2-to-Orin on S3 (GPIO16/17 are Hall/steer-dir here).
+ * Orin comms ride UART0 — these alias it so shared code still compiles. */
+#define PIN_ORIN_UART_TX        GPIO_NUM_43
+#define PIN_ORIN_UART_RX        GPIO_NUM_44
+
+/* ---------- ADC1 inputs (GPIO1-10 = ADC1 on S3; ADC2 unusable with WiFi) ---------- */
+#define PIN_PRESSURE_3          GPIO_NUM_1   // CN5.2 — ALSO the AS5600 PWM-angle read pin
+#define PIN_HYDRAULIC_2         GPIO_NUM_2
+#define PIN_PEDAL_ACC           GPIO_NUM_4
+#define PIN_PEDAL_BRAKE         GPIO_NUM_5
+#define PIN_PRESSURE_1          GPIO_NUM_6
+#define PIN_PRESSURE_2          GPIO_NUM_7
+#define PIN_HYDRAULIC_1         GPIO_NUM_10
+
+/* ---------- EBS compressor (ex-BUZZER net, CN8.2) ---------- */
+#define PIN_CMD_COMPRESSOR      GPIO_NUM_3   // GAP: no driver drives this yet
+
+/* ---------- I2C — AS5600 (0x36) + on-board PCF8574 (0x20) ---------- */
+#define PIN_I2C_SDA             GPIO_NUM_8
+#define PIN_I2C_SCL             GPIO_NUM_9
+
+/* ---------- SPI → MCP4922 external DAC (throttle/brake) ---------- */
+/* S3 has NO built-in DAC; throttle/brake go through the MCP4922 over SPI.
+ * GAP: KM_GPIO_WriteDAC() still calls the classic dac_output_voltage() and
+ * is not ported to SPI — the S3 build will not link until that is done. */
+#define SPI_MOSI_PIN            GPIO_NUM_11
+#define SPI_SCLK_PIN            GPIO_NUM_12
+#define SPI_MISO_PIN            GPIO_NUM_13
+#define SPI_CS_PIN              GPIO_NUM_14
+#define PIN_CMD_ACC             GPIO_NUM_NC  // MCP4922 channel, not a GPIO (sentinel)
+#define PIN_CMD_BRAKE           GPIO_NUM_NC  // MCP4922 channel, not a GPIO (sentinel)
+#define PIN_SELECT_THROTTLE     GPIO_NUM_15  // MAX4660 mux; drive HIGH = throttle via DAC. GAP: not driven
+
+/* ---------- STEERING MOTOR (Cytron H-bridge) ---------- */
+#define PIN_STEER_PWM           GPIO_NUM_40  // LEDC PWM
+#define PIN_STEER_DIR           GPIO_NUM_17  // direction
+
+/* ---------- HALL SENSORS (via U5 level shifter; all three usable on S3) ---------- */
+#define PIN_MOTOR_HALL_1        GPIO_NUM_16
+#define PIN_MOTOR_HALL_2        GPIO_NUM_47
+#define PIN_MOTOR_HALL_3        GPIO_NUM_21
+
+/* ---------- SDC (Shutdown Circuit) — SAFETY ---------- */
+/* Gate of Q3 (IRLZ44N). HIGH = Q3 conducts = chain closed = NO emergency.
+ * Held OFF at boot by R23 pulldown → kart sits in emergency until firmware
+ * drives it HIGH. GAP: nothing drives it yet, so the kart cannot be armed. */
+#define PIN_SDC_NOT_EMERGENCY   GPIO_NUM_18
+
+/* ---------- STATUS LED ---------- */
+#define PIN_STATUS_LED          GPIO_NUM_48  // dev-board addressable RGB. GAP: needs RMT, not plain GPIO
+
+#else  /* CONFIG_IDF_TARGET_ESP32 — classic ESP32-WROOM-32E (current build) */
 
 /* ---------- USB (UART0 - debug console) ---------- */
 #define PIN_USB_UART_TX         GPIO_NUM_1   // U0TXD
@@ -80,6 +146,8 @@
 
 /* ---------- STATUS LED ---------- */
 #define PIN_STATUS_LED          GPIO_NUM_2   // Strap pin (keep LOW at boot)
+
+#endif  /* target select */
 
 /* ============================================================
  *  GPIO RESTRICTIONS (DO NOT USE)

@@ -4,7 +4,7 @@ ESP32-based control system for the UM Driverless autonomous go-kart. Receives co
 
 ## Hardware Overview
 
-* **Microcontroller:** ESP32-WROOM-32E (DevKitC V4)
+* **Microcontroller:** ESP32-S3 (DevKitC-1, kart-medulla PCB)
 * **Steering Sensor:** AS5600 magnetic angle encoder (I2C)
 * **Steering Motor:** Cytron H-bridge (PWM + DIR)
 * **Throttle/Brake:** DAC analog outputs
@@ -13,6 +13,15 @@ ESP32-based control system for the UM Driverless autonomous go-kart. Receives co
 ## Pin Configuration
 
 All pin assignments are defined in [`components/km_gpio/km_gpio.h`](components/km_gpio/km_gpio.h).
+
+### Repurposed pins (current hardware — read this first)
+
+Two nets on the actual kart-medulla PCB no longer do what their original name says. The firmware header hasn't caught up; the authoritative map is [`.agents/esp32s3-pinmap.md`](.agents/esp32s3-pinmap.md).
+
+- **BUZZER → EBS compressor MOSFET.** The old buzzer output now drives the compressor gate (net renamed `CMD_COMPRESSOR_PWM`, terminal CN8.2). The buzzer itself was dropped. On the S3 board this is GPIO 3.
+- **PRESSURE_3 → steering-sensor PWM input.** The Pressure-3 terminal (CN5.2) now reads the AS5600's PWM angle output instead of a pressure transducer (keep R8 series, remove the R9/R10 pulldown). On the S3 board this is GPIO 1.
+
+The firmware now supports the ESP32-S3 board natively via the `esp32-s3-devkitc-1` PlatformIO target, which automatically applies the correct pinmap from [`.agents/esp32s3-pinmap.md`](.agents/esp32s3-pinmap.md). (The classic ESP32-WROOM-32E pinmap is still available for legacy testing using `esp32dev`).
 
 ### Actuator Outputs
 
@@ -122,11 +131,11 @@ PWM limit is kept low to protect steering gears during testing. Increase gradual
 ## Building and Flashing
 
 ```bash
-# Build
-pio run -e esp32dev
+# Build for ESP32-S3
+pio run -e esp32-s3-devkitc-1
 
 # Flash (from Orin, where ESP32 is connected via USB)
-pio run -t upload -e esp32dev --upload-port /dev/ttyUSB0
+pio run -t upload -e esp32-s3-devkitc-1 --upload-port /dev/ttyACM0
 
 # Monitor serial
 pio device monitor

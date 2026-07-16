@@ -1,5 +1,15 @@
 # Agent Development Notes
 
+## Hardware is ESP32-S3 (READ THIS FIRST)
+
+**The physical bench/kart board is an ESP32-S3.** The firmware in this repo now fully builds for the ESP32-S3 (`platformio.ini` uses `[env:esp32-s3-devkitc-1]`; `components/km_gpio/km_gpio.h` uses the `CONFIG_IDF_TARGET_ESP32S3` pin map). The legacy classic ESP32 build (`esp32dev`) is still kept for fallback purposes, but the S3 is the primary target.
+
+- **Authoritative pin map for the real board:** [`.agents/esp32s3-pinmap.md`](.agents/esp32s3-pinmap.md). Key pins that differ from the classic map:
+  - **I²C (AS5600 steering encoder):** SDA = **GPIO 8**, SCL = **GPIO 9** (classic map says 21/22).
+  - **AS5600 PWM angle output** is read on **GPIO 1** (the ex-`PRESSURE_3` terminal CN5.2). This is the pin we use to read the steering-sensor PWM.
+  - **EBS compressor MOSFET** is on **GPIO 3** (the ex-`BUZZER` net, now `CMD_COMPRESSOR_PWM`, CN8.2).
+- **USB bridge is a WCH CH343** (VID 0x1A86 / PID 0x55D3) → shows up as `/dev/cu.usbmodem*`. This does NOT mean native-USB / does NOT tell you classic-vs-S3 on its own. Serial goes over UART0 through the bridge, so bench builds use **`ARDUINO_USB_CDC_ON_BOOT=0`** (see `history.md` / error-log on Mac bench flashing).
+- When bench-testing the steering sensor: talk to the AS5600 over **I²C on GPIO 8/9** (gives RAW angle + MD/ML/MH status flags); the GPIO 1 path is the production PWM read.
 
 ## Branch Workflow (READ THIS)
 
@@ -13,7 +23,7 @@
 
 ## Files
 - `.agents/error-log.md` — **consult selectively** (grep for relevant entries before working on an area)
-- `history.md` (repo root, NOT `.agents/`) — **consult selectively** (dated log of what happened/was learned; append-only, newest at the end)
+- `history.md` (repo root, NOT `.agents/`) — **MANDATORY: All progress, issues encountered, how they were solved, and what was learned MUST be noted here** (append-only, newest at the end)
 - `.agents/adding-messages.md` — **reference** (read when adding new message types)
 
 ## Repository Structure
@@ -113,18 +123,13 @@ Frame format: `| SOF(0xAA) | LEN | TYPE | PAYLOAD... | CRC8 |`
 
 ### Hardware
 
-> **The table below is the CLASSIC-ESP32 pin map (ESP32-WROOM-32E), and it is the only one
-> this repo builds. The kart-medulla PCB now carries an ESP32-S3 (WROOM-1-N16R8).**
-> The S3 port does not exist yet: `platformio.ini` has only the `esp32dev` and `native` envs,
-> and the `CONFIG_IDF_TARGET_ESP32S3` branch in `km_gpio.c` references `SPI_MOSI_PIN` /
-> `SPI_SCLK_PIN` / `SPI_CS_PIN`, which are defined nowhere — it cannot compile.
+> **The table below is the CLASSIC-ESP32 pin map (ESP32-WROOM-32E).**
+> The kart-medulla PCB now carries an ESP32-S3 (WROOM-1-N16R8), and the firmware fully supports it via the `esp32-s3-devkitc-1` environment in `platformio.ini`.
 >
-> **Do not port by switching the board target.** The pin numbers below mean different things
-> on the S3. Most dangerous: `PIN_STEER_PWM = 18`, but on the S3 board **GPIO 18 is the gate of
-> Q3, the shutdown-circuit MOSFET**. See `.agents/error-log.md` (2026-07-10).
+> **When working on the S3 board, use the authoritative S3 pinout:**
+> `dv-hardware/projects/kart-medulla/docs/pinout-esp32-s3.md` (the schematic wins where they disagree).
 >
-> Authoritative S3 pinout: `dv-hardware/projects/kart-medulla/docs/pinout-esp32-s3.md`
-> (the schematic wins where they disagree). GPIO 33-37 are consumed by the S3's octal PSRAM.
+> *Note:* The S3 board assigns critical functions to different pins (e.g. `PIN_CMD_COMPRESSOR` is GPIO 3, whereas the classic map lacks this). Ensure you use the proper target environment.
 
 | Actuator | GPIO | Type | Notes |
 |----------|------|------|-------|
