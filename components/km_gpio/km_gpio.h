@@ -62,7 +62,7 @@
 #define PIN_HYDRAULIC_1         GPIO_NUM_10
 
 /* ---------- EBS compressor (ex-BUZZER net, CN8.2) ---------- */
-#define PIN_CMD_COMPRESSOR      GPIO_NUM_3   // GAP: no driver drives this yet
+#define PIN_CMD_COMPRESSOR      GPIO_NUM_3   // LEDC PWM (soft-start), see COMPRESSOR_PWM_FREQ_HZ
 
 /* ---------- I2C — AS5600 (0x36) + on-board PCF8574 (0x20) ---------- */
 #define PIN_I2C_SDA             GPIO_NUM_8
@@ -148,6 +148,23 @@
 #define PIN_STATUS_LED          GPIO_NUM_2   // Strap pin (keep LOW at boot)
 
 #endif  /* target select */
+
+/* ============================================================
+ *  COMPRESSOR PWM
+ *  The MOSFET gate is driven straight from a 3.3 V GPIO through a series
+ *  resistor, so it switches slowly and never fully enhances. Both effects
+ *  push us to a LOW carrier frequency: every edge costs energy, and the
+ *  fewer edges per second, the less the MOSFET heats.
+ *  500 Hz (2 ms period) sits between the two limits:
+ *   - Switching loss: edges take a few µs, so <1% of the period is spent
+ *     in transition. At 20 kHz that would be ~10% and the MOSFET cooks.
+ *   - Current ripple: the motor's electrical time constant is a few ms,
+ *     so a 2 ms period still filters into fairly smooth current. Going
+ *     much below ~200 Hz lets current pulse hard again, which is exactly
+ *     the 12 V rail disturbance the soft-start exists to avoid.
+ *  If the MOSFET runs hot, lower this before touching the duty cap.
+ * ============================================================ */
+#define COMPRESSOR_PWM_FREQ_HZ  500
 
 /* ============================================================
  *  GPIO RESTRICTIONS (DO NOT USE)
@@ -274,11 +291,15 @@ esp_err_t KM_GPIO_WriteDAC(gpio_num_t pin, uint8_t value);
 /* ---------- PWM ---------- */
 
 /**
- * @brief   Sets the PWM duty cycle for the steering motor.
+ * @brief   Sets the PWM duty cycle for a PWM output.
  *
- * @param   pin   GPIO number of the PWM output (must be PIN_STEER_PWM).
+ * @details Two independent outputs are supported, each on its own LEDC timer:
+ *          PIN_STEER_PWM at 1 kHz, and PIN_CMD_COMPRESSOR at
+ *          COMPRESSOR_PWM_FREQ_HZ (S3 target only).
+ *
+ * @param   pin   GPIO number of the PWM output.
  * @param   duty  Duty cycle value (0-255, 8-bit resolution).
- * @return  ESP_OK on success, ESP_ERR_INVALID_ARG if the pin is not PIN_STEER_PWM.
+ * @return  ESP_OK on success, ESP_ERR_INVALID_ARG if the pin is not a PWM output.
  */
 esp_err_t KM_GPIO_WritePWM(gpio_num_t pin, uint32_t duty);
 

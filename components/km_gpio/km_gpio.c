@@ -182,16 +182,27 @@ esp_err_t KM_GPIO_Init(void)
     // if (ret != ESP_OK) return ret;
 
 #ifdef PIN_CMD_COMPRESSOR
-    gpio_config_t comp_cfg = {
-        .pin_bit_mask = 1ULL << PIN_CMD_COMPRESSOR,
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE
+    /* ---------- Compressor PWM (LEDC, own timer: different freq to steering) ---------- */
+    ledc_timer_config_t comp_timer = {
+        .speed_mode = LEDC_HIGH_SPEED_MODE,
+        .duty_resolution = LEDC_TIMER_8_BIT,
+        .timer_num = LEDC_TIMER_1,
+        .freq_hz = COMPRESSOR_PWM_FREQ_HZ,
+        .clk_cfg = LEDC_AUTO_CLK
     };
-    ret = gpio_config(&comp_cfg);
+    ret = ledc_timer_config(&comp_timer);
     if (ret != ESP_OK) return ret;
-    KM_GPIO_WriteDigital(PIN_CMD_COMPRESSOR, 0); // Turn off by default
+
+    ledc_channel_config_t comp_channel = {
+        .gpio_num = (gpio_num_t)PIN_CMD_COMPRESSOR,
+        .speed_mode = LEDC_HIGH_SPEED_MODE,
+        .channel = LEDC_CHANNEL_1,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_1,
+        .duty = 0   // compressor off until control_task ramps it up
+    };
+    ret = ledc_channel_config(&comp_channel);
+    if (ret != ESP_OK) return ret;
 #endif
 
     return ESP_OK;
@@ -283,6 +294,14 @@ esp_err_t KM_GPIO_WritePWM(gpio_num_t pin, uint32_t duty)
         ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, duty);
         return ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
     }
+
+#ifdef PIN_CMD_COMPRESSOR
+    if (gpio == PIN_CMD_COMPRESSOR) // EBS compressor PWM
+    {
+        ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1, duty);
+        return ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1);
+    }
+#endif
 
     return ESP_ERR_INVALID_ARG;
 }

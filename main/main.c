@@ -35,6 +35,25 @@ static const char *TAG = "MAIN";
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
 #define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
 
+/* ---------- EBS compressor soft-start ----------
+ * Snapping the compressor to full duty is a near-short: the motor is stationary,
+ * so it produces no back-EMF and the only thing limiting current is the winding
+ * resistance (~40-50 A). That spike browns out the 12 V regulator and drops the
+ * USB ground loop. Ramping the duty gives the motor time to spin up and generate
+ * back-EMF, which chokes the current off on its own.
+ *
+ * COMPRESSOR_DUTY_MAX is an EXPERIMENT, not a final value. The MOSFET gate is
+ * driven from a 3.3 V GPIO through a series resistor, so it never fully enhances
+ * and its Rds(on) is worse than the datasheet's Vgs=10 V figure — it will run
+ * hotter than the numbers suggest. Start at 60%, feel the MOSFET after a full
+ * pump-up cycle, and only then decide whether to go toward 255 (100% = DC, no
+ * switching loss at all) or add a gate driver. If it is too hot at 60%, lower
+ * COMPRESSOR_PWM_FREQ_HZ (km_gpio.h) first — that cuts switching loss without
+ * cutting airflow.
+ */
+#define COMPRESSOR_DUTY_MAX      153   // 60% of 255 (8-bit LEDC duty)
+#define COMPRESSOR_SOFT_START_MS 1000  // linear 0 → COMPRESSOR_DUTY_MAX over this long
+
 /**
  * @brief Context shared between the control and health tasks.
  */
@@ -86,42 +105,58 @@ void control_task(void *ctx) {
 
     // Send feedback FIRST (use last known value) so frames arrive even if I2C blocks
     static float last_pid_out = 0.0f;
-    static uint16_t last_pres1_adc = 0; // Keep track for telemetry
-    int32_t fb[4] = {
+    static uint16_t last_pres1_adc = 0;  // Keep track for telemetry
+    static uint8_t last_comp_duty = 0;   // Compressor PWM duty (0-255), for telemetry
+    int32_t fb[5] = {
         (int32_t)KM_OBJ_GetObjectValue(ACTUAL_STEERING),  // angle_rad x 1000
         (int32_t)c->sdir->lastRawValue,                    // raw encoder
         (int32_t)(last_pid_out * 1000),                    // PID output (PWM duty) x 1000
-        (int32_t)last_pres1_adc                            // Pressure ADC value
+        (int32_t)last_pres1_adc,                           // Pressure ADC value
+        (int32_t)last_comp_duty                            // Compressor PWM duty (0-255)
     };
-    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 4);
+    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 5);
 
     // Read sensor — AS5600 already positive=left, matches our convention
     float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
     KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
 
-    // --- Compressor control logic (Hysteresis) ---
+    TickType_t now = xTaskGetTickCount();
+
+    // --- Compressor control logic (hysteresis + soft-start ramp) ---
     // Assuming 5V/3.3V sensor mapping, calibrate ADC_1_BAR and ADC_2_BAR for your exact sensor.
     // 0-4095 range. Here we assume a rough map where 1 bar = 819 and 2 bar = 1638.
-    const uint16_t ADC_1_BAR = 819; 
-    const uint16_t ADC_2_BAR = 1638; 
-    
+    const uint16_t ADC_1_BAR = 819;
+    const uint16_t ADC_2_BAR = 1638;
+
     uint16_t pres1_adc = KM_GPIO_ReadADC(PIN_PRESSURE_1);
     last_pres1_adc = pres1_adc;
     static bool compressor_active = false;
+    static TickType_t compressor_start_tick = 0;
 
     if (pres1_adc < ADC_1_BAR) {
+        if (!compressor_active) compressor_start_tick = now;  // rising edge → restart the ramp
         compressor_active = true;
     } else if (pres1_adc > ADC_2_BAR) {
         compressor_active = false;
     }
-    
+
+    // Ramp off elapsed time rather than a per-cycle step, so the profile stays a
+    // 1 s ramp regardless of how the control task period is retuned.
+    uint32_t comp_duty = 0;
+    if (compressor_active) {
+        uint32_t elapsed_ms = (uint32_t)(now - compressor_start_tick) * portTICK_PERIOD_MS;
+        comp_duty = (elapsed_ms >= COMPRESSOR_SOFT_START_MS)
+                  ? COMPRESSOR_DUTY_MAX
+                  : (COMPRESSOR_DUTY_MAX * elapsed_ms) / COMPRESSOR_SOFT_START_MS;
+    }
+    last_comp_duty = (uint8_t)comp_duty;
+
 #ifdef PIN_CMD_COMPRESSOR
-    KM_GPIO_WriteDigital(PIN_CMD_COMPRESSOR, compressor_active ? 1 : 0);
+    KM_GPIO_WritePWM(PIN_CMD_COMPRESSOR, comp_duty);
 #endif
 
     // --- Safety: comms watchdog + manual mode ---
     TickType_t last_cmd = KM_COMS_GetLastCmdTick();
-    TickType_t now = xTaskGetTickCount();
     int mission = (int)KM_OBJ_GetObjectValue(MISION_ORIN);
     int comms_stale = (last_cmd == 0) || ((now - last_cmd) > pdMS_TO_TICKS(COMMS_WATCHDOG_MS));
 

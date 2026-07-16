@@ -66,8 +66,11 @@ def main():
                 continue
                 
             if msg_type == 0x04: # ESP_ACT_STEERING
-                if length == 12 or length == 16:
-                    if length == 16:
+                if length in (12, 16, 20):
+                    comp_duty = -1
+                    if length == 20:
+                        val1, val2, val3, pressure, comp_duty = struct.unpack('>iiiii', payload)
+                    elif length == 16:
                         val1, val2, val3, pressure = struct.unpack('>iiii', payload)
                     else:
                         val1, val2, val3 = struct.unpack('>iii', payload)
@@ -75,7 +78,11 @@ def main():
                     angle_rad = val1 / 1000.0
                     raw = val2
                     pid = val3 / 1000.0
-                    print(f"[STEERING/PRESSURE] angle: {angle_rad:.3f} rad, raw: {raw}, pid: {pid:.3f}, pres_adc: {pressure}")
+                    pressure_bar = pressure / 819.0 if pressure >= 0 else 0.0
+                    comp_str = ""
+                    if comp_duty >= 0:
+                        comp_str = f", comp: {comp_duty}/255 ({comp_duty * 100 / 255:.0f}%)"
+                    print(f"[STEERING/PRESSURE] angle: {angle_rad:.3f} rad, raw: {raw}, pid: {pid:.3f}, pres_adc: {pressure} ({pressure_bar:.2f} bar){comp_str}")
             elif msg_type == 0x0B: # ESP_HEALTH_STATUS
                 if length == 16:
                     flags, agc, heap_kb, errors = struct.unpack('>iiii', payload)

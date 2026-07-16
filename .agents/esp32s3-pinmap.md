@@ -18,7 +18,7 @@ gate of Q3, the shutdown-circuit MOSFET.
 |---|---|---|
 | `PRESSURE_3` | 1 | analog in (ADC1) |
 | `HYDRAULIC_2` | 2 | analog in (ADC1) |
-| `BUZZER` | 3 | digital out. Strap pin (JTAG src select), idles high at boot — acceptable |
+| `CMD_COMPRESSOR_PWM` (ex-`BUZZER`) | 3 | LEDC PWM out → compressor MOSFET gate. Strap pin (JTAG src select): **not driven by firmware until `KM_GPIO_Init()` runs**, so the gate state during the ~200 ms boot window is set by hardware alone. Needs a gate pulldown (as R23 does for Q3 on GPIO 18) — see the 2026-07-16 soft-start entry in `history.md`. The old note here said "idles high at boot — acceptable", which was true for a buzzer (a boot chirp is harmless) and is *not* true for a compressor gate |
 | `PEDAL_ACC` | 4 | analog in (ADC1) |
 | `PEDAL_BRAKE` | 5 | analog in (ADC1) |
 | `PRESSURE_1` | 6 | analog in (ADC1) |

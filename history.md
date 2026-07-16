@@ -388,3 +388,82 @@ The `pres_adc` readings were continuously showing exactly `0`, and the compresso
 3. **Safety Watchdog Skip:** The compressor control logic in `main.c` was originally placed at the very bottom of `control_task`. A safety watchdog placed above it was returning early `if (comms_stale || mission == MISSION_MANUAL)`. During bench-testing without an Orin connected, `comms_stale` evaluated to true, meaning the ADC read and compressor toggle logic was *never* executing. Moved the compressor logic above the safety watchdog. The compressor now builds pressure regardless of the Orin heartbeat (safety-critical since brake pressure is required even in manual/idle modes).
 
 With these fixes flashed, the bench setup successfully reads valid analog ADC pressure values and turns the compressor on until target pressure is reached.
+
+## 2026-07-16 — Comms drop when compressor starts (Hardware Bug / TODO)
+
+**Symptom:** When the compressor starts running, telemetry comms from the ESP32 stop arriving immediately.
+**Context:** The ESP32 is powered directly via USB from the Mac, not from the kart's 12V supply. The issue happens exactly when the compressor switches *ON* (so it is not the flyback diode failing on inductive kickback when turning OFF).
+**Possible Causes (Root Cause Identified):**
+1. **Ground Bounce / Ground Loop (Confirmed Highly Likely):** The compressor has a massive inrush current (locked rotor amps) when it first clicks on. Because the USB cable connects the Mac's ground to the ESP32's ground, and the circuit also ties the ESP32's ground to the kart's 12V step-down regulator ground, all grounds are linked. When the compressor surges (e.g. 30+ Amps), that dirty high-current tries to return to the regulator. Due to wire resistance (V = I * R), the local ground potential of the ESP32 is dragged up. A chunk of that heavy return current sees the Mac's USB ground as an alternate path to "zero volts" and shoves its way up the tiny USB wire. The Mac's safety circuitry detects this out-of-spec voltage/current on the USB data/ground lines and instantly drops the port to protect the motherboard.
+2. **EMI (Electromagnetic Interference):** The massive inrush current creates a strong magnetic pulse that could couple into the USB cable, but the ground-loop theory perfectly explains the port dropping instantly on turn-ON.
+
+**Resolution / Next Steps:**
+- **Star Ground Topology:** Wire the compressor's ground directly back to the main 12V regulator in the rear of the kart. This gives the massive current a dedicated, low-resistance path home so it completely bypasses the sensitive logic/USB grounds.
+- **Dedicated GND Nets (Wiring Harness Rule):** We need to strictly separate **"Power GND"** (dirty, high-current: motors, actuators, compressor) and **"Signal GND"** (clean, low-current: ESP32, sensors, logic). They must only meet at a single "Star" point at the regulator. Using different color codes in the harness (e.g., standard Black for Power GND, and Gray or Green/Black for Signal GND) will prevent accidental mixing in the future.
+- **Bench Mitigation:** Run the ESP32 from the kart's step-down converter (no laptop USB connected) and read telemetry over wireless/isolated CAN to definitively prove the USB ground loop.
+
+## 2026-07-16 — Compressor hardware v2 improvements & Software Soft-Start strategy
+
+Following the ground-loop bug analysis, several mitigations were agreed upon to handle the massive inrush current from the portable Xiaomi-style compressor:
+
+**Software Soft-Start (Chosen Solution):**
+Since the compressor is driven by a MOSFET with a freewheeling diode, snapping it instantly to 100% duty cycle at 12V causes a "dead short" condition because the stationary motor has zero back-EMF, causing a 40-50A spike. We decided to implement a software soft-start:
+- `PIN_CMD_COMPRESSOR` will be reconfigured from a digital GPIO to an LEDC PWM output.
+- When pressure drops below 1 bar, `control_task` (running at 100 Hz) will increment the duty cycle by a small step (e.g., +2% per tick) to ramp the motor from 0% to 100% over ~500ms.
+- This allows the motor to spin up and build back-EMF, choking off the current and preventing the 12V regulator brownouts and USB ground-loop disconnects entirely.
+
+**Hardware V2 PCB Improvements (Documented in dv-hardware tasks.md):**
+For the next revision of the kart-medulla PCB, the following design changes were finalized:
+1. **Bulk Capacitance:** Even with soft-start, PWM switching causes high-frequency noise. V2 will include footprints for bulk electrolytic capacitors (e.g., 2x 4700µF 35V in parallel) on the 12V rail adjacent to the compressor MOSFET to act as a local energy reservoir. (SMD 22µF caps are insufficient for motor transients; 25V/35V rating is mandatory to survive inductive spikes).
+2. **Dedicated Compressor MOSFET:** Add a second on-board power MOSFET with proper cooling clearance specifically for the compressor, including a built-in flyback diode (e.g., 3A+ Schottky) directly across the output terminals.
+3. **Pin Repurposing:**
+   - Skip the unused `BUZZER` signal (GPIO 3) and route it as `CMD_COMPRESSOR_PWM`.
+   - Skip `PRESSURE_3` (GPIO 1) and explicitly route it as the PWM input for the AS5600/MT6701 steering sensor.
+4. **Isolated GND Nets:** Physically separate the "Power GND" and "Signal GND" traces on the PCB, meeting only at the main power input connector to enforce Star Grounding.
+
+## 2026-07-16 — Compressor soft-start implemented (firmware)
+
+Implemented the software soft-start planned in the entry above. `CMD_COMPRESSOR_PWM` (GPIO 3) is no
+longer a digital on/off output; it is now an LEDC PWM output on its own timer.
+
+**What was built:**
+- `km_gpio.c`: GPIO 3 moved from `gpio_config()` + `WriteDigital` to `LEDC_TIMER_1` /
+  `LEDC_CHANNEL_1`, 8-bit duty, `COMPRESSOR_PWM_FREQ_HZ` = 500 Hz. It needs its own timer because
+  the steering PWM on `LEDC_TIMER_0` runs at a different frequency (1 kHz), and an LEDC timer
+  carries one frequency for every channel attached to it. `KM_GPIO_WritePWM()` now dispatches on
+  the pin, so it drives either output.
+- `main/main.c`: `control_task` ramps the duty linearly 0 → `COMPRESSOR_DUTY_MAX` over
+  `COMPRESSOR_SOFT_START_MS` (1000 ms) starting from the rising edge of the pressure hysteresis.
+  The ramp is computed from elapsed ticks, not a fixed per-cycle increment, so it stays a 1 s ramp
+  if the control task period is ever retuned. (The original plan said "+2% per tick at 100 Hz", but
+  the control task actually runs at 2 ms / 500 Hz — a per-tick step would have ramped 5x too fast.)
+- Telemetry: `ESP_ACT_STEERING` payload grew from 4 to 5 int32 (duty 0-255 appended).
+  `read_telemetry.py` decodes 12/16/**20**-byte variants, so the ramp is visible live during the
+  bench test.
+
+**Why 500 Hz.** The MOSFET gate is driven straight from a 3.3 V GPIO through a series resistor, so
+it switches slowly and never fully enhances — every edge costs real energy. 500 Hz (2 ms period)
+sits between the two limits: edges take a few µs so under 1% of the period is spent in transition
+(at 20 kHz it would be ~10% and the MOSFET cooks), while the motor's electrical time constant of a
+few ms still filters a 2 ms period into fairly smooth current. Below ~200 Hz the current starts
+pulsing hard again, which is the 12 V rail disturbance the soft-start exists to prevent. If the
+MOSFET runs hot, lower the frequency before lowering the duty cap — it cuts switching loss without
+cutting airflow.
+
+**`COMPRESSOR_DUTY_MAX` = 153 (60%) is an experiment, not a final value.** Because the gate only
+gets 3.3 V, Rds(on) is worse than the datasheet's Vgs=10 V figure and the part will run hotter than
+the numbers suggest. Bench procedure: run a full pump-up cycle, feel the MOSFET, then decide.
+Note 100% duty is actually the *coolest* switching case (DC, no edges at all) — the interesting
+question the 60% test answers is whether continuous switching at partial duty is survivable.
+
+**Open hardware issue found while doing this (NOT fixed, needs a hardware change):**
+GPIO 3 is an ESP32-S3 strapping pin (JTAG source select) and nothing drives it until
+`KM_GPIO_Init()` runs, roughly 200 ms into boot. `.agents/esp32s3-pinmap.md` carried the note
+"idles high at boot — acceptable", which was written when the net was a buzzer — a boot chirp is
+harmless. Driving a compressor MOSFET gate, an undriven gate through that window means the
+compressor can get full 12 V into a stalled motor on *every reset*: exactly the 40-50 A inrush the
+soft-start was built to eliminate. Worse, that spike is itself a plausible cause of a brownout
+reset, which would loop. Firmware cannot fix this — the gate state before `app_main` is hardware.
+It needs a gate pulldown to source (the SDC MOSFET Q3 already does this with R23 100 kΩ on
+GPIO 18). Until a pulldown exists, do not leave the compressor connected to 12 V across a reboot
+unattended. The pinmap note has been corrected.
