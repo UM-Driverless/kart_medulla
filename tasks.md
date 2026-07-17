@@ -20,12 +20,11 @@ GPIO 3 whenever pressure drops below the low threshold.
 **Run:** flash the S3, start `read_telemetry.py`, let pressure fall below the low threshold and
 watch one full pump-up cycle. The line prints the live duty next to the pressure.
 
-**Record four things:**
+**Record three things:**
 1. **MOSFET temperature** after a full cycle — the whole point of the 60% test.
-2. **Rail voltage under load** — a multimeter on the 12 V rail while the compressor runs.
-3. **The duty at which the motor audibly starts turning** (the breakaway duty). Read it off the
+2. **The duty at which the motor audibly starts turning** (the breakaway duty). Read it off the
    telemetry line at the moment it kicks. Below it the motor is a stationary resistor.
-4. **Whether telemetry survives the start** — the old symptom was the USB port dropping the instant
+3. **Whether telemetry survives the start** — the old symptom was the USB port dropping the instant
    the compressor kicked in.
 
 **Then, depending on the result:**
@@ -38,12 +37,9 @@ watch one full pump-up cycle. The line prints the live duty next to the pressure
   Barely changed → conduction-limited, so frequency will not save it: it needs a gate driver, or a
   MOSFET with a decent Rds(on) at Vgs = 3.3 V. **Never raise the duty to fix heat** — that trades a
   hot MOSFET for a burnt motor.
-- **Rail is not 12 V → recompute the duty.** The motor sees the average voltage, which is
-  `(COMPRESSOR_DUTY_RUN / 255) x rail`. The current value of 153 (i.e. 60%) was chosen for a 12 V
-  rail, because 60% of 12 V is 7.2 V — just under the motor's 7.5 V rating. That 60% is not a
-  target in itself; the target is 7.2 V at the motor, and 60% only delivers it if the rail really
-  is 12 V. So set `COMPRESSOR_DUTY_RUN` (in `main.c`) to `255 x 7.2 / measured_rail_voltage`. For
-  example, a rail measuring 13.8 V needs 133 (52%) — leaving it at 153 would feed the motor 8.3 V.
+- **Rail sags hard when it kicks → that is the brownout, and it is the ground-loop symptom**, not a
+  duty problem. Sag pushes the motor voltage *down*, which is harmless to the motor; it is the
+  regulator and the logic rail that suffer. Treat it together with the telemetry check below.
 - **Breakaway duty is well above 0 (expect it) → shorten the ramp and start it near the breakaway.**
   Time spent below breakaway is time feeding a stalled motor — full current, no back-EMF, no
   airflow, no work — so ramping from 0 over a full second lengthens the worst phase. The 1 s figure

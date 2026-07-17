@@ -457,14 +457,23 @@ because the mistake is instructive: the duty had an electrical purpose that firm
 reveal, and I invented a plausible reason for the number instead of asking what it was for.)*
 
 The real reason: **the compressor motor is a 7.5 V part and the rail is 12 V.** The duty cycle is
-what steps the voltage down. With the motor's few-ms electrical time constant filtering the 2 ms
-carrier, current stays continuous and the motor sees the average — duty x rail = 0.60 x 12 V =
-7.2 V, just under its 7.5 V rating. Full duty would put 12 V on a 7.5 V motor (+60%) and cook it.
+what steps the voltage down. The pulse height is always 12 V — duty changes how long it is there,
+not how tall it is — so 7.2 V is not a voltage that exists anywhere in the circuit; it is the
+equivalent DC. The motor integrates the pulses rather than following them, because its current
+never stops: at each turn-off the winding's inductance keeps current circulating through the
+flyback diode, and with a few-ms electrical time constant against an 0.8 ms off-time it barely
+decays. So the motor draws smooth current set by the average — duty x rail = 0.60 x 12 V = 7.2 V,
+just under its 7.5 V rating. (Average, not RMS: RMS would be right for a resistive load, which has
+no inductance to carry current through the off-time, and would give 12 x sqrt(0.6) = 9.3 V.) Full
+duty would put a sustained 12 V on a 7.5 V motor (+60%) and cook it.
 So the compressor is *always* PWM'd; it never runs DC. Two consequences:
 - Raising the duty is never the fix for anything. If the MOSFET runs hot, lower
   `COMPRESSOR_PWM_FREQ_HZ` or add a gate driver.
-- The duty is tied to the *actual* rail voltage. If the rail measures 13.8 V rather than 12 V, 60%
-  delivers 8.3 V and the duty needs lowering. Worth measuring the rail before trusting 153.
+- The duty is tied to the rail voltage, but the rail is a regulated 12 V and Rubén confirmed it, so
+  153 stands. *(This bullet originally speculated the rail might really be 13.8 V and the duty need
+  lowering to 133. That was pattern-matching "12 V system" to a lead-acid battery on float charge —
+  which is not what a regulated buck output does. Left here as the correction: check what actually
+  generates a rail before theorising about its voltage.)*
 
 Because the run duty is permanent, the MOSFET switches continuously forever and never gets to rest
 at DC — so switching loss is a standing condition, not a transient. That is the genuine open

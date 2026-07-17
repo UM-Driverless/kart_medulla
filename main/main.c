@@ -39,14 +39,25 @@ static const char *TAG = "MAIN";
  * The duty cycle does two jobs here.
  *
  * 1. It steps the voltage down, permanently. The compressor motor is rated for
- *    7.5 V and the rail is 12 V, so it must NEVER see full duty: PWM is what
- *    keeps it at its design voltage. With the motor's electrical time constant
- *    (a few ms) filtering a 2 ms carrier, current stays continuous and the motor
- *    sees the average, duty x rail = 0.60 x 12 V = 7.2 V, just under its 7.5 V
- *    rating. So COMPRESSOR_DUTY_RUN is the operating point, not a cap to lift
- *    later — raising it to 255 would put 12 V on a 7.5 V motor and cook it.
- *    Note this ties the duty to the actual rail voltage: if the rail is really
- *    13.8 V rather than 12 V, 60% gives 8.3 V and this needs lowering.
+ *    7.5 V and the rail is a regulated 12 V, so it must NEVER see full duty:
+ *    PWM is what keeps it at its design voltage.
+ *
+ *    The pulse height is always 12 V — duty changes how long it is there, not
+ *    how tall it is — so 7.2 V is not a voltage that appears anywhere in the
+ *    circuit. It is the equivalent DC: the motor behaves as if fed 0.60 x 12 V
+ *    = 7.2 V, just under its 7.5 V rating. It integrates the pulses rather than
+ *    following them, because the winding's current never stops. At each turn-off
+ *    the inductance keeps current circulating through the flyback diode, and
+ *    with an electrical time constant of a few ms against an 0.8 ms off-time it
+ *    barely decays, so the motor draws smooth current set by the average. (Not
+ *    RMS — that would be right for a resistive load, which cannot carry current
+ *    through the off-time.) The rotor's spin-up time is longer still, hundreds
+ *    of times the 2 ms period, so speed cannot respond to individual pulses.
+ *
+ *    So COMPRESSOR_DUTY_RUN is the operating point, not a cap to lift later —
+ *    raising it to 255 would put a sustained 12 V on a 7.5 V motor and cook it.
+ *    The 7.5 V rating is a thermal/brush limit, not an insulation limit: the
+ *    danger is sustained current, not the 12 V pulse height.
  *
  * 2. Ramping it in provides the soft-start. Snapping a stationary motor to its
  *    running duty is a near-short: with no back-EMF, only the winding resistance
