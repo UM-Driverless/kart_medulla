@@ -38,9 +38,12 @@ watch one full pump-up cycle. The line prints the live duty next to the pressure
   Barely changed → conduction-limited, so frequency will not save it: it needs a gate driver, or a
   MOSFET with a decent Rds(on) at Vgs = 3.3 V. **Never raise the duty to fix heat** — that trades a
   hot MOSFET for a burnt motor.
-- **Rail is not 12 V → recompute the duty.** `COMPRESSOR_DUTY_RUN` (`main.c`) = 153 assumes 12 V,
-  giving 0.60 x 12 = 7.2 V into a 7.5 V motor. Set it to `255 x 7.2 / V_rail`: a 13.8 V rail wants
-  133 (52%), not 153, or the motor is overvolted.
+- **Rail is not 12 V → recompute the duty.** The motor sees the average voltage, which is
+  `(COMPRESSOR_DUTY_RUN / 255) x rail`. The current value of 153 (i.e. 60%) was chosen for a 12 V
+  rail, because 60% of 12 V is 7.2 V — just under the motor's 7.5 V rating. That 60% is not a
+  target in itself; the target is 7.2 V at the motor, and 60% only delivers it if the rail really
+  is 12 V. So set `COMPRESSOR_DUTY_RUN` (in `main.c`) to `255 x 7.2 / measured_rail_voltage`. For
+  example, a rail measuring 13.8 V needs 133 (52%) — leaving it at 153 would feed the motor 8.3 V.
 - **Breakaway duty is well above 0 (expect it) → shorten the ramp and start it near the breakaway.**
   Time spent below breakaway is time feeding a stalled motor — full current, no back-EMF, no
   airflow, no work — so ramping from 0 over a full second lengthens the worst phase. The 1 s figure
