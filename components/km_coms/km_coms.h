@@ -100,6 +100,7 @@ typedef enum
     ESP_COMPLETE            = 0x09, /**< Full telemetry message */
     ESP_DIAG_STEERING       = 0x0A, /**< AS5600 diagnostic registers (debug) */
     ESP_HEALTH_STATUS       = 0x0B, /**< Periodic health: [flags, status, agc, heap_h, heap_l, err_cnt] */
+    ESP_PNEUMATIC           = 0x0C, /**< Pneumatics telemetry: [tank_pressure_adc, compressor_duty] (~20 Hz) */
 
     // ==========================
     // Orin --> ESP32 (0x20 - 0x3F)

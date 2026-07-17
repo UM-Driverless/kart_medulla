@@ -67,22 +67,23 @@ def main():
                 
             if msg_type == 0x04: # ESP_ACT_STEERING
                 if length in (12, 16, 20):
-                    comp_duty = -1
-                    if length == 20:
-                        val1, val2, val3, pressure, comp_duty = struct.unpack('>iiiii', payload)
-                    elif length == 16:
-                        val1, val2, val3, pressure = struct.unpack('>iiii', payload)
-                    else:
-                        val1, val2, val3 = struct.unpack('>iii', payload)
-                        pressure = -1
+                    # Historic frames carried pressure/comp_duty in fields 4-5;
+                    # those now live in ESP_PNEUMATIC (0x0C). Read only the 3 core
+                    # fields so both old and new firmware decode.
+                    val1, val2, val3 = struct.unpack('>iii', payload[:12])
                     angle_rad = val1 / 1000.0
                     raw = val2
                     pid = val3 / 1000.0
-                    pressure_bar = pressure / 819.0 if pressure >= 0 else 0.0
-                    comp_str = ""
-                    if comp_duty >= 0:
-                        comp_str = f", comp: {comp_duty}/255 ({comp_duty * 100 / 255:.0f}%)"
-                    print(f"[STEERING/PRESSURE] angle: {angle_rad:.3f} rad, raw: {raw}, pid: {pid:.3f}, pres_adc: {pressure} ({pressure_bar:.2f} bar){comp_str}")
+                    print(f"[STEERING] angle: {angle_rad:.3f} rad, raw: {raw}, pid: {pid:.3f}")
+            elif msg_type == 0x0C: # ESP_PNEUMATIC
+                if length == 8:
+                    pressure, comp_duty = struct.unpack('>ii', payload)
+                    # verified calibration (kart-brain tasks.md): SDE5 1 V/bar, ÷3 divider,
+                    # bar = 3.0 * V_adc; raw ADC → V via linear 12-bit / 3.3 V model.
+                    pressure_bar = 3.0 * (pressure / 4095.0 * 3.3)
+                    state = "ON" if comp_duty > 0 else "off"
+                    print(f"[PNEUMATIC] pres_adc: {pressure} ({pressure_bar:.2f} bar), "
+                          f"compressor: {state} {comp_duty}/255 ({comp_duty * 100 / 255:.0f}%)")
             elif msg_type == 0x0B: # ESP_HEALTH_STATUS
                 if length == 16:
                     flags, agc, heap_kb, errors = struct.unpack('>iiii', payload)

@@ -125,18 +125,16 @@ void comms_task(void *ctx) {
 void control_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
 
-    // Send feedback FIRST (use last known value) so frames arrive even if I2C blocks
+    // Send feedback FIRST (use last known value) so frames arrive even if I2C blocks.
+    // Pneumatics (tank pressure + compressor duty) are NOT here — they ride their own
+    // ESP_PNEUMATIC frame, sent throttled further down.
     static float last_pid_out = 0.0f;
-    static uint16_t last_pres1_adc = 0;  // Keep track for telemetry
-    static uint8_t last_comp_duty = 0;   // Compressor PWM duty (0-255), for telemetry
-    int32_t fb[5] = {
+    int32_t fb[3] = {
         (int32_t)KM_OBJ_GetObjectValue(ACTUAL_STEERING),  // angle_rad x 1000
         (int32_t)c->sdir->lastRawValue,                    // raw encoder
-        (int32_t)(last_pid_out * 1000),                    // PID output (PWM duty) x 1000
-        (int32_t)last_pres1_adc,                           // Pressure ADC value
-        (int32_t)last_comp_duty                            // Compressor PWM duty (0-255)
+        (int32_t)(last_pid_out * 1000)                     // PID output (PWM duty) x 1000
     };
-    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 5);
+    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 3);
 
     // Read sensor — AS5600 already positive=left, matches our convention
     float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
@@ -151,7 +149,6 @@ void control_task(void *ctx) {
     const uint16_t ADC_2_BAR = 1638;
 
     uint16_t pres1_adc = KM_GPIO_ReadADC(PIN_PRESSURE_1);
-    last_pres1_adc = pres1_adc;
     static bool compressor_active = false;
     static TickType_t compressor_start_tick = 0;
 
@@ -172,11 +169,25 @@ void control_task(void *ctx) {
                   ? COMPRESSOR_DUTY_RUN
                   : (COMPRESSOR_DUTY_RUN * elapsed_ms) / COMPRESSOR_SOFT_START_MS;
     }
-    last_comp_duty = (uint8_t)comp_duty;
-
 #ifdef PIN_CMD_COMPRESSOR
     KM_GPIO_WritePWM(PIN_CMD_COMPRESSOR, comp_duty);
 #endif
+
+    // --- Pneumatics telemetry → Orin (throttled) ---
+    // Tank pressure (raw ADC) + compressor duty (0 = MOSFET off, >0 = on/ramping).
+    // Throttled to ~20 Hz: this task runs at 500 Hz and the steering frame already
+    // uses most of the 115200 UART budget, so sending a second frame every cycle
+    // would overflow it. Pressure changes over seconds and the 1 s soft-start ramp
+    // still gets ~20 samples, so 20 Hz is plenty for the dashboard.
+    static uint16_t pneum_div = 0;
+    if (++pneum_div >= 25) {  // 25 x 2 ms = 50 ms → 20 Hz
+        pneum_div = 0;
+        int32_t pneum[2] = {
+            (int32_t)pres1_adc,        // tank pressure, raw ADC 0-4095
+            (int32_t)comp_duty         // compressor PWM duty 0-255 (0 = off)
+        };
+        KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 2);
+    }
 
     // --- Safety: comms watchdog + manual mode ---
     TickType_t last_cmd = KM_COMS_GetLastCmdTick();

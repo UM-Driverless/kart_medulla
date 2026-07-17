@@ -18,7 +18,12 @@ reasoning in `history.md` 2026-07-16). The compressor now ramps 0 → 60% duty o
 GPIO 3 whenever pressure drops below the low threshold.
 
 **Run:** flash the S3, start `read_telemetry.py`, let pressure fall below the low threshold and
-watch one full pump-up cycle. The line prints the live duty next to the pressure.
+watch one full pump-up cycle. The `[PNEUMATIC]` line prints tank pressure + live compressor duty.
+
+Tank pressure and compressor state also now stream to the Orin as a dedicated `ESP_PNEUMATIC`
+(0x0C) frame at ~20 Hz, and the dashboard's System-tab tank dial + compressor bar render them
+(kart-brain, commit on `dev`). So the bench run can be watched either on `read_telemetry.py` or the
+dashboard.
 
 **Record three things:**
 1. **MOSFET temperature** after a full cycle — the whole point of the 60% test.
@@ -53,6 +58,31 @@ watch one full pump-up cycle. The line prints the live duty next to the pressure
   `ADC_1_BAR` / `ADC_2_BAR` in `main.c` are an admitted guess (a rough linear map, 1 bar = 819,
   2 bar = 1638). They decide when the compressor runs at all, so calibrate them against the real
   sensor before reading anything into the rest of the test.
+
+### Compressor pump-on/off thresholds are still uncalibrated (separate from the dashboard bar)
+
+- **`ADC_1_BAR` / `ADC_2_BAR` in `main.c` are wrong and should be recomputed from the verified
+  calibration.** The tank read is now known (verified 2026-07-12, kart-brain tasks.md): PRESSURE_1
+  (CN7.1 → GPIO 6) is the Festo SDE5-D10, 1 V/bar through a ÷3 divider, so `bar = 3.0 * V_adc`
+  → about 414 raw ADC counts per bar. The current thresholds (819, 1638) were a guess of ~2× the
+  real counts-per-bar AND target the wrong pressures: the EBS reservoir operates at 6-10 bar, so
+  the compressor should run below ~6 bar (≈2480 ADC) and stop at ~10 bar (≈4130 ADC), not at the
+  1-2 bar the current numbers imply. Recompute both before the reservoir is run for real. (The
+  dashboard bar reading already uses the verified calibration — this is only the pump control.)
+- **Dashboard bar is a linear-ADC approximation.** kart-brain `protocol.py` converts raw ADC → bar
+  with a linear 12-bit/3.3 V model, which ignores the ESP32-S3 ADC nonlinearity. For an accurate
+  reading, convert in firmware with `esp_adc_cal` (ESP-IDF) and send millivolts instead of raw ADC.
+
+### kart-brain (Orin) side — needs an Orin build + has pre-existing test drift
+
+- **Build `kb_coms_micro` + `kb_dashboard` on the Orin.** The `ESP_PNEUMATIC` C++ publisher was
+  written on the Mac, which has no ROS2/colcon, so it is unbuilt. `colcon build` on the Orin, then
+  confirm `/esp32/pneumatic` publishes and the dashboard tank dial moves.
+- **Pre-existing kart-brain test failures, unrelated to this change (found while adding the
+  pneumatic decoder test).** `test_decode.py` has 3 failures on a clean `dev`: `decode_steering_raw`
+  now returns a 3-tuple but `TestDecodeSteeringRaw` still unpacks 2, and `TestMissions` is missing
+  `autonomous`. These belong on kart-brain's board — noted here only so they aren't mistaken for
+  fallout from the pneumatic work.
 
 ### ESP32-S3 firmware gaps (from `km_gpio.h`; block running on the real board)
 
