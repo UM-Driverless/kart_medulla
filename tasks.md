@@ -11,24 +11,49 @@ this repo that means flashed *and* driven, per the branch workflow in `AGENTS.md
 
 ## TODO
 
-### Compressor bench test (next up)
+### Compressor soft-start bench test — DO THIS FIRST
 
-- **Run the 60% soft-start on the bench and feel the MOSFET.** The gate is driven from 3.3 V
-  through a series resistor, so it switches slowly and never fully enhances; Rds(on) is worse than
-  the datasheet's Vgs=10 V figure. Because the duty is a permanent 60% (the motor is 7.5 V on a
-  12 V rail), the MOSFET switches continuously and never rests at DC — so switching loss is a
-  standing condition. If it runs hot, lower `COMPRESSOR_PWM_FREQ_HZ` (`km_gpio.h`) or add a gate
-  driver; never raise the duty. See `history.md` 2026-07-16.
-- **Measure the actual rail voltage before trusting the 60% figure.** `COMPRESSOR_DUTY_RUN` = 153
-  assumes a 12 V rail, giving 0.60 x 12 = 7.2 V for a 7.5 V motor. If the rail actually sits at
-  13.8 V, 60% delivers 8.3 V and the motor is overvolted — the duty would need lowering.
-- **Confirm the soft-start actually fixed the comms drop.** The ground-loop write-up (`history.md`
-  2026-07-16) predicts the USB port stops dropping when the compressor starts. Watch telemetry
-  across a full pump-up cycle; the duty ramp is now in the `ESP_ACT_STEERING` payload and
-  `read_telemetry.py` prints it live.
-- **Calibrate `ADC_1_BAR` / `ADC_2_BAR` in `main.c`.** They are currently a guessed linear map
-  (1 bar = 819, 2 bar = 1638) with a comment admitting as much. The hysteresis thresholds that
-  decide when the compressor runs are only as good as these numbers.
+The soft-start is written and builds, but has never run on hardware (commits `f09bcf0`, `a95d91a`;
+reasoning in `history.md` 2026-07-16). The compressor now ramps 0 → 60% duty over 1 s at 500 Hz on
+GPIO 3 whenever pressure drops below the low threshold.
+
+**Run:** flash the S3, start `read_telemetry.py`, let pressure fall below the low threshold and
+watch one full pump-up cycle. The line prints the live duty next to the pressure.
+
+**Record four things:**
+1. **MOSFET temperature** after a full cycle — the whole point of the 60% test.
+2. **Rail voltage under load** — a multimeter on the 12 V rail while the compressor runs.
+3. **The duty at which the motor audibly starts turning** (the breakaway duty). Read it off the
+   telemetry line at the moment it kicks. Below it the motor is a stationary resistor.
+4. **Whether telemetry survives the start** — the old symptom was the USB port dropping the instant
+   the compressor kicked in.
+
+**Then, depending on the result:**
+
+- **MOSFET too hot → halve `COMPRESSOR_PWM_FREQ_HZ` (`km_gpio.h`) to 250 Hz and re-run.** That one
+  change also tells you *which* loss dominates, because the two scale differently: switching loss is
+  proportional to frequency, conduction loss is not. Much cooler at 250 Hz → switching-limited,
+  keep lowering (~200 Hz is the floor: below that the motor current goes discontinuous, which both
+  brings back the current pulsing and breaks the average-voltage assumption the 60% duty rests on).
+  Barely changed → conduction-limited, so frequency will not save it: it needs a gate driver, or a
+  MOSFET with a decent Rds(on) at Vgs = 3.3 V. **Never raise the duty to fix heat** — that trades a
+  hot MOSFET for a burnt motor.
+- **Rail is not 12 V → recompute the duty.** `COMPRESSOR_DUTY_RUN` (`main.c`) = 153 assumes 12 V,
+  giving 0.60 x 12 = 7.2 V into a 7.5 V motor. Set it to `255 x 7.2 / V_rail`: a 13.8 V rail wants
+  133 (52%), not 153, or the motor is overvolted.
+- **Breakaway duty is well above 0 (expect it) → shorten the ramp and start it near the breakaway.**
+  Time spent below breakaway is time feeding a stalled motor — full current, no back-EMF, no
+  airflow, no work — so ramping from 0 over a full second lengthens the worst phase. The 1 s figure
+  was a conservative guess, not a measurement; the motor only needs a few times its mechanical
+  spin-up (tens of ms, maybe 100-200 ms with the pump's inertia). Once the breakaway is known, add a
+  start-duty floor just under it and cut `COMPRESSOR_SOFT_START_MS` to roughly 300 ms.
+- **Telemetry still drops when it starts → the soft-start did not fix the ground loop**, so move to
+  the hardware fixes: star grounding and separated power/signal GND (`history.md` 2026-07-16). A
+  lower start duty and a slower ramp are worth one try first, since both cut the peak current.
+- **Compressor never runs, or never stops → suspect the pressure thresholds, not the drive.**
+  `ADC_1_BAR` / `ADC_2_BAR` in `main.c` are an admitted guess (a rough linear map, 1 bar = 819,
+  2 bar = 1638). They decide when the compressor runs at all, so calibrate them against the real
+  sensor before reading anything into the rest of the test.
 
 ### ESP32-S3 firmware gaps (from `km_gpio.h`; block running on the real board)
 
