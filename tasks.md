@@ -181,15 +181,33 @@ Neither model is confirmed and the truth is likely in between, but both point th
 thresholds are non-conservative in exactly the direction that matters. Do not leave the compressor
 running unattended until this is settled.
 
-**Likely causes, in order of suspicion:**
-1. **Ratiometric sensor plus rail sag.** If the SDE5's output scales with its supply, the ~8 A the
-   compressor draws sags the 12 V rail and the sensor output falls with it. Fits a large,
-   load-dependent, fully-recovering error.
-2. **Ground bounce.** The ADC reads the sensor relative to ESP32 ground; heavy compressor return
-   current through a shared ground shifts that reference. Same mechanism already documented in
-   `history.md` behind the USB brownouts.
-3. **PWM noise coupling** into the ADC input, though that would tend to add noise rather than a
-   consistent one-way bias.
+**CAUSE IDENTIFIED 2026-07-18 — ground IR drop, not the sensor.** Rubén: the pressure sensors are
+powered from a **24 V regulator that feeds nothing else**, which rules out supply sag. That leaves
+the shared ground path, and the arithmetic closes:
+
+| | |
+|---|---|
+| Observed shift | 1041 counts = **0.84 V** at the ADC |
+| Resistance needed to cause it at 8 A | **~105 mΩ** |
+| A 0.25 mm x 50 mm 1 oz trace | **96 mΩ → 0.77 V at 8 A** |
+
+The compressor MOSFET switches **low-side on the board**, so while the motor's + comes from the
+battery externally, the full ~8 A return flows through the medulla's ground copper — copper drawn
+for a ~1 mA logic feed (see `dv-hardware` `projects/kart-medulla/requirements.md`). That drop lifts
+the ESP32's ground relative to the sensor's reference at the 24 V regulator. The ADC reads
+`sensor_out − esp32_gnd`, so a rising `esp32_gnd` makes the reading **fall** — sign, magnitude and
+the instant recovery when current stops all match.
+
+**So neither the sensor nor the regulator is faulty.** The ADC is faithfully reporting a difference
+against a reference that moved. This is the same mechanism as the USB brownouts in `history.md`.
+
+**Confirm with one measurement:** DC volts between the 24 V regulator's GND and the ESP32's GND
+while the compressor runs. Expect 0.5–1 V where a shared ground should read ~0 mV. It should also
+scale with compressor current, so it will be smaller at lower duty.
+
+**The fix is therefore grounding, not the sensor:** the motor return must go straight back to the
+regulator and meet signal ground at exactly one star point, with copper sized for the current.
+Logged against medulla-v2 in `dv-hardware` `tasks/kart-medulla.md`.
 
 **Fixes, cheapest first:**
 - **Measure with the motor off** (Rubén's suggestion): pause the compressor briefly, let the reading
