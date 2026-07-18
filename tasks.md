@@ -127,6 +127,57 @@ buy the bare transistor.
 motor's rated 7.5 V. A buck converter set to 7.5 V with a plain on/off switch removes the
 hard-switching problem at its source, at the cost of a part rated for the motor current.
 
+### Pressure reads LOW while the compressor runs — and the current thresholds are calibrated wrong because of it
+
+Observed 2026-07-18: the measured tank pressure sags while the compressor is running and recovers
+once it stops. Rubén's proposed workaround is to stop the compressor periodically so the reading is
+taken with the motor off.
+
+**This is probably not a small offset, and it likely explains the calibration puzzle below.** The
+run that stopped at a gauge-read 7.5 bar was using an OFF threshold of ADC > 1638, yet the settled
+reading afterwards was **2679**. With duty at 0 the tank cannot gain pressure, so the sensor reading
+rose ~1041 counts (~64%) between "running" and "settled" at equal or falling true pressure. That is
+the running bias, not a calibration error in the sensor.
+
+**Safety consequence — check before the next unattended run.** The 7/8 bar thresholds now in
+`main.c` were derived from a **settled** reading (2679 ↔ 7.5 bar) but the control loop evaluates them
+against a **running** reading, which is biased low. So the compressor stops later than intended, and
+the reservoir is rated 10 bar:
+
+- If the bias is a fixed *offset* (~1041 counts), the OFF threshold of 2858 while running is about
+  3899 settled, roughly **10.9 bar — over the reservoir rating**.
+- If it is a fixed *ratio* (~1.64×), 2858 running would need ~4687 settled, which is **past the
+  ADC's 4095 full scale — the threshold could never be reached and the compressor would run until
+  something gives**.
+
+Neither model is confirmed and the truth is likely in between, but both point the same way: the
+thresholds are non-conservative in exactly the direction that matters. Do not leave the compressor
+running unattended until this is settled.
+
+**Likely causes, in order of suspicion:**
+1. **Ratiometric sensor plus rail sag.** If the SDE5's output scales with its supply, the ~8 A the
+   compressor draws sags the 12 V rail and the sensor output falls with it. Fits a large,
+   load-dependent, fully-recovering error.
+2. **Ground bounce.** The ADC reads the sensor relative to ESP32 ground; heavy compressor return
+   current through a shared ground shifts that reference. Same mechanism already documented in
+   `history.md` behind the USB brownouts.
+3. **PWM noise coupling** into the ADC input, though that would tend to add noise rather than a
+   consistent one-way bias.
+
+**Fixes, cheapest first:**
+- **Measure with the motor off** (Rubén's suggestion): pause the compressor briefly, let the reading
+  settle, sample, then decide. Simple and needs no hardware, but it lengthens each cycle and the
+  pause has to be long enough for the rail and the reading to actually recover — measure how long
+  that takes rather than guessing.
+- **Recalibrate the thresholds against RUNNING readings** instead of settled ones. This is the
+  smaller change and it makes the existing control loop correct without pausing anything, but it
+  leaves the measurement wrong for display and for anything else that reads tank pressure.
+- **Fix the cause**: separate the sensor supply/reference from the compressor's power path (star
+  ground, per `history.md`), or move to a sensor that is not ratiometric off the sagging rail.
+
+Distinguishing 1 from 2 is one measurement: log the sensor supply voltage, or the rail, while the
+compressor runs. If the rail sags in proportion to the reading, it is cause 1.
+
 ### Tank pressure thresholds do not match the verified sensor calibration
 
 `main/main.c` sets `ADC_1_BAR = 819` and `ADC_2_BAR = 1638` under a comment admitting it is "a rough

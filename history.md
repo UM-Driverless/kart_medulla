@@ -546,7 +546,10 @@ Follow-up to the bench run above, once the part was identified. The compressor M
 **IRLZ44N** (confirmed from inventory). With the datasheet in hand the "500 Hz vs 250 Hz" decision
 tree can be settled on paper instead of with another run.
 
-**The numbers**, at an assumed 10 A running current, 60% duty, 12 V rail:
+**The numbers**, at an assumed 10 A running current, 60% duty, 12 V rail. *(Superseded: the
+current was measured at 6 A later the same day — see the measurement log at the end of this
+file. The 10 A figures below are left as written for the record, but the 6 A ones are the real
+operating point and the ~360 °C rise quoted here is correspondingly overstated.)*
 
 | Term | Value |
 |---|---|
@@ -610,3 +613,62 @@ over a more cautious step, so the first run with it needs watching. Two things a
 Firmware builds clean for `esp32-s3-devkitc-1` (322 kB flash, 30.8%). Not yet flashed — no board was
 connected at the time (`/dev/cu.*` showed only Bluetooth and the debug console), so the flash and
 the bench observation above are still outstanding.
+
+## 2026-07-18 — Compressor bench measurement log (measured facts, separated from derived ones)
+
+Everything in this section was **observed on the bench by Rubén**, not calculated. It is collected
+here because several earlier entries in this file reason from estimates that these numbers replace.
+Derived figures are marked as such and are only as good as the assumptions behind them.
+
+### Measured
+
+| Quantity | Value | Conditions |
+|---|---|---|
+| Motor running current | **6 A** | 60% duty (`COMPRESSOR_DUTY_RUN` = 153), 500 Hz |
+| Pump-up, first run | **0 → 6 bar in about 1 minute**, continuous | 60% duty |
+| Motor behaviour, first run | **Never stalled**; spun up normally | 60% duty |
+| MOSFET, first run | Smoked, but **survived and still works** — Rubén judged the smoke to be adhesive around the part burning off, not the die | 60% duty |
+| MOSFET temperature | **about 100 °C** | 20% duty (`COMPRESSOR_DUTY_RUN` = 51) |
+| Pump-up, second run | Reached **7.5 bar**, then the hysteresis stopped it | 20% duty |
+| Motor behaviour, second run | **Turns at 20% duty** — so 20% is above the breakaway point | 20% duty |
+| Settled tank reading | ADC **2679** at a gauge-read **7.5 bar**, compressor off | after second run |
+| Pressure reading while running | **Reads low**, recovers when the compressor stops | both runs |
+
+### Parts on hand
+
+- The compressor MOSFET is an **IRLZ44N** (confirmed from inventory).
+- Also available: an **HA210N06 in a 3D-printer hotbed module**, with control-in, DC-in and load
+  terminals, and a heatsink measuring **3 × 2 × 1 cm**.
+- **5 V is available from the USB port** (though see the note below on why it is the wrong supply
+  for gate drive).
+
+### Target operating point requested
+
+Pump up below **7 bar**, stop above **8 bar**, running at **20% duty**. Implemented in `main.c` on
+2026-07-18 as ADC 2500 / 2858, calibrated from the settled 2679 ↔ 7.5 bar point above.
+
+### What these measurements overturned
+
+1. **The cubic duty estimate was wrong.** Dropping 60% → 20% was predicted to give under 0.1 W and
+   about a 30 °C rise. It measured ~100 °C. Back-calculating against Rth(j-a) = 62 °C/W gives ~1.2 W,
+   which at 20% duty implies roughly **8 A — higher than the 6 A measured at 60%**. The estimate had
+   assumed motor current falls with duty; it does not, because the pump works against rising tank
+   pressure, so at low duty the motor turns slowly, generates little back-EMF, and current is set by
+   about (V_avg − back-EMF) / R_winding. *Lowering the duty buys far less thermal margin than it
+   appears to, and 20% is near the useful floor.*
+2. **The MOSFET was never destroyed**, so the 500 Hz vs 250 Hz comparison was never actually blocked
+   — though it is moot regardless, since conduction dominates switching loss by roughly 50×.
+3. **The running-vs-settled discrepancy is large.** The run stopped on an OFF threshold of ADC 1638
+   yet settled at 2679. With duty at 0 the tank cannot gain pressure, so that ~1041-count gap is
+   measurement bias while running, not a sensor calibration error. This has a safety consequence for
+   the 7/8 bar thresholds, which were calibrated on a settled reading but are evaluated against a
+   running one — written up as its own task in `tasks.md`.
+
+### Derived, for contrast (not measured)
+
+At the measured 6 A and 60% duty, with Rds(on) taken as 0.05–0.07 Ω cold at Vgs = 3.3 V and ~1.6×
+that hot (datasheet Fig 4), conduction loss is **1.73–2.42 W** against roughly **0.04 W** of
+switching loss at 500 Hz — conduction dominating about 50×, and a 107–150 °C rise in a bare TO-220.
+A research pass proposed revising this down to 1.08–1.51 W; that was **checked and rejected**,
+because it used the cold Rds(on) and dropped the temperature coefficient. The ~100 °C measured at
+20% duty supports the higher range.
