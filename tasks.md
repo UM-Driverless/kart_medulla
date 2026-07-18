@@ -104,9 +104,36 @@ the symptom: the module drives the gate from its own DC rail instead of from 3.3
 At 10 A its 4 mΩ fully enhanced gives **0.36 W against the IRLZ44N's 5.76 W — 16× less** — and it
 arrives with a heatsink.
 
-Note the bare HA210N06 is **not** a logic-level part: Vgs(th) is 2–4 V, so driven directly from
-GPIO 3 it would be *worse* than the IRLZ44N. The module's driver stage is the whole point; do not
-buy the bare transistor.
+**Datasheet confirmed 2026-07-18** (`datasheets/HA210N06_datasheet.pdf`, Rev 0.9, HL/Haolin):
+
+| | |
+|---|---|
+| Rds(on) | **4 mΩ max @ Vgs = 10 V, Id = 75 A — the ONLY row in the table** |
+| Vgs(th) | min 2 / typ 3 / **max 4 V** |
+| Qg | **135 nC** @ Vgs = 10 V |
+| Ciss | **5800 pF** |
+| Rθja / Rθjc | 62.5 / 0.68 °C/W |
+| Pinout (TO-3P) | 1 = Gate, 2 = Drain, 3 = Source |
+| Note 3 | *"Package limitation current is 50 A"* — the 210 A headline is not the continuous rating |
+
+Three consequences, all pointing the same way:
+
+1. **It is emphatically not a logic-level part, and 3.3 V is below its worst-case threshold.**
+   Vgs(th) max = 4 V, so a worst-case device has not even begun to conduct at 3.3 V. Wired straight
+   to GPIO 3 it would be *worse* than the IRLZ44N, which at least specifies down to 4.0 V. 5 V is
+   only 1 V of overdrive and still completely unspecified.
+2. **Rds(on) is specified at exactly one point, Vgs = 10 V.** Below that the datasheet promises
+   nothing at all — the same trap as the IRLZ44N, one step further.
+3. **The gate is large: Qg = 135 nC, Ciss = 5800 pF**, roughly 3× the IRLZ44N's 48 nC / 1700 pF.
+   Even ignoring voltage, an ESP32 pin at ~20 mA would need ~7 µs to move that charge. Direct GPIO
+   drive is impossible on current as well as on voltage.
+
+**Useful inference about the module:** since 3.3 V is below this part's worst-case threshold, a
+pass-through module (control pin wired to the gate through a resistor) simply would not work with
+the 3.3 V printer boards these are sold for. So the carrier almost certainly *does* boost the gate
+off its DC-IN rail. Confirm before relying on it — measure gate-to-source at the MOSFET pads with
+12 V on DC IN and 3.3 V on Control In. ~10–12 V means a boost stage is present; ~3.3 V means it is
+not, and no MOSFET choice will save it without a driver.
 
 **Three things to check before wiring it in:**
 
