@@ -66,14 +66,37 @@ static const char *TAG = "MAIN";
  *    generate back-EMF, which chokes the current off on its own.
  *
  * Because the run duty is permanent, the MOSFET switches forever — it never gets
- * to rest at DC. That makes switching loss a standing condition, and it is the
- * open question on this hardware: the gate is driven from a 3.3 V GPIO through a
- * series resistor, so it switches slowly and never fully enhances, and its
- * Rds(on) is worse than the datasheet's Vgs=10 V figure. If the MOSFET runs hot,
- * lower COMPRESSOR_PWM_FREQ_HZ (km_gpio.h) or add a gate driver. Do not "fix" it
- * by raising the duty — that trades a hot MOSFET for a burnt motor.
+ * to rest at DC. That is fine: switching loss is NOT what makes it hot. Measured
+ * 2026-07-18 with the part identified as an IRLZ44N and 6 A running current, at
+ * 500 Hz and 60% duty, conduction loss is ~2.1 W against ~0.04 W of switching
+ * loss — conduction dominates about 50x, so halving the frequency changes
+ * essentially nothing. Do not spend a run on it.
+ *
+ * The real problem is that GPIO 3 drives the gate at 3.3 V. The IRLZ44N
+ * datasheet specifies Rds(on) at Vgs = 10 V (0.022 R), 5 V (0.025 R) and 4 V
+ * (0.035 R) and stops there, with Vgs(th) max = 2.0 V, so at 3.3 V it never
+ * fully enhances — call it 0.05-0.07 R cold and ~1.6x that hot. Against
+ * Rth(j-a) = 62 C/W in a bare TO-220 that is a ~130 C rise at 60% duty, which
+ * is what baked the adhesive around the part on the first bench run.
+ *
+ * Two ways out, neither of them the frequency:
+ *   - Drive the gate properly (gate driver, or the HA210N06 hotbed module whose
+ *     driver stage supplies the gate from its own rail). See tasks.md.
+ *   - Lower the duty, which is what this constant now does. Dissipation falls
+ *     roughly cubically, because current and conduction time both drop with it.
+ *
+ * Do NOT "fix" heat by raising the duty — that trades a hot MOSFET for a burnt
+ * motor, and it makes the MOSFET hotter too, since conduction scales with
+ * I^2 x duty and both terms rise.
  */
-#define COMPRESSOR_DUTY_RUN      153   // 60% of 255 → 7.2 V average from a 12 V rail
+// 50% of 255 → 6.0 V average from a 12 V rail. Lowered from 153 (60%, 7.2 V) on
+// 2026-07-18 to get the MOSFET temperature down: at the measured 6 A, 60% gives
+// ~2.1 W (~154 C junction) while 50% gives ~1.2 W (~99 C). Undervolting a 7.5 V
+// motor is safe — it just runs slower and takes longer to reach pressure. The
+// floor is the breakaway duty, below which the motor stalls and draws locked-
+// rotor current with no back-EMF; that value is still unmeasured, so step down
+// gradually and confirm the motor still turns.
+#define COMPRESSOR_DUTY_RUN      128
 #define COMPRESSOR_SOFT_START_MS 1000  // linear 0 → COMPRESSOR_DUTY_RUN over this long
 
 /**
