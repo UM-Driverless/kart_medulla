@@ -129,6 +129,21 @@ them.
   cannot be true of a board whose SDC MOSFET works. Anyone answering a connectivity question from
   that file will get a wrong answer. Re-export it.
 
+### `platformio.ini`'s S3 comment contradicts AGENTS.md — one of them is wrong
+
+The comment above `[env:esp32-s3-devkitc-1]` in `platformio.ini` says the env "does NOT link yet"
+and "exists so the S3 pin map is buildable-in-progress, not because a working S3 image exists".
+`AGENTS.md` says the opposite: "the firmware in this repo now fully builds for the ESP32-S3".
+
+Checked on 2026-07-18: `pio run -e esp32-s3-devkitc-1` links and produces a sized image (RAM 6.4%,
+flash 30.8% of 1 MB). So **AGENTS.md is right and the `platformio.ini` comment is stale** — it
+predates the S3 work in `d420ff2`. Delete or rewrite that comment so it stops telling readers the
+S3 image doesn't exist.
+
+Note the comment's *other* claims were not checked and may still hold: that the throttle/brake DAC
+(MCP4922 over SPI), the PCF8574, and the safety-pin/watchdog drive are still gaps. "It links" is
+not "those peripherals are implemented" — verify separately before treating them as done.
+
 ## In Progress
 
 ## Done
