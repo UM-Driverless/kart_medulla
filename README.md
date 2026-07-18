@@ -18,7 +18,7 @@ All pin assignments are defined in [`components/km_gpio/km_gpio.h`](components/k
 
 Two nets on the actual kart-medulla PCB no longer do what their original name says. The firmware header hasn't caught up; the authoritative map is [`.agents/esp32s3-pinmap.md`](.agents/esp32s3-pinmap.md).
 
-- **BUZZER → EBS compressor MOSFET.** The old buzzer output now drives the compressor gate (net renamed `CMD_COMPRESSOR_PWM`, terminal CN8.2). The buzzer itself was dropped. On the S3 board this is GPIO 3.
+- **BUZZER (old name) → EBS compressor MOSFET.** The old buzzer output now drives the compressor gate (net renamed `CMD_COMPRESSOR_PWM`, terminal CN8.2). The buzzer itself was dropped. On the S3 board this is GPIO 3.
 - **PRESSURE_3 → steering-sensor PWM input.** The Pressure-3 terminal (CN5.2) now reads the AS5600's PWM angle output instead of a pressure transducer (keep R8 series, remove the R9/R10 pulldown). On the S3 board this is GPIO 1.
 
 The firmware now supports the ESP32-S3 board natively via the `esp32-s3-devkitc-1` PlatformIO target, which automatically applies the correct pinmap from [`.agents/esp32s3-pinmap.md`](.agents/esp32s3-pinmap.md). (The classic ESP32-WROOM-32E pinmap is still available for legacy testing using `esp32dev`).
