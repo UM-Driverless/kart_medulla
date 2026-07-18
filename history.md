@@ -539,3 +539,51 @@ bar = 3 × Vadc, under which those ADC values are about 2 bar and 4 bar. The run
 idle telemetry sitting at ADC ≈ 2000 (~4.8 bar under the verified map) both fit the verified map, not
 the constants. Since cycle length sets the thermal duty, this feeds directly into the heat problem.
 Logged as its own task.
+
+## 2026-07-18 — Compressor MOSFET: it is the 3.3 V gate drive, and frequency cannot fix it
+
+Follow-up to the bench run above, once the part was identified. The compressor MOSFET is an
+**IRLZ44N** (confirmed from inventory). With the datasheet in hand the "500 Hz vs 250 Hz" decision
+tree can be settled on paper instead of with another run.
+
+**The numbers**, at an assumed 10 A running current, 60% duty, 12 V rail:
+
+| Term | Value |
+|---|---|
+| Conduction loss | 5.76 W |
+| Switching loss at 500 Hz | 0.07 W |
+| Ratio | conduction dominates 77× |
+| Saving from halving to 250 Hz | 0.64% |
+
+So this is conduction-limited by a wide margin, and the decision tree's own rule — "barely changed →
+frequency will not save it" — applies without needing the experiment. Switching loss was estimated
+from ~25 nC of effective gate charge (48 nC total, only charged to 3.3 V) at ~20 mA of GPIO drive,
+giving roughly 2.5 µs of combined transition time per cycle.
+
+**Root cause: Vgs = 3.3 V.** The IRLZ44N datasheet specifies Rds(on) at Vgs = 10 V (0.022 Ω), 5 V
+(0.025 Ω) and 4 V (0.035 Ω), and stops there — 3.3 V is *below the last specified point*, with
+Vgs(th) max = 2.0 V. The device never fully enhances: about 0.05–0.07 Ω cold and ~1.6× that at 100 °C
+(Fig 4). Against Rth(j-a) = 62 °C/W with no heatsink, 10 A implies a ~360 °C rise. The overheating is
+arithmetic, not a marginal thermal design. "Logic-level" on the front page of the datasheet means it
+*works* at 5 V, not that it is happy at 3.3 V carrying tens of amps.
+
+**Caveat — the current is assumed, not measured.** The whole result scales with I², so this needs a
+clamp-meter reading during a run: the same maths gives a ~92 °C rise at 5 A and ~810 °C at 15 A.
+Sensitive enough that the fix should not be sized until it is measured.
+
+**Chosen direction: the HA210N06 hotbed module** already in inventory (heatsink, control-in, DC-in,
+load terminals). At 4 mΩ fully enhanced it dissipates ~0.36 W where the IRLZ44N does 5.76 W — 16×
+less — and it comes heatsinked. The reason it works is the module's *driver stage*, which drives the
+gate from the module's own DC rail rather than from 3.3 V logic. The bare HA210N06 is emphatically
+not a drop-in: Vgs(th) is 2–4 V, so wired straight to GPIO 3 it would be worse than what is there
+now. Buying the transistor instead of the module would be a step backwards.
+
+Three open checks recorded in `tasks.md`: whether the control input is optocoupled (slow turn-off
+plus 500 Hz PWM is a known way to cook these modules — drop to 200–250 Hz if so), whether a flyback
+diode is present (hotbed modules assume a resistive load, and the compressor is inductive), and how
+the module grounds (an optocoupled one is isolated, which would also break the USB ground loop
+documented earlier in this file).
+
+Also noted as an alternative worth weighing: the 60% duty exists only to step 12 V down to the
+motor's 7.5 V rating, so a buck converter at 7.5 V plus a plain on/off switch removes the
+hard-switching problem entirely rather than making it cheaper.

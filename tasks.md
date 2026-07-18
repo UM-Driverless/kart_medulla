@@ -22,18 +22,61 @@ around the part burning off, not the die. But it runs too hot to leave as is.
 spun up normally, so locked-rotor current is not what heats it. The heat comes from **steady-state
 running**, which is the ordinary case the decision tree below was written for.
 
-**So run the frequency comparison below as written** — halve `COMPRESSOR_PWM_FREQ_HZ` to 250 Hz and
-compare MOSFET temperature after a similar 0 → 6 bar run. That is the one measurement that says
-whether this is switching loss (scales with frequency) or conduction loss (does not), and everything
-else depends on the answer.
+**The part is an IRLZ44N** (confirmed from inventory, 2026-07-18). That settles the decision tree
+below on paper, so do not spend a run on it:
 
-**Blocking unknown: the compressor MOSFET's part number is recorded nowhere in this repo.** The Q3
-IRLZ44N in `.agents/error-log.md` is the *SDC* MOSFET on GPIO 18, a different device. Its Rds(on) at
-Vgs = 3.3 V is what decides whether a firmware change can fix this at all, or whether it needs a gate
-driver or a different part. Identify it before buying anything.
+| | at 10 A, 60% duty |
+|---|---|
+| Conduction loss | **5.76 W** |
+| Switching loss at 500 Hz | **0.07 W** |
+| Ratio | conduction dominates **77×** |
+| Saving from 500 → 250 Hz | **0.64%** |
 
-Also worth a heatsink regardless — ~60 s of continuous conduction is the normal duty here, not a
-worst case.
+**So 250 Hz is not enough — it is not even measurable.** This is conduction-limited, which the
+decision tree already says frequency cannot fix. Run the 250 Hz comparison only if you want the
+empirical confirmation; do not expect it to solve anything.
+
+**The root cause is the 3.3 V gate drive, not the frequency.** The IRLZ44N datasheet specifies
+Rds(on) at 10 V (0.022 Ω), 5 V (0.025 Ω) and 4 V (0.035 Ω) — and stops there. GPIO 3 drives it at
+**3.3 V**, below the last specified point, with Vgs(th) max = 2.0 V, so it never fully enhances:
+call it 0.05–0.07 Ω cold and ~1.6× that hot (datasheet Fig 4). With Rth(j-a) = 62 °C/W and no
+heatsink, 10 A gives a ~360 °C rise. That is the smoke, and it is arithmetic, not bad luck.
+
+**Unverified input to all of the above: the compressor's actual running current.** 10 A is an
+estimate. It matters a lot — the same maths gives a ~92 °C rise at 5 A but ~810 °C at 15 A. Measure
+it with a clamp meter during a run before sizing anything.
+
+### Switch the compressor to the HA210N06 hotbed module — preferred fix
+
+Available in inventory: an HA210N06 in a 3D-printer hotbed MOSFET module, with heatsink, control-in,
+DC-in and load terminals. This is the better route, because it fixes the actual cause rather than
+the symptom: the module drives the gate from its own DC rail instead of from 3.3 V logic.
+
+At 10 A its 4 mΩ fully enhanced gives **0.36 W against the IRLZ44N's 5.76 W — 16× less** — and it
+arrives with a heatsink.
+
+Note the bare HA210N06 is **not** a logic-level part: Vgs(th) is 2–4 V, so driven directly from
+GPIO 3 it would be *worse* than the IRLZ44N. The module's driver stage is the whole point; do not
+buy the bare transistor.
+
+**Three things to check before wiring it in:**
+
+1. **What is on the control input.** If it is an optocoupler (a 4-pin DIP such as a PC817), turn-off
+   is slow — tens of µs — and slow edges at 500 Hz put the part in its linear region for a real
+   fraction of every cycle. Hotbed modules are built to switch a bed at well under 1 Hz, and slow
+   turn-off with fast PWM is a known way to cook them. If optocoupled, run at **200–250 Hz**, not
+   500 Hz (~200 Hz is the floor from the note below, where motor current goes discontinuous).
+2. **Add or keep a flyback diode.** These modules are designed for a *resistive* heater and
+   generally have none. The compressor is inductive. The existing freewheel diode must stay, or one
+   must be fitted at the module's load terminals.
+3. **Grounding.** An optocoupled module is galvanically isolated, which is a genuine bonus here —
+   it would break the ESP32-to-compressor ground path behind the USB brownouts in `history.md`.
+   A non-isolated module does not, so keep the star-ground rule: compressor return goes to power
+   ground at the regulator, not through signal ground.
+
+**Worth considering instead of PWM entirely:** the 60% duty exists only to step 12 V down to the
+motor's rated 7.5 V. A buck converter set to 7.5 V with a plain on/off switch removes the
+hard-switching problem at its source, at the cost of a part rated for the motor current.
 
 ### Tank pressure thresholds do not match the verified sensor calibration
 
