@@ -46,6 +46,55 @@ heatsink, 10 A gives a ~360 °C rise. That is the smoke, and it is arithmetic, n
 estimate. It matters a lot — the same maths gives a ~92 °C rise at 5 A but ~810 °C at 15 A. Measure
 it with a clamp meter during a run before sizing anything.
 
+### Gate-drive options, researched 2026-07-18
+
+**A replacement MOSFET is essentially not available, and the reason is structural.** Across ~150
+datasheets checked by table text (Infineon, Vishay, Nexperia, Toshiba, ST, onsemi, Diodes, AOS), the
+industry floor for a *specified* Rds(on) is **Vgs = 4.5 V**. Vgs(th) max on power dice runs
+2.0–2.5 V, so a worst-case part sits at threshold with a 2.5 V gate and no vendor can guarantee
+anything there. "Logic level" means it works at 5 V, not 3.3 V. Toshiba's parametric database returns
+zero N-channel parts with Id ≥ 15 A specified at ≤ 2.5 V.
+
+Beware a false positive when searching: nearly every one of these datasheets contains the strings
+"VGS = 2.5 V" and "VGS = 3 V" as *curve labels on the Rds(on)-vs-Vgs graph*, never as table rows.
+
+Two parts do qualify, and both have a catch:
+- **IRF3708** — TO-220, specified **29 mΩ max at Vgs = 2.8 V**, a true pin-compatible drop-in needing
+  no circuit or firmware change (0.63 W, ~39 °C rise bare). But it is **obsolete / NRND**; DigiKey
+  lists it as no longer manufactured. A one-time fix off legacy stock, not a design.
+- **CSD17307Q5A** — TI, 17.3 mΩ max at Vgs = 3 V, in production and cheap (LCSC C139362). But it is
+  **SON 5×6 surface-mount with a bottom thermal pad** — reflow, not a hand iron.
+
+**So the gate driver is the real answer**, and it is also the cheapest, because at Vgs = 10 V the
+IRLZ44N already fitted is a *good* part: 22 mΩ max → **0.475 W → ~29 °C rise with no heatsink at
+all**.
+
+- **Use a driver with a fixed TTL input threshold**: TC4420 / MCP1407 (both **PDIP-8**, so
+  perfboard-friendly), or UCC27517A (SOT-23-5). All spec VIH ≤ 2.4 V across VDD = 4.5–18 V, so a
+  3.3 V GPIO drives them with ~0.9 V of margin. Non-inverting, so **no firmware change**. Low-side
+  switching needs no bootstrap — just the 12 V rail and a 100 nF decoupler. Average supply draw is
+  48 nC × 500 Hz = 24 µA.
+- **Do NOT use UCC27518 or UCC27519.** Their inputs are CMOS and scale with VDD (VIN_H = 70% of
+  VDD), so at 12 V the threshold is 8.4 V and a 3.3 V signal never registers.
+- **Avoid the discrete inverting level shifter** (2N7002 common-source with a pull-up to 12 V),
+  despite it being the fewest parts. It inverts, so at ESP32 boot and reset the GPIO floats, the
+  small FET stays off, the pull-up drags the gate to ~11 V and **the compressor runs full-on**. A
+  10 kΩ pulldown does not win against a 1 kΩ pull-up. Not worth saving a few cents on a pneumatic
+  system.
+
+**Also worth knowing: the gate never even sees a clean 3.3 V.** The ESP32-S3 datasheet specifies
+IOH = 28 mA only at VOH ≥ 0.8 × VDD = **2.64 V**, so during the Miller plateau — exactly when the die
+is dissipating — the pin sags toward 2.64 V. The real drive is worse than a 3.3 V analysis suggests.
+
+**Next PCB revision:** UCC27517A (SOT-23-5) plus 12 V gate drive, which re-opens the entire rejected
+list — IRLB8743, IPP034N03L, PSMN2R7-30PL are all 3–4 mΩ and in production. Add a 10 kΩ pulldown on
+the driver input so the compressor is off through boot and reset, and a 10–47 Ω series gate resistor.
+
+*(Note: the research pass also proposed correcting the ~2 W / ~130 °C figures in these notes down to
+1.08–1.51 W. Checked and rejected — that recalculation used the cold Rds(on) and dropped the ~1.6×
+rise at 100 °C from datasheet Fig 4. The 50–70 mΩ figure in these notes is the cold value; hot it is
+80–112 mΩ, giving 1.73–2.42 W, and the bench measurement backs the higher range.)*
+
 ### Switch the compressor to the HA210N06 hotbed module — preferred fix
 
 Available in inventory: an HA210N06 in a 3D-printer hotbed MOSFET module, with heatsink, control-in,
