@@ -587,3 +587,26 @@ documented earlier in this file).
 Also noted as an alternative worth weighing: the 60% duty exists only to step 12 V down to the
 motor's 7.5 V rating, so a buck converter at 7.5 V plus a plain on/off switch removes the
 hard-switching problem entirely rather than making it cheaper.
+
+## 2026-07-18 — Compressor duty stepped 60% → 50% → 20%
+
+`COMPRESSOR_DUTY_RUN` in `main/main.c` went from 153 (60%) to 128 (50%) and then to 51 (20%) on the
+same day, all to get the compressor MOSFET's temperature down. Conduction loss dominates switching
+loss by roughly 50× at this operating point, so duty is the lever that matters and frequency is not.
+The estimate is that dissipation falls about cubically with duty (current and conduction time both
+drop), which puts 20% well under 0.1 W against the ~2.1 W measured at 60%.
+
+**The 20% value is below any point that has been tested on the bench.** It was chosen deliberately
+over a more cautious step, so the first run with it needs watching. Two things are unknown:
+
+- **The breakaway duty** — the lowest duty at which the motor actually starts turning — has never
+  been measured. 20% (2.4 V equivalent from the 12 V rail, against a 7.5 V motor) may be below it.
+  A motor that fails to start generates no back-EMF and sits at locked-rotor current, which heats
+  the MOSFET *more* than 50% duty did. This is the failure mode to watch for: if the compressor
+  does not spin up during the 1 s soft-start ramp, cut power and raise the constant.
+- **The running current at this duty** has not been measured either. Since the loss estimate scales
+  with I², the sub-0.1 W figure is an expectation to confirm with a clamp meter, not a result.
+
+Firmware builds clean for `esp32-s3-devkitc-1` (322 kB flash, 30.8%). Not yet flashed — no board was
+connected at the time (`/dev/cu.*` showed only Bluetooth and the debug console), so the flash and
+the bench observation above are still outstanding.
