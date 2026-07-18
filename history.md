@@ -497,47 +497,45 @@ the stale export shows *both* Q3's and Q4's gates on no net at all — which can
 where the SDC MOSFET demonstrably works. Do not trust that netlist for connectivity questions until
 it is re-exported.
 
-## 2026-07-18 — Compressor bench test: pump-up worked, MOSFET smoked
+## 2026-07-18 — Compressor bench test: succeeded, but the MOSFET runs too hot
 
-First hardware run of the compressor soft-start (firmware `a82c622`, flashed this session). The
-control logic behaved exactly as designed; the switching hardware did not survive it.
+First hardware run of the compressor soft-start (firmware `a82c622`, flashed this session).
 
-**What worked.** The full chain came up: ESP32-S3 flashed from the Orin, `ESP_PNEUMATIC` (0x0C)
-frames streaming at a measured 20.0 Hz, and the hysteresis fired correctly — tank pressure crossed
-the high threshold and the firmware commanded the compressor off. Telemetry read back
-`pressure_adc ≈ 2000` (above `ADC_2_BAR` = 1638) with `comp_duty = 0` after the cycle, so the
-shutoff is confirmed working. The pump-up itself succeeded.
+**Result: the test passed.** Tank went from 0 to 6 bar in about a minute of continuous running, the
+motor never stalled, and the hysteresis shut the compressor off at the top. Telemetry confirmed the
+shutoff: `pressure_adc ≈ 2000` with `comp_duty = 0` after the cycle. The `ESP_PNEUMATIC` (0x0C)
+frame streamed throughout at a measured 20.0 Hz.
 
-**What failed.** The MOSFET on `CMD_COMPRESSOR_PWM` (GPIO 3) started smoking during the run. This
-is past "runs warm" — the observation the test was designed to collect — and means the part was in
-thermal runaway, not merely hot.
+**The problem is heat.** The MOSFET on `CMD_COMPRESSOR_PWM` (GPIO 3) smoked during the run. The part
+still works afterwards, and the smoke was most likely adhesive around it burning off rather than the
+die failing — but it is too hot to leave alone.
 
 **Config under test** (`main/main.c`, `components/km_gpio/km_gpio.h`):
 `COMPRESSOR_DUTY_RUN = 153` (60% of 255, ~7.2 V average from the 12 V rail),
 `COMPRESSOR_SOFT_START_MS = 1000` (linear 0 → 153), `COMPRESSOR_PWM_FREQ_HZ = 500`, gate driven
 straight from a 3.3 V ESP32 pin with no gate driver.
 
-**Most likely cause — the soft-start ramp itself, which `tasks.md` had already flagged.** The
-pre-written decision tree warned: "Time spent below breakaway is time feeding a stalled motor —
-full current, no back-EMF, no airflow, no work — so ramping from 0 over a full second lengthens the
-worst phase." That is what a 1 s linear ramp from 0 does. A stalled motor draws locked-rotor current
-(measured elsewhere in this file at 40–50 A) while the MOSFET is only partially enhanced at
-Vgs = 3.3 V, so conduction loss is I²·Rds(on)·duty with I at its maximum for the whole ramp. The
-soft-start was added to protect the *12 V rail and the USB ground loop* from the inrush spike, and
-it does — but it protects the rail by making the MOSFET absorb the energy for longer.
+**Ruled out — the soft-start ramp.** The first reading of this incident blamed the 1 s ramp, on the
+theory from `tasks.md` that ramping from 0 holds a stalled motor at locked-rotor current. The run
+disproves it: the motor spun up normally and never stalled, and the ramp is 1 s out of roughly 60 s
+of running. The heat is steady-state conduction and/or switching loss during normal operation, which
+is the ordinary case the existing decision tree addresses. Record this the right way round — the
+plausible-sounding ramp theory was wrong, and only the "did it stall?" observation settled it.
 
-**Not the cause:** the freewheeling diode (a previous ground-loop investigation established the
+**Also ruled out:** the freewheeling diode (an earlier ground-loop investigation established the
 fault appears on switch-ON, not switch-OFF), the pressure sensor pin (`PIN_PRESSURE_1` = GPIO 6,
-matching the verified SDE5 wiring CN7.1→GPIO6), and the shutoff logic (confirmed firing above).
+matching the verified SDE5 wiring CN7.1 → GPIO 6), and the shutoff logic.
 
-**Open — do not treat as settled.** The exact compressor MOSFET part number was not confirmed during
-this session. `.agents/error-log.md` records Q3 as an IRLZ44N, but that is the *SDC* MOSFET on
-GPIO 18, not necessarily this one. Rds(on) at Vgs = 3.3 V is the number that decides whether this is
-fixable in firmware at all, and it cannot be looked up until the part is identified.
+**Next measurement** is the one already written into `tasks.md`: halve `COMPRESSOR_PWM_FREQ_HZ` to
+250 Hz and repeat a comparable 0 → 6 bar run. Much cooler means switching-limited; barely changed
+means conduction-limited and no frequency will save it. The compressor MOSFET's part number is
+recorded nowhere in this repo, and its Rds(on) at Vgs = 3.3 V is what decides whether firmware can
+fix this at all — the IRLZ44N in `.agents/error-log.md` is the SDC MOSFET on GPIO 18, a different
+device.
 
-**Consequence for the decision tree.** `tasks.md` says "MOSFET too hot → halve
-`COMPRESSOR_PWM_FREQ_HZ` to 250 Hz and re-run" to separate switching loss from conduction loss. That
-comparison is only meaningful on an undamaged device, so it cannot be run until the MOSFET is
-replaced. A smoked MOSFET commonly fails **shorted** drain-to-source, which would run the compressor
-continuously at full rail voltage the moment power is applied, ignoring whatever the firmware
-commands. Verify the part is not shorted before re-powering.
+**Calibration discrepancy found while reviewing this.** `main.c` uses `ADC_1_BAR = 819` /
+`ADC_2_BAR = 1638` under a comment admitting the map is rough, but the verified wiring note says
+bar = 3 × Vadc, under which those ADC values are about 2 bar and 4 bar. The run reaching 6 bar and
+idle telemetry sitting at ADC ≈ 2000 (~4.8 bar under the verified map) both fit the verified map, not
+the constants. Since cycle length sets the thermal duty, this feeds directly into the heat problem.
+Logged as its own task.

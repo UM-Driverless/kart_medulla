@@ -11,33 +11,44 @@ this repo that means flashed *and* driven, per the branch workflow in `AGENTS.md
 
 ## TODO
 
-### Compressor MOSFET smoked on the first bench run — HARDWARE, DO THIS FIRST
+### Compressor MOSFET runs too hot — run the 250 Hz comparison next
 
-Ran 2026-07-18 on firmware `a82c622`. The pump-up worked and the hysteresis shut the compressor off
-correctly, but the MOSFET on `CMD_COMPRESSOR_PWM` (GPIO 3) started smoking during the run. Full
-write-up in `history.md` 2026-07-18.
+Bench run 2026-07-18 on firmware `a82c622`. **The test succeeded:** 0 → 6 bar in about a minute of
+continuous running, the motor never stalled, and the hysteresis shut the compressor off. The MOSFET
+on `CMD_COMPRESSOR_PWM` (GPIO 3) survived and still works — the smoke was almost certainly adhesive
+around the part burning off, not the die. But it runs too hot to leave as is.
 
-**Before re-powering anything:** a smoked MOSFET commonly fails shorted drain-to-source. If it has,
-the compressor runs continuously at full 12 V the instant power is applied, ignoring the firmware —
-a runaway pump, not a dead output. Measure drain-source with the board unpowered; near-0 Ω means
-destroyed. A quick live check with the stack already up: telemetry showing `comp_duty = 0` while the
-compressor is audibly running also means shorted.
+**The soft-start ramp is NOT the problem.** The ramp is 1 s out of ~60 s of running and the motor
+spun up normally, so locked-rotor current is not what heats it. The heat comes from **steady-state
+running**, which is the ordinary case the decision tree below was written for.
 
-**Then, in order:**
-1. **Identify the compressor MOSFET part number.** Not confirmed anywhere in this repo. The Q3
-   IRLZ44N in `.agents/error-log.md` is the *SDC* MOSFET on GPIO 18, which is a different device.
-   Rds(on) at Vgs = 3.3 V decides whether firmware can fix this at all — without it the choice
-   between "lower the frequency" and "add a gate driver" is a guess.
-2. **Replace it**, and assume it needs a heatsink.
-3. **Shorten the ramp and start it near the breakaway duty** before re-running at full length. The
-   1 s ramp from 0 is the prime suspect: it holds a stalled motor at locked-rotor current (40–50 A,
-   per `history.md`) across the whole ramp while the MOSFET is only partly enhanced at Vgs = 3.3 V.
-   The existing note below already predicted this; the run confirmed it.
+**So run the frequency comparison below as written** — halve `COMPRESSOR_PWM_FREQ_HZ` to 250 Hz and
+compare MOSFET temperature after a similar 0 → 6 bar run. That is the one measurement that says
+whether this is switching loss (scales with frequency) or conduction loss (does not), and everything
+else depends on the answer.
 
-**Note the frequency experiment below is now blocked.** Comparing 500 Hz against 250 Hz to separate
-switching loss from conduction loss only means something on an undamaged part.
+**Blocking unknown: the compressor MOSFET's part number is recorded nowhere in this repo.** The Q3
+IRLZ44N in `.agents/error-log.md` is the *SDC* MOSFET on GPIO 18, a different device. Its Rds(on) at
+Vgs = 3.3 V is what decides whether a firmware change can fix this at all, or whether it needs a gate
+driver or a different part. Identify it before buying anything.
 
-### Compressor soft-start bench test — blocked on the MOSFET replacement above
+Also worth a heatsink regardless — ~60 s of continuous conduction is the normal duty here, not a
+worst case.
+
+### Tank pressure thresholds do not match the verified sensor calibration
+
+`main/main.c` sets `ADC_1_BAR = 819` and `ADC_2_BAR = 1638` under a comment admitting it is "a rough
+map". The verified wiring note in this file says **bar = 3 × Vadc** (CN7.1 → GPIO 6). Those disagree:
+under bar = 3 × Vadc, ADC 819 is about **2 bar** and ADC 1638 about **4 bar**, so the thresholds are
+roughly double their labels.
+
+This is consistent with the 2026-07-18 run reaching **6 bar**, and with idle telemetry reading
+ADC ≈ 2000 (about 4.8 bar under the verified map). It also matters for the MOSFET heat above: the
+longer the compressor runs per cycle, the hotter it gets, so mislabelled thresholds directly set the
+thermal duty. Decide the real target pressures, then set the constants from bar = 3 × Vadc rather
+than the rough map, and rename them so the number and the label agree.
+
+### Compressor soft-start bench test — the decision tree for the run above
 
 The soft-start is written and builds, but has never run on hardware (commits `f09bcf0`, `a95d91a`;
 reasoning in `history.md` 2026-07-16). The compressor now ramps 0 → 60% duty over 1 s at 500 Hz on
