@@ -11,7 +11,33 @@ this repo that means flashed *and* driven, per the branch workflow in `AGENTS.md
 
 ## TODO
 
-### Compressor soft-start bench test — DO THIS FIRST
+### Compressor MOSFET smoked on the first bench run — HARDWARE, DO THIS FIRST
+
+Ran 2026-07-18 on firmware `a82c622`. The pump-up worked and the hysteresis shut the compressor off
+correctly, but the MOSFET on `CMD_COMPRESSOR_PWM` (GPIO 3) started smoking during the run. Full
+write-up in `history.md` 2026-07-18.
+
+**Before re-powering anything:** a smoked MOSFET commonly fails shorted drain-to-source. If it has,
+the compressor runs continuously at full 12 V the instant power is applied, ignoring the firmware —
+a runaway pump, not a dead output. Measure drain-source with the board unpowered; near-0 Ω means
+destroyed. A quick live check with the stack already up: telemetry showing `comp_duty = 0` while the
+compressor is audibly running also means shorted.
+
+**Then, in order:**
+1. **Identify the compressor MOSFET part number.** Not confirmed anywhere in this repo. The Q3
+   IRLZ44N in `.agents/error-log.md` is the *SDC* MOSFET on GPIO 18, which is a different device.
+   Rds(on) at Vgs = 3.3 V decides whether firmware can fix this at all — without it the choice
+   between "lower the frequency" and "add a gate driver" is a guess.
+2. **Replace it**, and assume it needs a heatsink.
+3. **Shorten the ramp and start it near the breakaway duty** before re-running at full length. The
+   1 s ramp from 0 is the prime suspect: it holds a stalled motor at locked-rotor current (40–50 A,
+   per `history.md`) across the whole ramp while the MOSFET is only partly enhanced at Vgs = 3.3 V.
+   The existing note below already predicted this; the run confirmed it.
+
+**Note the frequency experiment below is now blocked.** Comparing 500 Hz against 250 Hz to separate
+switching loss from conduction loss only means something on an undamaged part.
+
+### Compressor soft-start bench test — blocked on the MOSFET replacement above
 
 The soft-start is written and builds, but has never run on hardware (commits `f09bcf0`, `a95d91a`;
 reasoning in `history.md` 2026-07-16). The compressor now ramps 0 → 60% duty over 1 s at 500 Hz on
