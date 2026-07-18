@@ -173,25 +173,42 @@ void control_task(void *ctx) {
     TickType_t now = xTaskGetTickCount();
 
     // --- Compressor control logic (hysteresis + soft-start ramp) ---
-    // Assuming 5V/3.3V sensor mapping, calibrate ADC_1_BAR and ADC_2_BAR for your exact sensor.
-    // 0-4095 range. Here we assume a rough map where 1 bar = 819 and 2 bar = 1638.
-    const uint16_t ADC_1_BAR = 819;
-    const uint16_t ADC_2_BAR = 1638;
+    // Pump up below 7 bar, stop above 8 bar.
+    //
+    // Calibration (2026-07-18): the tank sat at a gauge-read 7.5 bar while this
+    // ADC channel read 2679, giving 7.5 / 2679 = 0.0028 bar per count. The
+    // thresholds below are that ratio scaled, assuming the sensor is linear
+    // through zero:
+    //     7 bar -> 2679 * 7/7.5 = 2500
+    //     8 bar -> 2679 * 8/7.5 = 2858
+    //
+    // This is a ONE-POINT calibration and the zero-offset assumption is
+    // unverified — many pressure senders idle at an offset (0.5 V is common)
+    // rather than at 0 V, which would make both numbers read high. It is
+    // deliberately anchored to the gauge rather than to the older "bar =
+    // 3 x Vadc" note, because the two disagree (that map calls this same 2679
+    // reading 6.5 bar, not 7.5) and the gauge-anchored figure is the
+    // conservative one: if the older map turns out to be right, these
+    // thresholds stop the pump EARLY, around 6.9 bar, rather than late. Getting
+    // it wrong in the other direction matters, because the reservoir is rated
+    // 10 bar. Confirm against the gauge on the next run and correct if needed.
+    const uint16_t ADC_PRESSURE_LOW  = 2500;  // ~7 bar — below this, start pumping
+    const uint16_t ADC_PRESSURE_HIGH = 2858;  // ~8 bar — above this, stop
 
     uint16_t pres1_adc = KM_GPIO_ReadADC(PIN_PRESSURE_1);
     static bool compressor_active = false;
     static TickType_t compressor_start_tick = 0;
 
-    if (pres1_adc < ADC_1_BAR) {
+    if (pres1_adc < ADC_PRESSURE_LOW) {
         if (!compressor_active) compressor_start_tick = now;  // rising edge → restart the ramp
         compressor_active = true;
-    } else if (pres1_adc > ADC_2_BAR) {
+    } else if (pres1_adc > ADC_PRESSURE_HIGH) {
         compressor_active = false;
     }
 
     // Ramp off elapsed time rather than a per-cycle step, so the profile stays a
     // 1 s ramp regardless of how the control task period is retuned. The ramp
-    // tops out at the run duty (7.2 V equivalent), never at full 12 V.
+    // tops out at COMPRESSOR_DUTY_RUN, never at full 12 V.
     uint32_t comp_duty = 0;
     if (compressor_active) {
         uint32_t elapsed_ms = (uint32_t)(now - compressor_start_tick) * portTICK_PERIOD_MS;
