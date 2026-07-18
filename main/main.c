@@ -89,14 +89,21 @@ static const char *TAG = "MAIN";
  * motor, and it makes the MOSFET hotter too, since conduction scales with
  * I^2 x duty and both terms rise.
  */
-// 50% of 255 → 6.0 V average from a 12 V rail. Lowered from 153 (60%, 7.2 V) on
-// 2026-07-18 to get the MOSFET temperature down: at the measured 6 A, 60% gives
-// ~2.1 W (~154 C junction) while 50% gives ~1.2 W (~99 C). Undervolting a 7.5 V
-// motor is safe — it just runs slower and takes longer to reach pressure. The
-// floor is the breakaway duty, below which the motor stalls and draws locked-
-// rotor current with no back-EMF; that value is still unmeasured, so step down
-// gradually and confirm the motor still turns.
-#define COMPRESSOR_DUTY_RUN      128
+// 20% of 255 → 2.4 V average from a 12 V rail. Stepped down 153 (60%) → 128
+// (50%) → 51 (20%) on 2026-07-18 to get the MOSFET temperature down. Using the
+// cubic estimate above against the measured 2.1 W at 60%, 20% should dissipate
+// well under 0.1 W — cool enough to touch — but the current at this duty has not
+// been measured, so treat the number as an expectation to check, not a result.
+// Undervolting a 7.5 V motor is safe: it just runs slower and takes longer to
+// reach pressure.
+//
+// THIS DUTY IS DELIBERATELY BELOW ANY TESTED POINT. The floor is the breakaway
+// duty, below which the motor never starts turning, and it is still unmeasured —
+// 20% may be under it. A stalled motor generates no back-EMF and draws
+// locked-rotor current, which makes the MOSFET hotter than 50% ever did. So on
+// the first run with this value, watch the compressor: if it does not spin up
+// within the 1 s soft-start ramp, cut power immediately and raise this constant.
+#define COMPRESSOR_DUTY_RUN      51
 #define COMPRESSOR_SOFT_START_MS 1000  // linear 0 → COMPRESSOR_DUTY_RUN over this long
 
 /**
