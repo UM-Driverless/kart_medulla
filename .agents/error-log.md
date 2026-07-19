@@ -116,9 +116,28 @@ board mounted today? has the long run been tried?"), not to assume the newer ans
 has arithmetic attached. Rubén's words: *"you're confused but refuse to ask clarifying questions and
 just affirm contradictory info. that's not how one thinks."*
 
+**What was NOT the mistake — read this before drawing the wrong lesson.** Reasoning from first
+principles was the *right* approach, and this entry must not be read as "look it up instead of
+thinking." Rubén's correction, 2026-07-19. The capacitance calculation was sound arithmetic and it
+is genuinely useful to know 1.2 m sits at ~30% of the I²C budget. The failure was reasoning
+**too narrowly** and then stopping:
+
+- I²C over a cable fails through *at least* five mechanisms — bus capacitance, EMI on the threshold
+  crossing, stub reflections off an unterminated branch, undersized pull-ups, and ground offset
+  eating noise margin. I modelled **one**, and it was the one least likely to bite in a vehicle.
+- A thorough first-principles pass enumerates the failure modes *first*, then says which the model
+  covers. That would have flagged the model as partial before it got presented as a verdict.
+- Where a model and a measurement disagree, the measurement wins — not because reading beats
+  thinking, but because a bench test samples every failure mode at once, including the ones absent
+  from the model. Their disagreement is information: it says the model is missing a term.
+
+So: reason from first principles, more thoroughly, *and* go looking for data that could falsify the
+result. The two are complements, not alternatives.
+
 **Prevention.**
-- Before stating how this hardware behaves, **grep `history.md` and `.agents/error-log.md`**. This
-  project documents its failures; assume the question has been hit before.
+- Before stating how this hardware behaves, **grep `history.md` and `.agents/error-log.md`** — not
+  to replace the reasoning, but to find measurements that can falsify it. This project documents
+  its failures; assume the question has been hit before.
 - **Never cite "you already do X" as evidence** without confirming the present physical setup.
   Past-tense repo prose describes when it was written, not now.
 - **Self-contradiction is a stop-and-ask trigger.** Do not silently retract and replace; say "I said
