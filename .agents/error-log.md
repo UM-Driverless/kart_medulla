@@ -77,3 +77,51 @@ until `KM_GPIO_Init()`) and wrote it up as an open hardware issue. There is a ga
 a false alarm. That one was defensible — the pinmap note said "idles high at boot — acceptable" and
 the exported netlist was stale — but the lesson is the same: the schematic and the person holding
 the board are the authority on hardware, not an inference from firmware plus a stale export.
+
+## 2026-07-19 — claimed I²C works over the 1.2 m steering run, when it had been tried, failed, and written up in this repo
+
+**What happened.** Rubén asked whether any steering-sensor digital interface works past 1.2 m. I
+first answered from a rule of thumb — "I²C is really on-board only, bad past ~1 m" — which happened
+to be *correct*. He then said 1.2 m is the real shaft-to-rear-PCB run. I computed the I²C bus
+capacitance (~120 pF against the 400 pF spec limit), concluded 1.2 m was comfortable, and **reversed
+my own answer**, telling him all four interfaces work. I reinforced it with a fabricated piece of
+evidence: *"you already run I²C to the AS5600 over that exact run."*
+
+That was false twice over. The PCB currently sits **at the front, next to the sensor** — the run
+that works today is short, not 1.2 m. And the long run was already tested and failed: `history.md`
+2026-07-15 records I²C over a ~1 m branch producing address-ACK-but-register-NACK on *every* device
+including the on-board PCF8574, phantom addresses 0x08/0x09, and a wedged driver — with the bus
+going clean the moment the branch was unplugged. The decision that followed is recorded in the same
+file: **plain PWM, run kept short and shielded.** The question I was asked had already been answered
+in the repo.
+
+**Root cause — three failures stacked:**
+
+1. **A model of one failure mode was treated as proof the system works.** Bus capacitance is *one*
+   way I²C dies. The documented failure was noise, stub reflections and marginal pull-ups on an
+   unterminated branch — none of which appear in a capacitance sum. Clearing one failure mode says
+   nothing about the others, and I presented the calculation as though it settled the question.
+2. **I manufactured supporting evidence rather than checking.** `AGENTS.md` says the AS5600 "lives
+   off-board on the steering shaft", and I turned that into "so the current run is the 1.2 m one"
+   without ever confirming where the board physically sits. An inference became a stated fact in
+   the same sentence.
+3. **I did not grep `history.md` / `error-log.md` before making a hardware claim** — the standing
+   rule in this repo, and one I had already partly read this same session. The answer was sitting
+   in the file with a binary-search test behind it.
+
+**The deeper process failure, which is the point.** Within two messages I asserted the opposite of
+what I had just asserted, and both times with confidence. When my own answers contradict each other
+that is a signal that a fact is missing — the correct move is to **stop and ask** ("where is the
+board mounted today? has the long run been tried?"), not to assume the newer answer wins because it
+has arithmetic attached. Rubén's words: *"you're confused but refuse to ask clarifying questions and
+just affirm contradictory info. that's not how one thinks."*
+
+**Prevention.**
+- Before stating how this hardware behaves, **grep `history.md` and `.agents/error-log.md`**. This
+  project documents its failures; assume the question has been hit before.
+- **Never cite "you already do X" as evidence** without confirming the present physical setup.
+  Past-tense repo prose describes when it was written, not now.
+- **Self-contradiction is a stop-and-ask trigger.** Do not silently retract and replace; say "I said
+  the opposite a moment ago — which is true?" and find out.
+- A calculation that clears one failure mode is **not** evidence of function. Say which mode it
+  covers and which it does not.
