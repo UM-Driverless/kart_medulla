@@ -229,16 +229,23 @@ void control_task(void *ctx) {
 #endif
 
     // --- Pneumatics telemetry → Orin (throttled) ---
-    // Throttled to ~20 Hz: this task runs at 500 Hz and the steering frame already
-    // uses most of the 115200 UART budget, so sending a second frame every cycle
-    // would overflow it. Pressure changes over seconds and the 1 s soft-start ramp
-    // still gets ~20 samples, so 20 Hz is plenty for the dashboard.
+    // Capped at ~20 Hz: the steering frame already uses most of the 115200 UART
+    // budget, so sending a second frame every cycle would overflow it. Pressure
+    // moves over seconds, so 20 Hz is plenty for the dashboard.
+    //
+    // Throttled on ELAPSED TIME, not on a cycle count. A /25 divider only means
+    // 20 Hz while the task really runs at its nominal 500 Hz, and it does not:
+    // measured 2026-07-25 at ~8 Hz on the bench, because a disconnected AS5600
+    // makes every cycle block on an I2C timeout. That turned a /25 divider into
+    // 0.36 Hz telemetry — a compressor bar updating once per 3 s, for a burst
+    // cycle that switches every 15 s. Wall-clock throttling gives 20 Hz when the
+    // loop is fast and every available cycle when it is slow, with no retuning.
     //
     // Fields 2 and 3 were APPENDED, not inserted: an older Orin still reading
     // only [pressure, duty] keeps working against this frame unchanged.
-    static uint16_t pneum_div = 0;
-    if (++pneum_div >= 25) {  // 25 x 2 ms = 50 ms → 20 Hz
-        pneum_div = 0;
+    static TickType_t pneum_last_tick = 0;
+    if ((uint32_t)(now - pneum_last_tick) * portTICK_PERIOD_MS >= 50) {  // 20 Hz cap
+        pneum_last_tick = now;
         int32_t pneum[4] = {
             (int32_t)pres1_adc,        // PRESSURE_1 — tank, raw ADC 0-4095
             (int32_t)comp_duty,        // compressor duty 0-255 (0 = off)
