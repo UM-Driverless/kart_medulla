@@ -243,11 +243,13 @@ void control_task(void *ctx) {
     //
     // Fields 2 and 3 were APPENDED, not inserted: an older Orin still reading
     // only [pressure, duty] keeps working against this frame unchanged.
-    // DIAGNOSTIC (2026-07-25): control_task's true call rate cannot be inferred from arriving
-    // frames, because a frame that is never sent and a frame that is dropped in transit look
-    // identical from the Orin. This counter is the task's own iteration count, so the gap
-    // between consecutive pneumatic frames says exactly how many iterations elapsed between
-    // sends. Remove once the 0.88 Hz-vs-8.75 Hz discrepancy is settled.
+    // control_task's own iteration count. Kept permanently, because frame arrival rate is NOT
+    // a usable proxy for it: on 2026-07-25 this task averaged 8.9 Hz while actually running in
+    // bursts of 10 iterations 0 ms apart separated by 1.1 s stalls (a blocking I2C read with no
+    // sensor attached, then vTaskDelayUntil firing repeatedly to catch up). An average hides
+    // that completely, and a control loop that stalls a second then takes ten steps with dt~0
+    // is a very different thing from one running slowly but evenly. Compare consecutive values
+    // against wall-clock arrival times to see the real shape.
     static uint32_t control_iters = 0;
     control_iters++;
 
