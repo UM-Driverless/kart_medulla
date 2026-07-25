@@ -243,16 +243,25 @@ void control_task(void *ctx) {
     //
     // Fields 2 and 3 were APPENDED, not inserted: an older Orin still reading
     // only [pressure, duty] keeps working against this frame unchanged.
+    // DIAGNOSTIC (2026-07-25): control_task's true call rate cannot be inferred from arriving
+    // frames, because a frame that is never sent and a frame that is dropped in transit look
+    // identical from the Orin. This counter is the task's own iteration count, so the gap
+    // between consecutive pneumatic frames says exactly how many iterations elapsed between
+    // sends. Remove once the 0.88 Hz-vs-8.75 Hz discrepancy is settled.
+    static uint32_t control_iters = 0;
+    control_iters++;
+
     static TickType_t pneum_last_tick = 0;
     if ((uint32_t)(now - pneum_last_tick) * portTICK_PERIOD_MS >= 50) {  // 20 Hz cap
         pneum_last_tick = now;
-        int32_t pneum[4] = {
+        int32_t pneum[5] = {
             (int32_t)pres1_adc,        // PRESSURE_1 — tank, raw ADC 0-4095
             (int32_t)comp_duty,        // compressor duty 0-255 (0 = off)
             (int32_t)pres2_adc,        // PRESSURE_2 — piston/brake line, raw ADC 0-4095
-            comp_state                 // 0 = idle, 1 = running, 2 = cooldown
+            comp_state,                // 0 = idle, 1 = running, 2 = cooldown
+            (int32_t)control_iters     // DIAGNOSTIC: control_task iteration count
         };
-        KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 4);
+        KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 5);
     }
 
     // --- Safety: comms watchdog + manual mode ---
