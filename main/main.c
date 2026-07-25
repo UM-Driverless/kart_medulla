@@ -13,6 +13,7 @@
 #include "nvs_flash.h"
 #include "driver/uart.h"
 #include "driver/dac.h"
+#include "driver/ledc.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -30,6 +31,12 @@
 #include "km_objects.h"
 
 static const char *TAG = "MAIN";
+
+// KM_GPIO_Init()'s result. system_init() only ESP_LOGE's a failure and carries on, and
+// ESP_LOG is disabled on UART0 to keep the binary protocol clean - so a failed GPIO/LEDC
+// setup is otherwise completely invisible, and the compressor pin would simply never be
+// driven with no indication anywhere. Shipped in the pneumatic frame so it is observable.
+static int32_t g_gpio_init_err = -1;
 
 #define MAX_ERROR_COUNT_SDIR 10
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
@@ -256,14 +263,21 @@ void control_task(void *ctx) {
     static TickType_t pneum_last_tick = 0;
     if ((uint32_t)(now - pneum_last_tick) * portTICK_PERIOD_MS >= 50) {  // 20 Hz cap
         pneum_last_tick = now;
-        int32_t pneum[5] = {
+        // Read the duty back OUT of the LEDC peripheral rather than reporting the value we
+        // asked for. comp_duty only says what the firmware intended; the readback says what
+        // the hardware actually holds, which is the difference between "the code commanded
+        // it" and "the pin is driving it".
+        int32_t ledc_readback = (int32_t)ledc_get_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1);
+        int32_t pneum[7] = {
             (int32_t)pres1_adc,        // PRESSURE_1 — tank, raw ADC 0-4095
-            (int32_t)comp_duty,        // compressor duty 0-255 (0 = off)
+            (int32_t)comp_duty,        // compressor duty 0-255 commanded (0 = off)
             (int32_t)pres2_adc,        // PRESSURE_2 — piston/brake line, raw ADC 0-4095
             comp_state,                // 0 = idle, 1 = running, 2 = cooldown
-            (int32_t)control_iters     // DIAGNOSTIC: control_task iteration count
+            (int32_t)control_iters,    // control_task iteration count
+            ledc_readback,             // duty actually held by LEDC ch1 (GPIO 3 / CN8.2)
+            g_gpio_init_err            // KM_GPIO_Init() result; 0 = ESP_OK
         };
-        KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 5);
+        KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 7);
     }
 
     // --- Safety: comms watchdog + manual mode ---
@@ -405,7 +419,8 @@ void health_task(void *ctx) {
 void system_init(void) {
 
     // Initialize hardware
-    if(KM_GPIO_Init() != ESP_OK)
+    g_gpio_init_err = (int32_t)KM_GPIO_Init();
+    if(g_gpio_init_err != ESP_OK)
         ESP_LOGE(TAG, "Error inicializando libreria gpio\n");
 
     // Initialise tasks
