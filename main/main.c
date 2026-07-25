@@ -36,79 +36,46 @@ static const char *TAG = "MAIN";
 #define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
 
 /* ---------- EBS compressor drive ----------
- * The duty cycle does two jobs here.
+ * The compressor is driven DC — full duty, no switching — and its average power
+ * is set by a slow on/off cycle instead of by PWM: 15 s on, 15 s off. That is a
+ * 30 s period, 0.033 Hz, 50% average.
  *
- * 1. It steps the voltage down, permanently. The compressor motor is rated for
- *    7.5 V and the rail is a regulated 12 V, so it must NEVER see full duty:
- *    PWM is what keeps it at its design voltage.
+ * WHY NOT PWM. The gate is driven by a 3D-printer hotbed MOSFET module
+ * (HA210N06). Its driver stage supplies the gate from its own rail, which is
+ * what makes it usable here at all, but a module built to switch a heater bed
+ * is not built to switch fast — it cannot hold a continuous PWM waveform at
+ * this motor's operating point. So the duty knob is gone, and the only lever
+ * left on average power is how long the motor is switched on for.
  *
- *    The pulse height is always 12 V — duty changes how long it is there, not
- *    how tall it is — so 7.2 V is not a voltage that appears anywhere in the
- *    circuit. It is the equivalent DC: the motor behaves as if fed 0.60 x 12 V
- *    = 7.2 V, just under its 7.5 V rating. It integrates the pulses rather than
- *    following them, because the winding's current never stops. At each turn-off
- *    the inductance keeps current circulating through the flyback diode, and
- *    with an electrical time constant of a few ms against an 0.8 ms off-time it
- *    barely decays, so the motor draws smooth current set by the average. (Not
- *    RMS — that would be right for a resistive load, which cannot carry current
- *    through the off-time.) The rotor's spin-up time is longer still, hundreds
- *    of times the 2 ms period, so speed cannot respond to individual pulses.
+ * WHY THAT IS STILL SAFE FOR THE MOTOR. The motor is rated 7.5 V and the rail
+ * is a regulated 12 V, so it is deliberately over-volted while it runs. That
+ * rating is a thermal/brush limit, not an insulation limit — the danger is
+ * sustained heating, not the 12 V itself. Averaged over the 30 s cycle the
+ * motor sees 6 V, under its rating, while each burst still gets full torque.
+ * The 15 s cap IS the protection: it bounds how much heat one burst can
+ * deposit, and the 15 s off-time is when that heat leaves.
  *
- *    So COMPRESSOR_DUTY_RUN is the operating point, not a cap to lift later —
- *    raising it to 255 would put a sustained 12 V on a 7.5 V motor and cook it.
- *    The 7.5 V rating is a thermal/brush limit, not an insulation limit: the
- *    danger is sustained current, not the 12 V pulse height.
+ * WHY THE SOFT START STAYS. The 1 s ramp is about inrush, not average power, so
+ * the slow cycle does not replace it. A stationary motor has no back-EMF, so
+ * only the winding resistance limits current (~40-50 A). That spike browns out
+ * the 12 V regulator and drops the USB ground loop. Ramping gives the rotor
+ * time to spin up and generate back-EMF, which chokes the current off on its
+ * own. Every burst re-ramps, because every burst starts from rest.
  *
- * 2. Ramping it in provides the soft-start. Snapping a stationary motor to its
- *    running duty is a near-short: with no back-EMF, only the winding resistance
- *    limits current (~40-50 A). That spike browns out the 12 V regulator and
- *    drops the USB ground loop. Ramping gives the motor time to spin up and
- *    generate back-EMF, which chokes the current off on its own.
- *
- * Because the run duty is permanent, the MOSFET switches forever — it never gets
- * to rest at DC. That is fine: switching loss is NOT what makes it hot. Measured
- * 2026-07-18 with the part identified as an IRLZ44N and 6 A running current, at
- * 500 Hz and 60% duty, conduction loss is ~2.1 W against ~0.04 W of switching
- * loss — conduction dominates about 50x, so halving the frequency changes
- * essentially nothing. Do not spend a run on it.
- *
- * The real problem is that GPIO 3 drives the gate at 3.3 V. The IRLZ44N
- * datasheet specifies Rds(on) at Vgs = 10 V (0.022 R), 5 V (0.025 R) and 4 V
- * (0.035 R) and stops there, with Vgs(th) max = 2.0 V, so at 3.3 V it never
- * fully enhances — call it 0.05-0.07 R cold and ~1.6x that hot. Against
- * Rth(j-a) = 62 C/W in a bare TO-220 that is a ~130 C rise at 60% duty, which
- * is what baked the adhesive around the part on the first bench run.
- *
- * Two ways out, neither of them the frequency:
- *   - Drive the gate properly (gate driver, or the HA210N06 hotbed module whose
- *     driver stage supplies the gate from its own rail). See tasks.md.
- *   - Lower the duty, which is what this constant now does. Dissipation falls
- *     roughly cubically, because current and conduction time both drop with it.
- *
- * Do NOT "fix" heat by raising the duty — that trades a hot MOSFET for a burnt
- * motor, and it makes the MOSFET hotter too, since conduction scales with
- * I^2 x duty and both terms rise.
+ * SUPERSEDED — do not resurrect this from the git history. This block used to
+ * argue for a permanent 20% duty (COMPRESSOR_DUTY_RUN = 51) on the grounds that
+ * PWM was the only thing keeping a 7.5 V motor off a 12 V rail. That reasoning
+ * was sound for the hardware it described: a bare TO-220 IRLZ44N with its gate
+ * driven straight from GPIO 3 at 3.3 V, never fully enhanced, measured at
+ * ~100 C on the 2026-07-18 bench run at 20% duty and roughly 8 A. It does not
+ * apply to the hotbed module, which drives its gate properly. That measurement
+ * and the reasoning around it are preserved in history.md; they are out of this
+ * comment because they describe hardware this code no longer talks to.
  */
-// 20% of 255 → 2.4 V average from a 12 V rail. Stepped down 153 (60%) → 51 (20%)
-// on 2026-07-18. TESTED: the motor turns at this duty and pumped the tank to
-// 7.5 bar, so 20% is above the breakaway point. Undervolting a 7.5 V motor is
-// safe; it just runs slower.
-//
-// The MOSFET still reached ~100 C on that run, which DISPROVES the cubic
-// estimate this comment used to carry (it predicted under 0.1 W and about 30 C).
-// The error was assuming motor current falls with duty. It does not, because the
-// pump works against rising tank pressure: at low duty the motor turns slowly,
-// generates little back-EMF, and current is set by roughly (V_avg - back-EMF) /
-// R_winding. Back-calculating from ~100 C against Rth(j-a) = 62 C/W gives ~1.2 W,
-// which at 20% duty implies about 8 A — HIGHER than the 6 A measured at 60%.
-// The motor is close to electrically stalled here even though it is turning.
-//
-// So dropping the duty buys much less thermal margin than it looks like it
-// should, and 20% is near the useful floor. The real fix is the gate drive, not
-// the duty — see the block above and tasks.md.
-#define COMPRESSOR_DUTY_RUN      51
-#define COMPRESSOR_DUTY_RUN      51
-#define COMPRESSOR_SOFT_START_MS 1000  // linear 0 → COMPRESSOR_DUTY_RUN over this long
+#define COMPRESSOR_DUTY_RUN      255    // 100% — DC on, no switching (see above)
+#define COMPRESSOR_SOFT_START_MS 1000   // linear 0 → COMPRESSOR_DUTY_RUN over this long
+#define COMPRESSOR_MAX_RUN_MS    15000  // hard cap on one continuous burst
+#define COMPRESSOR_COOLDOWN_MS   15000  // forced off-time after a burst hits the cap
 
 /**
  * @brief Context shared between the control and health tasks.
@@ -200,44 +167,85 @@ void control_task(void *ctx) {
     const uint16_t ADC_PRESSURE_HIGH = 2858;  // ~8 bar — above this, stop
 
     uint16_t pres1_adc = KM_GPIO_ReadADC(PIN_PRESSURE_1);
-    static bool compressor_active = false;
-    static TickType_t compressor_start_tick = 0;
+    uint16_t pres2_adc = KM_GPIO_ReadADC(PIN_PRESSURE_2);
 
+    // Demand latch (hysteresis): pump below LOW, stop above HIGH, hold state in
+    // between. The band is what stops the motor short-cycling at the threshold.
+    static bool compressor_demand = false;
     if (pres1_adc < ADC_PRESSURE_LOW) {
-        if (!compressor_active) compressor_start_tick = now;  // rising edge → restart the ramp
-        compressor_active = true;
+        compressor_demand = true;
     } else if (pres1_adc > ADC_PRESSURE_HIGH) {
-        compressor_active = false;
+        compressor_demand = false;
+    }
+
+    // Burst limiter — this is the thermal protection, since duty is fixed at
+    // 100% and can no longer be used to limit average power. A burst runs at
+    // most COMPRESSOR_MAX_RUN_MS, then the motor is forced off for
+    // COMPRESSOR_COOLDOWN_MS even if the tank is still below LOW.
+    //
+    // Demand falling away ends a burst early WITHOUT owing a cooldown: a burst
+    // that stopped because the tank filled was short, deposited little heat,
+    // and the hysteresis band already prevents it from restarting immediately.
+    // Only a burst that ran the full 15 s has to pay the 15 s back.
+    static bool burst_active = false;
+    static bool compressor_cooling = false;
+    static TickType_t burst_start_tick = 0;
+    static TickType_t cooldown_start_tick = 0;
+
+    if (compressor_cooling &&
+        (uint32_t)(now - cooldown_start_tick) * portTICK_PERIOD_MS >= COMPRESSOR_COOLDOWN_MS) {
+        compressor_cooling = false;
+    }
+
+    if (!compressor_demand) {
+        burst_active = false;
+    } else if (!compressor_cooling) {
+        if (!burst_active) {
+            burst_active = true;
+            burst_start_tick = now;   // new burst → restart the soft-start ramp
+        } else if ((uint32_t)(now - burst_start_tick) * portTICK_PERIOD_MS >= COMPRESSOR_MAX_RUN_MS) {
+            burst_active = false;     // hit the cap → forced cooldown
+            compressor_cooling = true;
+            cooldown_start_tick = now;
+        }
     }
 
     // Ramp off elapsed time rather than a per-cycle step, so the profile stays a
-    // 1 s ramp regardless of how the control task period is retuned. The ramp
-    // tops out at COMPRESSOR_DUTY_RUN, never at full 12 V.
+    // 1 s ramp regardless of how the control task period is retuned.
     uint32_t comp_duty = 0;
-    if (compressor_active) {
-        uint32_t elapsed_ms = (uint32_t)(now - compressor_start_tick) * portTICK_PERIOD_MS;
+    if (burst_active) {
+        uint32_t elapsed_ms = (uint32_t)(now - burst_start_tick) * portTICK_PERIOD_MS;
         comp_duty = (elapsed_ms >= COMPRESSOR_SOFT_START_MS)
                   ? COMPRESSOR_DUTY_RUN
                   : (COMPRESSOR_DUTY_RUN * elapsed_ms) / COMPRESSOR_SOFT_START_MS;
     }
+
+    // 0 = idle (tank satisfied), 1 = running, 2 = forced cooldown. Sent so the
+    // dashboard can tell "off because full" from "off because cooling", which
+    // otherwise look identical at duty 0.
+    int32_t comp_state = burst_active ? 1 : (compressor_cooling ? 2 : 0);
 #ifdef PIN_CMD_COMPRESSOR
     KM_GPIO_WritePWM(PIN_CMD_COMPRESSOR, comp_duty);
 #endif
 
     // --- Pneumatics telemetry → Orin (throttled) ---
-    // Tank pressure (raw ADC) + compressor duty (0 = MOSFET off, >0 = on/ramping).
     // Throttled to ~20 Hz: this task runs at 500 Hz and the steering frame already
     // uses most of the 115200 UART budget, so sending a second frame every cycle
     // would overflow it. Pressure changes over seconds and the 1 s soft-start ramp
     // still gets ~20 samples, so 20 Hz is plenty for the dashboard.
+    //
+    // Fields 2 and 3 were APPENDED, not inserted: an older Orin still reading
+    // only [pressure, duty] keeps working against this frame unchanged.
     static uint16_t pneum_div = 0;
     if (++pneum_div >= 25) {  // 25 x 2 ms = 50 ms → 20 Hz
         pneum_div = 0;
-        int32_t pneum[2] = {
-            (int32_t)pres1_adc,        // tank pressure, raw ADC 0-4095
-            (int32_t)comp_duty         // compressor PWM duty 0-255 (0 = off)
+        int32_t pneum[4] = {
+            (int32_t)pres1_adc,        // PRESSURE_1 — tank, raw ADC 0-4095
+            (int32_t)comp_duty,        // compressor duty 0-255 (0 = off)
+            (int32_t)pres2_adc,        // PRESSURE_2 — piston/brake line, raw ADC 0-4095
+            comp_state                 // 0 = idle, 1 = running, 2 = cooldown
         };
-        KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 2);
+        KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 4);
     }
 
     // --- Safety: comms watchdog + manual mode ---
