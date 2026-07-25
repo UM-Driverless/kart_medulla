@@ -21,6 +21,19 @@
 - **If you discover `main` is ahead of `dev`** (someone pushed straight to main, or a merge bypassed `dev`), merge `main` into `dev` immediately before adding new commits so `dev` stays the "latest + in-progress" snapshot.
 - **Flashing the ESP32 does NOT replace the validation step.** A flash puts code on the chip; validation means the kart actually drove with it and nothing regressed. Only then does `main` move.
 
+## Sensor Validity (READ THIS)
+
+**A sensor that is absent, failed, or out of range must not produce a number.** This firmware is the *source*
+of every reading, so this is where invalidity has to be representable — patching it at the dashboard only fixes
+one consumer, and the steering PID is another. Live example, 2026-07-25: with nothing on the I²C bus,
+`KM_SDIR_ReadRaw()` returns `lastRawValue` (0) on failure, `KM_SDIR_ReadAngle()` converts that to
+`-(0 - 2250)/4096 x 2pi = 3.451 rad`, and the kart dashboard drew a confident **90 deg LEFT** on a sensor that was
+not plugged in. Raw 0 is a legal encoder position, so nothing downstream could tell. `KM_SDIR_isConnected()`
+exists and was never consulted.
+
+Return `NAN` (or a validity flag) when the read failed, and check it before publishing or feeding a controller.
+Verify by unplugging the sensor and looking at the output — not by reading the code.
+
 ## Files
 - `tasks.md` (repo root) — **the repo's task board, the only one.** Read it before starting work.
   Only Rubén moves a task to Done; on this repo that gate means flashed *and* driven, per the branch
@@ -63,9 +76,21 @@ kart-medulla/
 
 ## Flashing
 
+**Flash from the Orin** (the Mac has no toolchain — see the stale-path warning below):
 ```bash
-cd ~/repos/kart-medulla && pio run --target upload --environment esp32dev
+ssh orin-remote 'echo 0 | sudo -S systemctl stop kart-brain'   # KB_Coms_micro holds the port
+cd ~/kart_medulla && ~/.local/bin/pio run -e esp32-s3-devkitc-1 --target upload --upload-port /dev/ttyACM0
+ssh orin-remote 'echo 0 | sudo -S systemctl start kart-brain'
 ```
+The S3 enumerates on the Orin as **`/dev/ttyACM0`** (the CH343 is a CDC-ACM device), *not* `/dev/ttyUSB0`
+as the classic board's CP2102 did. Uploading while `kart-brain` is running fails — the ROS node owns the port.
+
+> **The build can link stale objects and still report SUCCESS (found 2026-07-25).** `components/km_gpio/km_gpio.c`
+> was a week newer than its `.o`, `touch` did not trigger a rebuild, and `pio run` exited 0 having compiled
+> nothing — so the flashed firmware silently kept week-old behaviour. Deleting the artefacts forced a correct
+> rebuild. **Until this is fixed, `rm -rf .pio/build/esp32-s3-devkitc-1` before any build you intend to trust,
+> and check that a `Compiling .../<yourfile>.o` line actually appears.** `main/` tracks fine; `components/` does
+> not. Details and the proposed fix: `tasks.md` in kart-brain.
 
 > **Stale-path warning (checked 2026-07-10):** this used to read `~/Desktop/kart-medulla` and
 > `~/.local/bin/pio`. The repo lives at `~/repos/kart-medulla`, and **no PlatformIO or ESP-IDF
