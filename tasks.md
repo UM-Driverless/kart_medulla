@@ -48,6 +48,11 @@ it with a clamp meter during a run before sizing anything.
 
 ### Gate-drive options, researched 2026-07-18
 
+> **Superseded for the compressor as of 2026-07-25** — the HA210N06 module (next section) was
+> confirmed to carry an optocoupler and already drives the gate off its own DC-IN rail, so it *is*
+> the gate driver. Do not fit a TC4420 / MCP1407 / UCC27517A for this load. This section stays for
+> the part-selection reasoning and for the next PCB revision, where a discrete FET is still the plan.
+
 **A replacement MOSFET is essentially not available, and the reason is structural.** Across ~150
 datasheets checked by table text (Infineon, Vishay, Nexperia, Toshiba, ST, onsemi, Diodes, AOS), the
 industry floor for a *specified* Rds(on) is **Vgs = 4.5 V**. Vgs(th) max on power dice runs
@@ -128,27 +133,85 @@ Three consequences, all pointing the same way:
    Even ignoring voltage, an ESP32 pin at ~20 mA would need ~7 µs to move that charge. Direct GPIO
    drive is impossible on current as well as on voltage.
 
-**Useful inference about the module:** since 3.3 V is below this part's worst-case threshold, a
-pass-through module (control pin wired to the gate through a resistor) simply would not work with
-the 3.3 V printer boards these are sold for. So the carrier almost certainly *does* boost the gate
-off its DC-IN rail. Confirm before relying on it — measure gate-to-source at the MOSFET pads with
-12 V on DC IN and 3.3 V on Control In. ~10–12 V means a boost stage is present; ~3.3 V means it is
-not, and no MOSFET choice will save it without a driver.
+**Control-input topology confirmed by inspection, 2026-07-25: the module carries a bridge rectifier
+and an optocoupler.** That settles the open question of whether the carrier boosts the gate — it
+does, off its own DC-IN rail, so **the module is the gate driver and no separate TC4420 /
+UCC27517A is needed**. It also means the control input is not a voltage-sensed logic pin but a
+**current-driven LED sitting behind two diode drops**, which changes the drive requirement entirely.
 
-**Three things to check before wiring it in:**
+**Symptom, 2026-07-25: wired to the module, the compressor does nothing.** GPIO 3 measured 3.3 V /
+0 V alternating with the signal wire *unplugged*; it has not yet been measured while connected.
 
-1. **What is on the control input.** If it is an optocoupler (a 4-pin DIP such as a PC817), turn-off
-   is slow — tens of µs — and slow edges at 500 Hz put the part in its linear region for a real
-   fraction of every cycle. Hotbed modules are built to switch a bed at well under 1 Hz, and slow
-   turn-off with fast PWM is a known way to cook them. If optocoupled, run at **200–250 Hz**, not
-   500 Hz (~200 Hz is the floor from the note below, where motor current goes discontinuous).
+**The bridge is what breaks 3.3 V drive.** The path is Control In → bridge → series resistor → opto
+LED, so ~1.3 V (two silicon drops) stacks on the LED's ~1.1 V Vf and **~2.4 V is consumed before any
+current reaches the resistor**. Only the remainder drives the opto, and bypassing the bridge
+recovers most of it:
+
+| Drive at Control In | Fixed drop | If (1 kΩ assumed) |
+|---|---|---|
+| 5.0 V — the module's design point | ~2.4 V | 2.6 mA |
+| 3.3 V nominal, as wired | ~2.4 V | 0.9 mA |
+| 2.64 V — loaded ESP32-S3 pin, per the VOH note above | ~2.4 V | 0.24 mA |
+| 3.3 V with the bridge bypassed | ~1.1 V | **2.2 mA** |
+| 2.64 V with the bridge bypassed | ~1.1 V | **1.5 mA** |
+
+A 1.5× drop in drive voltage costs ~3× the LED current, because the fixed drops eat the headroom
+nonlinearly. At the pessimistic corner (bridge 1.4 V + Vf 1.4 V = 2.8 V) a loaded 3.3 V pin delivers
+**zero** and the LED never turns on at all; bypassed, that same corner still gives ~1.2 mA.
+PC817-class CTR also collapses below ~1 mA, so what little current does flow transfers badly. The
+ESP32 can easily *supply* milliamps — it cannot *push them through* 2.4 V of diode drops from 3.3 V.
+This is a voltage-headroom problem, not a current-capacity one.
+
+**Fix, no added ICs — bypass the bridge by injecting past it, not by desoldering.** The bridge has
+two AC pins (fed from the Control In screw terminals) and a **+** / **−** output pair feeding the
+resistor and LED. Tack GPIO 3 to the **+** pad and ESP32 ground to the **−** pad, leaving the bridge
+in place and unused. Two wires, reversible. That lands at ~85% of the module's own 5 V design
+current. For margin, solder a second 1 kΩ across the existing series resistor — 500 Ω effective
+gives 4.4 mA at 3.3 V and 3.1 mA on a sagging pin, far under the PC817's 50 mA continuous rating.
+The only loss is polarity-insensitivity on the control wire; the opto barrier is untouched, so
+galvanic isolation survives.
+
+**Do these two before soldering:**
+
+1. **Confirm the bridge sits on the control input, not on DC IN.** Trace the Control In screw
+   terminals — they should land on the bridge's two AC pins. If it instead protects the 12 V input
+   against reverse polarity, bypassing it is wrong and removes real protection; in that case the
+   control side carries only the LED's ~1.1 V drop and 3.3 V is marginal rather than dead.
+2. **Jumper test — five minutes, no soldering.** Disconnect the ESP32, wire Control In+ to 5 V and
+   Control In− to GND. Compressor runs → the module is good and drive level is the whole bug.
+   Nothing → the fault is DC IN, the load side, or the module itself, and the bypass is wasted
+   effort. 5 V is safe here; these inputs are sized for 5–24 V precisely because of the bridge.
+
+**Two failure modes specific to an optocoupled input, worth ruling out first — both produce exactly
+"does nothing":**
+
+- **The control input is a floating two-terminal loop, not a ground-referenced signal.** Driving
+  Control In+ from GPIO 3 while leaving Control In− unconnected — relying on the shared ground a
+  non-isolated module would have given — passes no current at all. Both terminals must be driven.
+- **DC IN must be independently powered.** The optocoupler only gates the module's own rail; with no
+  12 V on DC IN the module is inert no matter what the control side does.
+
+**Still unverified on the module:** the optocoupler part number, the series resistor value, and
+whether the output stage inverts. The symptom partly answers the last one — an inverting stage with
+a starved LED would leave the compressor stuck **on**, and it is doing nothing, which points to
+non-inverting.
+
+**Two constraints that still apply once it is driven properly:**
+
+1. **Run at 200–250 Hz, not 500 Hz.** Optocoupler turn-off is slow — tens of µs — and slow edges at
+   500 Hz put the MOSFET in its linear region for a real fraction of every cycle. Hotbed modules are
+   built to switch a bed at well under 1 Hz, and slow turn-off with fast PWM is a known way to cook
+   them. More LED current speeds up turn-on but not the phototransistor's turn-off, so the bypass
+   does not relax this. (~200 Hz is the floor from the note below, where motor current goes
+   discontinuous.)
 2. **Add or keep a flyback diode.** These modules are designed for a *resistive* heater and
    generally have none. The compressor is inductive. The existing freewheel diode must stay, or one
    must be fitted at the module's load terminals.
-3. **Grounding.** An optocoupled module is galvanically isolated, which is a genuine bonus here —
-   it would break the ESP32-to-compressor ground path behind the USB brownouts in `history.md`.
-   A non-isolated module does not, so keep the star-ground rule: compressor return goes to power
-   ground at the regulator, not through signal ground.
+
+**Grounding.** The confirmed optocoupler makes the module galvanically isolated, which is a genuine
+bonus here — it breaks the ESP32-to-compressor ground path behind the USB brownouts in `history.md`.
+Keep the star-ground rule on the power side regardless: compressor return goes to power ground at
+the regulator, not through signal ground.
 
 **Worth considering instead of PWM entirely:** the 60% duty exists only to step 12 V down to the
 motor's rated 7.5 V. A buck converter set to 7.5 V with a plain on/off switch removes the
