@@ -81,6 +81,45 @@
 /** @brief Number of frames the median filter runs over. */
 #define KM_SDIR_PWM_MEDIAN_N       5
 
+/**
+ * @brief Raw sensor count with the road wheels pointing straight ahead.
+ *
+ * This is a MECHANICAL constant: it is whatever the magnet happens to read at
+ * the mounted zero, so it changes any time the sensor or magnet is moved on the
+ * column, and it cannot be derived — it has to be measured.
+ *
+ * MEASURED 2026-07-26 on the kart, wheels held straight: 1242, holding steady
+ * within one count (1242-1243, about 0.09 degrees of jitter) over five samples.
+ *
+ * The previous value came from SENSOR_CENTER = 2250 in km_sdir.h, which belongs
+ * to the retired AS5600 on a different mounting. It put straight-ahead at
+ * -(1242-2250)/4096 x 2pi = 1.55 rad, and the dashboard gauge clamped that to a
+ * confident "90 LEFT" while the wheels pointed forwards.
+ *
+ * TO RE-MEASURE: hold the wheels straight and read the raw field (field 2) of
+ * the steering frame — `read_telemetry.py`, or `ros2 topic echo /esp32/steering`
+ * on the Orin — then put that number here and reflash. Re-check the sign at the
+ * same time (see KM_SDIR_PWM_LEFT_LOCK_RAW): remounting can reverse which way
+ * the count runs, and a silent sign flip steers the kart the wrong way.
+ */
+#define KM_SDIR_PWM_CENTER_RAW     1242
+
+/**
+ * @brief Raw sensor count at full LEFT lock — reference, not used in the maths.
+ *
+ * Measured 2026-07-26 alongside the centre: 2328, steady to the count. It sits
+ * ABOVE the centre, which is what fixes the sign convention: the count rises as
+ * the wheels go left, so the centred difference is used unnegated to make
+ * positive = left (ROS REP 103).
+ *
+ * 2328 - 1242 = 1086 counts = 95.4 degrees of sensor rotation at full lock. Full
+ * travel therefore spans roughly 156..2328 in raw counts, nowhere near the
+ * 0/4095 wrap, so the wrap-fold in the angle conversion should never trigger in
+ * normal driving. If it starts triggering, the sensor has been remounted and
+ * both these constants need re-measuring.
+ */
+#define KM_SDIR_PWM_LEFT_LOCK_RAW  2328
+
 /******************************* FUNCIONES PÚBLICAS ***************************/
 
 /**

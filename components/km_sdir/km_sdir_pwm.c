@@ -263,11 +263,25 @@ float KM_SDIR_PWM_ReadAngleRadians(void)
     uint16_t raw;
     if (!KM_SDIR_PWM_Median(&raw)) return NAN;
 
-    /* Same centring and sign convention as the I2C path in km_sdir.c, so the
-     * PID gains and the Orin's interpretation carry over unchanged: positive
-     * is a left turn (ROS REP 103). */
-    int32_t centered = (int32_t)raw - (int32_t)SENSOR_CENTER;
-    return -((float)centered / (float)KM_SDIR_PWM_DATA_STEPS) * 2.0f * (float)M_PI;
+    /* Centre on the measured mechanical zero, not on the AS5600's SENSOR_CENTER
+     * — that constant describes a sensor and a mounting this board no longer has.
+     *
+     * Wrap-safe: the difference is folded into +/- half a revolution before
+     * scaling, so a zero near either end of the 0..4095 range still gives a
+     * continuous angle instead of jumping a full turn as the count rolls over.
+     *
+     * SIGN: the raw count RISES as the wheels turn LEFT on this mounting, so the
+     * difference is used as-is to make positive = left (ROS REP 103). The old
+     * AS5600 code negated it, and a comment in main.c used to assert "AS5600
+     * already positive=left"; that was true of the retired sensor's mounting and
+     * is not true of this one. Measured on the kart 2026-07-26: straight ahead
+     * 1242, full left lock 2328, a difference of +1086 counts = 95.4 degrees.
+     * Negating that would have reported a hard left turn as 95 degrees RIGHT —
+     * a sign error the PID would act on by steering the wrong way. */
+    int32_t centered = (int32_t)raw - (int32_t)KM_SDIR_PWM_CENTER_RAW;
+    if (centered >= KM_SDIR_PWM_DATA_STEPS / 2) centered -= KM_SDIR_PWM_DATA_STEPS;
+    if (centered < -KM_SDIR_PWM_DATA_STEPS / 2) centered += KM_SDIR_PWM_DATA_STEPS;
+    return ((float)centered / (float)KM_SDIR_PWM_DATA_STEPS) * 2.0f * (float)M_PI;
 }
 
 /** @brief Centred angle in degrees, or NAN when unknown. See km_sdir_pwm.h. */
