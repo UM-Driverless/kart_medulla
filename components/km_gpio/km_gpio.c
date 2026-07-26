@@ -4,6 +4,7 @@
  *****************************************************************************/
 
 #include "km_gpio.h"
+#include "esp_adc_cal.h"
 #include "esp_log.h"
 
 /******************************* INCLUDES INTERNOS ****************************/
@@ -18,6 +19,8 @@
 
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
+static esp_adc_cal_characteristics_t adc1_chars;   // filled by KM_GPIO_Init
+
 const uart_config_t uart0_config;
 const uart_config_t uart2_config;
 
@@ -53,6 +56,16 @@ esp_err_t KM_GPIO_Init(void)
     };
     
     adc1_config_width(ADC_WIDTH_BIT_12);
+
+    /* ADC calibration. Raw counts are not volts: the mapping has per-chip offset
+     * and gain error, and the "full scale" voltage at 11 dB is neither the 3.3 V
+     * rail nor a number worth guessing. Every ESP32 ships calibration data in
+     * eFuse, and this turns a raw count into millivolts using it — so downstream
+     * code never has to invent a counts-per-volt constant. Characterised once
+     * here; KM_GPIO_ReadADC_mV() uses it. */
+    esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12,
+                             0 /* no Vref override; eFuse or default is used */,
+                             &adc1_chars);
     
     for (int i = 0; i < sizeof(adc1_pins)/sizeof(adc1_pins[0]); i++) {
         adc_pin_cfg.pin_bit_mask = 1ULL << adc1_pins[i];
@@ -310,6 +323,25 @@ uint16_t KM_GPIO_ReadADC(gpio_num_t pin)
             return 0;
     }
 }
+
+/** @copydoc KM_GPIO_ReadADC_mV */
+uint32_t KM_GPIO_ReadADC_mV(gpio_num_t pin)
+{
+    /* Converts through the chip's own eFuse calibration rather than through an
+     * assumed counts-per-volt. That assumption is what produced the tank-pressure
+     * mess of 2026-07-26: the dashboard guessed a 3.3 V full scale, the datasheet
+     * says the 11 dB range is 0-2900 mV, and neither is the per-chip truth. With
+     * millivolts on the wire the consumer only needs the divider ratio, which is a
+     * property of the board and is knowable: PRESSURE_1/2 sit behind three equal
+     * 10 k resistors (R11/R12/R13, net PRESSURE_n__0_10V -> PRESSURE_n__0_3V3), so
+     * bar = 3 * V_pin for the 1 V/bar Festo SDE5.
+     *
+     * NOTE the divider maps the sensor's 0-10 V onto 0-3.33 V, but the ADC's usable
+     * range stops near 2900 mV, so readings saturate around 8.7 bar. Anything at or
+     * above that is out of range, not a pressure. */
+    return esp_adc_cal_raw_to_voltage(KM_GPIO_ReadADC(pin), &adc1_chars);
+}
+
 
 /* ---------- DAC ---------- */
 /** @copydoc KM_GPIO_WriteDAC */

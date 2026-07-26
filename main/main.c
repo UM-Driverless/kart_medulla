@@ -431,7 +431,16 @@ void control_task(void *ctx) {
         // chain, which is a real and different condition.
         int32_t sdc_readback = -1;
 #endif
-        int32_t pneum[8] = {
+        // Millivolts at the pin, converted through the chip's eFuse calibration.
+        // These are the fields a consumer should use for pressure: bar = 3 * V_pin
+        // for the 1 V/bar Festo SDE5 behind the board's three-equal-10k divider
+        // (R11/R12/R13, net PRESSURE_n__0_10V -> PRESSURE_n__0_3V3). The raw counts
+        // in fields 0 and 2 stay for the control loop and for older consumers, but
+        // turning THOSE into bar means inventing a full-scale voltage, which is
+        // exactly the mistake that had the dial and the firmware disagreeing.
+        int32_t pres1_mv = (int32_t)KM_GPIO_ReadADC_mV(PIN_PRESSURE_1);
+        int32_t pres2_mv = (int32_t)KM_GPIO_ReadADC_mV(PIN_PRESSURE_2);
+        int32_t pneum[10] = {
             (int32_t)pres1_adc,        // PRESSURE_1 — tank, raw ADC 0-4095
             (int32_t)comp_duty,        // compressor duty 0-255 commanded (0 = off)
             (int32_t)pres2_adc,        // PRESSURE_2 — piston/brake line, raw ADC 0-4095
@@ -439,9 +448,11 @@ void control_task(void *ctx) {
             (int32_t)control_iters,    // control_task iteration count
             ledc_readback,             // duty actually held by LEDC ch1 (GPIO 3 / CN8.2)
             g_gpio_init_err,           // KM_GPIO_Init() result; 0 = ESP_OK
-            sdc_readback               // SDC pin readback: 1 = chain closed, 0 = emergency
+            sdc_readback,              // SDC pin readback: 1 = chain closed, 0 = emergency
+            pres1_mv,                  // PRESSURE_1 in mV at the pin (calibrated)
+            pres2_mv                   // PRESSURE_2 in mV at the pin (calibrated)
         };
-        KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 8);
+        KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 10);
     }
 
     // --- Safety: comms watchdog + manual mode ---

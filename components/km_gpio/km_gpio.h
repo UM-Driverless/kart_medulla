@@ -310,6 +310,22 @@ esp_err_t KM_GPIO_SetEmergency(uint8_t assert_emergency);
  */
 uint16_t KM_GPIO_ReadADC(gpio_num_t pin);
 
+/**
+ * @brief   Reads an ADC pin and returns MILLIVOLTS, not raw counts.
+ *
+ * @details Uses the chip's own eFuse ADC calibration, so callers never have to
+ *          assume a counts-per-volt constant. Prefer this over KM_GPIO_ReadADC()
+ *          for anything that means a physical quantity: a consumer given raw
+ *          counts has to guess the full-scale voltage, and guessing it wrong is
+ *          what made the tank-pressure dial disagree with the firmware for months
+ *          (see history.md 2026-07-26).
+ *
+ * @param   pin  GPIO to read (must be an ADC1 channel set up by KM_GPIO_Init).
+ * @return  Voltage at the pin in mV. Values near the 11 dB ceiling (~2900 mV)
+ *          are saturated, not measurements.
+ */
+uint32_t KM_GPIO_ReadADC_mV(gpio_num_t pin);
+
 /* ---------- DAC ---------- */
 
 /**

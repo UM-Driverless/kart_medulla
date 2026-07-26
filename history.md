@@ -1166,3 +1166,36 @@ scale, and the SDE5 is ±3 %FS regardless. Under this factor ADC full scale is 1
 sensor's rated 10 bar span, so the top is extrapolation. The settling measurement is a meter on the
 ADC pin read against the gauge and the raw count at the same instant, at two well-separated
 pressures — that separates divider, sensor and gauge in one pass.
+
+
+## 2026-07-27 — The divider is 3:1; firmware now sends millivolts
+
+Rubén, on the previous entry: the KiCad design is three equal resistors in series, tapped after one,
+so a third of the voltage. Checked `dv-hardware/projects/kart-medulla/kart-medulla_P1.kicad_sch` —
+**R11 = R12 = R13 = 10K**, nets `PRESSURE_n__0_10V` → `PRESSURE_n__0_3V3`. Exactly 3:1, always was.
+The 2026-07-26 inference that it must be ~3.95:1 was wrong: it deduced hardware from a calibration
+mismatch when the schematic was one grep away.
+
+**The framing was the real error.** `bar = 3 * V_pin` is fixed by the sensor (1 V/bar) and the
+schematic. The only unknown was raw count → volts — and that is not a constant to pick. Every ESP32
+carries per-chip ADC calibration in eFuse. Both previous attempts (a 3.3 V full-scale assumption, then
+a gauge anchor replacing it) were guesses at a number the chip already knows.
+
+So `KM_GPIO_ReadADC_mV()` now converts through `esp_adc_cal_raw_to_voltage()`, characterised once in
+`KM_GPIO_Init()`, and `ESP_PNEUMATIC` gained fields 8 and 9 carrying PRESSURE_1/2 in millivolts. Raw
+counts stay in fields 0 and 2 for the control loop and older consumers. `km_gpio` now REQUIRES
+`esp_adc`.
+
+**Thresholds deliberately unchanged.** `ADC_PRESSURE_LOW/HIGH` stay at raw 2500/2858. Converting them
+to millivolts would be the natural follow-up, but it changes when the pump stops in true pressure, and
+the running-vs-settled ground-IR-drop bias is still unresolved — moving both at once would make the
+result uninterpretable. One change at a time, and that one belongs on the bench.
+
+**Range ceiling:** the divider maps 0-10 V onto 0-3.33 V while the ADC at 11 dB is good to ~2900 mV,
+so readings saturate near **8.7 bar**. The top of the sensor's span is not measurable on this board.
+The dashboard now returns no-value rather than a number there.
+
+**Unexplained and now the open question:** the mechanical gauge read 7.5 bar where the sensor says
+~6.5. With 3:1 confirmed, the gauge would need a 3.82 V ADC full scale to be right, which exceeds
+VDDA. Gauge and sensor genuinely conflict; checking the sensor's physical part number is the first
+step, since 0-10 bar → 0-10 V is assumed from a code comment, not from the label.
