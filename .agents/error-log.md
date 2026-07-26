@@ -201,3 +201,55 @@ like a guess while I was making it, which is exactly why the feeling cannot be t
 - **A comment justifying correct code still has to be true.** Wrong reasoning attached to a working
   guard is invisible to the build and to tests — the compiler cannot fail on it, so it survives
   until someone acts on it. Check claims in comments at the same bar as claims in prose.
+
+---
+
+## 2026-07-27 — Built two days of hardware conclusions on one number from an old commit message
+
+**What happened.** A comment in `main.c` said: *"Calibration (2026-07-18): the tank sat at a
+gauge-read 7.5 bar while this ADC channel read 2679."* I treated that as a measurement — a real,
+current, comparable reading of the same quantity the sensor measures — and reasoned outward from it
+for two days:
+
+1. Noticed the dashboard's ADC→bar map disagreed with it by ~16%, and "fixed" the dashboard to match
+   it, rewriting the calibration in kart-brain and committing it.
+2. When the ESP32-S3 datasheet's 2900 mV full scale made the numbers still not fit, concluded the
+   board's divider must be ~3.95:1 instead of 3:1 — **inventing a hardware fact** to preserve the
+   number. Wrote it into two `history.md` files, `protocol.py`, `tasks.md` and the shared datasheet
+   index, with a confident derivation.
+3. Rubén said the design is three equal resistors. The schematic confirms R11 = R12 = R13 = 10K.
+   Corrected that, but *still* kept the 7.5 as valid, and pivoted to asserting "the mechanical gauge
+   is wrong" — an instrument I had never confirmed exists.
+4. Proposed multimeter procedures to adjudicate between the sensor and that instrument.
+
+**There is no mechanical dial.** Rubén: it does not exist. And the number is unusable for far more
+basic reasons than accuracy — the code was different then, the wiring was different, there may be a
+regulator between the measurement point and the sensor, the two readings may have been taken at
+different points in the circuit, and it may simply have been a value he reported verbally from
+earlier while the pressure had since dropped by the time the ADC was read. **None of that is
+recoverable from the note.** The note records a number, not a measurement.
+
+**Root cause.** I treated a number written in a comment as data. A measurement is only comparable if
+you know what was measured, where, when, and under what configuration; this had none of that, and the
+note itself was a year of hardware changes out of date. Worse, every time reality contradicted it I
+adjusted *reality* — first the divider ratio, then the credibility of a phantom instrument — rather
+than questioning the number. That is the failure mode: an unsourced value became the fixed point that
+verified facts were bent around.
+
+The compounding factor: it was written in the imperative, confident register these files use, so it
+read as established. My own additions then cited it, which made it look corroborated.
+
+**Prevention.**
+- **A number in a comment is a claim, not a measurement.** Before building on one, ask what was
+  measured, with what, where in the circuit, and on which revision of the hardware and firmware. If
+  the note does not say, it is an anecdote — usable as a hint, never as an anchor.
+- **When a documented chain (datasheet + schematic + on-chip calibration) disagrees with one
+  undocumented number, the number is the suspect.** I had it backwards twice.
+- **Never infer a hardware value from a calibration mismatch.** The schematic is in
+  `dv-hardware/projects/kart-medulla/` on this machine. Read it. Two wrong claims here — the 3.95:1
+  divider and the "faulty gauge" — were both one grep from being avoided.
+- **Old notes expire.** Anything predating a wiring or firmware change describes a system that no
+  longer exists. Check the date of the note against the dates of the changes before quoting it.
+- **Stop and ask instead of escalating.** By step 3 the sensible move was "where does this 7.5 come
+  from, and is that instrument real?" — one question to the person who was there. Instead I invented
+  a measurement procedure for a device that does not exist.

@@ -308,13 +308,14 @@ once it stops. Rubén's proposed workaround is to stop the compressor periodical
 taken with the motor off.
 
 **This is probably not a small offset, and it likely explains the calibration puzzle below.** The
-run that stopped at a gauge-read 7.5 bar was using an OFF threshold of ADC > 1638, yet the settled
-reading afterwards was **2679**. With duty at 0 the tank cannot gain pressure, so the sensor reading
+run that stopped at a reported 7.5 bar was using an OFF threshold of ADC > 1638, yet the settled
+reading afterwards was **2679**. (The 7.5 itself is void — see `.agents/error-log.md` 2026-07-27 —
+but the ADC-to-ADC part of this observation does not depend on it.) With duty at 0 the tank cannot gain pressure, so the sensor reading
 rose ~1041 counts (~64%) between "running" and "settled" at equal or falling true pressure. That is
 the running bias, not a calibration error in the sensor.
 
 **Safety consequence — check before the next unattended run.** The 7/8 bar thresholds now in
-`main.c` were derived from a **settled** reading (2679 ↔ 7.5 bar) but the control loop evaluates them
+`main.c` were derived from a **settled** reading but the control loop evaluates them
 against a **running** reading, which is biased low. So the compressor stops later than intended, and
 the reservoir is rated 10 bar:
 
@@ -375,8 +376,9 @@ compressor runs. If the rail sags in proportion to the reading, it is cause 1.
 > **BELIEVED OBSOLETE 2026-07-26 — read before doing any of this; yours to close.** This task is
 > written against `ADC_1_BAR = 819` / `ADC_2_BAR = 1638`, and **those constants no longer exist**.
 > `main.c` now has `ADC_PRESSURE_LOW = 2500` / `ADC_PRESSURE_HIGH = 2858` (~7 and ~8 bar), set from
-> the 2026-07-18 gauge anchor, and the dashboard was corrected to the same anchor on 2026-07-26 so
-> both sides finally agree. The `bar = 3 x Vadc` map this task argues from is also now known to be
+> a 2026-07-18 figure that is now void (see `.agents/error-log.md` 2026-07-27 — there is no mechanical
+> gauge on this kart and that number cannot be used), and the dashboard now derives bar from the
+> sensor chain instead: 1 V/bar, 3:1 divider, eFuse-calibrated millivolts from the firmware. The `bar = 3 x Vadc` map this task argues from is also now known to be
 > wrong on two counts — ADC full scale is 2900 mV not 3300, and the divider cannot be 3:1 — see the
 > calibration note in kart-brain `src/kb_dashboard/kb_dashboard/protocol.py`. What is *not* settled
 > is the running-vs-settled bias above, which is a separate and more serious problem.

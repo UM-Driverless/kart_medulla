@@ -281,35 +281,41 @@ void control_task(void *ctx) {
     KM_GPIO_SetEmergency(sdc_may_close ? 0 : 1);
 
     // --- Compressor control logic (hysteresis + soft-start ramp) ---
-    // Pump up below 7 bar, stop above 8 bar.
+    // Nominally 'pump below 7 bar, stop above 8' — but see the warning below.
     //
-    // Calibration (2026-07-18): the tank sat at a gauge-read 7.5 bar while this
-    // ADC channel read 2679, giving 7.5 / 2679 = 0.0028 bar per count. The
-    // thresholds below are that ratio scaled, assuming the sensor is linear
-    // through zero:
-    //     7 bar -> 2679 * 7/7.5 = 2500
-    //     8 bar -> 2679 * 8/7.5 = 2858
+    // THESE THRESHOLDS ARE NOT CALIBRATED. Read this before trusting or moving them.
     //
-    // This is a ONE-POINT calibration and the zero-offset assumption is
-    // unverified — many pressure senders idle at an offset (0.5 V is common)
-    // rather than at 0 V, which would make both numbers read high. It is
-    // deliberately anchored to the gauge rather than to the older "bar =
-    // 3 x Vadc" note, because the two disagree (that map calls this same 2679
-    // reading 6.5 bar, not 7.5) and the gauge-anchored figure is the
-    // conservative one: if the older map turns out to be right, these
-    // thresholds stop the pump EARLY, around 6.9 bar, rather than late. Getting
-    // it wrong in the other direction matters, because the reservoir is rated
-    // 10 bar. Confirm against the gauge on the next run and correct if needed.
+    // They were derived on 2026-07-18 from a single note: "the tank sat at a
+    // gauge-read 7.5 bar while this ADC channel read 2679", scaled to 7 and 8 bar.
+    // That number cannot support them, and the reasons are not about accuracy:
+    //   - There is no mechanical gauge on this kart (confirmed by Ruben 2026-07-27).
+    //     Whatever produced 7.5 was not an instrument anyone can point at now.
+    //   - The wiring and this firmware have both changed since. The note describes a
+    //     system that no longer exists.
+    //   - There may be a regulator between the measurement point and PRESSURE_1, so
+    //     the two figures may not even refer to the same pressure.
+    //   - The two readings were not necessarily simultaneous: 7.5 may have been a
+    //     value seen earlier and reported verbally, with the tank already lower by
+    //     the time the ADC was sampled.
     //
-    // 2026-07-26: the dashboard used to convert the same ADC counts with the
-    // datasheet-derived map instead, so these trip points rendered as ~6.0 and
-    // ~6.9 bar there while being 7 and 8 here — one set of thresholds reading as
-    // two different pressures depending on where you looked. kart-brain's
-    // src/kb_dashboard/kb_dashboard/protocol.py now uses this same gauge anchor,
-    // so the dial agrees with these numbers. Both still rest on the one gauge
-    // reading below; recalibrating means changing both files together.
-    const uint16_t ADC_PRESSURE_LOW  = 2500;  // ~7 bar — below this, start pumping
-    const uint16_t ADC_PRESSURE_HIGH = 2858;  // ~8 bar — above this, stop
+    // The sensor chain, by contrast, is fully documented: the Festo SDE5 gives
+    // 1 V/bar (datasheet), the board divides by three (R11/R12/R13 all 10k, nets
+    // PRESSURE_n__0_10V -> PRESSURE_n__0_3V3), and KM_GPIO_ReadADC_mV() converts
+    // counts to millivolts through the chip's eFuse calibration. That chain says
+    // ADC 2679 is about 6.5 bar, not 7.5. Believe the chain.
+    //
+    // They are LEFT AS THEY ARE regardless, on purpose. They are raw counts and the
+    // kart has run with them; changing where the pump stops is a physical change and
+    // it interacts with the unresolved running-vs-settled ground-IR bias (tasks.md).
+    // Do that once, deliberately, on the bench — not as a side effect of tidying a
+    // comment. What is fixed here is the false claim that they were calibrated.
+    //
+    // Do NOT re-derive hardware values from a mismatch involving these numbers. That
+    // was tried twice in July 2026 and produced two confident wrong claims — an
+    // invented 3.95:1 divider, then a faulty gauge that does not exist. See
+    // .agents/error-log.md 2026-07-27.
+    const uint16_t ADC_PRESSURE_LOW  = 2500;  // raw counts; ~6.0 bar by the sensor chain
+    const uint16_t ADC_PRESSURE_HIGH = 2858;  // raw counts; ~6.9 bar by the sensor chain
 
     uint16_t pres1_adc = KM_GPIO_ReadADC(PIN_PRESSURE_1);
     uint16_t pres2_adc = KM_GPIO_ReadADC(PIN_PRESSURE_2);
