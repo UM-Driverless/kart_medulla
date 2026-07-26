@@ -86,14 +86,30 @@ def main():
                         angle_rad = val1 / 1000.0
                         print(f"[STEERING] angle: {angle_rad:.3f} rad, raw: {raw}, pid: {pid:.3f}")
             elif msg_type == 0x0C: # ESP_PNEUMATIC
-                if length == 8:
-                    pressure, comp_duty = struct.unpack('>ii', payload)
+                # The frame has grown twice by appending fields; decode the two
+                # core ones and whatever else is present. It was 8 bytes when this
+                # branch was written and is 28 now, which silently stopped it
+                # decoding at all.
+                if length >= 8:
+                    pressure, comp_duty = struct.unpack('>ii', payload[:8])
+                    n = length // 4
+                    rest = struct.unpack('>%di' % (n - 2), payload[8:n*4]) if n > 2 else ()
+                    tail = ""
+                    if n >= 4:
+                        tail += f", pres2: {rest[0]}, comp_state: {rest[1]}"
+                    if n >= 5:
+                        # control_task's own iteration count. Differences between
+                        # consecutive frames divided by the wall-clock gap give the
+                        # real control-loop rate; the frame arrival rate does not.
+                        tail += f", control_iters: {rest[2]}"
+                    if n >= 7:
+                        tail += f", ledc_duty: {rest[3]}, gpio_init: {rest[4]}"
                     # verified calibration (kart-brain tasks.md): SDE5 1 V/bar, ÷3 divider,
                     # bar = 3.0 * V_adc; raw ADC → V via linear 12-bit / 3.3 V model.
                     pressure_bar = 3.0 * (pressure / 4095.0 * 3.3)
                     state = "ON" if comp_duty > 0 else "off"
                     print(f"[PNEUMATIC] pres_adc: {pressure} ({pressure_bar:.2f} bar), "
-                          f"compressor: {state} {comp_duty}/255 ({comp_duty * 100 / 255:.0f}%)")
+                          f"compressor: {state} {comp_duty}/255 ({comp_duty * 100 / 255:.0f}%){tail}")
             elif msg_type == 0x0B: # ESP_HEALTH_STATUS
                 if length in (16, 24):
                     # Fields 5-6 (steering PWM frame counters) were appended when the
