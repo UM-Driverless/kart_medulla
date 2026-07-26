@@ -11,6 +11,25 @@ this repo that means flashed *and* driven, per the branch workflow in `AGENTS.md
 
 ## TODO
 
+### No CI builds this firmware, and the Mac cannot either
+
+Noticed 2026-07-26 while pushing the compressor-latch / SDC change. **Nothing compiles this repo
+automatically.** `.github/workflows/` does not exist on `dev`, and `gh run list` shows a single run
+ever — "Build with ESP-IDF v5.4", 2025-11-02, on `main` — so whatever workflow produced it is gone.
+Combined with the fact that **no PlatformIO or ESP-IDF is installed on the Mac** (see `AGENTS.md`),
+the practical situation is that firmware can be written and pushed with nobody having compiled it;
+the first compile happens on the Orin, at the kart, when someone tries to flash.
+
+That is how commit `f156921` went out: reviewed and reasoned about, but never built. It touches
+`control_task`, the object store and the pneumatic frame, so a typo lands as a failed flash at the
+kart rather than as a red mark on the PR.
+
+Work: restore a build-only workflow (ESP-IDF, `esp32-s3-devkitc-1` target) triggered on push to `dev`
+and on PRs into `main`. It does not need hardware — `idf.py build` in the Espressif container catches
+the whole class of error that currently escapes. Worth checking `git log --all -- .github/workflows/`
+on a full clone first; this clone shows no history for that path, so the old workflow may be
+recoverable rather than needing to be rewritten.
+
 ### Compressor MOSFET runs too hot — run the 250 Hz comparison next
 
 Bench run 2026-07-18 on firmware `a82c622`. **The test succeeded:** 0 → 6 bar in about a minute of
