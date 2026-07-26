@@ -1229,3 +1229,28 @@ physical change tangled with the unresolved running-vs-settled ground-IR bias. T
 
 Root cause and prevention: `.agents/error-log.md` 2026-07-27. The pattern: every time a verified fact
 contradicted the unsourced number, the verified fact was the thing that got adjusted.
+
+## 2026-07-27 (later still) — Hysteresis is in bar now, and a dead sensor no longer pumps forever
+
+Rubén: note bars in the code for the hysteresis, not meaningless numbers. Right — `ADC_PRESSURE_HIGH
+= 2858` was `2679 x 8/7.5`, arithmetic on the void figure, and it read as random because it was.
+
+The thresholds are now `PRESSURE_PUMP_ON_BAR = 7.0f` / `PRESSURE_PUMP_OFF_BAR = 8.0f`, compared
+against a real pressure: `KM_GPIO_ReadADC_mV()` gives calibrated millivolts and
+`PRESSURE_BAR_PER_PIN_VOLT = 3.0f` turns them into bar. Both terms come from the schematic and the
+datasheet. Raw counts stay in the telemetry frame; only the decision moved.
+
+**This is a behaviour change.** The old counts cut off near 6.9 bar, so the tank now fills about a bar
+further. That is the band originally asked for, and 8 is well inside the reservoir's 10 bar rating,
+but two limits bound it: the 8 bar cutoff sits at 2667 mV against an ADC ceiling near 2900 mV, so
+there is only ~0.7 bar of readable headroom above it; and the running ground-IR sag means the cutoff
+is reached late, so true pressure at stop is *above* 8 by whatever the sag is worth. Treat 8 as a
+floor on where the pump stops, not a ceiling, until that bias is measured.
+
+**New failure mode, guarded.** Making the cutoff depend on the reading made a dead sensor dangerous in
+a way it was not when the comparison was on raw counts: 0 mV looks exactly like an empty tank, so the
+pump would run every cycle forever with no feedback — the burst limiter caps the motor's heat, but
+nothing would cap the pressure. `tank_valid` now refuses to pump below 50 mV (shorted, unpowered or
+unfitted) or at/above 2900 mV (pegged, not a pressure), and reports `comp_state = 4` so the dashboard
+shows NO TANK SENSOR rather than a silent idle. This is the AGENTS.md sensor-validity rule applied to
+an actuator instead of a display: it fails visibly as no air, not invisibly as no cutoff.

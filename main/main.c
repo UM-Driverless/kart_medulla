@@ -109,6 +109,12 @@ static volatile bool steer_fault_latched = false;
  * and the reasoning around it are preserved in history.md; they are out of this
  * comment because they describe hardware this code no longer talks to.
  */
+/* Board divider on PRESSURE_1/2: three equal 10 k resistors (R11/R12/R13), so the
+ * pin sees a third of the sensor's output. The Festo SDE5 gives 1 V/bar, hence
+ * bar = 3 * V_pin. Both terms come from the schematic and the datasheet — there is
+ * no calibration constant here and none is needed. */
+#define PRESSURE_BAR_PER_PIN_VOLT 3.0f
+
 #define COMPRESSOR_DUTY_RUN      255    // 100% — DC on, no switching (see above)
 #define COMPRESSOR_SOFT_START_MS 1000   // linear 0 → COMPRESSOR_DUTY_RUN over this long
 #define COMPRESSOR_MAX_RUN_MS    15000  // hard cap on one continuous burst
@@ -283,42 +289,40 @@ void control_task(void *ctx) {
     // --- Compressor control logic (hysteresis + soft-start ramp) ---
     // Nominally 'pump below 7 bar, stop above 8' — but see the warning below.
     //
-    // THESE THRESHOLDS ARE NOT CALIBRATED. Read this before trusting or moving them.
+    // Thresholds are in BAR, because that is what they mean. They used to be raw
+    // ADC counts (2500 and 2858) carried over from scaling a 2026-07-18 figure that
+    // turned out to be void — there is no mechanical gauge on this kart, see
+    // .agents/error-log.md 2026-07-27. Those counts worked out to roughly 6.0 and
+    // 6.9 bar, so the band was real but nobody had chosen it; 2858 in particular was
+    // just 2679 x 8/7.5 and meant nothing.
     //
-    // They were derived on 2026-07-18 from a single note: "the tank sat at a
-    // gauge-read 7.5 bar while this ADC channel read 2679", scaled to 7 and 8 bar.
-    // That number cannot support them, and the reasons are not about accuracy:
-    //   - There is no mechanical gauge on this kart (confirmed by Ruben 2026-07-27).
-    //     Whatever produced 7.5 was not an instrument anyone can point at now.
-    //   - The wiring and this firmware have both changed since. The note describes a
-    //     system that no longer exists.
-    //   - There may be a regulator between the measurement point and PRESSURE_1, so
-    //     the two figures may not even refer to the same pressure.
-    //   - The two readings were not necessarily simultaneous: 7.5 may have been a
-    //     value seen earlier and reported verbally, with the tank already lower by
-    //     the time the ADC was sampled.
+    // Comparing in bar is possible now because the pressure is actually known:
+    // the Festo SDE5 gives 1 V/bar, the board divides by three (R11/R12/R13 all 10k,
+    // nets PRESSURE_n__0_10V -> PRESSURE_n__0_3V3), and KM_GPIO_ReadADC_mV()
+    // converts counts to millivolts through the chip's eFuse calibration. No fitted
+    // constant anywhere in that chain.
+    const float PRESSURE_PUMP_ON_BAR  = 7.0f;   // below this, start pumping
+    const float PRESSURE_PUMP_OFF_BAR = 8.0f;   // above this, stop
     //
-    // The sensor chain, by contrast, is fully documented: the Festo SDE5 gives
-    // 1 V/bar (datasheet), the board divides by three (R11/R12/R13 all 10k, nets
-    // PRESSURE_n__0_10V -> PRESSURE_n__0_3V3), and KM_GPIO_ReadADC_mV() converts
-    // counts to millivolts through the chip's eFuse calibration. That chain says
-    // ADC 2679 is about 6.5 bar, not 7.5. Believe the chain.
-    //
-    // They are LEFT AS THEY ARE regardless, on purpose. They are raw counts and the
-    // kart has run with them; changing where the pump stops is a physical change and
-    // it interacts with the unresolved running-vs-settled ground-IR bias (tasks.md).
-    // Do that once, deliberately, on the bench — not as a side effect of tidying a
-    // comment. What is fixed here is the false claim that they were calibrated.
-    //
-    // Do NOT re-derive hardware values from a mismatch involving these numbers. That
-    // was tried twice in July 2026 and produced two confident wrong claims — an
-    // invented 3.95:1 divider, then a faulty gauge that does not exist. See
-    // .agents/error-log.md 2026-07-27.
-    const uint16_t ADC_PRESSURE_LOW  = 2500;  // raw counts; ~6.0 bar by the sensor chain
-    const uint16_t ADC_PRESSURE_HIGH = 2858;  // raw counts; ~6.9 bar by the sensor chain
+    // BEHAVIOUR CHANGE, 2026-07-27: the old counts stopped the pump around 6.9 bar,
+    // so the tank now fills about a bar further. Deliberate — 7/8 is the intended
+    // band and the reservoir is rated 10 bar — but two things bound it:
+    //   - The 8 bar cutoff sits at 2667 mV and the ADC's 11 dB range ends near
+    //     2900 mV, so there is only ~0.7 bar of headroom above the cutoff before
+    //     readings saturate and stop being pressures at all. Do not raise
+    //     PRESSURE_PUMP_OFF_BAR much past 8 without re-reading that ceiling.
+    //   - The reading sags while the compressor runs (ground IR drop, ~8 A through
+    //     board copper — see tasks.md). A low reading means the cutoff is reached
+    //     LATER than intended, so true pressure at stop is above 8 bar by however
+    //     much the sag is worth. That bias is unresolved, so treat 8 as a floor on
+    //     where the pump actually stops, not a ceiling, and do not run the
+    //     compressor unattended until it is measured.
 
+    // Raw counts stay for telemetry; the control decision uses bar.
     uint16_t pres1_adc = KM_GPIO_ReadADC(PIN_PRESSURE_1);
     uint16_t pres2_adc = KM_GPIO_ReadADC(PIN_PRESSURE_2);
+    uint32_t pres1_mv  = KM_GPIO_ReadADC_mV(PIN_PRESSURE_1);
+    float    tank_bar  = PRESSURE_BAR_PER_PIN_VOLT * (float)pres1_mv / 1000.0f;
 
     // Demand latch (hysteresis): pump below LOW, stop above HIGH, hold state in
     // between. The band is what stops the motor short-cycling at the threshold.
@@ -329,12 +333,30 @@ void control_task(void *ctx) {
     // charge it a cooldown it never earned — and re-enabling mid-phantom-burst
     // would then skip the soft-start ramp, which is the one thing protecting the
     // 12 V rail from a stalled rotor's inrush.
+    // A reading the sensor cannot legitimately produce must not drive the pump.
+    // Now that the cutoff depends on this number, a dead channel is dangerous in a
+    // way it was not before: 0 mV looks exactly like an empty tank, and the pump
+    // would run every duty cycle forever with no feedback. The burst limiter caps
+    // the motor's heat but nothing would cap the pressure.
+    //   - Below PRESSURE_MIN_VALID_MV the channel is shorted, unpowered or unfitted.
+    //     A real 0 bar tank sits at 0 V too, but the kart is never at a true 0 bar
+    //     with a working sensor, so refusing to pump is the right call: it fails
+    //     visibly (no air) instead of invisibly (no cutoff).
+    //   - At or above the 11 dB ceiling the ADC is pegged and the reading is not a
+    //     pressure. Refusing to pump is also correct here — pegged high most likely
+    //     means over-range, and pumping into that would be the worst case.
+    // Either way the state is reported: comp_state 4 = sensor not usable.
+    const uint32_t PRESSURE_MIN_VALID_MV = 50;    // below this the channel is dead
+    const uint32_t PRESSURE_MAX_VALID_MV = 2900;  // 11 dB ceiling; at/above = pegged
+    bool tank_valid = (pres1_mv >= PRESSURE_MIN_VALID_MV) &&
+                      (pres1_mv <  PRESSURE_MAX_VALID_MV);
+
     static bool compressor_demand = false;
-    if (compressor_disabled) {
+    if (compressor_disabled || !tank_valid) {
         compressor_demand = false;
-    } else if (pres1_adc < ADC_PRESSURE_LOW) {
+    } else if (tank_bar < PRESSURE_PUMP_ON_BAR) {
         compressor_demand = true;
-    } else if (pres1_adc > ADC_PRESSURE_HIGH) {
+    } else if (tank_bar > PRESSURE_PUMP_OFF_BAR) {
         compressor_demand = false;
     }
 
@@ -386,7 +408,8 @@ void control_task(void *ctx) {
     // off" is exactly the one you need to see, since it is also why the kart
     // will not arm. Checked first: the latch outranks the other two.
     int32_t comp_state = compressor_disabled ? 3
-                       : (burst_active ? 1 : (compressor_cooling ? 2 : 0));
+                       : (!tank_valid ? 4
+                       : (burst_active ? 1 : (compressor_cooling ? 2 : 0)));
 #ifdef PIN_CMD_COMPRESSOR
     KM_GPIO_WritePWM(PIN_CMD_COMPRESSOR, comp_duty);
 #endif
