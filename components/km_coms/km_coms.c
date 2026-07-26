@@ -275,6 +275,7 @@ void KM_COMS_ProccessMsgs(void) {
  * - ORIN_MACHINE_STATE: 1 element (state enum)
  * - ORIN_HEARTBEAT: no payload
  * - ORIN_SHUTDOWN: 1 element
+ * - ORIN_COMPRESSOR_DISABLE: 1 element (0 = run normally, 1 = operator disabled)
  * - ORIN_COMPLETE: 6 elements: throttle, brake, steering, mission, state, shutdown
  *
  * Invalid payloads (wrong length or unknown direction for steering) are ignored.
@@ -337,6 +338,12 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
         if (msg.len != 1) return; // 1 int32 element: 0=PID, 1=direct PWM
         object_value = (int64_t)msg.payload[0];
         KM_OBJ_SetObjectValue(STEER_MODE, object_value);
+        break;
+
+    case ORIN_COMPRESSOR_DISABLE:
+        if (msg.len != 1) return; // 1 int32 element: 0=run normally, 1=disabled
+        object_value = (int64_t)msg.payload[0];
+        KM_OBJ_SetObjectValue(COMPRESSOR_DISABLED, object_value);
         break;
 
     case ORIN_COMPLETE:

@@ -153,11 +153,20 @@ esp_err_t KM_GPIO_Init(void)
      * boot state — it only replaces a weak pulldown with a driven level, so
      * that KM_GPIO_SetEmergency() has a pin it can actually assert.
      *
-     * Nothing in this firmware drives it HIGH, so the kart still cannot be
-     * armed; see the SDC entries in tasks.md and .agents/esp32s3-pinmap.md. */
+     * control_task() in main.c re-decides the level every cycle and is the only
+     * caller that ever drives it HIGH, so the chain closes only while the Orin
+     * reports AS_READY/AS_DRIVING with every interlock passing. Boot therefore
+     * still starts in emergency and stays there until that is true.
+     *
+     * INPUT_OUTPUT, not OUTPUT: the input buffer has to stay enabled for
+     * gpio_get_level() to return the level the pin is really driving. A plain
+     * OUTPUT pin reads back 0 whatever it is doing, which would make the SDC
+     * field in the pneumatic frame a fabricated constant rather than a
+     * measurement — and that field is the only way to observe this pin while
+     * the gate is not wired to anything. */
     gpio_config_t sdc_cfg = {
         .pin_bit_mask = 1ULL << PIN_SDC_NOT_EMERGENCY,
-        .mode = GPIO_MODE_OUTPUT,
+        .mode = GPIO_MODE_INPUT_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_ENABLE,   // keep the fail-safe if the pin floats
         .intr_type = GPIO_INTR_DISABLE

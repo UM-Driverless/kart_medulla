@@ -39,6 +39,20 @@ ACTUAL_SHUTDOWN,         // Actual state of the SHUTDOWN
 
 STEER_MODE,             // 0 = PID (default), 1 = direct PWM
 
+/* Operator "keep the compressor quiet" latch, set from the dashboard over
+ * ORIN_COMPRESSOR_DISABLE. Stored as DISABLED rather than ENABLED on purpose:
+ * km_objects_values[] is a static array, so every object starts at 0, and 0 has
+ * to mean "compressor allowed to run" — the opposite polarity would leave the
+ * kart with no air after every reboot. A reboot therefore clears the latch, which
+ * is the safe direction on its own — the combination to avoid is quiet-but-armed,
+ * and enabled is merely normal operation.
+ *
+ * The Orin covers the gap that leaves: kb_dashboard's DashboardNode re-sends the
+ * disable at 1 Hz for as long as it is set, so an ESP32 reset restores the latch
+ * within about a second instead of restarting the compressor next to whoever is
+ * working on the kart. Do not rely on that for safety; rely on it for quiet. */
+COMPRESSOR_DISABLED,    // 0 = compressor runs normally, 1 = operator disabled it
+
 KM_OBJ_LAST             // Este debe de ser siempre el ultimo
 } km_objects_t;
 

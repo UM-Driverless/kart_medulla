@@ -100,7 +100,10 @@ typedef enum
     ESP_COMPLETE            = 0x09, /**< Full telemetry message */
     ESP_DIAG_STEERING       = 0x0A, /**< AS5600 diagnostic registers (debug) */
     ESP_HEALTH_STATUS       = 0x0B, /**< Periodic health: [flags, status, agc, heap_h, heap_l, err_cnt] */
-    ESP_PNEUMATIC           = 0x0C, /**< Pneumatics telemetry: [tank_pressure_adc, compressor_duty] (~20 Hz) */
+    ESP_PNEUMATIC           = 0x0C, /**< Pneumatics telemetry, 8 fields, ~20 Hz: [tank_adc, comp_duty,
+                                         piston_adc, comp_state, control_iters, ledc_readback,
+                                         gpio_init_err, sdc_level]. Fields are only ever APPENDED, so a
+                                         consumer that reads the first N keeps working. */
 
     // ==========================
     // Orin --> ESP32 (0x20 - 0x3F)
@@ -115,6 +118,7 @@ typedef enum
     ORIN_COMPLETE           = 0x27, /**< Complete command with all fields */
     ORIN_CALIBRATE_STEERING = 0x28, /**< Calibrate steering sensor */
     ORIN_STEER_MODE         = 0x29, /**< Steering mode: 0=PID, 1=direct PWM */
+    ORIN_COMPRESSOR_DISABLE = 0x2A, /**< EBS compressor latch: 0=run normally, 1=operator disabled */
 
     // ==========================
     // Others (0x40 - 0xFF)

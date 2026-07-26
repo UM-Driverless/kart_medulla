@@ -1080,3 +1080,89 @@ stopped matching and the frame stopped printing entirely — including `control_
 to see the real control-loop rate. Worth remembering as a shape: **an equality test on a payload
 length turns into silence, not an error, the first time the payload is extended.** Prefer `>=` with
 explicit per-field guards.
+
+## 2026-07-26 — Compressor operator latch, and the shutdown circuit closes for the first time
+
+Working on the kart is loud: the EBS compressor is driven entirely by firmware — pressure hysteresis
+in `control_task` — so it starts whenever the tank drops, regardless of whether someone has their
+hands in the kart. There was no way to tell it to stop. Added one: a dashboard button sets a
+`COMPRESSOR_DISABLED` latch over a new `ORIN_COMPRESSOR_DISABLE` (0x2A) message.
+
+The latch is not just a mute. A kart whose compressor is off cannot refill the EBS reservoir, so it
+must not go on looking ready to drive. Disabling therefore forces emergency, and that is where the
+more consequential half of this change is.
+
+### Nothing had ever closed the shutdown chain
+
+`KM_GPIO_SetEmergency()` already existed, `KM_GPIO_Init()` already configured GPIO 18 and drove it
+LOW, and `main.c` already asserted emergency on steering-sensor loss. But **no caller had ever passed
+0** — nothing closed the chain, so Q3 was permanently off and the kart could not be armed at all
+(gap #3 in `.agents/esp32s3-pinmap.md`). Opening a chain that is already open is unobservable, so the
+feature as asked for was a no-op until the closing half existed.
+
+`control_task` now decides the level once per cycle, written as a **whitelist**: close only while the
+Orin reports `AS_READY`/`AS_DRIVING`, comms are fresh, the steering-fault latch is clear, and the
+compressor is enabled. Everything else — including states nobody anticipated — leaves it open. The
+inverse shape ("assert emergency when something is wrong") was rejected deliberately: a condition
+someone forgets to add should fail safe, not silently leave the kart armed.
+
+The decision block sits at the **top** of `control_task`, above the comms-watchdog early return.
+Below it, the cycles where comms are stale — exactly when the decision matters most — would be
+skipped. `comms_stale` moved up with it. It reads `steer_fault_latched` from the previous cycle
+(2 ms at 500 Hz), which is harmless because the fault sites still call `SetEmergency(1)` inline the
+moment they trip, so this block can only re-confirm an assertion, never delay one.
+
+**The Q3 gate is not wired to anything.** None of this brakes or arms the kart today. That is also
+why the pin moved to `GPIO_MODE_INPUT_OUTPUT` and its level is now field 8 of the `ESP_PNEUMATIC`
+frame: with no physical effect to observe, a readback off the pin is the only evidence the logic
+works. A plain `GPIO_MODE_OUTPUT` reads back 0 whatever it is driving, which would have made that
+field a fabricated constant — the same failure the sensor-validity rule is about.
+
+### Two smaller decisions worth keeping
+
+**Latch polarity is DISABLED, not ENABLED.** `km_objects_values[]` is a static array, so every object
+zero-initialises; 0 has to mean "compressor runs" or a reboot would leave the kart with no air. The
+cost is that a reboot clears the operator's latch. The Orin covers it by re-sending the disable at
+1 Hz while it is set, so an ESP32 reset restores it within a second instead of restarting the motor
+next to whoever is working. That is a quiet-guarantee, not a safety one — the safety direction is
+already the reboot default.
+
+**The latch gates compressor DEMAND, not the duty write.** Zeroing only the duty would leave
+`burst_active` set, so the burst timer would run against a motor that is not turning, charge it a
+cooldown it never earned, and — worse — re-enabling mid-phantom-burst would skip the soft-start ramp,
+which is the only thing protecting the 12 V rail from a stalled rotor's ~40-50 A inrush.
+
+### Pressure calibration: the dashboard was reading a bar low
+
+The trip points (ADC 2500/2858) were already 7 and 8 bar under the firmware's gauge anchor, but the
+dashboard converted the same counts with a datasheet-derived map (SDE5 1 V/bar ÷3 divider, linear
+3.3 V full scale) and rendered them as ~6.0 and ~6.9 — one hysteresis band reading as two different
+pressure ranges depending on which screen you looked at. kart-brain's `protocol.py` now uses
+`BAR_PER_ADC_COUNT = 7.5 / 2679`, so the dial and these thresholds agree.
+
+Why the gauge won, and what the old dashboard map got wrong. Two datasheets, now saved to
+`~/dv/datasheets/`, settle it — that map was wrong on **two** counts at once:
+
+1. **ADC full scale is 2900 mV, not 3300.** ESP32-S3 datasheet Table 5-6: ATTEN3 has an effective
+   measurement range of 0~2900 mV, and ATTEN3 is `ADC_ATTEN_DB_11`, which `km_gpio.c` sets for
+   PRESSURE_1.
+2. **The divider is not 3:1.** The SDE5-D10 datasheet (part 567465) gives 0-10 bar -> 0-10 V, i.e.
+   1 V/bar with a 0 V zero offset. A 3:1 divider would put 10 bar at 3.33 V, past the ADC's 2.9 V
+   ceiling, clipping a 10 bar tank at ~8.7 bar — so 3:1 is not what is fitted. The minimum workable
+   ratio is 3.45:1; 4:1 (10 bar -> 2.5 V) is the obvious choice.
+
+Together: 2.9 x 4 / 4095 = 0.0028327 bar/count, within **1.2%** of the gauge anchor's 0.0027995. Two
+datasheets and a mechanical gauge agreeing to ~1% is the real reason to trust these thresholds.
+
+**A first draft of this entry blamed ADC nonlinearity, and had the sign backwards.** Saturation below
+3.3 V is real (2900 mV), but a *lower* full scale means a linear-3.3 V model over-estimates the pin
+voltage — pushing the datasheet figure up, away from the gauge. Correcting only the ADC gives 5.69 bar
+at ADC 2679 against the gauge's 7.50, i.e. worse. The gap closes only when the divider is fixed too.
+Worth remembering: a mechanism matching an error's magnitude still has to match its sign.
+
+Still unverified: **nobody has measured R11/R12/R13** — the 4:1 ratio is predicted from the two
+datasheets, not observed. The anchor is also a single point, so a zero offset would tilt the whole
+scale, and the SDE5 is ±3 %FS regardless. Under this factor ADC full scale is 11.46 bar, past the
+sensor's rated 10 bar span, so the top is extrapolation. The settling measurement is a meter on the
+ADC pin read against the gauge and the raw count at the same instant, at two well-separated
+pressures — that separates divider, sensor and gauge in one pass.

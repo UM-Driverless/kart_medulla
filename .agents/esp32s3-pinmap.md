@@ -18,7 +18,7 @@ gate of Q3, the shutdown-circuit MOSFET.
 |---|---|---|
 | `PRESSURE_3` | 1 | analog in (ADC1) |
 | `HYDRAULIC_2` | 2 | analog in (ADC1) |
-| `CMD_COMPRESSOR_PWM` (ex-`BUZZER`) | 3 | LEDC PWM out → compressor MOSFET gate. Strap pin (JTAG src select), not driven by firmware until `KM_GPIO_Init()` runs ~200 ms into boot — but the gate has a pulldown, so the MOSFET is held off through that window and the compressor cannot self-start on boot or on a firmware crash (same arrangement as R23 for Q3 on GPIO 18). Duty is capped in firmware at 60%: the motor is a 7.5 V part on a 12 V rail, so it must never see full duty — see `COMPRESSOR_DUTY_RUN` in `main/main.c` |
+| `CMD_COMPRESSOR_PWM` (ex-`BUZZER`) | 3 | LEDC PWM out → compressor MOSFET gate. Strap pin (JTAG src select), not driven by firmware until `KM_GPIO_Init()` runs ~200 ms into boot — but the gate has a pulldown, so the MOSFET is held off through that window and the compressor cannot self-start on boot or on a firmware crash (same arrangement as R23 for Q3 on GPIO 18). Duty runs at **100%** — `COMPRESSOR_DUTY_RUN = 255` in `main/main.c`. This line used to say the duty was capped at 60% to keep a 7.5 V motor off a 12 V rail; that was true of the bare IRLZ44N whose gate came straight off the GPIO, and stopped being true when the gate moved to a 3D-printer hotbed MOSFET module that cannot hold a continuous PWM waveform. Average power is now limited by a slow on/off cycle instead: 15 s maximum burst, 15 s forced cooldown, with a 1 s soft-start ramp per burst for inrush. The reasoning is written out at the top of `main/main.c`. Also gated by `COMPRESSOR_DISABLED` (operator latch from the dashboard) |
 | `PEDAL_ACC` | 4 | analog in (ADC1) |
 | `PEDAL_BRAKE` | 5 | analog in (ADC1) |
 | `PRESSURE_1` | 6 | analog in (ADC1) |
@@ -76,8 +76,15 @@ GPIO matrix (MCPWM/PCNT/RMT), so the choice of pin doesn't constrain the periphe
 2. **Nothing drives `SELECT_THROTTLE` (GPIO 15).** The schematic routes it to the MAX4660 mux with a
    10 kΩ pulldown, so the default state is pedal pass-through (safe). Firmware must drive it HIGH to
    hand throttle to the DAC.
-3. **Nothing drives `SDC_NOT_EMERGENCY` (GPIO 18).** Until firmware drives it HIGH, Q3 stays off and
-   the kart sits in the emergency state. Fail-safe, but it means the kart cannot be armed.
+3. ~~**Nothing drives `SDC_NOT_EMERGENCY` (GPIO 18).**~~ **Closed 2026-07-26.** `control_task()` in
+   `main/main.c` now decides the level on every cycle and is the only thing that drives it HIGH. It is
+   a whitelist: the chain closes only while the Orin reports `AS_READY` or `AS_DRIVING`, comms are
+   fresh, the steering-fault latch is clear, and the operator has not disabled the compressor. Every
+   other case — including any state nobody anticipated — leaves it open, so a forgotten condition
+   fails safe. The pin is configured `GPIO_MODE_INPUT_OUTPUT` so its real level can be read back;
+   that readback is field 8 of the `ESP_PNEUMATIC` frame and shows on the dashboard's EBS page.
+   **The gate is still not wired to anything downstream**, so this changes no physical behaviour yet:
+   verify it by the readback or a meter on the pin, not by expecting the kart to brake.
 4. **No PCF8574 driver.** `CMD_REVERSE` is PCF8574 P0 over I²C; no code writes it.
 5. **Comms-watchdog releases the brake rather than applying it.** On stale comms or
    `MISSION_MANUAL`, `main.c` calls `KM_ACT_Stop()` on throttle, brake and steering — zeroing the

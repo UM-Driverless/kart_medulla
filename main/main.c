@@ -51,6 +51,17 @@ static volatile bool steer_fault_latched = false;
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
 #define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
 
+/* Autonomous-system states as the Orin numbers them, arriving here in
+ * MACHINE_STATE_ORIN via ORIN_MACHINE_STATE. Source of truth for these values is
+ * kart-brain's src/kart_control/scripts/state_machine_node.py — they are written
+ * out as names here rather than as bare integers so a renumbering on that side is
+ * findable from this one. Only the two "meant to be moving" states appear below;
+ * AS_OFF, AS_FINISHED and AS_EMERGENCY deliberately have no constant, because the
+ * shutdown chain stays open in all of them and the check is written as a
+ * whitelist. */
+#define AS_READY             1
+#define AS_DRIVING           2
+
 /* Sent in the steering frame's angle field when no angle is known. INT32_MIN is
  * roughly -2.1e6 radians once the consumer divides by 1000, so it cannot be
  * mistaken for a steering angle by anything that plots or acts on the number —
@@ -225,6 +236,50 @@ void control_task(void *ctx) {
 
     TickType_t now = xTaskGetTickCount();
 
+    // --- Comms watchdog inputs ---
+    // Computed here rather than further down because the shutdown-circuit
+    // decision below needs comms_stale, and that decision has to run on every
+    // cycle — including the cycles where the watchdog block returns early.
+    TickType_t last_cmd = KM_COMS_GetLastCmdTick();
+    int mission = (int)KM_OBJ_GetObjectValue(MISION_ORIN);
+    int comms_stale = (last_cmd == 0) || ((now - last_cmd) > pdMS_TO_TICKS(COMMS_WATCHDOG_MS));
+
+    // --- Shutdown circuit (SDC) — the one place that decides Q3's gate ---
+    //
+    // Written as a whitelist: the chain is CLOSED only while every condition
+    // below holds, and open in every other case, including any state nobody
+    // thought about. That is the opposite of the usual "assert emergency when
+    // something is wrong" shape, and it is deliberate — a condition someone
+    // forgets to add then fails safe instead of silently leaving the kart armed.
+    //
+    //   - AS_READY / AS_DRIVING: the Orin's own state machine says the kart is
+    //     meant to be able to move. AS_OFF, AS_FINISHED and AS_EMERGENCY all
+    //     leave the chain open. Note this means the ESP32 never arms the kart on
+    //     its own initiative; the Orin has to ask, every cycle, by continuing to
+    //     report one of those two states.
+    //   - COMPRESSOR_DISABLED: the operator's quiet-bench latch. A kart whose air
+    //     supply is switched off cannot refill the EBS reservoir, so it must not
+    //     also look ready to drive. This is the interlock behind the dashboard's
+    //     compressor button.
+    //   - steer_fault_latched: reads the PREVIOUS cycle's value, since the fault
+    //     is detected further down this same function — a 2 ms lag at the 500 Hz
+    //     task period. Harmless, because the detection sites still call
+    //     KM_GPIO_SetEmergency(1) directly the instant they trip, so this block
+    //     can only ever re-confirm an assertion, never delay one.
+    //   - comms_stale: no fresh command from the Orin means nobody is driving.
+    //
+    // NOT WIRED YET (2026-07-26): the Q3 gate does not go anywhere, so nothing
+    // physically brakes or arms when this changes. The level is reported back in
+    // the pneumatic frame below, read off the pin, which is how the logic is
+    // checked until the gate is connected.
+    bool compressor_disabled = KM_OBJ_GetObjectValue(COMPRESSOR_DISABLED) != 0;
+    int  as_state = (int)KM_OBJ_GetObjectValue(MACHINE_STATE_ORIN);
+    bool sdc_may_close = (as_state == AS_READY || as_state == AS_DRIVING)
+                      && !compressor_disabled
+                      && !steer_fault_latched
+                      && !comms_stale;
+    KM_GPIO_SetEmergency(sdc_may_close ? 0 : 1);
+
     // --- Compressor control logic (hysteresis + soft-start ramp) ---
     // Pump up below 7 bar, stop above 8 bar.
     //
@@ -245,6 +300,14 @@ void control_task(void *ctx) {
     // thresholds stop the pump EARLY, around 6.9 bar, rather than late. Getting
     // it wrong in the other direction matters, because the reservoir is rated
     // 10 bar. Confirm against the gauge on the next run and correct if needed.
+    //
+    // 2026-07-26: the dashboard used to convert the same ADC counts with the
+    // datasheet-derived map instead, so these trip points rendered as ~6.0 and
+    // ~6.9 bar there while being 7 and 8 here — one set of thresholds reading as
+    // two different pressures depending on where you looked. kart-brain's
+    // src/kb_dashboard/kb_dashboard/protocol.py now uses this same gauge anchor,
+    // so the dial agrees with these numbers. Both still rest on the one gauge
+    // reading below; recalibrating means changing both files together.
     const uint16_t ADC_PRESSURE_LOW  = 2500;  // ~7 bar — below this, start pumping
     const uint16_t ADC_PRESSURE_HIGH = 2858;  // ~8 bar — above this, stop
 
@@ -253,8 +316,17 @@ void control_task(void *ctx) {
 
     // Demand latch (hysteresis): pump below LOW, stop above HIGH, hold state in
     // between. The band is what stops the motor short-cycling at the threshold.
+    //
+    // The operator latch is applied to DEMAND, not to the duty write further
+    // down. Zeroing only the duty would leave burst_active set, so the burst
+    // timer would keep running against a motor that is not turning and would
+    // charge it a cooldown it never earned — and re-enabling mid-phantom-burst
+    // would then skip the soft-start ramp, which is the one thing protecting the
+    // 12 V rail from a stalled rotor's inrush.
     static bool compressor_demand = false;
-    if (pres1_adc < ADC_PRESSURE_LOW) {
+    if (compressor_disabled) {
+        compressor_demand = false;
+    } else if (pres1_adc < ADC_PRESSURE_LOW) {
         compressor_demand = true;
     } else if (pres1_adc > ADC_PRESSURE_HIGH) {
         compressor_demand = false;
@@ -302,10 +374,13 @@ void control_task(void *ctx) {
                   : (COMPRESSOR_DUTY_RUN * elapsed_ms) / COMPRESSOR_SOFT_START_MS;
     }
 
-    // 0 = idle (tank satisfied), 1 = running, 2 = forced cooldown. Sent so the
-    // dashboard can tell "off because full" from "off because cooling", which
-    // otherwise look identical at duty 0.
-    int32_t comp_state = burst_active ? 1 : (compressor_cooling ? 2 : 0);
+    // 0 = idle (tank satisfied), 1 = running, 2 = forced cooldown, 3 = disabled
+    // by the operator. Sent so the dashboard can tell these apart, which are
+    // otherwise all identical at duty 0 — and "off because someone switched it
+    // off" is exactly the one you need to see, since it is also why the kart
+    // will not arm. Checked first: the latch outranks the other two.
+    int32_t comp_state = compressor_disabled ? 3
+                       : (burst_active ? 1 : (compressor_cooling ? 2 : 0));
 #ifdef PIN_CMD_COMPRESSOR
     KM_GPIO_WritePWM(PIN_CMD_COMPRESSOR, comp_duty);
 #endif
@@ -343,23 +418,36 @@ void control_task(void *ctx) {
         // the hardware actually holds, which is the difference between "the code commanded
         // it" and "the pin is driving it".
         int32_t ledc_readback = (int32_t)ledc_get_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1);
-        int32_t pneum[7] = {
+        // Same readback principle as ledc_readback above, for the same reason:
+        // report the level the pin is holding, not the level we asked for. Needs
+        // GPIO_MODE_INPUT_OUTPUT on the pin (set in KM_GPIO_Init) — on a plain
+        // OUTPUT this would read 0 forever and look like a permanently open chain.
+#ifdef PIN_SDC_NOT_EMERGENCY
+        int32_t sdc_readback = (int32_t)gpio_get_level(PIN_SDC_NOT_EMERGENCY);
+#else
+        // Sentinel for a build with no SDC pin. Both current targets define one,
+        // so this branch is unreachable today — it exists so that such a build
+        // reports "no data" rather than a 0 the dashboard would draw as an open
+        // chain, which is a real and different condition.
+        int32_t sdc_readback = -1;
+#endif
+        int32_t pneum[8] = {
             (int32_t)pres1_adc,        // PRESSURE_1 — tank, raw ADC 0-4095
             (int32_t)comp_duty,        // compressor duty 0-255 commanded (0 = off)
             (int32_t)pres2_adc,        // PRESSURE_2 — piston/brake line, raw ADC 0-4095
-            comp_state,                // 0 = idle, 1 = running, 2 = cooldown
+            comp_state,                // 0 = idle, 1 = running, 2 = cooldown, 3 = disabled
             (int32_t)control_iters,    // control_task iteration count
             ledc_readback,             // duty actually held by LEDC ch1 (GPIO 3 / CN8.2)
-            g_gpio_init_err            // KM_GPIO_Init() result; 0 = ESP_OK
+            g_gpio_init_err,           // KM_GPIO_Init() result; 0 = ESP_OK
+            sdc_readback               // SDC pin readback: 1 = chain closed, 0 = emergency
         };
-        KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 7);
+        KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 8);
     }
 
     // --- Safety: comms watchdog + manual mode ---
-    TickType_t last_cmd = KM_COMS_GetLastCmdTick();
-    int mission = (int)KM_OBJ_GetObjectValue(MISION_ORIN);
-    int comms_stale = (last_cmd == 0) || ((now - last_cmd) > pdMS_TO_TICKS(COMMS_WATCHDOG_MS));
-
+    // last_cmd / mission / comms_stale are computed at the top of this function,
+    // because the SDC decision needs comms_stale and must not be skipped by the
+    // early return below.
     if (comms_stale || mission == MISSION_MANUAL) {
         // No commands received recently OR manual mode → zero all outputs
         KM_ACT_Stop(c->throttle_act);
