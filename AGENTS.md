@@ -98,10 +98,12 @@ as the classic board's CP2102 did. Uploading while `kart-brain` is running fails
 > and check that a `Compiling .../<yourfile>.o` line actually appears.** `main/` tracks fine; `components/` does
 > not. Details and the proposed fix: `tasks.md` in kart-brain.
 
-> **Stale-path warning (checked 2026-07-10):** this used to read `~/Desktop/kart-medulla` and
-> `~/.local/bin/pio`. The repo lives at `~/repos/kart-medulla`, and **no PlatformIO or ESP-IDF
-> is currently installed on the Mac** — only `esptool` (5.2.0, at `~/.local/bin/esptool.py`).
-> Install a toolchain before expecting the command above to work.
+> **Path/toolchain note (rechecked 2026-07-26):** this used to read `~/Desktop/kart-medulla`; the
+> repo lives at `~/repos/kart-medulla`. **PlatformIO IS now installed on the Mac**, at
+> `~/.platformio/penv/bin/pio` — not on `PATH`, so call it by full path. Verified by building both
+> `esp32-s3-devkitc-1` and `esp32dev` to a linked firmware.bin on 2026-07-26, which supersedes the
+> earlier "no toolchain on the Mac" note. The Mac can therefore compile-check a change before it
+> goes near the kart; flashing still happens from the Orin, which is where the board is.
 >
 > The S3 board's USB-UART bridge is a **WCH CH343/CH9102** (VID `0x1A86`), not a CP2102 — it
 > enumerates as `/dev/cu.usbmodem*`, not `/dev/cu.SLAB_USBtoUART`. The board's two USB-C ports

@@ -435,12 +435,18 @@ it. Both targets build; nothing has been flashed or driven.
   comment while the code uses 2250. Both the PWM and I²C paths centre on it, so it sets where zero
   steering is. It has to be measured against the column once the sensor is mechanically mounted;
   until then, straight-ahead will not read 0.
-- **kart-brain (Orin) must decode the appended telemetry fields.** `ESP_ACT_STEERING` grew a 4th
-  int32 (1 = the angle is real, 0 = not) and sends `INT32_MIN` in the angle field when invalid;
-  `ESP_HEALTH_STATUS` grew fields 5-6 (steering frame count, reject count) and flag bit 3
-  (`Steer OK`). Appending keeps old decoders working, but until kart-brain reads the validity flag
-  the dashboard will plot `INT32_MIN/1000` as an angle. `read_telemetry.py` in this repo already
-  handles both.
+- **The dashboard will report "no sensor" even when the steering sensor is working perfectly, until
+  kart-brain is changed.** `src/kb_dashboard/kb_dashboard/protocol.py` `decode_health()` reads only
+  flags bit0 = `magnet_ok`, bit1 = `i2c_ok`, bit2 = `heap_ok`. Both steering-related bits it reads
+  are AS5600 I²C facts, and on the S3 they are now deliberately and permanently 0 — the firmware no
+  longer polls an AS5600 that cannot answer. The live steering health moved to **bit 3**
+  (`Steer OK`) and **bit 4** (fault latched: EBS fired, throttle refused), with accepted/rejected
+  frame counts appended as payload fields 5-6. The dashboard has to read the new bits, and should
+  stop presenting `i2c_ok` as steering health at all.
+- **kart-brain must also decode the steering frame's validity field.** `ESP_ACT_STEERING` grew a 4th
+  int32 (1 = the angle is real, 0 = not) and sends `INT32_MIN` in the angle field when invalid.
+  Appending keeps old decoders working, but until kart-brain checks the flag the dashboard will plot
+  `INT32_MIN/1000` as an angle. `read_telemetry.py` in this repo already handles both.
 
 ### Libraries (migrated from the old `TODO.md`, 2026-07-16 — written in Spanish, unverified)
 
