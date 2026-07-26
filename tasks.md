@@ -11,6 +11,36 @@ this repo that means flashed *and* driven, per the branch workflow in `AGENTS.md
 
 ## TODO
 
+### Confirm the faster S3 upload baud, and root-cause the stale-object build
+
+Two build-loop items found 2026-07-26, both cheap to settle at the kart.
+
+**1. Flashing was running 8x slower than the hardware allows.** `platformio.ini` had
+`upload_speed = 115200` on the S3 env. That number is a **CP2102** limit, and the CP2102 is on the
+*classic* board — the S3 board's bridge is a WCH CH343, rated 50 bps to 6 Mbps (datasheet:
+`~/dv/datasheets/ch343_wch_datasheet.pdf`). The S3 env had simply inherited the wrong board's
+constraint. Raised to **921600**, which should take a minute-plus flash down to seconds on an image
+this size (it links btstack + bluepad32). **Not yet tested on hardware** — raised from datasheets, not
+from a successful flash. Next time at the kart: flash once and confirm. If it will not connect or the
+verify fails, try 460800, then fall back to 115200 and record which worked here.
+
+**2. The stale-object bug probably was not a PlatformIO bug at all.** The old advice was to
+`rm -rf .pio/build/...` before *every* build, which costs a full rebuild (~100 s vs ~30 s) forever.
+Leading hypothesis is a **moved build tree**: CMake/ninja bake absolute paths into `build.ninja`,
+`.ninja_deps` and `CMakeCache.txt`, and this repo has moved more than once (Mac
+`~/Desktop/kart_medulla` → `~/repos/kart-medulla`; the Orin workspace renamed 2026-07-06). A build dir
+generated at the old path keeps checking the old path — which matches every symptom, `touch` included,
+and explains why deleting it cures things permanently. Glob-staleness is ruled out: the component
+`CMakeLists.txt` use explicit `SRCS "<file>.c"`, not `SRC_DIRS`.
+
+Test, one command on the Orin:
+```bash
+grep -m1 CMAKE_HOME_DIRECTORY .pio/build/esp32-s3-devkitc-1/CMakeCache.txt   # should equal $PWD
+```
+Mismatch confirms it: delete that directory once and incremental builds should stay correct. If it
+matches and a source edit still does not recompile, the hypothesis is wrong — capture the evidence in
+`history.md` and keep this open. Either way the `Compiling .../<file>.o` sanity check stays; it is free.
+
 ### No CI builds this firmware, and the Mac cannot either
 
 Noticed 2026-07-26 while pushing the compressor-latch / SDC change. **Nothing compiles this repo

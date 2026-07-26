@@ -93,10 +93,28 @@ as the classic board's CP2102 did. Uploading while `kart-brain` is running fails
 
 > **The build can link stale objects and still report SUCCESS (found 2026-07-25).** `components/km_gpio/km_gpio.c`
 > was a week newer than its `.o`, `touch` did not trigger a rebuild, and `pio run` exited 0 having compiled
-> nothing — so the flashed firmware silently kept week-old behaviour. Deleting the artefacts forced a correct
-> rebuild. **Until this is fixed, `rm -rf .pio/build/esp32-s3-devkitc-1` before any build you intend to trust,
-> and check that a `Compiling .../<yourfile>.o` line actually appears.** `main/` tracks fine; `components/` does
-> not. Details and the proposed fix: `tasks.md` in kart-brain.
+> nothing — so the flashed firmware silently kept week-old behaviour. Deleting the artefacts fixed it.
+>
+> **Always check that a `Compiling .../<yourfile>.o` line actually appears.** That check is free and catches
+> the failure whatever its cause; keep doing it regardless of everything below.
+>
+> **Do NOT reflexively `rm -rf .pio/build/...` before every build.** That was the original advice here and it is
+> too broad: it turns every build into a clean one (~100 s instead of ~30 s) to work around something that is
+> probably a one-time condition. Leading hypothesis, 2026-07-26 — **a moved build tree**. CMake and ninja bake
+> *absolute* paths into `build.ninja`, `.ninja_deps` and `CMakeCache.txt`, and this repo has moved more than
+> once (`~/Desktop/kart_medulla` → `~/repos/kart-medulla` on the Mac; the Orin workspace was renamed on
+> 2026-07-06). A build directory generated under the old path keeps checking the old path, so edits at the new
+> one are invisible — which matches every symptom, including `touch` doing nothing, and explains why deleting
+> the directory cures it permanently rather than temporarily. The component `CMakeLists.txt` files use explicit
+> `SRCS "<file>.c"` rather than `SRC_DIRS` globbing, so a glob that missed the file is ruled out.
+>
+> **Test it in one command** before assuming you must nuke anything:
+> ```bash
+> grep -m1 CMAKE_HOME_DIRECTORY .pio/build/esp32-s3-devkitc-1/CMakeCache.txt   # should equal $PWD
+> ```
+> Mismatch → delete that build directory once, and it should stay healthy at the new path. Match, yet a source
+> edit still does not recompile → the hypothesis is wrong, so record what you saw in `history.md` and reopen the
+> task in `tasks.md`.
 
 > **Path/toolchain note (rechecked 2026-07-26):** this used to read `~/Desktop/kart-medulla`; the
 > repo lives at `~/repos/kart-medulla`. **PlatformIO IS now installed on the Mac**, at
@@ -109,9 +127,8 @@ as the classic board's CP2102 did. Uploading while `kart-brain` is running fails
 > enumerates as `/dev/cu.usbmodem*`, not `/dev/cu.SLAB_USBtoUART`. The board's two USB-C ports
 > are silkscreened `COM` (the bridge) and `USB` (native USB-OTG / USB-Serial-JTAG on GPIO 19/20).
 
-- **Upload baud must be 115200** — the CP2102 USB-UART bridge fails at higher speeds during flash (460800 works fine for runtime comms, just not for esptool upload)
-- `upload_speed = 115200` is set in `platformio.ini`
-- Runtime UART baud is 460800 (set in `km_coms.c` KM_COMS_Init)
+- **Upload baud depends on which board.** The classic board's CP2102 fails flashing above **115200**. The S3 board's bridge is a **CH343**, rated 50 bps – 6 Mbps, so it is not bound by that — `[env:esp32-s3-devkitc-1]` uses **921600** as of 2026-07-26 (untested on hardware at time of writing; fall back to 115200 in `platformio.ini` if a flash refuses to connect). The two envs deliberately carry different numbers; do not "unify" them.
+- **Runtime UART baud is 115200**, set at `km_coms.c` KM_COMS_Init (`.baud_rate`). This line said 460800 until 2026-07-26 and was simply wrong — grep confirms 115200 is the only live baud in `components/` and `main/`; the `km_gpio.c` UART blocks that mention other values are commented out. `monitor_speed` in both envs matches it.
 - If flash hangs at "Connecting...", hold BOOT button, press EN, release BOOT
 - After flash, press EN to restart if needed
 
@@ -129,8 +146,8 @@ Three FreeRTOS tasks:
 
 Frame format: `| SOF(0xAA) | LEN | TYPE | PAYLOAD... | CRC8 |`
 
-- UART0 @ 460800 baud — protocol comms with Orin (via CP2102 USB)
-- UART2 — debug log output (ESP_LOG redirected here so UART0 stays clean)
+- UART0 @ **115200** baud — protocol comms with Orin, over the board's USB-serial bridge
+- UART2 — **not in use.** The ESP_LOG redirect to UART2 was removed (it caused crashes, and on the PCB those pins collide with MOTOR_HALL_1/3). ESP_LOG on UART0 is disabled so the binary protocol stays clean, which means the firmware is effectively silent on the console — do not wait for log output that cannot arrive
 - CRC8 poly 0x07 over LEN + TYPE + PAYLOAD
 
 **Message types (Orin → ESP32):**
@@ -199,6 +216,6 @@ Frame format: `| SOF(0xAA) | LEN | TYPE | PAYLOAD... | CRC8 |`
 
 ## Debugging
 
-- **Debug logs**: connect to UART2 pins (see `km_gpio.h` for PIN_ORIN_UART_TX/RX) at 460800 baud
+- **Debug logs**: there are none. The UART2 log redirect was removed and ESP_LOG on UART0 is off (see the UART Protocol section). Observe the firmware through the telemetry frames instead — `ESP_PNEUMATIC` in particular carries `control_iters`, the LEDC duty readback, the `KM_GPIO_Init()` error code and the SDC pin level precisely because there is no console to print to
 - **Protocol monitor**: `python3 monitor_serial.py` on /dev/ttyUSB0
 - **ROS2 side**: `ros2 topic echo /esp32/steering` to see feedback from ESP32
