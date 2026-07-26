@@ -18,6 +18,8 @@
 #include "freertos/task.h"
 
 #include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 // Librerias propias
 #include "km_act.h"
@@ -26,6 +28,7 @@
 #include "km_pid.h"
 #include "km_rtos.h"
 #include "km_sdir.h"
+#include "km_sdir_pwm.h"
 #include "km_sta.h"
 #include "km_gpio.h"
 #include "km_objects.h"
@@ -41,6 +44,16 @@ static int32_t g_gpio_init_err = -1;
 #define MAX_ERROR_COUNT_SDIR 10
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
 #define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
+
+/* Sent in the steering frame's angle field when no angle is known. INT32_MIN is
+ * roughly -2.1e6 radians once the consumer divides by 1000, so it cannot be
+ * mistaken for a steering angle by anything that plots or acts on the number —
+ * which is the point. Sending 0, or the last good reading, would look exactly
+ * like a plausible measurement, and that is how an unplugged sensor drew a
+ * confident 90-degrees-left on the dashboard on 2026-07-25 (see AGENTS.md,
+ * "Sensor Validity"). Field 4 of the same frame carries the validity flag for
+ * consumers that check it properly. */
+#define STEER_ANGLE_INVALID  INT32_MIN
 
 /* ---------- EBS compressor drive ----------
  * The compressor is driven DC — full duty, no switching — and its average power
@@ -95,6 +108,42 @@ typedef struct {
     PID_Controller *dir_pid;
 } control_context_t;
 
+/**
+ * @brief   Read the steering angle by whichever path this board is wired for.
+ *
+ * @details The ESP32-S3 kart board reads the MT6701 through its PWM output on
+ *          GPIO 1 (CN5.2). The classic ESP32 fallback board has no such input
+ *          and keeps the original AS5600-over-I2C path. Splitting them here
+ *          keeps the rest of control_task identical on both.
+ *
+ * @param   sdir     AS5600 sensor state (used only on the classic build).
+ * @param   out_raw  Receives the raw 12-bit angle, or -1 when unknown.
+ *
+ * @return  Angle in radians, positive = left, or NAN when no angle is known.
+ *
+ * @note    Both paths return NAN rather than a substitute value when the read
+ *          fails — the I2C one in particular, because KM_SDIR_ReadAngleRadians()
+ *          on its own hands back the last raw value (0 from boot) on failure,
+ *          which converts to a perfectly plausible 3.451 rad. See AGENTS.md,
+ *          "Sensor Validity".
+ */
+static float steering_read_rad(sensor_struct *sdir, int32_t *out_raw)
+{
+#ifdef PIN_STEER_PWM_IN
+    (void)sdir;
+    *out_raw = KM_SDIR_PWM_ReadRaw();
+    return KM_SDIR_PWM_ReadAngleRadians();
+#else
+    float rad = KM_SDIR_ReadAngleRadians(sdir);   // updates errorCount, so read first
+    if (!KM_SDIR_isConnected(sdir)) {
+        *out_raw = -1;
+        return NAN;
+    }
+    *out_raw = (int32_t)sdir->lastRawValue;
+    return rad;
+#endif
+}
+
 // ===========================
 // FreeRTOS task functions
 // ===========================
@@ -118,35 +167,55 @@ void comms_task(void *ctx) {
  * @brief   Control task — steering PID, actuator output, and sensor feedback.
  *
  * @details Registered with a 2 ms period (500 Hz target) via the KM_RTOS periodic
- *          wrapper — see period_ms arg in main(). Actual rate is bounded by the
- *          I2C AS5600 read and UART send latency per cycle; measure before tuning.
- *          On each cycle:
- *          1. Sends steering feedback (angle + raw encoder + last PID output) to
- *             Orin FIRST, so frames arrive even if the subsequent I2C read blocks.
- *          2. Reads the AS5600 steering angle via I2C.
+ *          wrapper — see period_ms arg in main(). Actual rate is bounded by UART
+ *          send latency per cycle; measure before tuning. On each cycle:
+ *          1. Reads the steering angle from the MT6701's PWM output, captured in
+ *             hardware by MCPWM (km_sdir_pwm.h) — a non-blocking read.
+ *          2. Sends steering feedback (angle + raw + last PID output + validity)
+ *             to Orin.
  *          3. Applies comms watchdog / manual-mission safety (zero outputs).
  *          4. Applies throttle and brake actuator outputs from Orin targets.
- *          5. Runs the steering PID controller and sets the motor output.
+ *          5. Runs the steering PID controller and sets the motor output, or
+ *             stops the steering motor when the angle is unknown.
  *
  * @param   ctx  Pointer to a control_context_t with sensor, actuator, and PID references.
  */
 void control_task(void *ctx) {
     control_context_t *c = (control_context_t *)ctx;
 
-    // Send feedback FIRST (use last known value) so frames arrive even if I2C blocks.
-    // Pneumatics (tank pressure + compressor duty) are NOT here — they ride their own
-    // ESP_PNEUMATIC frame, sent throttled further down.
     static float last_pid_out = 0.0f;
-    int32_t fb[3] = {
-        (int32_t)KM_OBJ_GetObjectValue(ACTUAL_STEERING),  // angle_rad x 1000
-        (int32_t)c->sdir->lastRawValue,                    // raw encoder
-        (int32_t)(last_pid_out * 1000)                     // PID output (PWM duty) x 1000
-    };
-    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 3);
 
-    // Read sensor — AS5600 already positive=left, matches our convention
-    float new_rad = KM_SDIR_ReadAngleRadians(c->sdir);
-    KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
+    // Read the steering sensor BEFORE sending feedback, so the frame carries the
+    // angle measured this cycle. The old order — send the previous value, then
+    // read — existed because the I2C AS5600 read could stall the whole cycle on a
+    // bus timeout, and frames had to escape before that happened. The PWM read
+    // copies out samples the MCPWM capture ISR already timestamped, so it cannot
+    // block and there is no longer anything to work around.
+    //
+    // Pneumatics (tank pressure + compressor duty) are NOT in this frame — they
+    // ride their own ESP_PNEUMATIC frame, sent throttled further down.
+    int32_t steer_raw   = -1;
+    float   new_rad     = steering_read_rad(c->sdir, &steer_raw);  // NAN if unknown
+    bool    steer_valid = !isnan(new_rad);
+
+    // Only publish an angle we actually measured. When the read is invalid,
+    // ACTUAL_STEERING keeps its previous contents and is NOT sent — the frame
+    // carries the sentinel instead, so nothing downstream sees a stale value
+    // dressed up as a fresh one.
+    if (steer_valid) {
+        KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(new_rad * 1000));
+    }
+
+    // Field 4 (validity) was APPENDED, not inserted: a consumer reading only the
+    // first three fields decodes this frame unchanged.
+    int32_t fb[4] = {
+        steer_valid ? (int32_t)KM_OBJ_GetObjectValue(ACTUAL_STEERING)
+                    : STEER_ANGLE_INVALID,             // angle_rad x 1000
+        steer_raw,                                     // raw 12-bit angle, -1 = unknown
+        (int32_t)(last_pid_out * 1000),                // PID output (PWM duty) x 1000
+        steer_valid ? 1 : 0                            // 1 = fields 1-2 are real
+    };
+    KM_COMS_SendMsg(ESP_ACT_STEERING, fb, 4);
 
     TickType_t now = xTaskGetTickCount();
 
@@ -309,17 +378,29 @@ void control_task(void *ctx) {
 
     float steer_out;
     if (steer_mode == 1) {
-        // Direct PWM mode: target_raw is PWM value [-1.0, 1.0]
+        // Direct PWM mode: target_raw is PWM value [-1.0, 1.0]. Open loop, so it
+        // deliberately still runs without a valid sensor — this is the mode used
+        // to move the column on the bench, including while the sensor is being
+        // mounted or has nothing to read.
         steer_out = target_raw;
         // Reset PID integral so it doesn't wind up while inactive
         KM_PID_Reset(c->dir_pid);
+    } else if (!steer_valid) {
+        // PID mode with no angle feedback. There is no error term to act on, so
+        // the motor is stopped rather than driven off a guessed position.
+        //
+        // Throttle and brake are left as the Orin commanded them, above. Whether
+        // losing the steering sensor should instead trigger a full stop or the
+        // EBS is a vehicle-safety decision, not a firmware default — it is open
+        // in tasks.md and needs Rubén's call.
+        KM_ACT_Stop(c->dir_act);
+        KM_PID_Reset(c->dir_pid);
+        last_pid_out = 0.0f;
+        return;
     } else {
         // PID mode: target_raw is angle in radians
         steer_out = KM_PID_Calculate(c->dir_pid, target_raw, new_rad);
     }
-    KM_ACT_SetOutput(c->dir_act, steer_out);
-    last_pid_out = steer_out;
-
     KM_ACT_SetOutput(c->dir_act, steer_out);
     last_pid_out = steer_out;
 }
@@ -359,6 +440,7 @@ void heartbeat_task(void *ctx) {
 #define HEALTH_FLAG_MAGNET_OK (1 << 0)
 #define HEALTH_FLAG_I2C_OK    (1 << 1)
 #define HEALTH_FLAG_HEAP_OK   (1 << 2)
+#define HEALTH_FLAG_STEER_OK  (1 << 3)  // steering-sensor PWM read is currently valid
 #define HEALTH_HEAP_MIN_BYTES 4096
 #define AGC_MIN 20   // below = magnet too strong
 #define AGC_MAX 235  // above = magnet too weak
@@ -369,29 +451,62 @@ void health_task(void *ctx) {
     while (1) {
         int32_t flags = 0;
 
-        // AGC is the reliable magnet strength indicator (0=too strong, 255=too weak)
         uint8_t as_status = 0, agc = 0;
-        int8_t i2c_ok = KM_SDIR_ReadStatusAGC(c->sdir, &as_status, &agc);
+        int8_t i2c_ok = 0;
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
+        // AGC is the reliable magnet strength indicator (0=too strong, 255=too weak)
+        i2c_ok = KM_SDIR_ReadStatusAGC(c->sdir, &as_status, &agc);
+#else
+        // The kart's sensor is an MT6701 read over PWM. The AS5600 driver answers
+        // at a different I2C address, so polling it here can only ever time out —
+        // once per second, blocking this task while it does. AGC and the I2C flag
+        // stay 0, meaning "not measured", and steering health is reported through
+        // HEALTH_FLAG_STEER_OK and the frame counters instead.
+        (void)as_status;
+#endif
 
         if (i2c_ok) flags |= HEALTH_FLAG_I2C_OK;
         if (i2c_ok && agc >= AGC_MIN && agc <= AGC_MAX) flags |= HEALTH_FLAG_MAGNET_OK;
+
+#ifdef PIN_STEER_PWM_IN
+        int8_t steer_ok = KM_SDIR_PWM_isValid();
+#else
+        int8_t steer_ok = KM_SDIR_isConnected(c->sdir);
+#endif
+        if (steer_ok) flags |= HEALTH_FLAG_STEER_OK;
 
         // Heap check
         uint32_t free_heap = esp_get_free_heap_size();
         if (free_heap >= HEALTH_HEAP_MIN_BYTES) flags |= HEALTH_FLAG_HEAP_OK;
         uint16_t heap_kb = (uint16_t)(free_heap / 1024);
 
-        // Payload: [flags, agc, heap_kb, i2c_errors] — 4 int32 values
-        int32_t payload[4] = {flags, (int32_t)agc, (int32_t)heap_kb, (int32_t)c->sdir->errorCount};
-        KM_COMS_SendMsg(ESP_HEALTH_STATUS, payload, 4);
+        // Payload: [flags, agc, heap_kb, i2c_errors, steer_frames, steer_rejects].
+        // The last two were APPENDED — a consumer reading only the first four
+        // fields decodes this frame unchanged. They separate the two ways the
+        // steering read can be unhealthy, which the flag bit alone cannot:
+        // frames flat at zero means no edges are arriving at all (dead sensor,
+        // unplugged lead), while rejects climbing against flat frames means edges
+        // arrive but at the wrong rate (sensor reverted out of 994 Hz PWM mode,
+        // or the lead is picking up noise).
+        int32_t payload[6] = {
+            flags,
+            (int32_t)agc,
+            (int32_t)heap_kb,
+            (int32_t)c->sdir->errorCount,
+            (int32_t)KM_SDIR_PWM_GetFrameCount(),
+            (int32_t)KM_SDIR_PWM_GetRejectCount()
+        };
+        KM_COMS_SendMsg(ESP_HEALTH_STATUS, payload, 6);
 
         // Log warnings for critical issues
         if (i2c_ok && agc < AGC_MIN)
             ESP_LOGW(TAG, "HEALTH: magnet too strong (AGC=%d)", agc);
         if (i2c_ok && agc > AGC_MAX)
             ESP_LOGW(TAG, "HEALTH: magnet too weak (AGC=%d)", agc);
-        if (!i2c_ok)
-            ESP_LOGW(TAG, "HEALTH: I2C read failed (err=%d)", c->sdir->errorCount);
+        if (!steer_ok)
+            ESP_LOGW(TAG, "HEALTH: no steering angle (frames=%lu rejects=%lu)",
+                     (unsigned long)KM_SDIR_PWM_GetFrameCount(),
+                     (unsigned long)KM_SDIR_PWM_GetRejectCount());
         if (!(flags & HEALTH_FLAG_HEAP_OK))
             ESP_LOGW(TAG, "HEALTH: low heap! %lu bytes free", (unsigned long)free_heap);
 
@@ -406,7 +521,8 @@ void health_task(void *ctx) {
  *          1. GPIO peripherals (ADC, DAC, PWM, I2C, direction pin).
  *          2. RTOS task manager.
  *          3. UART communications to Orin.
- *          4. AS5600 steering encoder (I2C).
+ *          4. Steering encoder: I2C bus up for the PCF8574, and MCPWM capture
+ *             started on the MT6701's PWM angle output.
  *          5. Actuator controllers (steering, throttle, brake) with output limits.
  *          6. Steering PID controller.
  *          7. Registers periodic tasks: comms (20 Hz), control (10 Hz),
@@ -430,17 +546,41 @@ void system_init(void) {
     if (KM_COMS_Init(UART_NUM_0) != ESP_OK)
         ESP_LOGE(TAG, "Error inicializando libreria de comunicaciones");
 
+    // The I2C bus is still brought up — the on-board PCF8574 lives on it — but the
+    // steering angle no longer comes from here. km_sdir.c is an AS5600 driver
+    // fixed at address 0x36; the kart's sensor is an MT6701 at 0x06, and it is
+    // read through its PWM output instead (km_sdir_pwm.h).
     sensor_struct sdir = KM_SDIR_Init(MAX_ERROR_COUNT_SDIR);
     KM_SDIR_Begin(&sdir, PIN_I2C_SDA, PIN_I2C_SCL);
 
-    // Test AS5600 connectivity and seed initial angle
-    float init_rad = KM_SDIR_ReadAngleRadians(&sdir);
-    if (sdir.errorCount == 0) {
-        KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(init_rad * 1000));
-        ESP_LOGI(TAG, "AS5600 connected — %.3f rad", init_rad);
+#ifdef PIN_STEER_PWM_IN
+    esp_err_t steer_ret = KM_SDIR_PWM_Begin(PIN_STEER_PWM_IN);
+    if (steer_ret != ESP_OK) {
+        ESP_LOGE(TAG, "steering PWM capture failed to start: %s", esp_err_to_name(steer_ret));
     } else {
-        ESP_LOGW(TAG, "AS5600 NOT responding — steering feedback will be stale");
+        // Wait for the median window to fill before deciding whether the sensor
+        // is there. Five frames at 994 Hz take about 5 ms; 200 ms of polling is
+        // generous enough that a "not responding" verdict here means the signal
+        // really is absent, not that we asked too early.
+        float init_rad = NAN;
+        for (int i = 0; i < 20 && isnan(init_rad); i++) {
+            vTaskDelay(pdMS_TO_TICKS(10));
+            init_rad = KM_SDIR_PWM_ReadAngleRadians();
+        }
+        if (!isnan(init_rad)) {
+            KM_OBJ_SetObjectValue(ACTUAL_STEERING, (int64_t)(init_rad * 1000));
+            ESP_LOGI(TAG, "steering sensor OK — %.3f rad (raw %ld)",
+                     init_rad, (long)KM_SDIR_PWM_ReadRaw());
+        } else {
+            ESP_LOGW(TAG, "steering sensor NOT reading (frames=%lu rejects=%lu) — "
+                          "PID steering will hold the motor stopped",
+                     (unsigned long)KM_SDIR_PWM_GetFrameCount(),
+                     (unsigned long)KM_SDIR_PWM_GetRejectCount());
+        }
     }
+#else
+    ESP_LOGW(TAG, "no steering PWM input pin on this target — no angle feedback");
+#endif
 
     // ------------------------------------------------------
     // Initialize Motor controllers

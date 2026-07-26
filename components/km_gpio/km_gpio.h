@@ -53,7 +53,14 @@
 #define PIN_ORIN_UART_RX        GPIO_NUM_44
 
 /* ---------- ADC1 inputs (GPIO1-10 = ADC1 on S3; ADC2 unusable with WiFi) ---------- */
-#define PIN_PRESSURE_3          GPIO_NUM_1   // CN5.2 — ALSO the AS5600 PWM-angle read pin
+/* CN5.2 carries the MT6701 steering sensor's PWM output, not a pressure
+ * transducer — no sensor is fitted to the PRESSURE_3 terminal. The pad is
+ * driven by MCPWM capture (see km_sdir_pwm.h), so it is deliberately left out
+ * of the ADC channel setup in km_gpio.c: the ADC and the capture peripheral
+ * cannot both own it. PIN_PRESSURE_3 stays defined only so code shared with
+ * the classic ESP32 build keeps compiling. */
+#define PIN_PRESSURE_3          GPIO_NUM_1   // CN5.2 — NOT an ADC input on the S3
+#define PIN_STEER_PWM_IN        GPIO_NUM_1   // CN5.2 — MT6701 OUT, ~994 Hz PWM angle frame
 #define PIN_HYDRAULIC_2         GPIO_NUM_2
 #define PIN_PEDAL_ACC           GPIO_NUM_4
 #define PIN_PEDAL_BRAKE         GPIO_NUM_5

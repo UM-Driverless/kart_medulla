@@ -133,6 +133,19 @@ Three consequences, all pointing the same way:
    Even ignoring voltage, an ESP32 pin at ~20 mA would need ~7 µs to move that charge. Direct GPIO
    drive is impossible on current as well as on voltage.
 
+> **SOLVED on the bench 2026-07-26 — the compressor now runs from a 3.3 V GPIO.** Two changes,
+> both required: (1) bypass the module's input bridge rectifier by tacking GPIO 3 to the bridge's
+> **+** output pad and ESP32 ground to its **−** pad, leaving the bridge soldered in place and
+> unused; (2) tack a **330 Ω in parallel with R3** (10 kΩ ∥ 330 Ω = 319 Ω), giving ~6.5 mA into the
+> opto LED. Neither change alone works — bypassing with R3 at 10 kΩ still gives only 0.22 mA, and
+> 330 Ω with the bridge still in path gives ~2.3 mA typical but ≤1 mA at the pessimistic corner.
+> Component values now confirmed: opto is a **Sharp PC817** (SOP-4, marked `CW831`, designator
+> **U2**); **R3 = 10 kΩ** (0603, code `1002`), *not* the 1 kΩ assumed in the table below, so every
+> current in that table is ~10× too optimistic. Full write-up, including why 10 kΩ is correct for
+> this module's real 12–24 V design point and what CTR collapse below 1 mA does, is in
+> `history.md` under 2026-07-26. The two remaining constraints below (200–250 Hz PWM, flyback
+> diode) are unaffected and still apply.
+
 **Control-input topology confirmed by inspection, 2026-07-25: the module carries a bridge rectifier
 and an optocoupler.** That settles the open question of whether the carrier boosts the gate — it
 does, off its own DC-IN rail, so **the module is the gate driver and no separate TC4420 /
@@ -191,8 +204,9 @@ galvanic isolation survives.
 - **DC IN must be independently powered.** The optocoupler only gates the module's own rail; with no
   12 V on DC IN the module is inert no matter what the control side does.
 
-**Still unverified on the module:** the optocoupler part number, the series resistor value, and
-whether the output stage inverts. The symptom partly answers the last one — an inverting stage with
+**Still unverified on the module:** whether the output stage inverts. (The optocoupler part number
+and series resistor value were resolved 2026-07-26 — see the banner at the top of this section.)
+The symptom partly answers it — an inverting stage with
 a starved LED would leave the compressor stuck **on**, and it is doing nothing, which points to
 non-inverting.
 
@@ -382,6 +396,37 @@ dashboard.
 - **Nothing drives `PIN_SELECT_THROTTLE` (GPIO 15).** R32's 10 kΩ pulldown makes the default pedal
   pass-through (safe); firmware must drive it HIGH for throttle-via-DAC.
 - **`PIN_STATUS_LED` (GPIO 48) needs RMT**, not plain GPIO — it's an addressable RGB.
+### Steering sensor read over PWM — written, not yet validated on hardware
+
+`components/km_sdir/km_sdir_pwm.{c,h}` reads the MT6701's PWM angle output on GPIO 1 (CN5.2) via
+MCPWM capture: both edges timestamped in hardware, period sanity check against 994.4 Hz ±25%,
+median of 5 frames, `NAN` whenever no angle is known. `main.c` feeds the PID from it and stops the
+steering motor instead of acting on an unknown angle. The AS5600 I²C path is no longer the steering
+source on the S3 (it answers at 0x36; this sensor is at 0x06) — the classic ESP32 build still uses
+it. Both targets build; nothing has been flashed or driven.
+
+- **Validate on the bench.** Flash the S3, watch `read_telemetry.py`: `[STEERING]` should track the
+  magnet and the health frame should show `Steer:True` with `frames` climbing and `rejects` flat.
+  Unplug the sensor lead and confirm the angle reads `INVALID` rather than a number — that is the
+  check that matters, per the Sensor Validity rule in `AGENTS.md`.
+- **Confirm the control loop stopped stalling.** The I²C timeout was making `control_task` run at
+  ~8.9 Hz in bursts against a 500 Hz target (2026-07-25). The PWM read cannot block, so the
+  iteration counter in the pneumatic frame should now climb evenly at roughly the nominal rate.
+- **DECISION NEEDED (Rubén) — what should losing the steering sensor do?** Current behaviour: stop
+  the steering motor, leave throttle and brake as the Orin commanded them. The alternatives are a
+  full stop (zero throttle, apply brake) or triggering the EBS. This is a vehicle-safety call, not
+  a firmware default, and it is currently the lenient option.
+- **`SENSOR_CENTER = 2250` is undocumented and probably wrong.** `km_sdir.h:48` calls it "half of
+  the 12-bit range", but half of 4096 is 2048, and `km_sdir.c:229` repeats the 2048 claim in a
+  comment while the code uses 2250. Both the PWM and I²C paths centre on it, so it sets where zero
+  steering is. It has to be measured against the column once the sensor is mechanically mounted;
+  until then, straight-ahead will not read 0.
+- **kart-brain (Orin) must decode the appended telemetry fields.** `ESP_ACT_STEERING` grew a 4th
+  int32 (1 = the angle is real, 0 = not) and sends `INT32_MIN` in the angle field when invalid;
+  `ESP_HEALTH_STATUS` grew fields 5-6 (steering frame count, reject count) and flag bit 3
+  (`Steer OK`). Appending keeps old decoders working, but until kart-brain reads the validity flag
+  the dashboard will plot `INT32_MIN/1000` as an angle. `read_telemetry.py` in this repo already
+  handles both.
 
 ### Libraries (migrated from the old `TODO.md`, 2026-07-16 — written in Spanish, unverified)
 

@@ -144,3 +144,60 @@ result. The two are complements, not alternatives.
   the opposite a moment ago — which is true?" and find out.
 - A calculation that clears one failure mode is **not** evidence of function. Say which mode it
   covers and which it does not.
+
+## 2026-07-24 — Diagnosed a "fault" on a pin that was never wired (MT6701 bench)
+
+**What happened.** First MT6701 bench session. I told Rubén to wire the sensor and gave the
+wiring list with OUT→GPIO 1 marked "optionally"; the actionable instruction he acted on was
+"wire I²C and plug in USB" — so he wired exactly that. When the ADC watch on GPIO 1 then read
+flat 0 V while the I²C config write succeeded, I treated the dead pin as a hardware mystery:
+resurrected the 2026-07-12 `CN5.2 → R8 → R9` open-joint diagnosis, laid out a two-branch fault
+tree, asked for multimeter probing, and wrote a "GPIO 1 still dead" entry into `history.md`.
+GPIO 1 read 0 V because **nothing was connected to it** — the only correct reading. Rubén
+caught it from the wiring instructions; without that, hours of troubleshooting a nonexistent
+fault, with a multimeter, on a healthy board.
+
+**Root cause.** I diagnosed signal absence without first confirming the signal path physically
+existed. My own wiring instruction was the record of what was connected — I never re-read it.
+Two compounding failures: (1) an "optional" item in my instructions silently became an assumed
+fact ("OUT is wired") one turn later; (2) the flat-0-V reading *matched* a known past fault
+(the CN5.2 open), and pattern-matching to that story felt like progress, so the mundane
+explanation — unplugged wire — was never on the fault tree at all.
+
+**Prevention.**
+- **Before diagnosing a dead signal, establish the wire exists.** First question on any
+  no-signal reading: "what exactly is physically connected right now?" — asked out loud or
+  answered from the wiring instructions actually given. A fault tree whose branches are all
+  electrical is wrong if the layer-0 branch (not connected) was never closed.
+- **"Optionally X" in my own instructions means X probably didn't happen.** Anything I marked
+  optional must be confirmed done before any later reasoning depends on it.
+- **A reading that perfectly matches a floating/unconnected pin is evidence of an unconnected
+  pin** — the boring hypothesis outranks the interesting one that matches a past war story.
+
+## 2026-07-26 — Twice asserted a checkable fact from a plausible inference (steering PWM work)
+
+**What happened.** Two wrong claims in one session, both stated confidently, both cheap to check.
+
+1. **"GPIO 1's ADC is sampling the PWM square wave and returning noise."** `KM_GPIO_Init()` does
+   configure GPIO 1 as `ADC1_CHANNEL_0`, and I went from "the channel is set up" to "so it is being
+   read" without grepping for the call site. One `grep -rn ReadADC` showed `main.c` reads only
+   PRESSURE_1 and PRESSURE_2 — the pin is never sampled at all. Told to Rubén as fact before the
+   grep, and written into `tasks.md`.
+2. **"The ESP32-C3 and C6 have no MCPWM peripheral."** Written into a source comment and into
+   `history.md` to justify a `SOC_MCPWM_SUPPORTED` guard. `soc_caps.h` says the C6 *does* have
+   MCPWM; only the C3 lacks it. Never opened the header — the guard itself was correct, so the
+   wrong reason rode along invisibly.
+
+**Root cause.** Same shape both times: a fact that a single grep or file-open would settle, answered
+instead from something adjacent that made it feel already-known. In (1) the adjacent thing was
+initialisation code; in (2) it was a general sense of which chips are cut-down. Neither claim felt
+like a guess while I was making it, which is exactly why the feeling cannot be the gate.
+
+**Prevention.**
+- **"Configured" is not "used."** Peripheral setup proves a channel exists, not that anything reads
+  it. Grep for the call site before saying a value is being read, sampled, or acted on.
+- **Per-target capability claims come from `soc_caps.h`, never from memory.** `grep SOC_<FEATURE>
+  $IDF/components/soc/<target>/include/soc/soc_caps.h` is one command and it is authoritative.
+- **A comment justifying correct code still has to be true.** Wrong reasoning attached to a working
+  guard is invisible to the build and to tests — the compiler cannot fail on it, so it survives
+  until someone acts on it. Check claims in comments at the same bar as claims in prose.

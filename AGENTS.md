@@ -5,11 +5,17 @@
 **The physical bench/kart board is an ESP32-S3.** The firmware in this repo now fully builds for the ESP32-S3 (`platformio.ini` uses `[env:esp32-s3-devkitc-1]`; `components/km_gpio/km_gpio.h` uses the `CONFIG_IDF_TARGET_ESP32S3` pin map). The legacy classic ESP32 build (`esp32dev`) is still kept for fallback purposes, but the S3 is the primary target.
 
 - **Authoritative pin map for the real board:** [`.agents/esp32s3-pinmap.md`](.agents/esp32s3-pinmap.md). Key pins that differ from the classic map:
-  - **I²C (AS5600 steering encoder):** SDA = **GPIO 8**, SCL = **GPIO 9** (classic map says 21/22).
-  - **AS5600 PWM angle output** is read on **GPIO 1** (the ex-`PRESSURE_3` terminal CN5.2). This is the pin we use to read the steering-sensor PWM.
+  - **I²C:** SDA = **GPIO 8**, SCL = **GPIO 9** (classic map says 21/22). On-board PCF8574 at 0x20; the MT6701 also answers at **0x06** when its I²C pins are wired.
+  - **Steering-sensor PWM angle output** is read on **GPIO 1** (the ex-`PRESSURE_3` terminal CN5.2). This pad belongs to MCPWM capture, so it is deliberately NOT set up as an ADC channel — nothing else may claim it.
   - **EBS compressor MOSFET** is on **GPIO 3** (the ex-`BUZZER` net, now `CMD_COMPRESSOR_PWM`, CN8.2).
 - **USB bridge is a WCH CH343** (VID 0x1A86 / PID 0x55D3) → shows up as `/dev/cu.usbmodem*`. This does NOT mean native-USB / does NOT tell you classic-vs-S3 on its own. Serial goes over UART0 through the bridge, so bench builds use **`ARDUINO_USB_CDC_ON_BOOT=0`** (see `history.md` / error-log on Mac bench flashing).
-- When bench-testing the steering sensor: talk to the AS5600 over **I²C on GPIO 8/9** (gives RAW angle + MD/ML/MH status flags); the GPIO 1 path is the production PWM read.
+
+## The Steering Sensor Is an MT6701, Not an AS5600
+
+The AS5600 was retired on 2026-07-12 — it could not detect the kart's large shaft magnet. The kart now uses an **MT6701**, permanently configured (EEPROM) for PWM output at 994.4 Hz, high-valid. **`km_sdir.c`'s angle functions cannot read the kart's sensor**: they are an AS5600 I²C driver fixed at address 0x36, and the MT6701's slave address is 0x06 (datasheet §7.7.2), so every call fails. They are still the steering source on the classic ESP32 fallback build, and `KM_SDIR_Begin()` is still called on the S3 to bring the I²C bus up for the PCF8574 — but on the S3 the angle does not come from there.
+
+- **Production read path: `components/km_sdir/km_sdir_pwm.h`** — MCPWM capture on GPIO 1, decoding the MT6701's 4119-clock frame (16 clocks high, 12-bit angle, ≥8 clocks low; datasheet §7.6, PDF in `datasheets/`). Non-blocking, so it cannot stall the control loop the way an unanswered I²C read did.
+- **Bench tool for the sensor itself: `~/dv/kart/steering/mt6701-bench/`** — I²C console for reading the raw 14-bit angle and checking/setting reg 0x38 (OUT_MODE). Use it to confirm the sensor is still in PWM mode before blaming the firmware.
 
 ## Branch Workflow (READ THIS)
 

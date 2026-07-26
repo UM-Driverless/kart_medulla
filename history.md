@@ -672,3 +672,342 @@ switching loss at 500 Hz — conduction dominating about 50×, and a 107–150 �
 A research pass proposed revising this down to 1.08–1.51 W; that was **checked and rejected**,
 because it used the cold Rds(on) and dropped the temperature coefficient. The ~100 °C measured at
 20% duty supports the higher range.
+
+## 2026-07-24 — MT6701 arrived; PWM config mechanism verified from datasheet
+
+The MT6701 module (AS5600-replacement breakout) is in hand. Verified from
+`datasheets/MT6701_datasheet.pdf` (Rev 1.8) how to put its OUT pin into PWM mode:
+
+- **OUT defaults to analog** (Fig-14 "Default Analog Output"), so PWM requires an I²C config write.
+- **I²C slave address 0x06** (7-bit, programmable to 0x46). Angle readback: regs 0x03 (Angle[13:6])
+  then 0x04 (Angle[5:0] in bits 7:2) — read 0x03 first per datasheet note.
+- **Reg 0x38: PWM_FREQ (bit7, 0=994.4 Hz / 1=497.2 Hz), PWM_POL (bit6, 0=high-valid),
+  OUT_MODE (bit5, 0=analog / 1=PWM).** Bits 4:0 reserved — read-modify-write only bits 7:5.
+- A volatile write to OUT_MODE switches the pin immediately → bench-verify PWM on OUT *before*
+  committing to EEPROM. Unlike the AS5600 OTP, this is **re-writable EEPROM** — no brick risk.
+- **EEPROM burn sequence (§8.2): write 0xB3→0x09, 0x05→0x0A, wait >600 ms untouched, power-cycle,
+  read 0x38 back. Requires 4.5 V < VDD < 5.5 V during programming** (normal operation is 3.3 V —
+  only the burn needs 5 V; feed the module from VBUS for that step, keep I²C pull-ups on 3.3 V so
+  the ESP32-S3 pins never see 5 V).
+- Bench wiring on the S3: VDD→3V3 (5 V for burn), GND→GND, SDA→GPIO 8, SCL→GPIO 9, OUT→GPIO 1
+  (production PWM input, CN5.2).
+
+## 2026-07-24 — MT6701 bench session: I²C proven, PWM config written, GPIO 1 still dead
+
+New bench tool `~/dv/kart/steering/mt6701-bench/` (clone of the as5600-bench console, same
+SDA=GPIO8/SCL=GPIO9 wiring, ESP32-S3 via CH343 at `/dev/cu.usbmodem5C372070281`). Results:
+
+- **I²C works: MT6701 ACKs at 0x06**, angle reads ~101.7° (plus the known PCF8574 at 0x20).
+  Reg 0x38 boots as 0x00 = analog mode, matching the datasheet default.
+- **Volatile PWM write accepted:** 0x38 → 0x20 (OUT_MODE=PWM, 994.4 Hz, high-valid) and reads
+  back correctly. EEPROM not burned yet (needs 5 V VDD).
+- GPIO 1 read flat 0 V — **because nothing was wired to it.** Only I²C (VDD/GND/SDA/SCL) was
+  connected in this session; the sensor's OUT pin was not landed anywhere. I initially
+  misdiagnosed this as a hardware fault (resurrecting the 2026-07-12 `CN5.2 → R8 → R9` open)
+  before Rubén pointed out OUT was never wired. See the 2026-07-24 error-log entry.
+- **Net status: everything tested so far works.** Remaining to verify: wire OUT to a pin and
+  confirm PWM actually toggles (also settles whether a volatile OUT_MODE write drives the pin
+  or only takes effect from EEPROM at power-up), then the 5 V EEPROM burn.
+
+### Same session, after wiring OUT → PRES3 (CN5.2): full production path validated
+
+Rubén landed the MT6701 OUT pin on the PRESSURE_3 terminal (CN5.2). Results:
+
+- **PWM arrives at GPIO 1 through the production path**: full-swing 0–3.3 V square wave,
+  ~995 Hz measured (datasheet 994.4 Hz), duty tracking the magnet.
+- **I²C angle vs PWM-decoded angle agree**: 296.5° over I²C vs ~299.9° from duty in the same
+  breath — chain validated end to end (sensor → OUT → CN5.2 → R8 → R9 → GPIO 1 → ADC).
+- **The `CN5.2 → R8 → R9 → GPIO 1` board path conducts fine.** The 2026-07-12 "open connection"
+  therefore was in the old AS5600 module's OUT pad/wire segment, not in the medulla board.
+- **A volatile OUT_MODE write does drive the pin immediately** — no EEPROM burn needed to engage
+  the output stage (settles that open question). Also confirmed volatile-ness: reg 0x38 was back
+  to 0x00 after the sensor lost power during rewiring.
+- Angle at rest jitters ±2° (295.8–299.8° over ~10 s) — more than the MT6701 should show with a
+  good magnet; check magnet gap/centering at final mounting.
+- Remaining: EEPROM burn to persist OUT_MODE=PWM (module VDD must be 4.5–5.5 V during the burn).
+
+### Same session: EEPROM save succeeded AT 3.3 V — sensor permanently configured
+
+The module's onboard I²C pull-ups (measured 2.2 kΩ SDA↔VDD by Rubén) made the datasheet's
+5 V-during-EEPROM-write requirement dangerous: at VDD = 5 V those pull-ups would drag SDA/SCL
+to ~4.5 V, above the ESP32-S3 absolute maximum. So instead of moving to 5 V (or desoldering the
+pull-ups), we tried the save at 3.3 V first — out of spec (datasheet §8.2 says 4.5 V < VDD <
+5.5 V) but zero-risk, since the EEPROM is re-writable and a failed attempt just doesn't persist.
+
+**It worked.** Sequence 0xB3→0x09, 0x05→0x0A, 700 ms untouched, both writes acked. After a USB
+replug (full power cycle) reg 0x38 still reads 0x20 = OUT_MODE=PWM, 994.4 Hz, high-valid. PWM
+verified on GPIO 1 from cold boot with no config command: ~990 Hz, duty-decoded angle 151.1° vs
+151.52° over I²C — agreement within 0.5°.
+
+Caveat kept honest: one sample of one module, below-spec write voltage. If this exact module
+ever reverts to analog after a power cycle, redo the save (worst case: lift the 2.2 k pull-ups
+and save at 5 V properly). Check `c` in the bench tool (`~/dv/kart/steering/mt6701-bench/`).
+
+**Net: the MT6701 is configured and validated for the kart.** Powers up in PWM mode on its own,
+signal reaches GPIO 1 through the production CN5.2 path, angle agrees between I²C and PWM. What
+remains is mechanical (mount sensor + magnet on the steering column; watch the ±2° rest jitter
+seen earlier — likely magnet gap/centering) and firmware (read PWM on GPIO 1 via MCPWM capture
+per the 2026-07-12 cabling-distance entry).
+
+---
+
+## 2026-07-25 — Compressor: DC drive with a 15 s / 15 s burst limiter
+
+### The request
+
+Keep the 1 s soft start, but drive the compressor to 100% with a maximum continuous run of
+15 s followed by 15 s of forced wait — a very slow on/off cycle whose purpose is to stop the
+compressor motor and its drive from overheating. Apply the hysteresis between the two chosen
+pressure thresholds, and make sure both PRESSURE_1 and PRESSURE_2 reach the Orin and appear on
+the dashboard. PRESSURE_3 is the steering sensor's PWM input and has no pressure sensor fitted.
+
+### Pushing back on 100%, and why the pushback was wrong
+
+The request was initially challenged, on the basis of what this file and the code comments
+recorded: the compressor motor is rated 7.5 V against a regulated 12 V rail, so PWM was the
+only thing keeping it at its design voltage, and the MOSFET had been measured at ~100 C on the
+2026-07-18 bench run at only 20% duty and roughly 8 A. On those numbers, 100% duty looked like
+it would destroy both the motor and the MOSFET — the opposite of the stated purpose.
+
+That objection was answered and it was wrong, because it described superseded hardware. The
+gate is now driven by a **3D-printer hotbed MOSFET module (HA210N06)**, which supplies the gate
+from its own rail instead of from a 3.3 V GPIO. The ~100 C figure belonged to a bare TO-220
+IRLZ44N whose gate never fully enhanced; it does not carry over. More to the point, a module
+built to switch a heater bed **cannot switch fast enough to hold a continuous PWM waveform** at
+this motor's operating point. That removes duty as a usable lever entirely, and leaves exactly
+one way to control average power: how long the motor is switched on for.
+
+So the design is inverted from what it was. Duty is pinned at 255 (DC on, no switching) and the
+average is set by the slow cycle: 15 s on, 15 s off, 50% average, which puts the motor at an
+average 6 V — under its 7.5 V rating — while each burst still gets full torque. **The 15 s cap
+is now the entire thermal protection mechanism**, where previously the 20% duty was.
+
+The 1 s soft start is kept and re-runs at the start of every burst. It addresses inrush, not
+average power, so the slow cycle does not replace it: a stationary motor has no back-EMF, only
+winding resistance limits current (~40-50 A), and that spike browns out the 12 V regulator.
+
+Arithmetic note: 15 s on plus 15 s off is a 30 s period, **0.033 Hz** — not the 0.06 Hz the
+request estimated (that would be about 8 s + 8 s). The explicit 15/15 figures were used.
+
+### What was already there
+
+The hysteresis did not need writing — it existed, pumping below ADC 2500 (~7 bar) and stopping
+above 2858 (~8 bar), from the one-point gauge calibration of 2026-07-18. It was kept at those
+values but split out into its own demand latch, so the burst limiter can gate it independently
+rather than the two being tangled in one flag.
+
+A cooldown is only owed after a burst that ran the full 15 s. A burst that ended early because
+the tank filled deposited little heat, and the hysteresis band already stops it restarting
+immediately.
+
+### Results, measured
+
+Flashed to the ESP32-S3 over `/dev/ttyACM0` (CH343, `1a86:55d3` — not the CP2102/`ttyUSB0` that
+older notes describe). Frames decoded straight off the serial line with a CRC-checking parser,
+so the numbers below are the firmware's own behaviour and not something the ROS stack shaped:
+
+| what | measured |
+|---|---|
+| burst length | 15.5 s |
+| cooldown length | 15.6 s |
+| full period | ~31 s (0.032 Hz) |
+| soft-start ramp | ~1.2 s |
+
+Sampling resolution was ~1.1 s, which accounts for the overshoot against the nominal 15.0 s.
+The cycle is driven off tick counts rather than loop iterations, so it stays correct in
+wall-clock terms no matter what the control task's actual rate turns out to be — which matters
+a great deal here, see below.
+
+### Three problems found along the way
+
+**1. The control task runs at 8.75 Hz, not its nominal 500 Hz.** Health flags read 4 —
+`magnet_ok` false, `i2c_ok` false — with 10 I2C errors, so the AS5600 read times out on every
+cycle and drags the whole task down. This is a consequence of the MT6701 migration recorded
+above: the I2C sensor is on its way out, and the replacement reads PWM on GPIO 1, so nothing is
+answering on I2C in the meantime. Expected for now, but it means **any timing in this task
+based on counting iterations is currently wrong by a factor of ~60**.
+
+**2. The pneumatics telemetry throttle was one such thing, and the fix is only partly
+effective.** It divided by 25 on the assumption of a 500 Hz loop, which at 8.75 Hz produced
+0.36 Hz telemetry — one dashboard update per 3 s, for a cycle that switches every 15 s. It was
+changed to throttle on elapsed wall-clock time instead, which should yield every available
+cycle when the loop is slow and 20 Hz when it is fast. Rate improved to 0.88 Hz. **It should
+have been 8.75 Hz and it is not, and the reason is not yet known.** Measured at the source with
+the CRC-checking parser: frame type 4 (steering) at 8.75 Hz, type 12 (pneumatics) at 0.88 Hz,
+**zero CRC rejections** — so nothing is being lost in transit or by the Orin's parser; the
+firmware itself is emitting one pneumatic frame per ten control cycles. Both frames are sent
+unconditionally from the same function with no early return between them, so the code path does
+not explain it. Exactly 1/10 is a suspicious ratio and probably a clue. Logged in tasks.md
+rather than guessed at.
+
+**3. PRESSURE_2 reads 4095 — full scale — on every single sample.** That is a floating input,
+not a measurement; no sensor is fitted to that channel. The plumbing works (the value is read,
+appended to the frame, decoded, and rendered on the dashboard's PISTON bar) but the number is
+meaningless until a sensor is connected. Its bar conversion also reuses PRESSURE_1's divider
+ratio and has never been calibrated against a gauge.
+
+Also removed a duplicated `#define COMPRESSOR_DUTY_RUN` — it appeared twice with the same value.
+
+### Frame change
+
+`ESP_PNEUMATIC` grew from `[pres1, duty]` to `[pres1, duty, pres2, state]`, where state is
+0 idle / 1 running / 2 cooldown. The two new fields were **appended rather than inserted**, so
+an Orin decoding only the first two keeps working untouched. State is sent because at duty 0 a
+motor resting in cooldown and a satisfied tank are indistinguishable, and showing "off" for
+both would imply the tank was full when it was not.
+
+## 2026-07-26 — Compressor drive SOLVED: bypass the module's bridge rectifier and drop its LED resistor to ~330 Ω
+
+The compressor MOSFET module's control input finally drives correctly from a 3.3 V ESP32 GPIO.
+Two changes together, confirmed working on the bench:
+
+1. **Bypass the module's input bridge rectifier** — GPIO 3 to the bridge's **+** output pad, ESP32
+   ground to its **−** pad. The bridge stays soldered in place and unused, so the change is two
+   tacked wires and fully reversible.
+2. **Drop the optocoupler's series resistor from 10 kΩ to ~330 Ω** — a 330 Ω tacked *in parallel*
+   with the existing R3 (10 k ∥ 330 = 319 Ω), not a replacement. R3 is 0603, so parallel is the safe
+   install; nothing has to come off the board.
+
+**Neither change works alone.** Measured/computed LED current for the four combinations:
+
+| | R3 = 10 kΩ | R3 ≈ 330 Ω |
+|---|---|---|
+| Bridge in the path | 0.18 mA — dead | ~2.3 mA typical, ≤1 mA at the pessimistic corner — marginal |
+| Bridge bypassed | 0.22 mA — still dead | **6.5 mA — works** |
+
+The bridge consumes a fixed ~1.3–1.4 V (two silicon drops); the series resistor sets current out of
+whatever is left. Fixing one leaves the other as the binding limit, which is why earlier attempts at
+each individually did nothing.
+
+### Component values confirmed by inspection (previously unverified)
+
+- **Optocoupler is a Sharp PC817**, SOP-4 surface-mount package, marked `CW831 / PC817 / SHARP`,
+  board designator **U2**.
+- **Series resistor R3 = 10 kΩ** (0603, EIA 3-digit code `1002` = 100 × 10² Ω). R2 and R4 read `1002`
+  as well. This is 10× the 1 kΩ that the earlier `tasks.md` analysis assumed, so every LED current
+  in that table was ~10× too optimistic.
+- 10 kΩ is not a mistake by the module's designer — it is correct for the input the board is actually
+  sold for. At 24 V it gives ~2.1 mA and at 12 V ~0.95 mA, i.e. **the control input is designed for
+  a 12–24 V signal**, not for logic levels.
+
+### Why 0.18 mA produced exactly "nothing happens"
+
+With 2.76 V measured at the bridge output, `I_F = (2.76 − ~1.0 V LED V_f) / 10 kΩ ≈ 0.18 mA`.
+
+**CTR (Current Transfer Ratio)** is an optocoupler's output collector current divided by its input
+LED current, expressed as a percentage — the opto is a current amplifier across the isolation
+barrier. The PC817's CTR is specified as **50–600% at I_F = 5 mA** (the wide spread is why grade
+letters A/B/C exist to bin it tighter; a generic module ships with an unknown grade, so design for
+the 50% floor). Below roughly 1 mA the datasheet specifies nothing at all and real CTR collapses. At
+0.18 mA the phototransistor passed microamps — hence no measurable conductivity at the opto output,
+which was the original symptom.
+
+Sizing target was therefore **5 mA into the LED**: the point where CTR is guaranteed, and far below
+the PC817's 50 mA continuous rating. The gate is pulled through a 10 kΩ, so at 12 V it needs ~1.2 mA
+out; 5 mA × the 50% CTR floor = 2.5 mA clears that with margin. 330 Ω was chosen over 470 Ω for
+extra headroom against a sagging GPIO pin, and because more LED current speeds up opto turn-on,
+which matters when PWM-ing.
+
+### Why no resistor value alone can rescue the un-bypassed bridge
+
+At 5 mA the bridge's own drop rises to ~1.4 V, leaving 3.3 − 1.4 − 1.15 = 0.75 V for the resistor,
+implying ~150 Ω. But at the pessimistic corner (pin loaded to 3.0 V, bridge 1.5 V, LED V_f 1.4 V)
+that same 150 Ω delivers ~1 mA or less. It is a **voltage-headroom problem, not a current-capacity
+one** — the ESP32 can easily supply milliamps, it just cannot push them through 2.4 V of stacked
+diode drops from a 3.3 V rail. If the bridge ever has to stay in circuit, the fix is to drive the
+input from **5 V** instead, where 470 Ω gives a solid 5.1 mA.
+
+### Cost of the bypass
+
+The control wire loses polarity-insensitivity — it must now be connected the right way round. The
+optocoupler barrier itself is untouched, so the module's galvanic isolation survives.
+
+### Measurement gotcha worth remembering
+
+A DMM in continuity or diode mode reads open across the opto output if the probes are reversed: the
+phototransistor conducts collector→emitter only. Check both probe orientations, and take the reading
+with the LED actually energised, before concluding an opto is dead.
+
+### Still open
+
+The two constraints from the earlier analysis are unaffected by this fix and still apply: run the
+PWM at **200–250 Hz rather than 500 Hz** (opto turn-off is tens of µs and more LED current speeds up
+turn-on but not the phototransistor's turn-off), and **keep a flyback diode** at the module's load
+terminals, since these hotbed modules are built for resistive heaters and the compressor is
+inductive.
+
+Sources for the PC817 numbers: <https://www.farnell.com/datasheets/73758.pdf> and
+<https://global.sharp/products/device/lineup/data/pdf/datasheet/PC817XxNSZ1B_e.pdf>
+
+---
+
+## 2026-07-26 — Steering sensor: firmware finally reads it (MCPWM capture on GPIO 1)
+
+### What was actually wrong
+
+The hardware path had been validated end to end on 2026-07-24 — MT6701 OUT → CN5.2 → R8 → R9 →
+GPIO 1, full-swing 0–3.3 V at ~995 Hz, duty-decoded angle agreeing with the I²C angle. The firmware
+was never written to match, and the gap was wider than "the MCPWM capture is missing":
+
+- `KM_GPIO_Init()` set GPIO 1 up as `ADC1_CHANNEL_0` for PRESSURE_3, but **nothing ever sampled it**
+  — `control_task` read only PRESSURE_1 and PRESSURE_2. The signal arrived at the pin and was
+  discarded. (An earlier note in this session claimed the ADC was sampling the square wave and
+  returning noise; it was not sampling it at all.)
+- The steering angle came entirely from `KM_SDIR_ReadAngleRadians()`, an **AS5600 driver fixed at
+  I²C address 0x36** talking to a sensor that answers at **0x06**. Every read failed, returned
+  `lastRawValue` = 0, and converted to a confident 3.451 rad, which the dashboard drew as a firm
+  90° left — the exact failure the
+  Sensor Validity rule in `AGENTS.md` was written about. It also blocked on a bus timeout every
+  cycle, which is what dragged `control_task` down to ~8.9 Hz against a 500 Hz target.
+
+### What was built
+
+`components/km_sdir/km_sdir_pwm.{c,h}`, guarded on `SOC_MCPWM_SUPPORTED` so a target without the
+peripheral still compiles and reports "no angle", which is the truth on it. Checked against
+`soc_caps.h`: the ESP32, S3 **and C6** all have MCPWM; of the sdkconfigs in this repo only the
+**C3** lacks it.
+
+- **MCPWM capture, both edges.** The ISR measures rising-to-rising for the period and the falling
+  edge for the high time, as raw tick counts. The capture value register is a full 32 bits
+  (`capn_value`, bitpos [31:0] in `soc/mcpwm_struct.h`), so unsigned 32-bit subtraction makes the
+  counter's wrap cancel itself and no wrap special-case is needed.
+- **Frame decode** straight from the MT6701 datasheet §7.6 (`datasheets/MT6701_datasheet.pdf`):
+  a frame is 4119 PWM clock periods — 16 high as a start pattern, then the 12-bit angle as that
+  many further high periods, then at least 8 low. So `data = duty × 4119 − 16`, spanning 360° over
+  4096 steps. Duty therefore never reaches 0% or 100%, which is what makes a stuck-high or
+  stuck-low line distinguishable from a real reading. This matches the formula the bench tool had
+  already validated against I²C.
+- **Period sanity check** against 994.4 Hz ±25%, with the window computed at init from the capture
+  timer's actual resolution rather than an assumed 80 MHz. Rejected frames are counted separately
+  from accepted ones, which is what separates "no edges at all" (dead sensor, unplugged lead) from
+  "edges at the wrong rate" (sensor fell out of PWM mode, or noise on the lead).
+- **Median of 5 frames**, ~5 ms of window at 994 Hz.
+- **`NAN` whenever the angle is not known** — window not full, or newest good frame older than
+  50 ms. Never a stale or substituted value.
+
+Integration: `control_task` now reads through `steering_read_rad()`, which uses the PWM path on the
+S3 and keeps the AS5600 I²C path on the classic fallback board — and the I²C branch now returns
+`NAN` unless `KM_SDIR_isConnected()`, so the 90°-left bug is fixed on that path too. In PID mode
+with no valid angle the steering motor is **stopped** rather than driven off a guess; direct-PWM
+mode (open loop) deliberately still runs without a sensor, since that is the mode used to move the
+column while the sensor is being mounted. `health_task` no longer polls the AS5600 on the S3 — it
+could only ever time out, once per second.
+
+Telemetry, both appended so older decoders keep working: `ESP_ACT_STEERING` gained a 4th int32
+validity flag and sends `INT32_MIN` in the angle field when invalid (chosen because it cannot be
+mistaken for an angle — sending 0 or the last good value looks exactly like a measurement);
+`ESP_HEALTH_STATUS` gained fields 5–6 (accepted/rejected frame counts) and flag bit 3.
+
+### State
+
+Both `esp32-s3-devkitc-1` and `esp32dev` build and link. The 4 native test failures
+(`test_km_act`, `test_km_coms`, `TickType_t` undefined in the test fakes) are pre-existing —
+verified by stashing the change and re-running. **Nothing has been flashed or driven**, so this is
+unvalidated firmware against validated hardware. Bench steps and the open safety question are in
+`tasks.md`.
+
+### Gotcha worth remembering
+
+Adding a source file to a component's `CMakeLists.txt` does **not** get picked up by an incremental
+PlatformIO build — the link failed with undefined references to every new function while the file
+sat uncompiled. `rm -rf .pio/build/<env>` forces the CMake regenerate.

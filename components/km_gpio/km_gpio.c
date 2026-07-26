@@ -41,9 +41,15 @@ esp_err_t KM_GPIO_Init(void)
     };
 
     // Lista de ADC1
+    // PRESSURE_3 is absent on the S3 on purpose: that pad (GPIO 1 / CN5.2) carries
+    // the steering sensor's PWM output and belongs to MCPWM capture, which cannot
+    // share it with the ADC. See PIN_STEER_PWM_IN in km_gpio.h.
     const gpio_num_t adc1_pins[] = {
         PIN_PEDAL_ACC, PIN_PEDAL_BRAKE, PIN_HYDRAULIC_1,
-        PIN_PRESSURE_1, PIN_PRESSURE_2, PIN_PRESSURE_3
+        PIN_PRESSURE_1, PIN_PRESSURE_2,
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
+        PIN_PRESSURE_3,
+#endif
     };
     
     adc1_config_width(ADC_WIDTH_BIT_12);
@@ -231,7 +237,8 @@ uint16_t KM_GPIO_ReadADC(gpio_num_t pin)
     switch (gpio)
     {
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-        case GPIO_NUM_1: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_0); // pressure 3 / AS5600 PWM
+        // No GPIO_NUM_1 case: that pad is the steering sensor's PWM input, read by
+        // MCPWM capture (km_sdir_pwm.h). It falls through to the default and reads 0.
         case GPIO_NUM_2: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_1); // hydraulic 2
         case GPIO_NUM_4: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_3); // pedal acc
         case GPIO_NUM_5: return (uint16_t)adc1_get_raw(ADC1_CHANNEL_4); // pedal brake

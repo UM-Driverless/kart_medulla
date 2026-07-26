@@ -71,10 +71,20 @@ def main():
                     # those now live in ESP_PNEUMATIC (0x0C). Read only the 3 core
                     # fields so both old and new firmware decode.
                     val1, val2, val3 = struct.unpack('>iii', payload[:12])
-                    angle_rad = val1 / 1000.0
                     raw = val2
                     pid = val3 / 1000.0
-                    print(f"[STEERING] angle: {angle_rad:.3f} rad, raw: {raw}, pid: {pid:.3f}")
+                    # Field 4 is the validity flag, added when the steering sensor
+                    # moved to the MT6701's PWM output. Firmware that has no angle
+                    # sends INT32_MIN in field 1 rather than a plausible-looking
+                    # number, so the reading is unusable whichever field you trust.
+                    valid = True
+                    if length >= 16:
+                        valid = bool(struct.unpack('>i', payload[12:16])[0])
+                    if not valid or val1 == -2**31:
+                        print(f"[STEERING] angle: INVALID (no sensor reading), pid: {pid:.3f}")
+                    else:
+                        angle_rad = val1 / 1000.0
+                        print(f"[STEERING] angle: {angle_rad:.3f} rad, raw: {raw}, pid: {pid:.3f}")
             elif msg_type == 0x0C: # ESP_PNEUMATIC
                 if length == 8:
                     pressure, comp_duty = struct.unpack('>ii', payload)
@@ -85,11 +95,23 @@ def main():
                     print(f"[PNEUMATIC] pres_adc: {pressure} ({pressure_bar:.2f} bar), "
                           f"compressor: {state} {comp_duty}/255 ({comp_duty * 100 / 255:.0f}%)")
             elif msg_type == 0x0B: # ESP_HEALTH_STATUS
-                if length == 16:
-                    flags, agc, heap_kb, errors = struct.unpack('>iiii', payload)
+                if length in (16, 24):
+                    # Fields 5-6 (steering PWM frame counters) were appended when the
+                    # steering sensor moved to the MT6701's PWM output; older firmware
+                    # sends only the first four.
+                    flags, agc, heap_kb, errors = struct.unpack('>iiii', payload[:16])
                     magnet_ok = bool(flags & 1)
                     i2c_ok = bool(flags & 2)
-                    print(f"[HEALTH] flags: {flags:02x} (I2C:{i2c_ok} Magnet:{magnet_ok}), AGC: {agc}, errors: {errors}")
+                    steer_ok = bool(flags & 8)
+                    extra = ""
+                    if length == 24:
+                        frames, rejects = struct.unpack('>ii', payload[16:24])
+                        # frames flat at 0 = no edges arriving at all (dead sensor or
+                        # unplugged lead); rejects climbing with frames flat = edges at
+                        # the wrong rate (sensor out of 994 Hz PWM mode, or noise).
+                        extra = f", steer frames: {frames}, rejects: {rejects}"
+                    print(f"[HEALTH] flags: {flags:02x} (I2C:{i2c_ok} Magnet:{magnet_ok} "
+                          f"Steer:{steer_ok}), AGC: {agc}, errors: {errors}{extra}")
                 
         except KeyboardInterrupt:
             break
