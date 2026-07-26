@@ -1040,3 +1040,43 @@ gap.
 Noted and left alone: the comms watchdog does the *opposite* on a more severe fault — stale comms
 calls `KM_ACT_Stop()` on the brake, releasing it, and never asserts the SDC. Making the two
 consistent is in `tasks.md`; it was outside the scope of the decision above.
+
+### Same session: flashed to the kart and validated on the real board
+
+Pushed `dev`, pulled on the Orin, stopped `kart-brain`, clean rebuild
+(`rm -rf .pio/build/esp32-s3-devkitc-1` first, and confirmed a
+`Compiling .../km_sdir_pwm.o` line actually appeared — the stale-object trap in `AGENTS.md`),
+uploaded to `/dev/ttyACM0`, hash verified. Read telemetry directly while the port was still free,
+then restarted `kart-brain`.
+
+**The sensor reads.** `[STEERING] angle: 1.084 rad, raw: 1543` — and the centring formula checks
+out by hand: `-(1543 − 2250)/4096 × 2π = 1.0845 rad`, so the decode chain is self-consistent.
+
+**The capture is locked onto the real signal, not onto noise.** The health frame's accepted-frame
+counter climbs by **993 per second with zero rejects** — the MT6701's nominal frame rate is
+994.4 Hz. A capture triggering on noise would show rejects climbing; a dead line would show frames
+flat. Neither. This is the measurement that distinguishes "reading the sensor" from "reading
+something", and it is why the counters were added.
+
+**The control-loop stall is gone.** `control_iters` advances by exactly 25 between consecutive
+20 Hz pneumatic frames — 25 iterations per 50 ms = **500 Hz**, the nominal `control_task` rate,
+and *evenly*, the same 25 every frame. Before, a blocking I²C read with no sensor attached gave
+~8.9 Hz in bursts of 10 iterations separated by 1.1 s stalls. Removing the I²C read from the
+control path fixed it exactly as predicted.
+
+**Health flags read `0c` = `I2C:False Magnet:False Steer:True`**, which is correct and deliberate:
+the AS5600 bits are dead on this board now, and steering health lives on bit 3.
+
+**Still unverified: that the angle tracks movement.** Raw sat at exactly 1543 for every frame
+observed, with no jitter at all. That is consistent with a stationary magnet and a stable sensor,
+but a stuck value would look identical from here. The test is physical — turn the column (or move
+the magnet) and watch `raw` change — and it needs someone at the kart.
+
+### Tool fix found while validating
+
+`read_telemetry.py`'s `ESP_PNEUMATIC` branch tested `length == 8`, correct when the frame carried
+`[pressure, comp_duty]`. The frame has since grown to 7 int32 (28 bytes), so the branch silently
+stopped matching and the frame stopped printing entirely — including `control_iters`, the only way
+to see the real control-loop rate. Worth remembering as a shape: **an equality test on a payload
+length turns into silence, not an error, the first time the payload is extended.** Prefer `>=` with
+explicit per-field guards.
