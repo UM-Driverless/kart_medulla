@@ -274,6 +274,27 @@ uint8_t KM_GPIO_ReadDigital(gpio_num_t pin);
  */
 esp_err_t KM_GPIO_WriteDigital(gpio_num_t pin, uint8_t level);
 
+/**
+ * @brief   Opens or closes the shutdown circuit (SDC) — SAFETY.
+ *
+ * @details Drives `PIN_SDC_NOT_EMERGENCY` (GPIO 18 on the S3), the gate of Q3.
+ *          Asserting emergency drives it LOW, which opens the shutdown chain
+ *          and fires the EBS.
+ *
+ * @param   assert_emergency  Non-zero to assert emergency (open the chain, fire
+ *                            the EBS); 0 to close the chain.
+ *
+ * @return  ESP_OK on success, ESP_ERR_NOT_SUPPORTED on a target with no SDC pin.
+ *
+ * @warning Closing the chain (passing 0) is NOT arming the kart and must not be
+ *          used as if it were — arming has other preconditions this function
+ *          knows nothing about. Nothing in this firmware currently closes the
+ *          chain, so the kart boots and stays in the emergency state. Read the
+ *          `SDC_NOT_EMERGENCY` row in `.agents/esp32s3-pinmap.md` before
+ *          changing that.
+ */
+esp_err_t KM_GPIO_SetEmergency(uint8_t assert_emergency);
+
 /* ---------- ADC ---------- */
 
 /**

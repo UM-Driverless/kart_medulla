@@ -1011,3 +1011,32 @@ unvalidated firmware against validated hardware. Bench steps and the open safety
 Adding a source file to a component's `CMakeLists.txt` does **not** get picked up by an incremental
 PlatformIO build — the link failed with undefined references to every new function while the file
 sat uncompiled. `rm -rf .pio/build/<env>` forces the CMake regenerate.
+
+### Same session: steering-sensor loss now zeroes throttle and fires the EBS
+
+**Decision (Rubén, 2026-07-26):** losing the steering angle while closed-loop steering is active
+should zero the throttle and trigger the EBS, which brakes hard. The firmware's previous behaviour
+— stop the steering motor, leave throttle and brake as the Orin commanded them — was a placeholder,
+not a decision.
+
+Implemented as `KM_GPIO_SetEmergency()` in `km_gpio.c`, driving `PIN_SDC_NOT_EMERGENCY` (GPIO 18,
+gate of Q3) LOW to open the shutdown chain. `KM_GPIO_Init()` now configures that pin as a driven
+output held LOW, which does not change the boot state — R23's 100 k pulldown already held it there
+— it just replaces a weak pulldown with a level the firmware can assert.
+
+The trip is **latched until reboot**. A dropout that reaches the trip has already outlived the
+50 ms staleness window and the 5-frame median, so it is not one glitched frame; and resuming
+autonomous steering the instant frames return would be the firmware re-arming itself after a safety
+trip. Open-loop direct-PWM steering deliberately stays available so the column can still be moved
+while diagnosing. Visible on the dashboard as health flag bit 4, because a latched EBS that nothing
+reports looks identical to a brake fault.
+
+**Honest limit: the EBS half of this does nothing yet.** Nothing in this firmware ever drives GPIO
+18 HIGH, so the shutdown chain is already open from boot and asserting it changes nothing that was
+not already true. The throttle-zeroing half is the part that bites today. The trip becomes real
+when the arming path is written — filed in `tasks.md` alongside the pre-existing `SDC_NOT_EMERGENCY`
+gap.
+
+Noted and left alone: the comms watchdog does the *opposite* on a more severe fault — stale comms
+calls `KM_ACT_Stop()` on the brake, releasing it, and never asserts the SDC. Making the two
+consistent is in `tasks.md`; it was outside the scope of the decision above.

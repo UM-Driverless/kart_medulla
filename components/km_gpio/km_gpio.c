@@ -145,6 +145,29 @@ esp_err_t KM_GPIO_Init(void)
     ret = gpio_config(&dir_cfg);
     if (ret != ESP_OK) return ret;
 
+#ifdef PIN_SDC_NOT_EMERGENCY
+    /* ==================== SHUTDOWN CIRCUIT — SAFETY ==================== */
+    /* Gate of Q3 (IRLZ44N) through R22 100 R. HIGH = Q3 conducts = shutdown
+     * chain closed = no emergency. R23's 100 k pulldown already holds it LOW
+     * before firmware runs, so driving it LOW here changes nothing about the
+     * boot state — it only replaces a weak pulldown with a driven level, so
+     * that KM_GPIO_SetEmergency() has a pin it can actually assert.
+     *
+     * Nothing in this firmware drives it HIGH, so the kart still cannot be
+     * armed; see the SDC entries in tasks.md and .agents/esp32s3-pinmap.md. */
+    gpio_config_t sdc_cfg = {
+        .pin_bit_mask = 1ULL << PIN_SDC_NOT_EMERGENCY,
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_ENABLE,   // keep the fail-safe if the pin floats
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    ret = gpio_config(&sdc_cfg);
+    if (ret != ESP_OK) return ret;
+    ret = gpio_set_level(PIN_SDC_NOT_EMERGENCY, 0);   // 0 = emergency asserted
+    if (ret != ESP_OK) return ret;
+#endif
+
     /* HALL SENSORS — only HALL2 (GPIO33) available; HALL1/3 pins used by UART2 */
 
     /* ======================== I2C ======================== */
@@ -225,6 +248,19 @@ esp_err_t KM_GPIO_WriteDigital(gpio_num_t pin, uint8_t level)
 uint8_t KM_GPIO_ReadDigital(gpio_num_t pin)
 {
     return gpio_get_level(pin);
+}
+
+/** @copydoc KM_GPIO_SetEmergency */
+esp_err_t KM_GPIO_SetEmergency(uint8_t assert_emergency)
+{
+#ifdef PIN_SDC_NOT_EMERGENCY
+    /* SDC_NOT_EMERGENCY is active-low for emergency: LOW opens the shutdown
+     * chain, which is what fires the EBS. */
+    return gpio_set_level(PIN_SDC_NOT_EMERGENCY, assert_emergency ? 0 : 1);
+#else
+    (void)assert_emergency;
+    return ESP_ERR_NOT_SUPPORTED;
+#endif
 }
 
 /* ---------- ADC ---------- */

@@ -412,10 +412,24 @@ it. Both targets build; nothing has been flashed or driven.
 - **Confirm the control loop stopped stalling.** The I²C timeout was making `control_task` run at
   ~8.9 Hz in bursts against a 500 Hz target (2026-07-25). The PWM read cannot block, so the
   iteration counter in the pneumatic frame should now climb evenly at roughly the nominal rate.
-- **DECISION NEEDED (Rubén) — what should losing the steering sensor do?** Current behaviour: stop
-  the steering motor, leave throttle and brake as the Orin commanded them. The alternatives are a
-  full stop (zero throttle, apply brake) or triggering the EBS. This is a vehicle-safety call, not
-  a firmware default, and it is currently the lenient option.
+- **The EBS trip on steering-sensor loss does nothing yet, because the SDC is never closed.**
+  Decided 2026-07-26 (Rubén): losing the angle under closed-loop steering zeroes the throttle and
+  fires the EBS. That is implemented — `KM_GPIO_SetEmergency(1)` drives `PIN_SDC_NOT_EMERGENCY`
+  (GPIO 18) LOW, opening the shutdown chain. **But nothing in this firmware ever drives that pin
+  HIGH**, so the chain is already open from boot and asserting it is currently a no-op in effect.
+  The trip becomes real the moment the arming path exists — see the `SDC_NOT_EMERGENCY` gap in this
+  same section and in `.agents/esp32s3-pinmap.md`. Until then, the throttle-zeroing half is the
+  only half that bites.
+- **How should a latched steering trip be cleared?** Currently: reboot only, and closed-loop
+  steering never comes back within a run (open-loop direct-PWM stays available so the column can
+  still be moved while diagnosing). Reboot-only is the conservative placeholder, not a decision —
+  a race-day dropout that needs a power cycle to clear may be the wrong trade.
+- **The comms watchdog has the opposite problem and was not touched.** On stale comms or
+  `MISSION_MANUAL`, `main.c` calls `KM_ACT_Stop()` on the brake, which *releases* it, and does not
+  assert the SDC. That contradicts the steering-loss decision above, which fires the EBS for a
+  less severe fault than losing the Orin entirely. Already noted as gap 5 in
+  `.agents/esp32s3-pinmap.md`; left alone here because Rubén's decision was scoped to the steering
+  sensor, but the two should be made consistent.
 - **`SENSOR_CENTER = 2250` is undocumented and probably wrong.** `km_sdir.h:48` calls it "half of
   the 12-bit range", but half of 4096 is 2048, and `km_sdir.c:229` repeats the 2048 claim in a
   comment while the code uses 2250. Both the PWM and I²C paths centre on it, so it sets where zero

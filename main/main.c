@@ -41,6 +41,12 @@ static const char *TAG = "MAIN";
 // driven with no indication anywhere. Shipped in the pneumatic frame so it is observable.
 static int32_t g_gpio_init_err = -1;
 
+/* Set once the steering sensor is found invalid while closed-loop steering is
+ * active, and never cleared while the firmware runs. Read by health_task, so it
+ * is visible on the dashboard rather than only in the kart's behaviour — a
+ * latched EBS that nothing reports looks identical to a brake fault. */
+static volatile bool steer_fault_latched = false;
+
 #define MAX_ERROR_COUNT_SDIR 10
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
 #define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
@@ -367,13 +373,39 @@ void control_task(void *ctx) {
     // Steering mode: 0=PID (default), 1=direct PWM
     int steer_mode = (int)KM_OBJ_GetObjectValue(STEER_MODE);
 
+    // Once the steering-sensor fault has tripped, it stays tripped: keep the EBS
+    // fired and the throttle at zero on every cycle, whether or not the sensor
+    // has since come back. Re-asserting each cycle rather than only on the
+    // triggering one means a later write to either output cannot quietly undo it.
+    if (steer_fault_latched) {
+        KM_GPIO_SetEmergency(1);
+        KM_ACT_Stop(c->throttle_act);
+        if (steer_mode != 1) {
+            // Open-loop direct-PWM steering stays available so the column can
+            // still be moved while diagnosing the fault. Closed-loop steering
+            // does not come back — that would be the firmware re-arming itself.
+            KM_ACT_Stop(c->dir_act);
+            KM_PID_Reset(c->dir_pid);
+            last_pid_out = 0.0f;
+            return;
+        }
+    }
+
     // Target from Orin: interpretation depends on mode
     float target_raw = (float)KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f;
 
-    // Throttle + brake: int32 effort (0-255 range from Orin)
+    // Throttle + brake: int32 effort (0-255 range from Orin). Throttle is refused
+    // outright while the steering fault is latched — the Orin does not get to
+    // command drive on a kart whose steering angle is unknown. Braking is still
+    // passed through: the EBS is doing the stopping, but there is no reason to
+    // block a brake request on top of it.
     float thr = (float)KM_OBJ_GetObjectValue(TARGET_THROTTLE) / 255.0f;
     float brk = (float)KM_OBJ_GetObjectValue(TARGET_BRAKING) / 255.0f;
-    KM_ACT_SetOutput(c->throttle_act, thr);
+    if (steer_fault_latched) {
+        KM_ACT_Stop(c->throttle_act);
+    } else {
+        KM_ACT_SetOutput(c->throttle_act, thr);
+    }
     KM_ACT_SetOutput(c->brake_act, brk);
 
     float steer_out;
@@ -386,13 +418,20 @@ void control_task(void *ctx) {
         // Reset PID integral so it doesn't wind up while inactive
         KM_PID_Reset(c->dir_pid);
     } else if (!steer_valid) {
-        // PID mode with no angle feedback. There is no error term to act on, so
-        // the motor is stopped rather than driven off a guessed position.
+        // PID mode with no angle feedback: the kart is driving without knowing
+        // where its wheels point. Decision (Rubén, 2026-07-26): zero the throttle
+        // and fire the EBS, which brakes hard. The steering motor stops too —
+        // there is no error term to act on, so any output would be a guess.
         //
-        // Throttle and brake are left as the Orin commanded them, above. Whether
-        // losing the steering sensor should instead trigger a full stop or the
-        // EBS is a vehicle-safety decision, not a firmware default — it is open
-        // in tasks.md and needs Rubén's call.
+        // LATCHED until reboot, deliberately. A dropout long enough to reach here
+        // has already survived the 50 ms staleness window and the median filter,
+        // so it is not a single glitched frame; and a kart that resumed
+        // autonomous steering the instant frames returned would be re-arming
+        // itself after a safety trip, which is not the firmware's call to make.
+        // How the trip should be cleared is open in tasks.md.
+        steer_fault_latched = true;
+        KM_GPIO_SetEmergency(1);
+        KM_ACT_Stop(c->throttle_act);
         KM_ACT_Stop(c->dir_act);
         KM_PID_Reset(c->dir_pid);
         last_pid_out = 0.0f;
@@ -441,6 +480,7 @@ void heartbeat_task(void *ctx) {
 #define HEALTH_FLAG_I2C_OK    (1 << 1)
 #define HEALTH_FLAG_HEAP_OK   (1 << 2)
 #define HEALTH_FLAG_STEER_OK  (1 << 3)  // steering-sensor PWM read is currently valid
+#define HEALTH_FLAG_STEER_TRIP (1 << 4) // steering fault latched: EBS fired, throttle refused
 #define HEALTH_HEAP_MIN_BYTES 4096
 #define AGC_MIN 20   // below = magnet too strong
 #define AGC_MAX 235  // above = magnet too weak
@@ -474,6 +514,7 @@ void health_task(void *ctx) {
         int8_t steer_ok = KM_SDIR_isConnected(c->sdir);
 #endif
         if (steer_ok) flags |= HEALTH_FLAG_STEER_OK;
+        if (steer_fault_latched) flags |= HEALTH_FLAG_STEER_TRIP;
 
         // Heap check
         uint32_t free_heap = esp_get_free_heap_size();
@@ -507,6 +548,9 @@ void health_task(void *ctx) {
             ESP_LOGW(TAG, "HEALTH: no steering angle (frames=%lu rejects=%lu)",
                      (unsigned long)KM_SDIR_PWM_GetFrameCount(),
                      (unsigned long)KM_SDIR_PWM_GetRejectCount());
+        if (steer_fault_latched)
+            ESP_LOGE(TAG, "HEALTH: steering fault LATCHED — EBS fired, throttle refused, "
+                          "reboot to clear");
         if (!(flags & HEALTH_FLAG_HEAP_OK))
             ESP_LOGW(TAG, "HEALTH: low heap! %lu bytes free", (unsigned long)free_heap);
 

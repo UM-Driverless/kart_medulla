@@ -103,7 +103,12 @@ def main():
                     magnet_ok = bool(flags & 1)
                     i2c_ok = bool(flags & 2)
                     steer_ok = bool(flags & 8)
+                    # bit 4: steering fault latched — EBS fired and throttle refused,
+                    # and it stays that way until the ESP32 is rebooted.
+                    steer_trip = bool(flags & 16)
                     extra = ""
+                    if steer_trip:
+                        extra += "  *** STEERING FAULT LATCHED: EBS FIRED ***"
                     if length == 24:
                         frames, rejects = struct.unpack('>ii', payload[16:24])
                         # frames flat at 0 = no edges arriving at all (dead sensor or
