@@ -1170,6 +1170,10 @@ pressures — that separates divider, sensor and gauge in one pass.
 
 ## 2026-07-27 — The divider is 3:1; firmware now sends millivolts
 
+> **PARTLY SUPERSEDED — see the 2026-07-27 (later) entry at the end of this file.** The 3:1 divider
+> and the millivolt path are correct and stand. Everything here that treats the 7.5 bar figure as a
+> real reading does not: there is no mechanical gauge on this kart.
+
 Rubén, on the previous entry: the KiCad design is three equal resistors in series, tapped after one,
 so a third of the voltage. Checked `dv-hardware/projects/kart-medulla/kart-medulla_P1.kicad_sch` —
 **R11 = R12 = R13 = 10K**, nets `PRESSURE_n__0_10V` → `PRESSURE_n__0_3V3`. Exactly 3:1, always was.
@@ -1199,3 +1203,29 @@ The dashboard now returns no-value rather than a number there.
 ~6.5. With 3:1 confirmed, the gauge would need a 3.82 V ADC full scale to be right, which exceeds
 VDDA. Gauge and sensor genuinely conflict; checking the sensor's physical part number is the first
 step, since 0-10 bar → 0-10 V is assumed from a code comment, not from the label.
+
+## 2026-07-27 (later) — The 7.5 bar figure is void. Both entries above rest on it
+
+Rubén: there is no mechanical dial on this kart. It does not exist.
+
+"Gauge-read 7.5 bar at ADC 2679" came from a 2026-07-18 commit message and was treated as a
+measurement for two days. It is unusable for reasons more basic than accuracy: the wiring and this
+firmware have both changed since, a regulator may sit between whatever was read and PRESSURE_1, the
+two figures may describe different points in the circuit, and 7.5 may have been a value seen earlier
+and said aloud while the tank had already dropped by the time the ADC was sampled. It records a
+number, not a measurement.
+
+Withdrawn as a result: the dashboard recalibration of 2026-07-26, the invented 3.95:1 divider, and the
+claim that a faulty gauge explained the mismatch. The two entries above stay as a record of how the
+error was made, but do not act on their conclusions.
+
+**What is true is short:** SDE5 gives 1 V/bar, the board divides by three, the ESP32 converts counts
+to millivolts through its own eFuse calibration. `bar = 3 * V_pin`. No calibration point was ever
+needed and there was no conflict — only an old number nothing supported.
+
+`ADC_PRESSURE_LOW/HIGH` stay at raw 2500/2858 because the kart has run with them and moving them is a
+physical change tangled with the unresolved running-vs-settled ground-IR bias. Their comment claimed
+7 and 8 bar; by the sensor chain they are about 6.0 and 6.9. Choosing real targets is now a task.
+
+Root cause and prevention: `.agents/error-log.md` 2026-07-27. The pattern: every time a verified fact
+contradicted the unsourced number, the verified fact was the thing that got adjusted.
