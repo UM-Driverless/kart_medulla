@@ -11,6 +11,27 @@ this repo that means flashed *and* driven, per the branch workflow in `AGENTS.md
 
 ## TODO
 
+### At-the-kart checklist (2026-07-26 compressor/SDC work) — items also live in kart-brain
+
+The compressor-disable + shutdown-circuit change of 2026-07-26 spans both repos, so its verification
+does too. Doing these in order matters: each later one needs the flash to have worked.
+
+1. **Flash once** — confirms the new 921600 upload baud (this repo, task below).
+2. **Check the build tree** — `grep -m1 CMAKE_HOME_DIRECTORY .pio/build/esp32-s3-devkitc-1/CMakeCache.txt`
+   against `$PWD` (this repo, task below).
+3. **Verify the SDC drive and decide on wiring the Q3 gate** — full steps in **kart-brain `tasks.md`**,
+   "(at the kart) Verify the shutdown-circuit drive on the bench". Firmware-side summary: with an
+   autonomous mission selected the dashboard's EBS page should read "Shutdown circuit: CLOSED", and
+   pressing "Disable compressor" should flip it to OPEN with the compressor row reading DISABLED. Meter
+   on the Q3 gate side of R22 to confirm the pin follows the readback.
+4. **Settle the pressure calibration** — full steps in **kart-brain `tasks.md`**, "(at the kart) Settle
+   the tank-pressure calibration". Measure R11/R12/R13 to confirm the divider is 4:1 rather than the 3:1
+   the old note assumed. **Take all readings with the compressor OFF and settled** — see the ground IR
+   drop task further down, which makes any running reading unusable for calibration.
+
+Note that **commit `f156921` has never been compiled by anyone** (no CI, no Mac toolchain — see the task
+below), so the first flash is also its first build.
+
 ### Confirm the faster S3 upload baud, and root-cause the stale-object build
 
 Two build-loop items found 2026-07-26, both cheap to settle at the kart.
@@ -351,6 +372,15 @@ compressor runs. If the rail sags in proportion to the reading, it is cause 1.
 
 ### Tank pressure thresholds do not match the verified sensor calibration
 
+> **BELIEVED OBSOLETE 2026-07-26 — read before doing any of this; yours to close.** This task is
+> written against `ADC_1_BAR = 819` / `ADC_2_BAR = 1638`, and **those constants no longer exist**.
+> `main.c` now has `ADC_PRESSURE_LOW = 2500` / `ADC_PRESSURE_HIGH = 2858` (~7 and ~8 bar), set from
+> the 2026-07-18 gauge anchor, and the dashboard was corrected to the same anchor on 2026-07-26 so
+> both sides finally agree. The `bar = 3 x Vadc` map this task argues from is also now known to be
+> wrong on two counts — ADC full scale is 2900 mV not 3300, and the divider cannot be 3:1 — see the
+> calibration note in kart-brain `src/kb_dashboard/kb_dashboard/protocol.py`. What is *not* settled
+> is the running-vs-settled bias above, which is a separate and more serious problem.
+
 `main/main.c` sets `ADC_1_BAR = 819` and `ADC_2_BAR = 1638` under a comment admitting it is "a rough
 map". The verified wiring note in this file says **bar = 3 × Vadc** (CN7.1 → GPIO 6). Those disagree:
 under bar = 3 × Vadc, ADC 819 is about **2 bar** and ADC 1638 about **4 bar**, so the thresholds are
@@ -411,6 +441,18 @@ dashboard.
   sensor before reading anything into the rest of the test.
 
 ### Compressor pump-on/off thresholds are still uncalibrated (separate from the dashboard bar)
+
+> **BELIEVED OBSOLETE 2026-07-26 — yours to close.** Same reason as the task above: it argues from
+> `ADC_1_BAR` / `ADC_2_BAR` (819 / 1638), which no longer exist, and from `bar = 3.0 * V_adc` /
+> "~414 raw ADC counts per bar", which is the map now known to be wrong. Its claim that "the
+> dashboard bar reading already uses the verified calibration" was true when written and is now
+> backwards — the dashboard was the side that disagreed, and it was corrected on 2026-07-26.
+>
+> **One bullet below survives and is worth keeping**: converting in firmware with `esp_adc_cal` and
+> sending millivolts instead of raw counts. That is now a *better* idea than when it was written,
+> because it would replace the guessed full-scale figure with the chip's own calibration and remove
+> one of the two errors that caused this whole mess. Consider re-filing it as its own task before
+> closing this one.
 
 - **`ADC_1_BAR` / `ADC_2_BAR` in `main.c` are wrong and should be recomputed from the verified
   calibration.** The tank read is now known (verified 2026-07-12, kart-brain tasks.md): PRESSURE_1
