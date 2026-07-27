@@ -1267,3 +1267,35 @@ be refilled. So it feeds the same interlock as the operator's disable button: wh
 because someone asked or because something broke, the kart must not present as ready to drive.
 `comp_state = 4` reports it; 5 is the remaining voltage guard, pegged over-range, which is kept
 because a saturated reading genuinely is not a pressure.
+
+## 2026-07-27 — Emergency-until-verified is the architecture, so the interlock tests pressure directly
+
+Rubén, on the stall detector being wired to the SDC: a healthy kart can sit in emergency for a while,
+that is fine — the EBS stays in emergency until all signals and pressures are checked, which is what
+Formula Student does with a more elaborate mechanism. If that is the only bug, there are no bugs.
+
+That reframes the objection I had raised. I had treated any opening of the shutdown circuit as a false
+alarm, when open is the correct *resting* state and closing it is the thing that must be earned. The
+worry was misplaced.
+
+But it also points at a better interlock than the one I wrote. If the rule is "stay in emergency until
+the pressure is verified", the condition belongs on **the pressure itself**, not on a heuristic about
+how quickly it rose. So `sdc_may_close` now includes `tank_pressure_ok`: the chain may close only
+while the tank is at or above `EBS_TANK_ARM_BAR` (6.5), and reopens below `EBS_TANK_DISARM_BAR` (6.0).
+The 6 bar figure is the reservoir's design drawdown — the Festo CRVZS-0.75 is sized for 3 EBS
+activations from 10 → 6 bar — so below it the guaranteed activation count no longer holds. The arm/
+disarm gap exists so sensor noise at the boundary cannot toggle a safety output at the loop rate. A
+pegged reading counts as not-enough, because an unknown pressure is not a verified one.
+
+This makes the empty-kart case behave correctly by construction: it boots in emergency, the compressor
+runs, and the chain becomes closeable when the air is actually there. No detector required.
+
+It also removes the reason the stall check ever needed to touch the SDC. A compressor that cannot
+deliver shows up here as a tank that never reaches the arm threshold — the honest reason, directly
+measured — rather than as an inference from a burst that underperformed. The stall check stays as a
+diagnostic that names *why* (dead sensor, dead compressor, leak) and reports `comp_state 4`.
+
+Implementation note: `tank_pressure_ok` is file-scope and read by the SDC decision at the top of
+`control_task` while being written in the pneumatics section further down, so it is one cycle stale —
+2 ms against a tank that moves over seconds. Same arrangement as `steer_fault_latched`. It starts
+false, so boot is always emergency.

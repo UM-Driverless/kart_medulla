@@ -65,6 +65,14 @@ static volatile bool steer_fault_latched = false;
  * comp_state 4 and nothing more. See tasks.md. */
 static volatile bool pump_stall_observed = false;
 
+/* Whether the tank is holding enough air for the EBS to be relied on. Computed in the
+ * pneumatics section of control_task and read by the shutdown-circuit decision at the
+ * TOP of the same function, so it is one cycle stale — 2 ms at the 500 Hz task rate,
+ * against a tank that moves over seconds. Same arrangement as steer_fault_latched.
+ * Starts false, so the kart boots in emergency and stays there until the tank has
+ * actually been measured above the arm threshold. */
+static volatile bool tank_pressure_ok = false;
+
 #define MAX_ERROR_COUNT_SDIR 10
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
 #define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
@@ -138,6 +146,17 @@ static volatile bool pump_stall_observed = false;
  * 15 s burst should deliver well over a bar. 0.5 sits comfortably above the SDE5's
  * +/-3 %FS accuracy (0.3 bar) so sensor noise cannot trip it, and far below what a
  * healthy burst achieves. */
+/* Minimum tank pressure for the kart to be allowed out of emergency. The reservoir
+ * is sized for 3 EBS activations over a 10 -> 6 bar drawdown (Festo CRVZS-0.75; see
+ * ~/dv/kart/pneumatics/README.md), so below 6 bar the guaranteed activation count no
+ * longer holds and the kart must not present as ready to drive.
+ *
+ * ARM is higher than DISARM so the shutdown output cannot chatter while the tank sits
+ * at the boundary — without the gap, one count of sensor noise either side of a
+ * single threshold would toggle a safety line at the control-loop rate. */
+#define EBS_TANK_ARM_BAR     6.5f   // must reach this before the chain may close
+#define EBS_TANK_DISARM_BAR  6.0f   // falling below this opens it again
+
 #define PRESSURE_STALL_MIN_RISE_BAR 0.15f
 
 /* The stall check only judges bursts that STARTED below this. Above it the test
@@ -301,8 +320,15 @@ void control_task(void *ctx) {
     //     supply is switched off cannot refill the EBS reservoir, so it must not
     //     also look ready to drive. This is the interlock behind the dashboard's
     //     compressor button.
-    //     (The pump-stall detector is deliberately NOT in this list yet — it has
-    //     never run on hardware, so it reports only. See pump_stall_observed.)
+    //   - tank_pressure_ok: the kart is holding enough air to guarantee its EBS
+    //     activations (>= EBS_TANK_ARM_BAR, with hysteresis). This is the condition
+    //     that makes starting in emergency correct rather than a fault: an empty
+    //     kart sits in emergency until the compressor brings the tank up, which is
+    //     how Formula Student expects it to behave.
+    //     (The pump-stall detector is deliberately NOT in this list — it reports
+    //     only. A broken compressor already shows up here as a tank that never
+    //     reaches the arm threshold, which is the honest reason. See
+    //     pump_stall_observed.)
     //   - steer_fault_latched: reads the PREVIOUS cycle's value, since the fault
     //     is detected further down this same function — a 2 ms lag at the 500 Hz
     //     task period. Harmless, because the detection sites still call
@@ -317,6 +343,7 @@ void control_task(void *ctx) {
     bool compressor_disabled = KM_OBJ_GetObjectValue(COMPRESSOR_DISABLED) != 0;
     int  as_state = (int)KM_OBJ_GetObjectValue(MACHINE_STATE_ORIN);
     bool sdc_may_close = (as_state == AS_READY || as_state == AS_DRIVING)
+                      && tank_pressure_ok
                       && !compressor_disabled
                       && !steer_fault_latched
                       && !comms_stale;
@@ -392,6 +419,28 @@ void control_task(void *ctx) {
     // they are told apart by BEHAVIOUR instead: see the stall check below.
     const uint32_t PRESSURE_MAX_VALID_MV = 2900;  // 11 dB ceiling; at/above = pegged
     bool tank_pegged = (pres1_mv >= PRESSURE_MAX_VALID_MV);
+
+    // Tank-pressure interlock for the shutdown circuit, with hysteresis. This is the
+    // condition that actually matters, and it is a LIVE test of the pressure rather
+    // than a heuristic about how it got there: the kart may leave emergency only
+    // while it is holding enough air to guarantee its EBS activations, and it
+    // re-enters emergency the moment that stops being true.
+    //
+    // Starting in emergency and staying there until the tank comes up is the normal,
+    // intended behaviour — not a fault. It is also why the pump-stall detector does
+    // not need to touch the SDC: if a broken compressor means the tank never reaches
+    // EBS_TANK_ARM_BAR, this check already holds the chain open, for the reason that
+    // actually matters (there is not enough air) rather than by inference from a
+    // burst that underperformed.
+    //
+    // A pegged reading counts as not-enough: an unknown pressure is not a verified one.
+    if (tank_pegged) {
+        tank_pressure_ok = false;
+    } else if (tank_bar >= EBS_TANK_ARM_BAR) {
+        tank_pressure_ok = true;
+    } else if (tank_bar < EBS_TANK_DISARM_BAR) {
+        tank_pressure_ok = false;
+    }
 
     static bool compressor_demand = false;
     if (compressor_disabled || tank_pegged) {
