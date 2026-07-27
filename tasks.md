@@ -27,11 +27,16 @@ working kart. It was pushed before that analysis was done.
 then unplug the tank sensor and confirm it trips. Only then add `pump_stall_observed` to the
 `sdc_may_close` whitelist in `control_task` and make it stop the pump.
 
-**Also unverified: can this compressor even reach 8 bar?** `PRESSURE_PUMP_OFF_BAR` is 8.0 because that
-is what was asked for, but nothing has demonstrated it. The one bench run (2026-07-18) was logged as
-"0 → 6 bar" under the wrong calibration; recomputed it shut off at roughly 4.3–4.8 bar, and that was
-the threshold, not the compressor's limit. If the tank plateaus below 8 the pump will cycle 15/15
-forever — watch for that and set the cutoff just under the observed plateau.
+**The compressor's ceiling is unknown, and deliberately not being tested** (Rubén, 2026-07-27: we did
+not test max pressure and do not want to — it may break before it tops up; expectation is that it
+reaches 10 bar fine). Note what the existing evidence does and does not say: the 2026-07-18 run shut
+off at roughly 4.3–4.8 bar recomputed, but that was the *threshold* cutting in, not the compressor
+running out of breath. It is a lower bound of ~4.8 bar, not a suggestion that 8 is out of reach.
+
+**No test is needed, because normal use reveals it.** If the tank plateaus below `PRESSURE_PUMP_OFF_BAR`
+the pump cycles 15 s on / 15 s off with the pressure sitting still, and the report-only stall detector
+flags exactly that (`comp_state 4`). So: watch the dashboard during ordinary running. If that pattern
+appears, set the cutoff just under the observed plateau. Until it appears, assume the target is fine.
 
 ### At-the-kart checklist (2026-07-26 compressor/SDC work) — items also live in kart-brain
 

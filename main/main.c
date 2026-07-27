@@ -371,10 +371,12 @@ void control_task(void *ctx) {
     // bar, and even that was the threshold cutting in, not the compressor running
     // out of breath. Its actual ceiling is unknown.
     //
-    // If the ceiling turns out to be below 8, the pump never reaches the cutoff and
-    // cycles 15 s on / 15 s off indefinitely. That is the first thing to watch for
-    // on the next bench run: if the tank plateaus, lower PRESSURE_PUMP_OFF_BAR to
-    // just under the plateau rather than leaving the motor cycling forever.
+    // Deliberately not tested (Rubén, 2026-07-27): a max-pressure run risks breaking
+    // the compressor against a closed system, and it is not needed — normal use
+    // shows the answer. If the ceiling is below 8 the tank plateaus, the pump cycles
+    // 15 s on / 15 s off with the pressure static, and the report-only stall detector
+    // flags it as comp_state 4. If that pattern shows up, lower this to just under
+    // the observed plateau; until it does, the target stands.
     const float PRESSURE_PUMP_ON_BAR  = 7.0f;   // below this, start pumping
     const float PRESSURE_PUMP_OFF_BAR = 8.0f;   // above this, stop
     //
