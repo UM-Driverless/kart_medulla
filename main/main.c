@@ -47,13 +47,23 @@ static int32_t g_gpio_init_err = -1;
  * latched EBS that nothing reports looks identical to a brake fault. */
 static volatile bool steer_fault_latched = false;
 
-/* Set when a full-length compressor burst fails to raise the tank pressure, which
- * means the air system is not working: a dead or stuck pressure sensor, a compressor
- * that is not actually running, or a leak big enough to outpace it. Latched, because
- * all three need a human. Read by control_task to stop pumping and to hold the
- * shutdown circuit open — a kart that cannot make air cannot refill the EBS
- * reservoir, so it must not present as ready to drive. */
-static volatile bool pump_stall_latched = false;
+/* Set when a full-length compressor burst starting below PRESSURE_STALL_JUDGE_BELOW_BAR
+ * fails to raise the tank pressure — a dead or stuck sensor, a compressor that is not
+ * actually spinning, or a leak that outpaces it.
+ *
+ * REPORTED ONLY. It does NOT stop the pump and does NOT open the shutdown circuit,
+ * deliberately, because this check has never run on hardware and its threshold is
+ * derived from one bench figure rather than measured. A safety interlock that has
+ * never been observed working must not be able to fire the EBS on its own: the first
+ * version of this did latch, and analysis afterwards showed it would false-trip near
+ * the top of the pressure range, where a healthy compressor legitimately adds almost
+ * nothing per burst.
+ *
+ * Promote it to a real interlock — latch, stop pumping, hold the SDC open — once it
+ * has been watched on the kart and seen to stay clear through normal fills and to
+ * trip when the sensor is unplugged. Until then it shows on the dashboard as
+ * comp_state 4 and nothing more. See tasks.md. */
+static volatile bool pump_stall_observed = false;
 
 #define MAX_ERROR_COUNT_SDIR 10
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
@@ -128,7 +138,16 @@ static volatile bool pump_stall_latched = false;
  * 15 s burst should deliver well over a bar. 0.5 sits comfortably above the SDE5's
  * +/-3 %FS accuracy (0.3 bar) so sensor noise cannot trip it, and far below what a
  * healthy burst achieves. */
-#define PRESSURE_STALL_MIN_RISE_BAR 0.5f
+#define PRESSURE_STALL_MIN_RISE_BAR 0.15f
+
+/* The stall check only judges bursts that STARTED below this. Above it the test
+ * cannot tell "compressor dead" from "compressor near its ceiling", because a
+ * compressor asymptotes as back pressure rises and a legitimate burst there adds
+ * almost nothing. Judging only the easy part of the curve keeps the test meaningful:
+ * below 4 bar a working compressor moves the tank fast, so no rise means broken.
+ * A fault that first appears at high pressure is caught later, once the tank has
+ * bled down past this line — later than ideal, but never wrongly. */
+#define PRESSURE_STALL_JUDGE_BELOW_BAR 4.0f
 
 #define COMPRESSOR_DUTY_RUN      255    // 100% — DC on, no switching (see above)
 #define COMPRESSOR_SOFT_START_MS 1000   // linear 0 → COMPRESSOR_DUTY_RUN over this long
@@ -282,11 +301,8 @@ void control_task(void *ctx) {
     //     supply is switched off cannot refill the EBS reservoir, so it must not
     //     also look ready to drive. This is the interlock behind the dashboard's
     //     compressor button.
-    //   - pump_stall_latched: the same condition arrived at involuntarily. A full
-    //     compressor burst that did not raise the pressure means the air system is
-    //     broken — dead sensor, dead compressor, or a serious leak — and the kart
-    //     equally cannot refill the reservoir. Whether the air stopped because
-    //     someone asked or because something failed, the consequence is identical.
+    //     (The pump-stall detector is deliberately NOT in this list yet — it has
+    //     never run on hardware, so it reports only. See pump_stall_observed.)
     //   - steer_fault_latched: reads the PREVIOUS cycle's value, since the fault
     //     is detected further down this same function — a 2 ms lag at the 500 Hz
     //     task period. Harmless, because the detection sites still call
@@ -302,7 +318,6 @@ void control_task(void *ctx) {
     int  as_state = (int)KM_OBJ_GetObjectValue(MACHINE_STATE_ORIN);
     bool sdc_may_close = (as_state == AS_READY || as_state == AS_DRIVING)
                       && !compressor_disabled
-                      && !pump_stall_latched
                       && !steer_fault_latched
                       && !comms_stale;
     KM_GPIO_SetEmergency(sdc_may_close ? 0 : 1);
@@ -322,6 +337,17 @@ void control_task(void *ctx) {
     // nets PRESSURE_n__0_10V -> PRESSURE_n__0_3V3), and KM_GPIO_ReadADC_mV()
     // converts counts to millivolts through the chip's eFuse calibration. No fitted
     // constant anywhere in that chain.
+    // UNVERIFIED TARGET, 2026-07-27. 8 bar is what was asked for, but no run has
+    // ever demonstrated this compressor reaching it. The only hardware evidence is
+    // the 2026-07-18 bench run, logged as "0 -> 6 bar" using the calibration since
+    // shown to be wrong; recomputed correctly that shutoff was at roughly 4.3-4.8
+    // bar, and even that was the threshold cutting in, not the compressor running
+    // out of breath. Its actual ceiling is unknown.
+    //
+    // If the ceiling turns out to be below 8, the pump never reaches the cutoff and
+    // cycles 15 s on / 15 s off indefinitely. That is the first thing to watch for
+    // on the next bench run: if the tank plateaus, lower PRESSURE_PUMP_OFF_BAR to
+    // just under the plateau rather than leaving the motor cycling forever.
     const float PRESSURE_PUMP_ON_BAR  = 7.0f;   // below this, start pumping
     const float PRESSURE_PUMP_OFF_BAR = 8.0f;   // above this, stop
     //
@@ -368,7 +394,7 @@ void control_task(void *ctx) {
     bool tank_pegged = (pres1_mv >= PRESSURE_MAX_VALID_MV);
 
     static bool compressor_demand = false;
-    if (compressor_disabled || tank_pegged || pump_stall_latched) {
+    if (compressor_disabled || tank_pegged) {
         compressor_demand = false;
     } else if (tank_bar < PRESSURE_PUMP_ON_BAR) {
         compressor_demand = true;
@@ -415,11 +441,15 @@ void control_task(void *ctx) {
             //
             // Only full-length bursts are judged. A burst that ended early did so
             // because the tank reached the cutoff, which is success by definition.
-            // PRESSURE_STALL_MIN_RISE_BAR is set well above the sensor's +/-3 %FS
-            // (0.3 bar) so noise cannot trip it, and well below the ~1.5 bar a
-            // healthy 15 s burst delivers.
-            if ((tank_bar - burst_start_bar) < PRESSURE_STALL_MIN_RISE_BAR) {
-                pump_stall_latched = true;
+            // PRESSURE_STALL_MIN_RISE_BAR is 0.15 bar: about 5x the sensor's
+            // REPEATABILITY (0.3 %FS = 0.03 bar), which is the right spec for a
+            // difference between two readings from the same sensor — the +/-3 %FS
+            // precision figure is absolute error and largely cancels in a delta.
+            // It asks only "did anything happen at all", not "was this productive",
+            // because a working compressor slows as back pressure rises.
+            if (burst_start_bar < PRESSURE_STALL_JUDGE_BELOW_BAR &&
+                (tank_bar - burst_start_bar) < PRESSURE_STALL_MIN_RISE_BAR) {
+                pump_stall_observed = true;
             }
             burst_active = false;     // hit the cap → forced cooldown
             compressor_cooling = true;
@@ -443,7 +473,7 @@ void control_task(void *ctx) {
     // off" is exactly the one you need to see, since it is also why the kart
     // will not arm. Checked first: the latch outranks the other two.
     int32_t comp_state = compressor_disabled ? 3
-                       : (pump_stall_latched ? 4
+                       : (pump_stall_observed ? 4
                        : (tank_pegged ? 5
                        : (burst_active ? 1 : (compressor_cooling ? 2 : 0))));
 #ifdef PIN_CMD_COMPRESSOR

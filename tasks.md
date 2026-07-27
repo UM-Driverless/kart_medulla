@@ -11,6 +11,28 @@ this repo that means flashed *and* driven, per the branch workflow in `AGENTS.md
 
 ## TODO
 
+### Pump-stall detector: watch it, then decide whether to arm it
+
+Added 2026-07-27, **reporting only**. A full-length compressor burst that starts below 4 bar and
+raises the tank by less than 0.15 bar sets `pump_stall_observed`, which shows on the dashboard as
+compressor state 4 and does nothing else.
+
+It is not wired to the shutdown circuit on purpose. The first version was — it latched and opened the
+SDC — and analysis right afterwards showed it would false-trip: the threshold was 0.5 bar derived from
+a 0→6 bar fill, which is the fast part of the curve, while the check only ever runs near the top where
+a healthy compressor legitimately adds very little per burst. That would have fired the EBS on a
+working kart. It was pushed before that analysis was done.
+
+**Before arming it:** watch state 4 through several normal fill cycles and confirm it stays clear,
+then unplug the tank sensor and confirm it trips. Only then add `pump_stall_observed` to the
+`sdc_may_close` whitelist in `control_task` and make it stop the pump.
+
+**Also unverified: can this compressor even reach 8 bar?** `PRESSURE_PUMP_OFF_BAR` is 8.0 because that
+is what was asked for, but nothing has demonstrated it. The one bench run (2026-07-18) was logged as
+"0 → 6 bar" under the wrong calibration; recomputed it shut off at roughly 4.3–4.8 bar, and that was
+the threshold, not the compressor's limit. If the tank plateaus below 8 the pump will cycle 15/15
+forever — watch for that and set the cutoff just under the observed plateau.
+
 ### At-the-kart checklist (2026-07-26 compressor/SDC work) — items also live in kart-brain
 
 The compressor-disable + shutdown-circuit change of 2026-07-26 spans both repos, so its verification
