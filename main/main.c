@@ -47,6 +47,14 @@ static int32_t g_gpio_init_err = -1;
  * latched EBS that nothing reports looks identical to a brake fault. */
 static volatile bool steer_fault_latched = false;
 
+/* Set when a full-length compressor burst fails to raise the tank pressure, which
+ * means the air system is not working: a dead or stuck pressure sensor, a compressor
+ * that is not actually running, or a leak big enough to outpace it. Latched, because
+ * all three need a human. Read by control_task to stop pumping and to hold the
+ * shutdown circuit open — a kart that cannot make air cannot refill the EBS
+ * reservoir, so it must not present as ready to drive. */
+static volatile bool pump_stall_latched = false;
+
 #define MAX_ERROR_COUNT_SDIR 10
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
 #define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
@@ -114,6 +122,13 @@ static volatile bool steer_fault_latched = false;
  * bar = 3 * V_pin. Both terms come from the schematic and the datasheet — there is
  * no calibration constant here and none is needed. */
 #define PRESSURE_BAR_PER_PIN_VOLT 3.0f
+
+/* Minimum pressure rise a full-length compressor burst must produce. The compressor
+ * manages roughly 0.1 bar/s (0 -> 6 bar in about a minute, bench 2026-07-18), so a
+ * 15 s burst should deliver well over a bar. 0.5 sits comfortably above the SDE5's
+ * +/-3 %FS accuracy (0.3 bar) so sensor noise cannot trip it, and far below what a
+ * healthy burst achieves. */
+#define PRESSURE_STALL_MIN_RISE_BAR 0.5f
 
 #define COMPRESSOR_DUTY_RUN      255    // 100% — DC on, no switching (see above)
 #define COMPRESSOR_SOFT_START_MS 1000   // linear 0 → COMPRESSOR_DUTY_RUN over this long
@@ -267,6 +282,11 @@ void control_task(void *ctx) {
     //     supply is switched off cannot refill the EBS reservoir, so it must not
     //     also look ready to drive. This is the interlock behind the dashboard's
     //     compressor button.
+    //   - pump_stall_latched: the same condition arrived at involuntarily. A full
+    //     compressor burst that did not raise the pressure means the air system is
+    //     broken — dead sensor, dead compressor, or a serious leak — and the kart
+    //     equally cannot refill the reservoir. Whether the air stopped because
+    //     someone asked or because something failed, the consequence is identical.
     //   - steer_fault_latched: reads the PREVIOUS cycle's value, since the fault
     //     is detected further down this same function — a 2 ms lag at the 500 Hz
     //     task period. Harmless, because the detection sites still call
@@ -282,6 +302,7 @@ void control_task(void *ctx) {
     int  as_state = (int)KM_OBJ_GetObjectValue(MACHINE_STATE_ORIN);
     bool sdc_may_close = (as_state == AS_READY || as_state == AS_DRIVING)
                       && !compressor_disabled
+                      && !pump_stall_latched
                       && !steer_fault_latched
                       && !comms_stale;
     KM_GPIO_SetEmergency(sdc_may_close ? 0 : 1);
@@ -333,26 +354,21 @@ void control_task(void *ctx) {
     // charge it a cooldown it never earned — and re-enabling mid-phantom-burst
     // would then skip the soft-start ramp, which is the one thing protecting the
     // 12 V rail from a stalled rotor's inrush.
-    // A reading the sensor cannot legitimately produce must not drive the pump.
-    // Now that the cutoff depends on this number, a dead channel is dangerous in a
-    // way it was not before: 0 mV looks exactly like an empty tank, and the pump
-    // would run every duty cycle forever with no feedback. The burst limiter caps
-    // the motor's heat but nothing would cap the pressure.
-    //   - Below PRESSURE_MIN_VALID_MV the channel is shorted, unpowered or unfitted.
-    //     A real 0 bar tank sits at 0 V too, but the kart is never at a true 0 bar
-    //     with a working sensor, so refusing to pump is the right call: it fails
-    //     visibly (no air) instead of invisibly (no cutoff).
-    //   - At or above the 11 dB ceiling the ADC is pegged and the reading is not a
-    //     pressure. Refusing to pump is also correct here — pegged high most likely
-    //     means over-range, and pumping into that would be the worst case.
-    // Either way the state is reported: comp_state 4 = sensor not usable.
-    const uint32_t PRESSURE_MIN_VALID_MV = 50;    // below this the channel is dead
+    // Pegged high is not a pressure: at/above the 11 dB ceiling the ADC is saturated
+    // and the true value is unknown but certainly over-range, so pumping into it
+    // would be the worst case. Refuse.
+    //
+    // There is deliberately NO low-voltage validity floor. An earlier version
+    // refused below 50 mV as "dead channel", which was wrong: the SDE5's output
+    // characteristic starts at 0 V for 0 bar (datasheet, initial value 0 V), so an
+    // empty tank legitimately reads 0 mV — precisely when pumping is most needed.
+    // A dead sensor and an empty tank are indistinguishable by voltage alone, so
+    // they are told apart by BEHAVIOUR instead: see the stall check below.
     const uint32_t PRESSURE_MAX_VALID_MV = 2900;  // 11 dB ceiling; at/above = pegged
-    bool tank_valid = (pres1_mv >= PRESSURE_MIN_VALID_MV) &&
-                      (pres1_mv <  PRESSURE_MAX_VALID_MV);
+    bool tank_pegged = (pres1_mv >= PRESSURE_MAX_VALID_MV);
 
     static bool compressor_demand = false;
-    if (compressor_disabled || !tank_valid) {
+    if (compressor_disabled || tank_pegged || pump_stall_latched) {
         compressor_demand = false;
     } else if (tank_bar < PRESSURE_PUMP_ON_BAR) {
         compressor_demand = true;
@@ -373,6 +389,7 @@ void control_task(void *ctx) {
     static bool compressor_cooling = false;
     static TickType_t burst_start_tick = 0;
     static TickType_t cooldown_start_tick = 0;
+    static float burst_start_bar = 0.0f;
 
     if (compressor_cooling &&
         (uint32_t)(now - cooldown_start_tick) * portTICK_PERIOD_MS >= COMPRESSOR_COOLDOWN_MS) {
@@ -385,7 +402,25 @@ void control_task(void *ctx) {
         if (!burst_active) {
             burst_active = true;
             burst_start_tick = now;   // new burst → restart the soft-start ramp
+            burst_start_bar  = tank_bar;   // baseline for the stall check below
         } else if ((uint32_t)(now - burst_start_tick) * portTICK_PERIOD_MS >= COMPRESSOR_MAX_RUN_MS) {
+            // A burst that ran the FULL length without reaching the cutoff should
+            // have moved the tank a long way — the compressor does roughly
+            // 0.1 bar/s, so 15 s is over a bar. If it barely moved, the air system
+            // is not doing its job and the cause needs a human: a sensor stuck at
+            // some constant (including 0, which is why there is no voltage floor
+            // above — a dead sensor and an empty tank look identical until you try
+            // to fill it), a compressor that is not actually spinning, or a leak
+            // that outpaces it.
+            //
+            // Only full-length bursts are judged. A burst that ended early did so
+            // because the tank reached the cutoff, which is success by definition.
+            // PRESSURE_STALL_MIN_RISE_BAR is set well above the sensor's +/-3 %FS
+            // (0.3 bar) so noise cannot trip it, and well below the ~1.5 bar a
+            // healthy 15 s burst delivers.
+            if ((tank_bar - burst_start_bar) < PRESSURE_STALL_MIN_RISE_BAR) {
+                pump_stall_latched = true;
+            }
             burst_active = false;     // hit the cap → forced cooldown
             compressor_cooling = true;
             cooldown_start_tick = now;
@@ -408,8 +443,9 @@ void control_task(void *ctx) {
     // off" is exactly the one you need to see, since it is also why the kart
     // will not arm. Checked first: the latch outranks the other two.
     int32_t comp_state = compressor_disabled ? 3
-                       : (!tank_valid ? 4
-                       : (burst_active ? 1 : (compressor_cooling ? 2 : 0)));
+                       : (pump_stall_latched ? 4
+                       : (tank_pegged ? 5
+                       : (burst_active ? 1 : (compressor_cooling ? 2 : 0))));
 #ifdef PIN_CMD_COMPRESSOR
     KM_GPIO_WritePWM(PIN_CMD_COMPRESSOR, comp_duty);
 #endif

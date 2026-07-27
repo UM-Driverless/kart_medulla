@@ -1247,10 +1247,23 @@ there is only ~0.7 bar of readable headroom above it; and the running ground-IR 
 is reached late, so true pressure at stop is *above* 8 by whatever the sag is worth. Treat 8 as a
 floor on where the pump stops, not a ceiling, until that bias is measured.
 
-**New failure mode, guarded.** Making the cutoff depend on the reading made a dead sensor dangerous in
-a way it was not when the comparison was on raw counts: 0 mV looks exactly like an empty tank, so the
-pump would run every cycle forever with no feedback — the burst limiter caps the motor's heat, but
-nothing would cap the pressure. `tank_valid` now refuses to pump below 50 mV (shorted, unpowered or
-unfitted) or at/above 2900 mV (pegged, not a pressure), and reports `comp_state = 4` so the dashboard
-shows NO TANK SENSOR rather than a silent idle. This is the AGENTS.md sensor-validity rule applied to
-an actuator instead of a display: it fails visibly as no air, not invisibly as no cutoff.
+**New failure mode, and the first guard for it was wrong.** Making the cutoff depend on the reading
+made a dead sensor dangerous in a way it was not when the comparison was on raw counts: 0 mV looks
+exactly like an empty tank, so the pump would run forever with no feedback. The first attempt refused
+to pump below 50 mV as a "dead channel" — Rubén: could the Festo not output under 50 mV? It can. The
+datasheet's output characteristic **starts at 0 V for 0 bar**, so 50 mV at the pin is 0.15 bar and
+that guard refused to pump exactly when the tank was emptiest. Backwards.
+
+**A dead sensor and an empty tank are indistinguishable by voltage, so they are told apart by
+behaviour** (Rubén's suggestion): if a full-length 15 s burst does not raise the pressure by at least
+`PRESSURE_STALL_MIN_RISE_BAR` (0.5 bar), `pump_stall_latched` is set — pumping stops and the shutdown
+circuit is held open. The threshold sits above the SDE5's ±3 %FS (0.3 bar) so noise cannot trip it and
+well under the ~1.5 bar a healthy burst delivers at ~0.1 bar/s. Only full-length bursts are judged; a
+burst that ended early did so by reaching the cutoff, which is success.
+
+That one check covers a dead-or-stuck sensor, a compressor that is not actually spinning, and a leak
+big enough to outpace it — all of which need a human, and all of which mean the EBS reservoir cannot
+be refilled. So it feeds the same interlock as the operator's disable button: whether the air stopped
+because someone asked or because something broke, the kart must not present as ready to drive.
+`comp_state = 4` reports it; 5 is the remaining voltage guard, pegged over-range, which is kept
+because a saturated reading genuinely is not a pressure.
