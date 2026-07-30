@@ -1403,3 +1403,28 @@ Orin-side note: `Frame.msg` and `kb_coms_micro` both changed, so the Orin needs
 and the topic simply never exists — which looks exactly like a firmware that is not sending.
 
 Still NOT validated in the sense `main` requires: the kart has not driven on a dashboard-set gain.
+
+## 2026-07-30 — Steering PID defaults set from live tuning: kp 1.20, kd 0.10
+
+Rubén tuned the steering PID on the kart through the dashboard panel and settled on
+**kp 1.20, ki 0.000, kd 0.100, PWM limit 0.50**, confirmed by the `ESP_STEER_PID` echo reading
+`kp 1.200 ki 0.000 kd 0.100 limit 0.50` while the source label showed "dashboard override".
+Those values are now `PID_DEFAULT_*` in `main.c` and flashed, so the board boots on them and
+"Firmware defaults" restores them.
+
+Changes from the previous defaults: **kp 1.50 -> 1.20** (down 20%) and **kd 0.03 -> 0.10** (up 3.3x).
+ki stays 0 and the PWM limit stays 0.50. Read against the two kd entries earlier the same day —
+0.02 -> 0.03 "to sharpen damping", reasoned about rather than tried — the direction was right but
+the size was not: the value that actually suited the kart was more than three times the one picked
+on paper, and it wanted *less* proportional gain alongside it. That combination is hard to arrive at
+by argument and easy to arrive at by trying, which is the case for the whole live-tuning feature.
+
+These are the first gains in this firmware chosen by trying them on the vehicle rather than by
+reasoning about them.
+
+**What is and is not established.** The values were selected by an operator watching the kart
+respond through the dashboard. This entry does not record a measured step response, a comparison
+against the old gains under matched conditions, or how much of the steering range was exercised —
+so treat them as a good working set, not an optimum, and do not read the 3.3x kd raise as a
+validated figure. Anyone who finds them wrong should change them from the dashboard first and only
+then reflash, which now costs nothing.

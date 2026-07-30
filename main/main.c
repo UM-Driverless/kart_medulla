@@ -114,9 +114,12 @@ static volatile bool tank_pressure_ok = false;
  * PID_REMOTE_MAX_LIMIT is deliberately below the 1.0 the actuator can take.
  * Raising the steering PWM ceiling past this is a decision that should come with
  * a flash and someone standing next to the kart, not a number typed remotely. */
-#define PID_DEFAULT_KP        1.50f
+/* Tuned live on the kart 2026-07-30 through the dashboard's PID panel and kept: kp lowered
+ * 1.50 -> 1.20, kd raised 0.03 -> 0.10. These are the first gains here chosen by trying them
+ * on the vehicle rather than by reasoning about them, which is what ORIN_STEER_PID was for. */
+#define PID_DEFAULT_KP        1.20f
 #define PID_DEFAULT_KI        0.0f
-#define PID_DEFAULT_KD        0.03f
+#define PID_DEFAULT_KD        0.10f
 #define PID_DEFAULT_PWM_LIMIT 0.50f
 
 #define PID_REMOTE_MAX_KP    20.0f
