@@ -1358,3 +1358,48 @@ The 12 remaining errors in that run are pre-existing — `PIN_PRESSURE_1`, `ledc
 rather than for `main.c`.
 
 NOT yet flashed or run on the kart. Nothing here has been observed moving a real steering column.
+
+## 2026-07-30 — Flashed the live-PID firmware, and the on-kart test caught a placement bug
+
+Built and flashed `esp32-s3-devkitc-1` from the Orin (`~/kart_medulla`, `/dev/ttyACM0`), 333776 bytes
+at 0x10000, hash verified. Service `kart-brain` holds the port through `KB_Coms_micro`, so the
+sequence is stop the service → flash → start it, exactly as the kd entry above already recorded.
+
+**The first flash did not work, and the on-kart test is the only reason anyone found out.**
+`pid_apply_override()` had been placed *after* `control_task`'s `comms_stale || mission ==
+MISSION_MANUAL` early return. In manual it therefore never ran: a tuning pushed from the dashboard
+was silently discarded, and `ESP_STEER_PID` kept reporting the compiled defaults as though nothing
+had been requested. That is precisely the failure the echo frame exists to prevent, and it was
+invisible in every check done before flashing — the host syntax check compiles the function, and the
+demo-mode dashboard stands in for the firmware and so was happy to clamp and echo a value the real
+firmware never saw. Only pushing `kp=99` to a kart sitting in `AS_OFF` and watching the echo not move
+exposed it. Fixed in `dec5354` by moving the call above the return; applying a gain actuates nothing
+on its own, since the branch below still stops every actuator.
+
+Worth generalising: **manual is the state you are in while setting gains up on a stationary kart**, so
+an early return that skips configuration is far more damaging than one that skips actuation. Anything
+added to `control_task` should be asked "does this belong above or below the safety return?" — and
+readback/telemetry almost always belongs above.
+
+**Verified on the real kart after the second flash**, mission manual, `AS_OFF`, steering PWM 0:
+
+| request (`/orin/steer_pid`) | echo (`/esp32/steer_pid`) | |
+|---|---|---|
+| — | `[0, 1500, 0, 30, 500]` | boots on the compiled defaults |
+| kp 99.0, ki 0.25, kd 0.03, limit 1.0 | `[1, 20000, 250, 30, 600]` | kp clamped to 20.0, limit clamped to 0.60, ki accepted |
+| restore defaults | `[0, 1500, 0, 30, 500]` | override cleared |
+
+Both clamps fired on real firmware, not just in the browser stand-in. Frame arrives at exactly
+1.000 Hz alongside a 1.000 Hz heartbeat.
+
+**This also retires an open caveat from the kd entry above**, which noted that "no telemetry frame
+carries the PID coefficients, so the only chain linking the running image to kd = 0.03 is that the
+flashed binary was built from this committed source". The running firmware now reports `kd = 0.030`
+directly, so that link is no longer an inference.
+
+Orin-side note: `Frame.msg` and `kb_coms_micro` both changed, so the Orin needs
+`colcon build --packages-select kb_interfaces kb_coms_micro` and a service restart before
+`/esp32/steer_pid` appears. Without it the ESP32 sends 0x0D into a node that has no publisher for it
+and the topic simply never exists — which looks exactly like a firmware that is not sending.
+
+Still NOT validated in the sense `main` requires: the kart has not driven on a dashboard-set gain.
