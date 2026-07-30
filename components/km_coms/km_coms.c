@@ -346,6 +346,20 @@ static void KM_COMS_ProccessPayload(km_coms_msg msg) {
         KM_OBJ_SetObjectValue(COMPRESSOR_DISABLED, object_value);
         break;
 
+    case ORIN_STEER_PID:
+        // 5 int32 elements: [override, kp x1000, ki x1000, kd x1000, pwm_limit x1000].
+        // Stored raw and unvalidated on purpose — control_task clamps them to the
+        // ranges it is willing to run, because that is where the units and the
+        // gear-protection limit are understood. Anything stored here is a request;
+        // what the firmware actually uses comes back over ESP_STEER_PID.
+        if (msg.len != 5) return;
+        KM_OBJ_SetObjectValue(PID_OVERRIDE,  (int64_t)msg.payload[0]);
+        KM_OBJ_SetObjectValue(PID_KP,        (int64_t)msg.payload[1]);
+        KM_OBJ_SetObjectValue(PID_KI,        (int64_t)msg.payload[2]);
+        KM_OBJ_SetObjectValue(PID_KD,        (int64_t)msg.payload[3]);
+        KM_OBJ_SetObjectValue(PID_PWM_LIMIT, (int64_t)msg.payload[4]);
+        break;
+
     case ORIN_COMPLETE:
         if (msg.len != 6) return; // 6 int32 elements
         object_value = (int64_t)msg.payload[0];

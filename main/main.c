@@ -98,6 +98,111 @@ static volatile bool tank_pressure_ok = false;
  * consumers that check it properly. */
 #define STEER_ANGLE_INVALID  INT32_MIN
 
+/* ---------- Steering PID: compiled defaults and remote-tuning limits ----------
+ * These are the gains the firmware boots with and returns to whenever the
+ * dashboard clears its override. Changing them still needs a reflash; the point
+ * of ORIN_STEER_PID is that trying a gain does not.
+ *
+ * The clamps are not paperwork. A dashboard is a text box on a laptop that may
+ * be on the far side of a Cloudflare tunnel, and the thing on the other end is a
+ * motor geared to a steering column whose teeth have been stripped once already
+ * (2026-03, an actuator limit that compared a 0-100 percentage against a 0.0-1.0
+ * float and so never limited anything). Every value that arrives over the wire
+ * is clamped here before it reaches the controller, and the accepted result is
+ * echoed back so the dashboard shows what is running rather than what was typed.
+ *
+ * PID_REMOTE_MAX_LIMIT is deliberately below the 1.0 the actuator can take.
+ * Raising the steering PWM ceiling past this is a decision that should come with
+ * a flash and someone standing next to the kart, not a number typed remotely. */
+#define PID_DEFAULT_KP        1.50f
+#define PID_DEFAULT_KI        0.0f
+#define PID_DEFAULT_KD        0.03f
+#define PID_DEFAULT_PWM_LIMIT 0.50f
+
+#define PID_REMOTE_MAX_KP    20.0f
+#define PID_REMOTE_MAX_KI    10.0f
+#define PID_REMOTE_MAX_KD     5.0f
+#define PID_REMOTE_MAX_LIMIT  0.60f  /* hard ceiling on remotely-set steering PWM */
+
+/* Gains currently in force, kept here so health_task can echo them without
+ * reaching into the PID struct. Written only by control_task. */
+static volatile float g_pid_kp        = PID_DEFAULT_KP;
+static volatile float g_pid_ki        = PID_DEFAULT_KI;
+static volatile float g_pid_kd        = PID_DEFAULT_KD;
+static volatile float g_pid_pwm_limit = PID_DEFAULT_PWM_LIMIT;
+static volatile bool  g_pid_override  = false;
+
+/**
+ * @brief   Clamp a remotely-supplied gain to a range the firmware will run.
+ *
+ * @param   v    Requested value, already converted out of its x1000 integer form.
+ * @param   max  Upper bound for this particular gain.
+ *
+ * @return  The value clamped to [0, max].
+ *
+ * @note    The lower bound is 0, not -max. A negative gain on this loop is
+ *          positive feedback — it would drive the column away from the target
+ *          until something hit a stop. Zero is allowed because disabling a term
+ *          is a normal thing to want while tuning (ki is 0 by default).
+ */
+static float pid_clamp_gain(float v, float max) {
+    if (isnan(v) || v < 0.0f) return 0.0f;
+    if (v > max) return max;
+    return v;
+}
+
+/**
+ * @brief   Apply the dashboard's PID override, or restore the compiled defaults.
+ *
+ * @details Called once per control cycle. Reads the request out of the object
+ *          store, clamps it, and pushes it into the live controller only when it
+ *          differs from what is already running — so the common case (nothing
+ *          changed) costs five comparisons and touches nothing.
+ *
+ *          A change resets the integral accumulator. Without that, a term tuned
+ *          up while the integral still holds the accumulation from the previous
+ *          gain applies that stale value at the new scale, which shows up as a
+ *          kick on the column the moment Apply is pressed.
+ *
+ * @param   pid  Live steering PID controller.
+ * @param   act  Steering actuator, whose output limit is tuned alongside.
+ */
+static void pid_apply_override(PID_Controller *pid, ACT_Controller *act) {
+    bool override = (KM_OBJ_GetObjectValue(PID_OVERRIDE) == 1);
+
+    float kp, ki, kd, limit;
+    if (override) {
+        kp    = pid_clamp_gain((float)KM_OBJ_GetObjectValue(PID_KP) / 1000.0f, PID_REMOTE_MAX_KP);
+        ki    = pid_clamp_gain((float)KM_OBJ_GetObjectValue(PID_KI) / 1000.0f, PID_REMOTE_MAX_KI);
+        kd    = pid_clamp_gain((float)KM_OBJ_GetObjectValue(PID_KD) / 1000.0f, PID_REMOTE_MAX_KD);
+        limit = pid_clamp_gain((float)KM_OBJ_GetObjectValue(PID_PWM_LIMIT) / 1000.0f,
+                               PID_REMOTE_MAX_LIMIT);
+    } else {
+        kp    = PID_DEFAULT_KP;
+        ki    = PID_DEFAULT_KI;
+        kd    = PID_DEFAULT_KD;
+        limit = PID_DEFAULT_PWM_LIMIT;
+    }
+
+    if (kp == g_pid_kp && ki == g_pid_ki && kd == g_pid_kd &&
+        limit == g_pid_pwm_limit && override == g_pid_override) {
+        return;
+    }
+
+    KM_PID_SetTunings(pid, kp, ki, kd);
+    KM_ACT_SetLimit(act, limit);
+    KM_PID_Reset(pid);
+
+    g_pid_kp        = kp;
+    g_pid_ki        = ki;
+    g_pid_kd        = kd;
+    g_pid_pwm_limit = limit;
+    g_pid_override  = override;
+
+    ESP_LOGW(TAG, "steering PID %s: kp=%.3f ki=%.3f kd=%.3f limit=%.2f",
+             override ? "override" : "restored to firmware defaults", kp, ki, kd, limit);
+}
+
 /* ---------- EBS compressor drive ----------
  * The compressor is driven DC — full duty, no switching — and its average power
  * is set by a slow on/off cycle instead of by PWM: 15 s on, 15 s off. That is a
@@ -618,6 +723,11 @@ void control_task(void *ctx) {
     // Steering mode: 0=PID (default), 1=direct PWM
     int steer_mode = (int)KM_OBJ_GetObjectValue(STEER_MODE);
 
+    // Pick up any PID gains the dashboard has pushed. Cheap when nothing changed,
+    // and placed before the PID is used so a new gain takes effect on this cycle
+    // rather than the next one.
+    pid_apply_override(c->dir_pid, c->dir_act);
+
     // Once the steering-sensor fault has tripped, it stays tripped: keep the EBS
     // fired and the throttle at zero on every cycle, whether or not the sensor
     // has since come back. Re-asserting each cycle rather than only on the
@@ -784,6 +894,21 @@ void health_task(void *ctx) {
         };
         KM_COMS_SendMsg(ESP_HEALTH_STATUS, payload, 6);
 
+        // Echo the steering gains actually in force. This is the only thing that
+        // tells the dashboard the truth: an ESP32 reset clears the override and
+        // reverts to the compiled defaults, and the Orin deliberately does not
+        // re-push the tuning afterwards. Without this frame the browser would go
+        // on displaying the numbers someone typed twenty minutes ago while the
+        // kart steered on entirely different ones.
+        int32_t pid_payload[5] = {
+            g_pid_override ? 1 : 0,
+            (int32_t)(g_pid_kp * 1000.0f),
+            (int32_t)(g_pid_ki * 1000.0f),
+            (int32_t)(g_pid_kd * 1000.0f),
+            (int32_t)(g_pid_pwm_limit * 1000.0f)
+        };
+        KM_COMS_SendMsg(ESP_STEER_PID, pid_payload, 5);
+
         // Log warnings for critical issues
         if (i2c_ok && agc < AGC_MIN)
             ESP_LOGW(TAG, "HEALTH: magnet too strong (AGC=%d)", agc);
@@ -879,7 +1004,7 @@ void system_init(void) {
     ACT_Controller throttle_act = KM_ACT_Init(ACT_ACCEL, 1.0);
     ACT_Controller brake_act = KM_ACT_Init(ACT_BRAKE, 1.0);
 
-    KM_ACT_SetLimit(&dir_act, 0.50);
+    KM_ACT_SetLimit(&dir_act, PID_DEFAULT_PWM_LIMIT);
     KM_ACT_SetLimit(&throttle_act, 1.0);
     KM_ACT_SetLimit(&brake_act, 1.0);
 
@@ -890,11 +1015,11 @@ void system_init(void) {
     dac_output_voltage(DAC_CHAN_0, 128);  // 128/255 * 3.3V ≈ 1.65V
 #endif
 
-    // Initialise PID for steering
-    float kp = 1.50;
-    float ki = 0.0;
-    float kd = 0.03;
-    PID_Controller dir_pid = KM_PID_Init(kp, ki, kd);
+    // Initialise PID for steering. The gains live in one place (PID_DEFAULT_*
+    // near the top of this file) because control_task restores exactly these
+    // values whenever the dashboard clears its override — two copies would drift
+    // and a "reset to defaults" button would quietly reset to something else.
+    PID_Controller dir_pid = KM_PID_Init(PID_DEFAULT_KP, PID_DEFAULT_KI, PID_DEFAULT_KD);
     KM_PID_SetOutputLimits(&dir_pid, -1.0f, 1.0f);
     KM_PID_SetIntegralLimits(&dir_pid, -10.0f, 10.0f);
 

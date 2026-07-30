@@ -686,3 +686,25 @@ soldering iron. Listed worst first.
   **ESP32-S3-WROOM-1-N16R8** ("verified on hardware 2026-07-10"); kart-docs says **N8R2**. R8 means
   octal PSRAM, which consumes GPIO 33-37 — so which one is actually fitted determines whether those
   pins exist at all. Settle it by reading the can, and correct whichever doc is wrong.
+
+- [ ] **`KM_PID_GetTunings` is a second setter, not a getter** — Found 2026-07-30 while adding live PID
+  tuning. `components/km_pid/km_pid.c:114` declares `void KM_PID_GetTunings(PID_Controller *controller,
+  float kp, float ki, float kd)` and its body is byte-for-byte identical to `KM_PID_SetTunings` above it:
+  it overwrites the gains. Taking the floats by value means it cannot return anything even in principle,
+  so no caller can read gains out of a controller. Nothing calls it today, which is why it has survived;
+  `main.c` works around it by mirroring the live gains into its own `g_pid_*` file-scope variables to
+  build the `ESP_STEER_PID` echo. Fix: change the signature to `float *kp, float *ki, float *kd`, write
+  through the pointers, and delete the mirrored globals in `main.c` in the same commit. Its header
+  comment already flags it as "identical to SetTunings", so the duplication was known — what was never
+  decided is whether to fix it or delete it.
+
+- [ ] **`AGENTS.md`'s UART protocol tables describe an encoding the firmware stopped using** — Noticed
+  2026-07-30. The two "Message types" tables at `AGENTS.md:153-165` give payloads as `u8 [0-255]`,
+  `int16 big-endian, radians × 1000` and `ORIN_COMPLETE | 7 bytes`. The wire format is int32 arrays and
+  has been since the protobuf migration — `ORIN_COMPLETE` is 6 int32 elements in `km_coms.c`, not 7
+  bytes. The tables are also missing every frame added since: `ORIN_CALIBRATE_STEERING` (0x28),
+  `ORIN_STEER_MODE` (0x29), `ORIN_COMPRESSOR_DISABLE` (0x2A), `ORIN_STEER_PID` (0x2B),
+  `ESP_HEALTH_STATUS` (0x0B), `ESP_PNEUMATIC` (0x0C), `ESP_STEER_PID` (0x0D). The accurate list is the
+  `message_type_t` enum in `components/km_coms/km_coms.h`, whose doc comments carry the payload shapes.
+  Decide whether to regenerate the tables from that enum or delete them and point at the header —
+  a table that is wrong about the encoding is worse than no table, because it reads as authoritative.

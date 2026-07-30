@@ -1321,3 +1321,40 @@ Flashing note worth keeping: the first upload attempt failed with `device report
 returned no data (device disconnected or multiple access on port?)`. That is the `kart-brain` service
 holding `/dev/ttyACM0` through `KB_Coms_micro`, not a cable or bootloader problem. Stop the service,
 check the port is free with `fuser /dev/ttyACM0`, flash, then start it again.
+
+## 2026-07-30 — Steering PID tunable from the dashboard, no reflash
+
+Added `ORIN_STEER_PID` (0x2B) and `ESP_STEER_PID` (0x0D) so a steering gain can be tried from the
+dashboard's Remote control pane instead of through a flash cycle. The pattern is the one already used
+by `ORIN_STEER_MODE` and `ORIN_COMPRESSOR_DISABLE`: the frame lands in `km_coms.c`, is written into
+`km_objects`, and `control_task` reads it each cycle.
+
+Payload both directions is 5 int32s: `[override, kp, ki, kd, pwm_limit]`, the last four scaled x1000.
+
+Decisions worth keeping, because each of them could reasonably have gone the other way:
+
+- **`PID_OVERRIDE` exists so zero-init means something safe.** `km_objects_values[]` is static, so every
+  object boots at 0, and kp=ki=kd=0 is a PID that never moves the column — indistinguishable from a dead
+  motor. The flag makes 0 mean "use the gains compiled into main.c". Same class of trap as
+  `COMPRESSOR_DISABLED`'s polarity, and solved the same way: pick the encoding where zero is correct.
+- **The Orin deliberately does NOT re-send the tuning after an ESP32 reset**, which is the opposite of
+  what it does for the compressor latch. For the compressor, re-asserting keeps the kart quiet; for PID,
+  reverting to the flashed gains IS the safe direction, so a reboot is allowed to undo a tuning session.
+  The 1 Hz `ESP_STEER_PID` echo is what makes that honest — the dashboard shows the revert instead of
+  going on displaying numbers nobody is running.
+- **Nothing is written to NVS.** A bad tune must not survive a power cycle.
+- **`PID_REMOTE_MAX_LIMIT` is 0.60, below the actuator's own 1.0 ceiling.** Raising the steering PWM
+  limit past that needs a flash and someone next to the kart. The gear teeth were stripped once already
+  (2026-03, the `outputLimit` unit mismatch), and a text box on a laptop behind a Cloudflare tunnel is
+  not the right place to authorise full power into that gearbox.
+- **The echo reports gains read back after clamping**, not the request. Type 99 into Kp and the row
+  comes back 20.000. Showing the request would have made the clamp invisible, which defeats it.
+- Gains are compiled from `PID_DEFAULT_*` in one place and `control_task` restores exactly those on
+  clear, so "Firmware defaults" cannot drift from what `app_main` actually initialised.
+
+Verified by host-compiling `main.c` against `test/fakes` (`gcc -fsyntax-only`): the new code is clean.
+The 12 remaining errors in that run are pre-existing — `PIN_PRESSURE_1`, `ledc_get_duty` and
+`KM_GPIO_SetEmergency` are missing from the fakes, which are maintained for the component unit tests
+rather than for `main.c`.
+
+NOT yet flashed or run on the kart. Nothing here has been observed moving a real steering column.

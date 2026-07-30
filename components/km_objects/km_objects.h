@@ -53,6 +53,28 @@ STEER_MODE,             // 0 = PID (default), 1 = direct PWM
  * working on the kart. Do not rely on that for safety; rely on it for quiet. */
 COMPRESSOR_DISABLED,    // 0 = compressor runs normally, 1 = operator disabled it
 
+/* Live steering-PID tuning pushed from the dashboard over ORIN_STEER_PID, so a
+ * gain can be tried without a reflash. The gains are scaled x1000 because the
+ * object store holds integers.
+ *
+ * PID_OVERRIDE exists so that zero-initialisation means something safe. Every
+ * object starts at 0 (km_objects_values[] is a static array), and gains of
+ * kp=ki=kd=0 would be a PID that never moves the column — indistinguishable
+ * from a dead motor. With the flag, 0 means "ignore the four values below and
+ * use the gains compiled into main.c", which is what a freshly booted ESP32
+ * should do.
+ *
+ * Unlike COMPRESSOR_DISABLED, the Orin deliberately does NOT re-send these
+ * after a reset. Reverting to the flashed gains is the safe direction here, so
+ * a reboot is allowed to undo a tuning session; the ESP32 echoes its live gains
+ * back once per second (ESP_STEER_PID) and the dashboard shows the revert
+ * rather than papering over it. */
+PID_OVERRIDE,           // 0 = use the gains compiled into main.c, 1 = use the four below
+PID_KP,                 // proportional gain x1000
+PID_KI,                 // integral gain x1000
+PID_KD,                 // derivative gain x1000
+PID_PWM_LIMIT,          // steering actuator output limit, 0.0-1.0 x1000
+
 KM_OBJ_LAST             // Este debe de ser siempre el ultimo
 } km_objects_t;
 

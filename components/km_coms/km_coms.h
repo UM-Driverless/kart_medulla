@@ -104,6 +104,10 @@ typedef enum
                                          piston_adc, comp_state, control_iters, ledc_readback,
                                          gpio_init_err, sdc_level]. Fields are only ever APPENDED, so a
                                          consumer that reads the first N keeps working. */
+    ESP_STEER_PID           = 0x0D, /**< Steering PID gains actually in force, 1 Hz, 5 fields:
+                                         [override, kp x1000, ki x1000, kd x1000, pwm_limit x1000].
+                                         Read back from the live controller after clamping, so it
+                                         reports what the firmware is using, not what was asked for. */
 
     // ==========================
     // Orin --> ESP32 (0x20 - 0x3F)
@@ -119,6 +123,10 @@ typedef enum
     ORIN_CALIBRATE_STEERING = 0x28, /**< Calibrate steering sensor */
     ORIN_STEER_MODE         = 0x29, /**< Steering mode: 0=PID, 1=direct PWM */
     ORIN_COMPRESSOR_DISABLE = 0x2A, /**< EBS compressor latch: 0=run normally, 1=operator disabled */
+    ORIN_STEER_PID          = 0x2B, /**< Live steering PID tuning, 5 fields:
+                                         [override, kp x1000, ki x1000, kd x1000, pwm_limit x1000].
+                                         override=0 restores the gains compiled into main.c and
+                                         ignores the other four. */
 
     // ==========================
     // Others (0x40 - 0xFF)
