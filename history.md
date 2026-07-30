@@ -1299,3 +1299,25 @@ Implementation note: `tank_pressure_ok` is file-scope and read by the SDC decisi
 `control_task` while being written in the pneumatics section further down, so it is one cycle stale —
 2 ms against a tank that moves over seconds. Same arrangement as `steer_fault_latched`. It starts
 false, so boot is always emergency.
+
+## 2026-07-30 — Steering derivative gain raised 50% (kd 0.02 -> 0.03)
+
+Requested by Rubén to sharpen the steering PID's damping. Only kd changed: kp stays 1.50, ki stays 0,
+and the output limits (-1.0 to 1.0) and integral limits (-10 to 10) are untouched. The edit is one line
+in `main/main.c`'s `system_init`.
+
+Flashed the same day to the ESP32-S3 with the kart otherwise unpowered — only the Orin and the ESP32
+were on, the ESP32 over its USB serial link. 332912 bytes written at 0x10000, hash verified, and the
+board came back publishing `/esp32/heartbeat` at exactly 1.000 Hz, so the new image booted and is
+talking.
+
+**This is not yet evidence that the new gain behaves better, or even that it is the gain in use.** No
+telemetry frame carries the PID coefficients, so the only chain linking the running image to kd = 0.03
+is that the flashed binary was built from this committed source. Judging the change needs a step
+response on a kart that can actually steer, which the empty bench could not provide. Whoever drives it
+next should be ready to back the number out.
+
+Flashing note worth keeping: the first upload attempt failed with `device reports readiness to read but
+returned no data (device disconnected or multiple access on port?)`. That is the `kart-brain` service
+holding `/dev/ttyACM0` through `KB_Coms_micro`, not a cable or bootloader problem. Stop the service,
+check the port is free with `fuser /dev/ttyACM0`, flash, then start it again.
