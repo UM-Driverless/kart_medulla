@@ -893,7 +893,7 @@ void system_init(void) {
     // Initialise PID for steering
     float kp = 1.50;
     float ki = 0.0;
-    float kd = 0.02;
+    float kd = 0.03;
     PID_Controller dir_pid = KM_PID_Init(kp, ki, kd);
     KM_PID_SetOutputLimits(&dir_pid, -1.0f, 1.0f);
     KM_PID_SetIntegralLimits(&dir_pid, -10.0f, 10.0f);
