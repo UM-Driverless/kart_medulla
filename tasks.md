@@ -625,3 +625,64 @@ not "those peripherals are implemented" — verify separately before treating th
   output to LEDC PWM on its own timer at 500 Hz, ramping 0 → 60% duty over 1 s from the pressure
   hysteresis rising edge. Duty added to the `ESP_ACT_STEERING` telemetry payload. Builds for both
   S3 and the classic fallback. **Not validated on hardware** — see the bench test under TODO.
+
+### Docs across kart-medulla, dv-hardware and kart-docs contradict the code and each other
+
+Found 2026-07-30 during a three-repo audit prompted by a pressure reading that disagreed with a
+multimeter. **The pin map itself is fine** — `PRESSURE_1` = `CN7.1` -> GPIO 6 (`ADC1_CH5`) is
+confirmed by four independent sources and a 2026-07-12 bench check. What the audit did find is a
+pile of stale documentation, and one item of it is actively dangerous to someone holding a
+soldering iron. Listed worst first.
+
+- [ ] **`README.md` presents classic-ESP32 pin tables with nothing saying so.** The "Actuator
+  Outputs" and "Sensor Inputs (ADC)" tables (lines ~32-46) are pure classic map: Pressure 1 = GPIO
+  36, Pedal Acc = 35, Steering PWM = 18, DAC on 25/26. The repo's primary target is the S3, where
+  **GPIO 18 is Q3's shutdown-circuit gate** — so following this table can drive a safety output.
+  This is also the only place in the repo where "35" and a pressure table appear together, which is
+  the likely origin of the wrong-pad measurement. Either delete these tables or head them
+  "classic ESP32 — previous board, do not use for the S3".
+- [ ] **`README.md` still calls the steering sensor an AS5600** (lines ~7 and ~22, the latter saying
+  CN5.2 carries "the AS5600's PWM angle output"). It is an **MT6701** read over PWM; `AGENTS.md:20`
+  already records the AS5600 as retired on 2026-07-12.
+- [ ] **`.agents/esp32s3-pinmap.md` header and gap 1 are both false.** The header says "This is NOT
+  the pin map the firmware currently uses. `km_gpio.h` still holds the classic-ESP32 map"; gap 1
+  says "The S3 build does not exist. `platformio.ini` has only `esp32dev` and `native`" and that the
+  SPI pins are "defined nowhere". In fact `[env:esp32-s3-devkitc-1]` exists, links, and is what
+  flashes; the four SPI pins are defined at `km_gpio.h:83-86`. A previously-filed task about this
+  file's staleness could not be found in `tasks.md`, so it appears untracked — this entry replaces it.
+- [ ] **`.agents/esp32s3-pinmap.md:12` still lists `PRESSURE_3` on GPIO 1 as "analog in (ADC1)".**
+  GPIO 1 is now MCPWM capture for the MT6701's PWM output and is deliberately excluded from ADC
+  setup. The same file's line 66 already says so; line 12 was never updated.
+- [ ] **Contradictory rework instruction for the ex-`PRESSURE_3` terminal (CN5.2).** kart-docs says
+  "remove R10 only (keep R8 + R9)"; this repo's `.agents/esp32s3-pinmap.md:66` says "keep R8 series,
+  remove R9+R10". **Do not solder CN5.2 until this is settled** — one of the two is wrong.
+- [ ] **dv-hardware's schematic and its fabricated PCB disagree on connector designators.** The
+  schematic and `output/netlist.net` put the pressure channels on `CN2.1`/`CN2.2`/`CN2.3`; the v1
+  silkscreen and PCB put them on `CN7.1`/`CN7.2`/`CN5.2`, where PCB `CN2` is HALL3/HALL2/+5V_REG.
+  Anyone wiring from a schematic printout lands on the wrong header. Trust the silkscreen. That
+  netlist export is dated 2026-05-07 and is already flagged stale in dv-hardware, but kart-docs
+  carries no warning about it.
+- [ ] **`PRESSURE_3` status conflict between repos.** kart-docs says the channel is retired and
+  repurposed to steering PWM; dv-hardware's `docs/pinout-esp32-s3.md:176` — which kart-docs names as
+  the tie-break authority — still lists it as "Pressure sensor 3 (input only)". The stated tie-break
+  rule therefore points at the stale file.
+- [ ] **Pressure channel count is wrong in kart-docs.** It says "3x Festo" and "the three
+  pneumatic-pressure sensors", but the BOM has qty 2, the wire list defines only `press1`/`press2`,
+  and only two ADC channels remain.
+- [ ] **Stale gap comments in `km_gpio.h`** (lines ~87-88, 101, 105): `WriteDAC` unported and
+  "nothing drives SDC / SELECT_THROTTLE". `control_task()` has driven the SDC pin since 2026-07-26.
+  The `platformio.ini` comment saying the S3 env "does NOT link yet" is stale for the same reason.
+- [ ] **Two latent ADC bugs in `km_gpio.c`, neither affecting pressure.** (a) On the S3,
+  `PIN_HYDRAULIC_2` = GPIO 2 is an ADC1 pin but is handled inside the block commented "ADC2 pins",
+  so its attenuation is never configured while `KM_GPIO_ReadADC` does have a case for it — a channel
+  read without being configured. (b) The `GPIO_NUM_1` attenuation branch can never execute, since
+  `PIN_PRESSURE_3` is `#if`'d out of `adc1_pins[]`; harmless but it is the same "configured is not
+  used" trap already logged at `.agents/error-log.md:181`.
+- [ ] **`km_gpio.h` never records the connector for `PRESSURE_1`/`PRESSURE_2`.** Only `PRESSURE_3`
+  carries a `// CN5.2` comment. The GPIO 6 <-> CN7.1 link exists only in `tasks.md:74` and
+  `history.md:526`, so the firmware alone cannot tell you which screw terminal a channel is. Add the
+  comments.
+- [ ] **Module variant conflict.** dv-hardware records the fitted module as
+  **ESP32-S3-WROOM-1-N16R8** ("verified on hardware 2026-07-10"); kart-docs says **N8R2**. R8 means
+  octal PSRAM, which consumes GPIO 33-37 — so which one is actually fitted determines whether those
+  pins exist at all. Settle it by reading the can, and correct whichever doc is wrong.
