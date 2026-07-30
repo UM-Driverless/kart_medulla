@@ -706,6 +706,15 @@ void control_task(void *ctx) {
         KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 10);
     }
 
+    // Pick up any PID gains the dashboard has pushed. Deliberately ABOVE the manual /
+    // comms-stale early return: setting a gain actuates nothing on its own (the branch
+    // below still stops every actuator), but the ESP_STEER_PID echo is built from these
+    // values, so skipping this while idle would make the dashboard report the compiled
+    // defaults no matter what the operator had just applied. Tuning is set up with the
+    // kart stationary and in manual — the one state where the old placement, after the
+    // return, meant the request was silently ignored and the readback silently lied.
+    pid_apply_override(c->dir_pid, c->dir_act);
+
     // --- Safety: comms watchdog + manual mode ---
     // last_cmd / mission / comms_stale are computed at the top of this function,
     // because the SDC decision needs comms_stale and must not be skipped by the
@@ -722,11 +731,6 @@ void control_task(void *ctx) {
 
     // Steering mode: 0=PID (default), 1=direct PWM
     int steer_mode = (int)KM_OBJ_GetObjectValue(STEER_MODE);
-
-    // Pick up any PID gains the dashboard has pushed. Cheap when nothing changed,
-    // and placed before the PID is used so a new gain takes effect on this cycle
-    // rather than the next one.
-    pid_apply_override(c->dir_pid, c->dir_act);
 
     // Once the steering-sensor fault has tripped, it stays tripped: keep the EBS
     // fired and the throttle at zero on every cycle, whether or not the sensor
