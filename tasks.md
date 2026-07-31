@@ -542,6 +542,14 @@ needs and the 1.52x gain that reaches 5 V. Values and cautions in `history.md`.
 11/13 (VREFA/VREFB) — all three tie to `+5V_REG`. 5 V on all three means the chip is alive and
 merely unwritten.
 
+**Both answers are now written and building** (2026-07-31, neither on hardware yet):
+- Branch **`spi-fix`** keeps the MCP4922 and implements the SPI write, with bench logging and
+  `KM_GPIO_McpSelfTest()` — a channel-A sweep to meter at U13 pin 14. Flash it, watch the console,
+  meter VOUTA. If the voltage moves, the chip is fine and no rework is needed at all.
+- Branch **`dev`** drives throttle as filtered PWM from GPIO 38 and needs the hand wiring below.
+
+Try `spi-fix` first — it costs one flash and no solder.
+
 - [ ] **Bug found while investigating, independent of which route is taken:** on the S3 both
   `PIN_CMD_ACC` and `PIN_CMD_BRAKE` are `GPIO_NUM_NC` (-1), so the first `if` in
   `KM_GPIO_WriteDAC()` (`components/km_gpio/km_gpio.c:348-368`) catches every call and the function
