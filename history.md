@@ -1523,3 +1523,72 @@ even once someone implements the write. Whoever ports it must change the signatu
 
 Cheap test before any rework: power the board and meter U13 pin 1 (VDD) and pins 11/13
 (VREFA/VREFB). All three tie to `+5V_REG`; if they read 5 V the chip is alive and merely unwritten.
+
+## 2026-08-01 — the throttle mux was never driven, which is why the DAC could not reach the kart
+
+### What was actually wrong
+
+"Throttle has no working output" has been on the board's rework list for months, and the recorded
+cause was that `KM_GPIO_WriteDAC()` was a stub on `dev` — `TODO: Implement MCP4922 SPI write for S3`,
+returning `ESP_OK` without touching SPI. This branch fixed that in `45580ff`.
+
+That was not the whole story. **GPIO 15 — `SELECT_THROTTLE`, the MAX4660's control pin — has never
+been driven by anything.** A grep over the whole tree finds it only in the bluepad32 vendor
+component, unrelated. R32's 10 kΩ pulldown holds the line LOW, so the mux has sat on
+COM→NC (pedal pass-through) since the board was built.
+
+So even with the SPI write implemented and working perfectly, the DAC's VOUTA reaches U14 pin 8 and
+stops there. Nothing it produces can appear at CN10.1. Fixing the SPI write alone would have
+produced a board that still shows no throttle output, and the obvious next suspicion would have been
+the DAC or its logic levels — neither of which is the problem.
+
+### Why nobody wrote it
+
+Manual-versus-autonomous safety is implemented a different way: `control_task()` zeroes every actuator
+when `comms_stale || mission == MISSION_MANUAL`. That is a real safety measure and it works, so the
+mux was never needed to make the kart safe, and a pin nobody needs is a pin nobody writes code for.
+The gap only becomes visible when you ask the different question — *can the DAC's output physically
+reach the connector* — which nothing had asked until the throttle was traced end to end.
+
+### The change, and why it is shaped this way
+
+`KM_GPIO_SetThrottleSource(bool use_dac)` sets the pin; `control_task()` calls it on both sides of the
+safety gate. Three choices worth recording:
+
+**`false` inside the safety gate, not just zeroed outputs.** Zeroing the DAC leaves the kart on a
+DAC-sourced throttle that happens to be commanding zero. Handing the mux back to the pedal means a
+later DAC write — a bug, a stale queue entry, a half-initialised peripheral — cannot reach the kart
+at all. It also puts the hardware in the same state the pulldown gives before firmware runs, so
+"manual mode" and "firmware not running" look identical at the connector.
+
+**Re-asserted every cycle, not latched.** `control_task()` has several early returns above the point
+where the DAC takes over — the steering-fault latch is one. Setting the mux once at startup would
+leave those paths running with the DAC still selected. Deciding it every cycle means any path that
+returns early leaves the pedal in control by construction.
+
+**Pulldown left enabled on a driven output.** Costs nothing while the pin is driven and preserves the
+fail-safe if it is ever left floating — a reset, a reconfiguration, a half-configured boot. Same
+reasoning as the `PIN_SDC_NOT_EMERGENCY` config directly below it in `KM_GPIO_Init()`.
+
+### What this does not verify
+
+Builds clean for `esp32dev`, the only environment in `platformio.ini`. That is the *classic* ESP32,
+so everything behind `#if defined(CONFIG_IDF_TARGET_ESP32S3)` — including the whole MCP4922 path —
+was not compiled. The S3 build goes through `idf.py` with `sdkconfig.esp32-s3-devkitc-1`, which is
+not installed on this machine. The change itself is not target-guarded, so it did compile; the claim
+being made is only that, not that the S3 image is verified.
+
+### The test this unblocks
+
+Flash this branch to the S3 and meter **CN10.1**. Before this commit the measurement had to be taken
+at U13 pin 14, the DAC's own output pin, because nothing downstream of it was reachable. Now the mux
+passes the signal through whenever comms are fresh and the mission is not manual.
+
+Note the `mcp4922_writes_ok` / `writes_fail` counters only prove the ESP32 clocked the bits out of the
+SPI peripheral. They say nothing about whether the DAC latched them. The meter is the test.
+
+Also relevant if the reading looks low: `dv-hardware` changed the MCP4922's supply from 5 V to 3.3 V
+on the v2 schematic that same day, because the part's V_IH is 0.7 × V_DD and a 5 V supply puts that at
+3.5 V, which a 3.3 V ESP32 cannot guarantee to reach. **The v1 board in hand is still wired at 5 V**,
+so this test is being run in the marginal configuration — typical parts switch near 2.5 V and usually
+work, but a failure here is as likely to be that margin as anything in this branch.
