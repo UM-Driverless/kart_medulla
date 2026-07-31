@@ -1620,3 +1620,38 @@ against its fab tag plus that unit's rework and defects; and have kart-medulla a
 state which fab tag they target. The QR then encodes the serial, and the serial resolves to
 everything else — which also avoids the circularity of trying to silkscreen a hash that does not
 exist until after the commit containing the silkscreen.
+
+### Same day — simpler wiring: move the throttle wire instead of lifting U13 pin 14
+
+Rubén pushed back on the rework being heavier than the job deserved. Re-checked, and the two costs
+are separable: the solder joint is unavoidable, the lifted pin is not.
+
+**No screw terminal can serve as the throttle output.** Checked all of them:
+
+- The three **Hall terminals** (CN2.1, CN2.2, CN7.3) reach GPIOs 21, 47 and 16, and firmware never
+  reads any of them — they appear only in a `printf` in `km_gpio.c`. But they sit behind **U5, an
+  SN74LVC3G17**, a *unidirectional* triple Schmitt buffer with the connector on the A (input) side
+  and the ESP32 on Y. Driving the ESP32 pin fights U5's output driver and nothing reaches the
+  terminal. Input-only.
+- **Pressure, hydraulic and pedal terminals** are ADC inputs behind 10 kOhm dividers; driven
+  backwards they present 10 kOhm of source impedance.
+- The only **direct GPIO outputs** on any connector are steering PWM (CN9.1 / GPIO 40) and steering
+  DIR (CN8.3 / GPIO 17), both in use.
+
+So a wire soldered to a dev-board header pin is the floor, and GPIO 38 stands.
+
+**Lifting U13 pin 14 is avoidable, though.** That was only required because injecting on the
+`CMD_ACC_ESP32__0_5V` net puts the RC filter in parallel with the MCP4922's active output buffer.
+Take the throttle wire off **CN10.1** and screw it onto the filter output instead, with the filter's
+ground on **CN10.3** (the GND pin of the same terminal block), and the DAC and mux are bypassed as a
+unit with nothing on the board touched. One solder joint, three passives, two screw terminals,
+reversible with a screwdriver.
+
+**What that trades away:** the MAX4660 goes out of circuit, so the pedal no longer passes through to
+the kart and manual driving through the board stops working while it is wired that way. The earlier
+recommendation to inject at U14 pin 8 bought exactly that pass-through in exchange for the lifted
+pin. Both are defensible; this one is cheaper to try and cheaper to undo, and the pass-through comes
+back by moving the wire to CN10.1.
+
+The RC filter itself is not optional in either version. GPIO 38 emits a 19.5 kHz square wave, and
+without averaging the throttle input sees 0 V/3.3 V edges rather than a level.
