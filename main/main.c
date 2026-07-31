@@ -730,7 +730,13 @@ void control_task(void *ctx) {
     // because the SDC decision needs comms_stale and must not be skipped by the
     // early return below.
     if (comms_stale || mission == MISSION_MANUAL) {
-        // No commands received recently OR manual mode → zero all outputs
+        // No commands received recently OR manual mode → zero all outputs and
+        // hand the throttle line back to the pedal. Zeroing the DAC alone left
+        // the kart on a DAC-sourced throttle commanding zero; giving the mux
+        // back to the pedal means the driver keeps physical control even if a
+        // later DAC write happens, and it matches the state R32's pulldown
+        // gives us before firmware runs.
+        KM_GPIO_SetThrottleSource(false);
         KM_ACT_Stop(c->throttle_act);
         KM_ACT_Stop(c->brake_act);
         KM_ACT_Stop(c->dir_act);
@@ -738,6 +744,11 @@ void control_task(void *ctx) {
         last_pid_out = 0.0f;
         return;
     }
+
+    // Past the safety gate: comms are fresh and the mission is not manual, so
+    // the DAC owns the throttle. Re-asserted every cycle rather than latched,
+    // so any path that returns early above leaves the pedal in control.
+    KM_GPIO_SetThrottleSource(true);
 
     // Steering mode: 0=PID (default), 1=direct PWM
     int steer_mode = (int)KM_OBJ_GetObjectValue(STEER_MODE);

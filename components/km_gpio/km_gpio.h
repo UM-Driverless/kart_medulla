@@ -106,7 +106,7 @@
 #define PIN_CMD_ACC             ((gpio_num_t)200)  // MCP4922 channel A -> U14.8 -> throttle
 #define PIN_CMD_BRAKE           ((gpio_num_t)201)  // MCP4922 channel B -> U1A x2 -> brake
 
-#define PIN_SELECT_THROTTLE     GPIO_NUM_15  // MAX4660 mux; drive HIGH = throttle via DAC. GAP: not driven
+#define PIN_SELECT_THROTTLE     GPIO_NUM_15  // MAX4660 mux; LOW = pedal, HIGH = throttle via DAC
 
 /* ---------- STEERING MOTOR (Cytron H-bridge) ---------- */
 #define PIN_STEER_PWM           GPIO_NUM_40  // LEDC PWM
@@ -348,6 +348,19 @@ uint16_t KM_GPIO_ReadADC(gpio_num_t pin);
 uint32_t KM_GPIO_ReadADC_mV(gpio_num_t pin);
 
 /* ---------- DAC ---------- */
+
+/**
+ * @brief   Choose which source drives the kart's throttle line.
+ *
+ * Sets the MAX4660 (U14) mux on GPIO 15. LOW routes the pedal straight through
+ * to CN10.1; HIGH hands the line to the MCP4922's VOUTA. The pin has a 10 k
+ * pulldown, so the pedal is the state before firmware runs and the state the
+ * hardware falls back to if this pin is ever left floating.
+ *
+ * @param   use_dac  true = DAC drives the throttle, false = pedal passes through.
+ * @return  ESP_OK, or ESP_ERR_NOT_SUPPORTED if the pin is not defined for this board.
+ */
+esp_err_t KM_GPIO_SetThrottleSource(bool use_dac);
 
 /**
  * @brief   Writes an 8-bit value to one of the two DAC channels.

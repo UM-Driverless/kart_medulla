@@ -206,6 +206,33 @@ esp_err_t KM_GPIO_Init(void)
     ret = gpio_config(&dir_cfg);
     if (ret != ESP_OK) return ret;
 
+#ifdef PIN_SELECT_THROTTLE
+    /* ================= THROTTLE SOURCE MUX (MAX4660 U14) ================= */
+    /* LOW  = COM->NC = the pedal passes through to the kart (safe default).
+     * HIGH = COM->NO = the MCP4922's VOUTA drives the throttle instead.
+     *
+     * R32's 10 k pulldown already holds this LOW before firmware runs, so
+     * configuring it here does not change the boot state — it replaces a weak
+     * pulldown with a driven level so KM_GPIO_SetThrottleSource() has a pin it
+     * can actually assert. control_task() re-decides it every cycle.
+     *
+     * Until 2026-08-01 nothing drove this pin at all, so the mux never left the
+     * pedal and the DAC's output could not reach CN10.1 however well the SPI
+     * write worked. Manual-mode safety was handled by zeroing the DAC instead,
+     * which is why the gap went unnoticed. */
+    gpio_config_t thr_mux_cfg = {
+        .pin_bit_mask = 1ULL << PIN_SELECT_THROTTLE,
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_ENABLE,   // keep the pedal if the pin floats
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    ret = gpio_config(&thr_mux_cfg);
+    if (ret != ESP_OK) return ret;
+    ret = gpio_set_level(PIN_SELECT_THROTTLE, 0);   // 0 = pedal
+    if (ret != ESP_OK) return ret;
+#endif
+
 #ifdef PIN_SDC_NOT_EMERGENCY
     /* ==================== SHUTDOWN CIRCUIT — SAFETY ==================== */
     /* Gate of Q3 (IRLZ44N) through R22 100 R. HIGH = Q3 conducts = shutdown
@@ -488,6 +515,18 @@ esp_err_t KM_GPIO_McpSelfTest(void)
     return ESP_OK;
 }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+/** @copydoc KM_GPIO_SetThrottleSource */
+esp_err_t KM_GPIO_SetThrottleSource(bool use_dac)
+{
+#ifdef PIN_SELECT_THROTTLE
+    return gpio_set_level(PIN_SELECT_THROTTLE, use_dac ? 1 : 0);
+#else
+    (void)use_dac;
+    return ESP_ERR_NOT_SUPPORTED;
+#endif
+}
+
 
 /** @copydoc KM_GPIO_WriteDAC */
 esp_err_t KM_GPIO_WriteDAC(gpio_num_t pin, uint8_t value)
