@@ -68,7 +68,7 @@ Two build-loop items found 2026-07-26, both cheap to settle at the kart.
 *classic* board — the S3 board's bridge is a WCH CH343, rated 50 bps to 6 Mbps (datasheet:
 `~/dv/datasheets/ch343_wch_datasheet.pdf`). The S3 env had simply inherited the wrong board's
 constraint. Raised to **921600**, which should take a minute-plus flash down to seconds on an image
-this size (it links btstack + bluepad32). **Not yet tested on hardware** — raised from datasheets, not
+this size. **Not yet tested on hardware** — raised from datasheets, not
 from a successful flash. Next time at the kart: flash once and confirm. If it will not connect or the
 verify fails, try 460800, then fall back to 115200 and record which worked here.
 
@@ -113,14 +113,14 @@ So they are pure clean-build cost. This is most of why a clean rebuild takes ~10
 incremental, and it is the part of the slow-deploy story that nobody has addressed — the upload baud
 and the `rm -rf .pio/build` ritual both got attention, this did not.
 
-- [ ] **Stop building them.** `EXCLUDE_COMPONENTS` in the ESP-IDF build, or move the two directories
-  out of `components/`. Check both envs before doing it: `esp32dev` is the classic fallback and
-  `sketch.cpp` still exists in `main/`, so confirm nothing re-enables either. Verify by rebuilding
-  clean and diffing `firmware.bin` — if the image is byte-identical, nothing was lost. Time a clean
-  build before and after so the saving is recorded rather than assumed.
-- [ ] Decide whether the two components should be in this repo at all. If the gamepad path is dead,
-  deleting them removes ~10 MB of build output and 305 source files from every clone; if it is
-  wanted later, it is in git history.
+- [x] **Done 2026-07-31**: `set(EXCLUDE_COMPONENTS btstack bluepad32)` in the root `CMakeLists.txt`.
+  Measured cold-build before/after — objects 1174 -> 985, clean build 32 s -> 27 s, `firmware.bin`
+  333856 bytes both times, and the full defined-symbol set diffed **empty** at 5330 symbols. That
+  empty diff is the proof nothing was lost. Reversible by deleting the one line; the components stay
+  in `components/`. (`sketch.cpp` turned out not to exist in the repo at all.)
+- [ ] Decide whether the two components should stay in the repo. They are no longer built, so this
+  is only about clone size — deleting them removes 305 source files, and git history keeps them if
+  the gamepad path is ever wanted. Low priority.
 
 ### No CI builds this firmware — but the Mac now can, so build before pushing
 

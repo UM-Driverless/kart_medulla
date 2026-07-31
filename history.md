@@ -1883,3 +1883,44 @@ board's CP2102 limit. At esptool's ~11.5 KB/s that is roughly half a minute of p
 One thing that did improve regardless: the Mac links an S3 image in about 3 seconds, so compile
 errors no longer cost a trip to the kart. That does not speed up flashing, but it removes most of
 the round trips that made the loop painful.
+
+## 2026-07-31 — Excluded the unused Bluetooth stacks from the build, with before/after numbers
+
+Acting on the finding in the entry above. `set(EXCLUDE_COMPONENTS btstack bluepad32)` now sits in the
+root `CMakeLists.txt`, before the `project.cmake` include where ESP-IDF requires it.
+
+Measured on true cold builds (`rm -rf .pio/build/esp32-s3-devkitc-1` each time; **ccache is not
+installed**, so these are genuine full compiles, confirmed by 1174 `Compiling` lines in the before
+log):
+
+| | before | after |
+|---|---|---|
+| objects compiled | 1174 | **985** (189 fewer: 137 btstack, 52 bluepad32) |
+| clean build | 32 s | **27 s** |
+| `firmware.bin` | 333856 bytes | **333856 bytes** |
+| defined symbols | 5330 | **5330** |
+
+The full defined-symbol set was dumped with `xtensa-esp32s3-elf-nm --defined-only` and diffed before
+against after: **empty**. That is the proof nothing was lost — the linker was already discarding all
+of it, so the change only stops the compiler producing 7.6 MB of `libbtstack.a` and 2.0 MB of
+`libbluepad32.a` for the bin.
+
+`main/sketch.cpp` turned out **not to exist** in the repo at all, despite being listed in
+`AGENTS.md`'s repository-structure block and commented out in `main/CMakeLists.txt`'s `srcs`. So
+nothing could have referenced the gamepad path even if the components were built.
+
+### Honest scale: this was the smaller of the two build wins
+
+5 seconds per clean build on the Mac. Worth having and provably free, but the numbers reframe which
+cause actually dominated the slow loop:
+
+- **Clean vs incremental is the big one.** A cold build is 27-32 s; an incremental build after a
+  one-file edit is **3-5 s**. So the `rm -rf .pio/build` ritual was costing ~25-29 s every single
+  time, several times more than the Bluetooth stacks ever did — and the entry above shows that
+  ritual had no justification here in the first place.
+- The repo's recorded "~100 s clean rebuild" figure does not hold on the Mac, where a cold build is
+  32 s. That number presumably came from the Orin, which is slower; the ~16 % object-count reduction
+  should carry across, so expect roughly 16 s off a 100 s build there.
+
+Neither number has been checked on the Orin. Both belong in the same at-the-kart pass as the
+upload-baud flash.
