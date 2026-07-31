@@ -1428,3 +1428,98 @@ against the old gains under matched conditions, or how much of the steering rang
 so treat them as a good working set, not an optimum, and do not read the 3.3x kd raise as a
 validated figure. Anyone who finds them wrong should change them from the dashboard first and only
 then reflash, which now costs nothing.
+
+## 2026-07-31 — Decision: bypass the MCP4922 and drive throttle from an ESP32-S3 pin directly
+
+Rubén's call: the MCP4922 external DAC path is not producing a throttle command, so rather than
+finish it, take the analog throttle signal straight off an ESP32-S3 GPIO the way the classic ESP32
+build did off its built-in DAC (GPIO 25). Recorded here as the decision; the electrical facts below
+were read out of the schematic the same day and constrain how it can be done.
+
+**"Not working" is unverified as a hardware fault.** What the repo actually shows is an
+unimplemented path, not a dead chip: `KM_GPIO_WriteDAC()` in `components/km_gpio/km_gpio.c:352-363`
+takes the `CONFIG_IDF_TARGET_ESP32S3` branch, returns `ESP_OK` and does nothing, carrying a
+`TODO: Implement MCP4922 SPI write for S3`. Nothing drives `SELECT_THROTTLE` (GPIO 15) either, so
+the mux never hands the line over even if the DAC did output. Whether the MCP4922 itself has been
+measured dead on the bench is not recorded. Anyone picking this up should establish which it is
+before cutting traces — writing the SPI transaction is the smaller job of the two.
+
+**The ESP32-S3 has no DAC at all.** This is the hard constraint. The classic ESP32 and the S2 have
+two 8-bit DAC channels; the S3, C3 and C6 do not — the peripheral is absent from the silicon, which
+is why the board carries an MCP4922 in the first place (`components/km_gpio/km_gpio.h:78-81` says as
+much). Freeing GPIO 11-14 by disabling SPI does not produce an analog output: there is no analog
+output function to assign to any S3 pin. The only way to get a varying voltage out of the chip is
+**LEDC PWM into an RC low-pass filter.**
+
+**The throttle net is designed for 0-5 V, so a 3.3 V pin covers ~66% of the range.** From the
+netlist exported from `dv-hardware/projects/kart-medulla/kart-medulla.kicad_sch`: U13 (MCP4922) has
+`VDD`, `VREFA` and `VREFB` all tied to `+5V_REG`, and its channel-A output net is named
+`CMD_ACC_ESP32__0_5V`. An S3 GPIO swings 0-3.3 V, so a filtered-PWM bypass commands at most
+3.3/5 = 66% of full throttle unless a gain stage or a 5 V rail is added. For bench and low-speed
+work that ceiling may be welcome; for full authority it is not.
+
+**Where the bypass has to land.** The throttle signal path on the PCB is:
+
+    U13.14 VOUTA  -> U14.8  (MAX4660 "NO")   \
+    CN6.2  pedal  -> U14.2  (MAX4660 "NC")   /-> U14.1 COM -> CN10.1 -> kart
+                     U14.6 IN <- GPIO 15 SELECT_THROTTLE, 10k pulldown R32
+
+Injecting on the `CMD_ACC_ESP32__0_5V` net (U13 pin 14 / U14 pin 8) keeps the MAX4660 mux and its
+fail-safe default: with GPIO 15 low the pedal passes through to the kart, and firmware must
+deliberately drive it HIGH to take over. Injecting at CN10.1 instead discards that pass-through.
+Either way U13 must be lifted or removed first, or its output buffer and the RC filter will both
+drive the same node.
+
+**Source pin: GPIO 38 or 39.** Both are unconnected in the schematic and unconstrained (see
+`.agents/esp32s3-pinmap.md`, "Free"). Disabling SPI to reclaim GPIO 11-14 gains nothing here —
+GPIO 11 goes to the MCP4922's `SDI` input, not to the throttle net, so a flying wire to the mux
+input is needed whichever pin sources the PWM. LEDC can route to any GPIO through the matrix, so
+the pin choice does not constrain the peripheral.
+
+Nothing has been built or measured yet; this entry is the decision plus the constraints it has to
+respect.
+
+### Same day — PWM+RC is the mechanism, and U1B is a free buffer already on the board
+
+Follow-up to the entry above, after reading the netlist properly. Question asked was whether varying
+a PWM duty cycle could stand in for the DAC. It can, and it is the only option: the S3 has no analog
+output, so "PWM into an RC low-pass" *is* the bypass, not an alternative to it.
+
+**Do not feed raw PWM to the kart.** `CMD_ACC__0_5V` leaves the board on CN10.1 to the kart's
+controller, and nothing in either repo records whether that input integrates its signal or samples
+it. A sampling input turns a 20 kHz square wave into aliased noise instead of an average.
+
+**Filter values.** LEDC off the 80 MHz APB clock at 12-bit resolution runs at 19531 Hz
+(80e6 / 4096), which is already finer than `KM_GPIO_WriteDAC()`'s `uint8_t` argument can address.
+With R = 10 kOhm and C = 220 nF (tau = 2.2 ms, corner ~72 Hz), worst-case ripple occurs at 50% duty
+and is V/(4*f*R*C) = 3.3/(4*19531*0.0022) = ~19 mV, about 0.4% of a 5 V scale, settling to 99% in
+~11 ms. A larger C trades throttle lag for less ripple.
+
+**U1 is an LM358DR on +12 V and channel B is unused.** Channel A is the brake path: `CMD_BRAKE__0_5V`
+(MCP4922 VOUTB) into `+IN1`, out of `OUT1` as `CMD_BRAKE__0_10V` to CN10.2, non-inverting gain
+1 + R19/R20 = 1 + 1k/1k = **2**. Channel B is parked: `+IN2` (pin 5) strapped to GND, `-IN2` (pin 6)
+tied to `OUT2` (pin 7) as a unity follower whose output goes nowhere.
+
+That spare channel solves both remaining problems at once. Lifting pin 5 off GND, feeding the RC
+output into it, and replacing the follower strap with a feedback divider gives the low-impedance
+buffer the RC needs *and* the gain that fixes the 3.3 V ceiling: 5/3.3 = 1.52, so Rf = 5.1k with
+Rg = 10k gives 1.51 and 4.98 V at full duty. Full throttle range, no added chip.
+
+Two cautions. **Lift U13 pin 14 (VOUTA)** before U1B drives that net, or the MCP4922's output buffer
+and the op-amp fight over it. And **put a ~10 kOhm pulldown on U1B's output**: the LM358 is not
+rail-to-rail and shows a crossover glitch near ground when unloaded, and throttle-zero has to be a
+genuine zero.
+
+**Evidence the MCP4922 is probably fine, and one bug found while looking.** At
+`components/km_gpio/km_gpio.c:348-368`, *both* channels are stubbed — `PIN_CMD_ACC` and
+`PIN_CMD_BRAKE` each return `ESP_OK` under the same `TODO: Implement MCP4922 SPI write for S3`. So
+brake is equally non-functional, and brake runs through an entirely separate downstream path
+(VOUTB -> U1A -> CN10.2, no mux). One dead chip would have to explain both symptoms; one missing SPI
+write explains both more simply.
+
+Separately, on the S3 `PIN_CMD_ACC` and `PIN_CMD_BRAKE` are both `GPIO_NUM_NC` (-1), so the first
+`if` in `KM_GPIO_WriteDAC()` catches every call and the function cannot tell throttle from brake
+even once someone implements the write. Whoever ports it must change the signature or the sentinels.
+
+Cheap test before any rework: power the board and meter U13 pin 1 (VDD) and pins 11/13
+(VREFA/VREFB). All three tie to `+5V_REG`; if they read 5 V the chip is alive and merely unwritten.

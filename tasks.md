@@ -516,6 +516,38 @@ dashboard.
 - **Nothing drives `PIN_SELECT_THROTTLE` (GPIO 15).** R32's 10 kΩ pulldown makes the default pedal
   pass-through (safe); firmware must drive it HIGH for throttle-via-DAC.
 - **`PIN_STATUS_LED` (GPIO 48) needs RMT**, not plain GPIO — it's an addressable RGB.
+
+### Throttle-DAC bypass: is the MCP4922 actually dead, or just never written to?
+
+Opened 2026-07-31. Rubén decided to bypass the MCP4922 and drive the throttle analog signal from an
+ESP32-S3 GPIO directly (LEDC PWM + RC filter — the S3 has no DAC peripheral at all). Full reasoning,
+the schematic net path and the 0-5 V vs 3.3 V range problem are in `history.md` under that date.
+
+**The open question, and it decides how much work this is:** nobody has recorded whether the
+MCP4922 was measured faulty on the bench, or whether "the DAC is not working" simply describes
+`KM_GPIO_WriteDAC()` returning `ESP_OK` without doing anything on the S3 branch
+(`components/km_gpio/km_gpio.c:352-363`, `TODO: Implement MCP4922 SPI write for S3`) combined with
+nothing ever driving `SELECT_THROTTLE` (GPIO 15). If it is the latter, writing the SPI transaction
+is far less work than cutting into the board — and it keeps the full 0-5 V range that a 3.3 V pin
+cannot reach. Establish which before modifying hardware.
+
+Follow-on decisions once that is settled: whether to accept the ~66% throttle ceiling a 3.3 V pin
+gives on a net designed for 0-5 V, or add a gain stage; and whether to inject on the
+`CMD_ACC_ESP32__0_5V` net (keeps the MAX4660 mux's fail-safe pedal pass-through) or at CN10.1
+(discards it). The gain question has a cheap answer — **U1B (LM358DR channel B) is unused on the
+board**, parked as a grounded unity follower, and rewiring it gives both the buffer the RC filter
+needs and the 1.52x gain that reaches 5 V. Values and cautions in `history.md`.
+
+**Cheap test that settles the open question:** power the board and meter U13 pin 1 (VDD) and pins
+11/13 (VREFA/VREFB) — all three tie to `+5V_REG`. 5 V on all three means the chip is alive and
+merely unwritten.
+
+- [ ] **Bug found while investigating, independent of which route is taken:** on the S3 both
+  `PIN_CMD_ACC` and `PIN_CMD_BRAKE` are `GPIO_NUM_NC` (-1), so the first `if` in
+  `KM_GPIO_WriteDAC()` (`components/km_gpio/km_gpio.c:348-368`) catches every call and the function
+  cannot distinguish throttle from brake. Anyone implementing the MCP4922 SPI write must change the
+  signature or the sentinels first.
+
 ### Steering sensor read over PWM — written, not yet validated on hardware
 
 `components/km_sdir/km_sdir_pwm.{c,h}` reads the MT6701's PWM angle output on GPIO 1 (CN5.2) via
