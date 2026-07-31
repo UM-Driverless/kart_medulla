@@ -256,6 +256,37 @@ esp_err_t KM_GPIO_Init(void)
     if (ret != ESP_OK) return ret;
 #endif
 
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+    /* ---------- Throttle PWM (own timer: 12-bit, ~19.5 kHz) ---------- */
+    /* Timers 0 and 1 are taken by steering and the compressor, both 8-bit at
+     * low frequency. Throttle needs the opposite: a carrier fast enough that an
+     * RC filter leaves only millivolts of ripple, and enough duty resolution
+     * that the steps are invisible. Hence its own timer.
+     *
+     * duty = 0 here means 0 V after the filter, i.e. throttle closed, and that
+     * is what the pin holds until something calls KM_GPIO_WriteDAC(). */
+    ledc_timer_config_t throttle_timer = {
+        .speed_mode      = LEDC_HIGH_SPEED_MODE,
+        .duty_resolution = LEDC_TIMER_12_BIT,
+        .timer_num       = THROTTLE_PWM_TIMER,
+        .freq_hz         = THROTTLE_PWM_FREQ_HZ,
+        .clk_cfg         = LEDC_AUTO_CLK
+    };
+    ret = ledc_timer_config(&throttle_timer);
+    if (ret != ESP_OK) return ret;
+
+    ledc_channel_config_t throttle_channel = {
+        .gpio_num   = (gpio_num_t)PIN_CMD_ACC,
+        .speed_mode = LEDC_HIGH_SPEED_MODE,
+        .channel    = THROTTLE_PWM_CHANNEL,
+        .intr_type  = LEDC_INTR_DISABLE,
+        .timer_sel  = THROTTLE_PWM_TIMER,
+        .duty       = 0     // throttle closed until commanded
+    };
+    ret = ledc_channel_config(&throttle_channel);
+    if (ret != ESP_OK) return ret;
+#endif
+
     return ESP_OK;
 }
 
@@ -350,17 +381,31 @@ esp_err_t KM_GPIO_WriteDAC(gpio_num_t pin, uint8_t value)
     gpio_num_t gpio = (gpio_num_t)pin;
 
     if (gpio == PIN_CMD_ACC) {
-#ifdef CONFIG_IDF_TARGET_ESP32
+#if defined(CONFIG_IDF_TARGET_ESP32)
         return dac_output_voltage(DAC_CHAN_0, value);
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+        /* No DAC on this chip — the analog level is a 12-bit PWM duty that an
+         * external RC network averages. Widening the caller's 8 bits by
+         * replicating the top nibble into the bottom makes 0x00 -> 0x000 and
+         * 0xFF -> 0xFFF; a plain `value << 4` would stop at 0xFF0 and quietly
+         * cost the last 0.4% of travel. */
+        uint32_t duty = ((uint32_t)value << 4) | (value >> 4);
+        esp_err_t ret = ledc_set_duty(LEDC_HIGH_SPEED_MODE, THROTTLE_PWM_CHANNEL, duty);
+        if (ret != ESP_OK) return ret;
+        return ledc_update_duty(LEDC_HIGH_SPEED_MODE, THROTTLE_PWM_CHANNEL);
 #else
-        return ESP_OK; // TODO: Implement MCP4922 SPI write for S3
+        return ESP_ERR_NOT_SUPPORTED;
 #endif
     }
     if (gpio == PIN_CMD_BRAKE) {
-#ifdef CONFIG_IDF_TARGET_ESP32
+#if defined(CONFIG_IDF_TARGET_ESP32)
         return dac_output_voltage(DAC_CHAN_1, value);
 #else
-        return ESP_OK; // TODO: Implement MCP4922 SPI write for S3
+        /* Brake has no output on the S3. It needs the MCP4922 (unimplemented on
+         * this branch — see `spi-fix`) or its own filtered-PWM pin and gain
+         * stage, since CN10.2 is scaled 0-10 V. Returning an error rather than
+         * ESP_OK so a caller cannot mistake silence for a working brake. */
+        return ESP_ERR_NOT_SUPPORTED;
 #endif
     }
 

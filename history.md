@@ -1523,3 +1523,56 @@ even once someone implements the write. Whoever ports it must change the signatu
 
 Cheap test before any rework: power the board and meter U13 pin 1 (VDD) and pins 11/13
 (VREFA/VREFB). All three tie to `+5V_REG`; if they read 5 V the chip is alive and merely unwritten.
+
+### Same day — implemented: PWM throttle on `dev`, MCP4922 SPI on branch `spi-fix`
+
+Two branches, deliberately not one, because the open question above is not settled and each branch
+answers it a different way. Both build clean for `esp32-s3-devkitc-1` and `esp32dev`.
+
+**`spi-fix` — keeps the MCP4922 and makes it work.** Filling in the `TODO` alone would not have been
+enough; three defects stacked on top of each other, and each one on its own is sufficient to produce
+exactly the symptom "the DAC does nothing":
+
+1. The `spi_device_handle_t` was declared `static` **inside** `KM_GPIO_Init()`, so
+   `KM_GPIO_WriteDAC()` had no handle to transmit through even if it had tried.
+2. `PIN_CMD_ACC` and `PIN_CMD_BRAKE` were both `GPIO_NUM_NC`, so the first `if` matched both and
+   brake was indistinguishable from throttle.
+3. `km_act`'s `ACT_Controller.dacChannel` is a `uint8_t`, which turns -1 into 255, so neither branch
+   matched and every write returned `ESP_ERR_INVALID_ARG` before reaching the stub at all.
+
+The write sends the 16-bit command MSB-first with gain 1x and the output active. Diagnostics log the
+bus/device init results with the resolved pins, treat a NULL handle as a hard failure, log transmit
+errors immediately, and `KM_GPIO_McpSelfTest()` steps channel A through 0/25/50/75/100% holding each
+level 2 s so it can be metered at U13 pin 14. Channel A only — brake reaches CN10.2 unmuxed, so
+sweeping channel B would command real brake, while channel A stops at the MAX4660 sitting on pedal
+pass-through. Gated behind `SPI_DIAG_LOGS` in `platformio.ini`, which also keeps `ESP_LOG` alive;
+that corrupts the binary protocol on UART0, so a board carrying this build must not run with
+kart-brain live.
+
+**The diagnostics have a ceiling worth stating.** The MCP4922 has no data output — the schematic's
+MISO net reaches the ESP32 pads and stops there. No log can distinguish "transmitted and the DAC
+took it" from "transmitted into a dead chip". A voltmeter on VOUTA is the only test.
+
+**`dev` — throttle from GPIO 38 via filtered PWM.** LEDC on its own timer (timers 0 and 1 are
+steering and compressor), 12-bit at 19531 Hz = 80 MHz / 4096, the fastest carrier that still leaves
+12 bits. `KM_GPIO_WriteDAC()` widens the caller's 8 bits to 12 by nibble replication so full scale
+is 0xFFF rather than 0xFF0. Duty starts at 0, so the pin holds throttle closed until commanded.
+
+Brake now returns `ESP_ERR_NOT_SUPPORTED` on the S3 rather than `ESP_OK`. It has no output on either
+branch of the hardware question and CN10.2 is scaled 0-10 V, so it needs either the MCP4922 or its
+own pin plus a gain stage. Returning success for an actuator that does nothing is the failure mode
+this whole entry is about.
+
+**No CN terminal was available.** Every screw-terminal pin that reaches the ESP32 is assigned:
+CN1 power, CN2 Hall 3/2 + 5 V, CN4 I2C + reverse, CN5 hydraulic 2 / steering PWM in, CN6 pedals,
+CN7 pressure 1/2 + Hall 1, CN8 SDC + compressor + steer dir, CN9 steer PWM + hydraulic 1,
+CN10 throttle + brake out. CN3 and CN5.3 look spare but are `EXP_P1..P4` on the **PCF8574** (U25
+P1/P2/P3/P4), an I2C expander — digital only, no PWM, so useless here. Hence GPIO 38, which is
+unconnected in the schematic and lands on an empty socket contact: U24 pad 13, silkscreen `38`,
+right edge of the dev board (Pin 13 in the `docs/pinout-esp32-s3.md` numbering). U23/U24 are
+SSW-122-01 sockets, so the dev board is socketed and its header pin can be soldered to directly
+without touching the PCB.
+
+Recommend a 10 kOhm pulldown from GPIO 38 to GND alongside the filter. The pin floats for the ~200 ms
+between reset and `KM_GPIO_Init()`, and every other output on this board that matters (R23 on Q3's
+gate, R32 on SELECT_THROTTLE) is held safe through that window the same way.
