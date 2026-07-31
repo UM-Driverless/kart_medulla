@@ -31,9 +31,11 @@ PID_Controller KM_PID_Init(float kp_val, float ki_val, float kd_val) {
 
     controller.integral = 0.0f;
     controller.lastError = 0.0f;
+    controller.lastMeasurement = 0.0f;
+    controller.primed = false;
     controller.lastTime = esp_timer_get_time();
 
-    return controller;                                                             
+    return controller;
 }
 
 /** @brief Compute PID output for one cycle. See km_pid.h for full documentation. */
@@ -65,9 +67,32 @@ float KM_PID_Calculate(PID_Controller *controller, float setpoint, float measure
 
     float iTerm = controller->ki * controller->integral;
 
-    // Derivative term
-    float derivative = (error - controller->lastError) / dt;
-    float dTerm = controller->kd * derivative;
+    // Derivative term — ON THE MEASUREMENT, not on the error.
+    //
+    // error = setpoint - measurement, so d(error)/dt carries d(setpoint)/dt with
+    // it. Differentiating the error therefore makes the output respond to the
+    // COMMAND changing, not just to the plant moving, and on this vehicle that
+    // is large: with kd = 0.10 and the control loop's dt = 2 ms, kd/dt = 50
+    // against a kp of 1.20. The steering setpoint arrives from Orin quantized to
+    // milliradians, so the smallest possible target change (1 mrad) alone would
+    // contribute 0.05 — 10% of the 0.50 steering PWM limit — and a target sweep
+    // at 60 deg/s would add a steady kd x rate = 0.105 in the direction of
+    // travel, for as long as the kart is turning.
+    //
+    // -kd x d(measurement)/dt is identical while the setpoint is held and drops
+    // both of those. The sign is negative because a rising measurement means the
+    // plant is already moving up and the controller should ease off.
+    //
+    // No derivative on the first cycle after Init or Reset: there is no previous
+    // measurement to difference against, and treating the 0 left by Reset as one
+    // would differentiate the entire current angle in a single dt. At a steering
+    // angle of 1.08 rad that alone is -kd x 1.08 / 0.002 = -54, saturating the
+    // output the instant control resumes.
+    float dTerm = 0.0f;
+    if (controller->primed) {
+        float dMeasurement = (measurement - controller->lastMeasurement) / dt;
+        dTerm = -controller->kd * dMeasurement;
+    }
 
     // Calculate total output
     float output = pTerm + iTerm + dTerm;
@@ -75,10 +100,11 @@ float KM_PID_Calculate(PID_Controller *controller, float setpoint, float measure
     // Apply output limits
     if (output < controller->outputMin) output = controller->outputMin;
     if (output > controller->outputMax) output = controller->outputMax;
-    
 
     // Update state
     controller->lastError = error;
+    controller->lastMeasurement = measurement;
+    controller->primed = true;
     controller->lastTime = currentTime;
 
     return output;
@@ -107,6 +133,10 @@ void KM_PID_SetIntegralLimits(PID_Controller *controller, float min, float max) 
 void KM_PID_Reset(PID_Controller *controller){
     controller->integral = 0.0f;
     controller->lastError = 0.0f;
+    controller->lastMeasurement = 0.0f;
+    /* Clearing this is what makes the next cycle skip the derivative. Leaving it
+     * set would differentiate the new measurement against the 0 above. */
+    controller->primed = false;
     controller->lastTime = esp_timer_get_time();
 }
 

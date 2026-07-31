@@ -97,14 +97,51 @@ void test_derivative_term(void) {
     PID_Controller pid = KM_PID_Init(0.0f, 0.0f, 1.0f);
     KM_PID_SetOutputLimits(&pid, -100.0f, 100.0f);
 
-    /* First call: error = 1.0 */
+    /* First call primes the controller — no previous measurement, so no D. */
+    advance_us(1000000);
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, KM_PID_Calculate(&pid, 0.0f, 1.0f));
+
+    /* Second call: measurement 1.0 → 3.0 over dt = 1 s, so
+     * d(measurement)/dt = 2.0 and the D term is -kd x 2.0 = -2.0.
+     * Negative because the plant is already moving up. */
+    advance_us(1000000);
+    float out = KM_PID_Calculate(&pid, 0.0f, 3.0f);
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, -2.0f, out);
+}
+
+/* The point of derivative-on-measurement: moving the SETPOINT must not produce
+ * a derivative response. Under the previous derivative-on-error this test would
+ * have read +2.0. */
+void test_derivative_ignores_setpoint_step(void) {
+    fake_esp_timer_us = 0;
+    PID_Controller pid = KM_PID_Init(0.0f, 0.0f, 1.0f);
+    KM_PID_SetOutputLimits(&pid, -100.0f, 100.0f);
+
     advance_us(1000000);
     KM_PID_Calculate(&pid, 1.0f, 0.0f);
 
-    /* Second call: error = 3.0, dt = 1s → derivative = (3-1)/1 = 2.0 */
+    /* Setpoint jumps 1.0 → 3.0; the measurement has not moved. */
     advance_us(1000000);
     float out = KM_PID_Calculate(&pid, 3.0f, 0.0f);
-    TEST_ASSERT_FLOAT_WITHIN(0.01f, 2.0f, out);
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, out);
+}
+
+/* Resuming control must not differentiate the whole current measurement in one
+ * dt. With kd = 1 and a measurement of 5.0 arriving 1 ms after the reset, an
+ * unprimed derivative would be -5000 and would clamp to the output limit. */
+void test_no_derivative_kick_after_reset(void) {
+    fake_esp_timer_us = 0;
+    PID_Controller pid = KM_PID_Init(0.0f, 0.0f, 1.0f);
+    KM_PID_SetOutputLimits(&pid, -100.0f, 100.0f);
+
+    advance_us(1000000);
+    KM_PID_Calculate(&pid, 0.0f, 5.0f);
+    advance_us(1000000);
+    KM_PID_Calculate(&pid, 0.0f, 5.0f);
+
+    KM_PID_Reset(&pid);
+    advance_us(1000);
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, KM_PID_Calculate(&pid, 0.0f, 5.0f));
 }
 
 void test_reset_clears_state(void) {
@@ -119,6 +156,8 @@ void test_reset_clears_state(void) {
     KM_PID_Reset(&pid);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, pid.integral);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, pid.lastError);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, pid.lastMeasurement);
+    TEST_ASSERT_FALSE(pid.primed);
 }
 
 void test_set_tunings(void) {
@@ -171,6 +210,8 @@ int main(void) {
     RUN_TEST(test_integral_accumulation);
     RUN_TEST(test_integral_antiwindup);
     RUN_TEST(test_derivative_term);
+    RUN_TEST(test_derivative_ignores_setpoint_step);
+    RUN_TEST(test_no_derivative_kick_after_reset);
     RUN_TEST(test_reset_clears_state);
     RUN_TEST(test_set_tunings);
     RUN_TEST(test_zero_setpoint_zero_measurement);
