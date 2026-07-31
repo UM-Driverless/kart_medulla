@@ -1576,3 +1576,47 @@ without touching the PCB.
 Recommend a 10 kOhm pulldown from GPIO 38 to GND alongside the filter. The pin floats for the ~200 ms
 between reset and `KM_GPIO_Init()`, and every other output on this board that matters (R23 on Q3's
 gate, R32 on SELECT_THROTTLE) is held safe through that window the same way.
+
+## 2026-07-31 — The manufactured PCB is one commit behind the schematic, and nothing records that
+
+Prompted by Rubén's idea of stamping a hardware identifier onto the board and quoting it from the
+firmware repos. Checking dv-hardware first turned up a live instance of exactly the problem:
+
+**The fabricated board does not match the current schematic.** The last commit touching
+`projects/kart-medulla/fabrication/` is `84d6dd0` ("medulla: add fabrication gerbers + drill files").
+dv-hardware HEAD is `f68cc1f` (2026-07-30), one schematic commit later, and that commit changed the
+brake output: it renamed CN10 pin 2's label from `CMD_BRAKE__0_5V` to `CMD_BRAKE__0_10V`, routed
+CN10.2 to the amplified net, and restored the U13.10 -> U1.3 copper that had been deleted in KiCad,
+leaving the DAC-to-amplifier connection unrouted. So on the board that physically exists, CN10.2
+carries the unamplified 0-5 V DAC output and the amplifier input may not be connected at all.
+
+**Consequence for the notes written earlier today:** the throttle path described above
+(U13.14 VOUTA -> U14.8 -> U14.1 COM -> CN10.1) is untouched by `f68cc1f` and holds for both the
+design and the board. The brake description — VOUTB -> U1A gain 2 -> CN10.2 at 0-10 V — is the
+*design*, and is not what the manufactured board does. Anything read out of a netlist exported from
+HEAD describes the design, never the artifact.
+
+**Rubén's proposal:** give the manufactured PCB a code, put a QR of it on the board, log that board's
+defects in dv-hardware, and quote the code from kart-medulla and kart-brain so it is clear which
+firmware matches which hardware. Possibly use a dv-hardware commit hash as the code itself.
+
+The goal is right and the gap is real. Three problems with the hash-as-code form specifically, and
+what fixes each:
+
+1. **Hashes have no order.** Given two, you cannot tell which is newer or whether one is an ancestor
+   of the other without a repo lookup, so "is my firmware ahead of my board?" stops being answerable
+   by eye. A monotonic label carries that for free.
+2. **A commit identifies a design, not a board.** Rework, hand mods and per-unit defects are exactly
+   what the scheme is meant to capture, and they do not exist in git. Two boards from one set of
+   gerbers diverge the moment someone lifts a pin — which is precisely what the throttle bypass
+   described above involves. Design revision and board serial are different identifiers and both are
+   needed.
+3. **Which commit?** The schematic's last edit and the gerber export are different commits, as the
+   84d6dd0/f68cc1f split shows. Only the gerber export means anything to a fab house.
+
+Suggested shape, not yet agreed: tag each fab run in dv-hardware (`fab/kart-medulla-v1`), which is
+both human-ordered and resolves to a hash; keep a board registry listing each physical unit's serial
+against its fab tag plus that unit's rework and defects; and have kart-medulla and kart-brain each
+state which fab tag they target. The QR then encodes the serial, and the serial resolves to
+everything else — which also avoids the circularity of trying to silkscreen a hash that does not
+exist until after the commit containing the silkscreen.

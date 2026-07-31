@@ -556,6 +556,37 @@ Try `spi-fix` first — it costs one flash and no solder.
   cannot distinguish throttle from brake. Anyone implementing the MCP4922 SPI write must change the
   signature or the sentinels first.
 
+### Decide how a manufactured PCB is identified, then state it in all three repos
+
+Opened 2026-07-31 by Rubén. No repo records which hardware revision it targets, so "does this
+firmware match the board on the kart?" cannot be answered. Concrete instance found the same day: the
+boards were fabbed from dv-hardware `84d6dd0`, but HEAD is `f68cc1f`, which changed the brake output
+(CN10.2 relabelled to the 0-10 V amplified net, and the U13.10 -> U1.3 DAC-to-amplifier copper
+restored after most of it had been deleted). So the board that exists behaves differently from the
+schematic, and nothing anywhere says so. Full reasoning in `history.md`, 2026-07-31.
+
+Rubén's proposal: a code identifying the manufactured PCB, a QR of it on the board, per-board defects
+logged in dv-hardware, and the code quoted from kart-medulla and kart-brain — possibly using a
+dv-hardware commit hash as the code itself.
+
+**Open decision — hash directly, or a tag plus a serial?** Three things argue against a bare hash:
+hashes have no order, so you cannot tell which of two is newer without a lookup; a commit identifies
+a *design*, while rework and per-unit defects (a lifted U13 pin 14, for instance) are properties of a
+board and do not exist in git; and the schematic's last edit is a different commit from the gerber
+export, which is the only one a fab house ever saw.
+
+Suggested instead, not yet agreed: a git tag per fab run in dv-hardware (`fab/kart-medulla-v1`) —
+ordered for humans, resolves to a hash; a board registry mapping each physical unit's serial to its
+fab tag plus that unit's rework and defects; kart-medulla and kart-brain each declaring the fab tag
+they target. The QR then carries the serial and everything else resolves from it, which also avoids
+having to silkscreen a hash that does not exist until after the commit containing the silkscreen.
+
+- [ ] Pick the scheme (Rubén's call).
+- [ ] Record it in the three READMEs / AGENTS.md once picked — deliberately not written yet, since a
+      README should carry the agreed convention rather than a proposal.
+- [ ] First pairing is already logged in kart-brain's `history.md`: kart-brain `main` = `c200e56`
+      against dv-hardware `84d6dd0`.
+
 ### Steering sensor read over PWM — written, not yet validated on hardware
 
 `components/km_sdir/km_sdir_pwm.{c,h}` reads the MT6701's PWM angle output on GPIO 1 (CN5.2) via
