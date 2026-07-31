@@ -31,8 +31,8 @@
  *          stuck-low line distinguishable from a valid reading.
  *
  * @note    VALIDITY. Every read returns NAN (or -1 for the raw form) when the
- *          angle is not currently known — no signal, wrong frame rate, or not
- *          enough good frames yet. It never falls back to a stale or invented
+ *          angle is not currently known — no signal, wrong frame rate, or no
+ *          frame decoded yet. It never falls back to a stale or invented
  *          value. See the "Sensor Validity" section of AGENTS.md for why: a
  *          sensor read that quietly substitutes a plausible number produced a
  *          confident 90-degree-left reading off an unplugged sensor on
@@ -78,8 +78,15 @@
  */
 #define KM_SDIR_PWM_STALE_US       50000
 
-/** @brief Number of frames the median filter runs over. */
-#define KM_SDIR_PWM_MEDIAN_N       5
+/*
+ * NO SMOOTHING FILTER, deliberately — there is no KM_SDIR_PWM_MEDIAN_N any more.
+ * Reads return the newest decoded frame. A median over 5 frames used to sit here
+ * and cost ~2 ms of group delay on the angle for every consumer; it was removed
+ * on 2026-07-31 because the frame counters measured 993 accepted frames per
+ * second with zero rejects, so it was filtering noise that is not there. The
+ * full reasoning, and what to do if that stops being true, is in the note on the
+ * private KM_SDIR_PWM_Latest() in km_sdir_pwm.c and in history.md.
+ */
 
 /**
  * @brief Raw sensor count with the road wheels pointing straight ahead.
@@ -135,7 +142,7 @@
 esp_err_t KM_SDIR_PWM_Begin(gpio_num_t pin);
 
 /**
- * @brief  Median-filtered raw angle from the PWM frames.
+ * @brief  Newest raw angle decoded from the PWM frames, unfiltered.
  * @return 0..4095 (12-bit, same scale as the AS5600 raw value), or -1 when the
  *         angle is not currently known.
  */
@@ -157,7 +164,8 @@ float KM_SDIR_PWM_ReadAngleDegrees(void);
 
 /**
  * @brief  Whether a usable angle is available right now.
- * @return 1 if the median filter is full and the newest frame is fresh, else 0.
+ * @return 1 if at least one frame has been decoded and the newest is fresh
+ *         (within KM_SDIR_PWM_STALE_US), else 0.
  */
 int8_t KM_SDIR_PWM_isValid(void);
 

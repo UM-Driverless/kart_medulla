@@ -6,7 +6,7 @@
  *          Capture runs entirely in hardware: MCPWM timestamps both edges of
  *          the sensor's OUT line and the ISR turns each complete rising-to-
  *          rising interval into one 12-bit angle sample. The reader functions
- *          only ever copy out the last few samples, so the control loop never
+ *          only ever copy out the newest sample, so the control loop never
  *          waits on the sensor.
  *****************************************************************************/
 
@@ -14,7 +14,7 @@
 #include "km_sdir.h"          /* SENSOR_CENTER — shared with the I2C path */
 
 #include <math.h>
-#include <string.h>
+#include <stdbool.h>
 
 #include "esp_attr.h"
 #include "esp_log.h"
@@ -46,10 +46,11 @@ static mcpwm_cap_channel_handle_t s_cap_chan  = NULL;
 static uint32_t s_period_min_ticks = 0;
 static uint32_t s_period_max_ticks = 0;
 
-/* Median window of accepted samples, newest at s_ring_idx - 1. */
-static uint16_t s_ring[KM_SDIR_PWM_MEDIAN_N];
-static uint8_t  s_ring_idx  = 0;
-static uint8_t  s_ring_fill = 0;
+/* Newest accepted sample, unfiltered. The driver deliberately does no smoothing
+ * — see the 2026-07-31 entry in history.md for the measurement that decided it.
+ * Filtering here would delay the angle for every consumer, the PID included. */
+static uint16_t s_latest_raw   = 0;
+static bool     s_have_sample  = false;
 static int64_t  s_last_good_us = 0;
 
 /* Edge bookkeeping, ISR-private. */
@@ -114,9 +115,8 @@ static bool IRAM_ATTR KM_SDIR_PWM_CaptureISR(mcpwm_cap_channel_handle_t chan,
                 if (data > KM_SDIR_PWM_DATA_STEPS - 1) data = KM_SDIR_PWM_DATA_STEPS - 1;
 
                 portENTER_CRITICAL_ISR(&s_mux);
-                s_ring[s_ring_idx] = (uint16_t)data;
-                s_ring_idx = (uint8_t)((s_ring_idx + 1) % KM_SDIR_PWM_MEDIAN_N);
-                if (s_ring_fill < KM_SDIR_PWM_MEDIAN_N) s_ring_fill++;
+                s_latest_raw   = (uint16_t)data;
+                s_have_sample  = true;
                 s_last_good_us = esp_timer_get_time();
                 s_frames++;
                 portEXIT_CRITICAL_ISR(&s_mux);
@@ -135,44 +135,47 @@ static bool IRAM_ATTR KM_SDIR_PWM_CaptureISR(mcpwm_cap_channel_handle_t chan,
 }
 
 /**
- * @brief  Copy the median window out and reduce it to one sample.
- * @param  out_raw  Receives the median raw value when this returns 1.
+ * @brief  Copy out the newest decoded sample, unfiltered.
+ * @param  out_raw  Receives the raw value when this returns 1.
  * @return 1 if a usable angle is available, 0 otherwise.
  *
- * @note   The median is taken on the linear 0..4095 scale, not a circular one.
- *         If the magnet sits exactly on the 4095/0 wrap the median can land on
- *         the far side of it, which costs at most the sample spread — under a
- *         degree at the jitter levels measured on the bench. Mount the sensor
- *         so the wrap falls outside the steering travel and it never arises.
+ * @note   NO FILTERING, deliberately. This used to take a median over the last
+ *         5 frames. That cost a group delay of 2 samples (~2 ms at 994.4 Hz) on
+ *         the angle every consumer sees, and the measurement that was supposed
+ *         to justify it says there is nothing to filter: the accepted-frame
+ *         counter runs at 993/s with ZERO rejects, and one angle count is 244 ns
+ *         of high time against MCPWM's 12.5 ns tick, so noise has to shift an
+ *         edge a long way to move the reading at all. Removing it also removes
+ *         the median's own bug — taken on the linear 0..4095 scale, it could
+ *         land on the far side of the 4095/0 wrap.
+ *
+ *         The frame counters (KM_SDIR_PWM_GetFrameCount /
+ *         KM_SDIR_PWM_GetRejectCount, telemetered in ESP_HEALTH_STATUS fields
+ *         5-6) are how to tell whether that still holds once the compressor and
+ *         the steering H-bridge are switching, which is the condition the
+ *         zero-reject measurement was NOT taken under. If rejects start
+ *         climbing, prefer a slew-rate gate here over a median: dropping a
+ *         sample that jumps further than the column can physically move in 1 ms
+ *         rejects a corrupted frame while adding no delay to a good one.
  */
-static int8_t KM_SDIR_PWM_Median(uint16_t *out_raw)
+static int8_t KM_SDIR_PWM_Latest(uint16_t *out_raw)
 {
-    uint16_t window[KM_SDIR_PWM_MEDIAN_N];
-    uint8_t  fill;
+    uint16_t raw;
+    bool     have;
     int64_t  last_us;
 
     portENTER_CRITICAL(&s_mux);
-    memcpy(window, s_ring, sizeof(window));
-    fill    = s_ring_fill;
+    raw     = s_latest_raw;
+    have    = s_have_sample;
     last_us = s_last_good_us;
     portEXIT_CRITICAL(&s_mux);
 
-    /* Not enough frames yet, or the newest one has aged out — say so rather
+    /* No frame decoded yet, or the newest one has aged out — say so rather
      * than serving the last value we happen to be holding. */
-    if (fill < KM_SDIR_PWM_MEDIAN_N) return 0;
+    if (!have) return 0;
     if ((esp_timer_get_time() - last_us) > KM_SDIR_PWM_STALE_US) return 0;
 
-    for (uint8_t i = 1; i < KM_SDIR_PWM_MEDIAN_N; i++) {
-        uint16_t key = window[i];
-        int8_t   j   = (int8_t)i - 1;
-        while (j >= 0 && window[j] > key) {
-            window[j + 1] = window[j];
-            j--;
-        }
-        window[j + 1] = key;
-    }
-
-    *out_raw = window[KM_SDIR_PWM_MEDIAN_N / 2];
+    *out_raw = raw;
     return 1;
 }
 
@@ -249,11 +252,11 @@ esp_err_t KM_SDIR_PWM_Begin(gpio_num_t pin)
     return ESP_OK;
 }
 
-/** @brief Median-filtered raw angle, or -1 when unknown. See km_sdir_pwm.h. */
+/** @brief Newest raw angle, or -1 when unknown. See km_sdir_pwm.h. */
 int32_t KM_SDIR_PWM_ReadRaw(void)
 {
     uint16_t raw;
-    if (!KM_SDIR_PWM_Median(&raw)) return -1;
+    if (!KM_SDIR_PWM_Latest(&raw)) return -1;
     return (int32_t)raw;
 }
 
@@ -261,7 +264,7 @@ int32_t KM_SDIR_PWM_ReadRaw(void)
 float KM_SDIR_PWM_ReadAngleRadians(void)
 {
     uint16_t raw;
-    if (!KM_SDIR_PWM_Median(&raw)) return NAN;
+    if (!KM_SDIR_PWM_Latest(&raw)) return NAN;
 
     /* Centre on the measured mechanical zero, not on the AS5600's SENSOR_CENTER
      * — that constant describes a sensor and a mounting this board no longer has.
@@ -296,7 +299,7 @@ float KM_SDIR_PWM_ReadAngleDegrees(void)
 int8_t KM_SDIR_PWM_isValid(void)
 {
     uint16_t raw;
-    return KM_SDIR_PWM_Median(&raw);
+    return KM_SDIR_PWM_Latest(&raw);
 }
 
 /** @brief Accepted frame count. See km_sdir_pwm.h. */
