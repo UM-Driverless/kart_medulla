@@ -89,14 +89,26 @@ Mismatch confirms it: delete that directory once and incremental builds should s
 matches and a source edit still does not recompile, the hypothesis is wrong — capture the evidence in
 `history.md` and keep this open. Either way the `Compiling .../<file>.o` sanity check stays; it is free.
 
-### No CI builds this firmware, and the Mac cannot either
+### No CI builds this firmware — but the Mac now can, so build before pushing
 
 Noticed 2026-07-26 while pushing the compressor-latch / SDC change. **Nothing compiles this repo
 automatically.** `.github/workflows/` does not exist on `dev`, and `gh run list` shows a single run
 ever — "Build with ESP-IDF v5.4", 2025-11-02, on `main` — so whatever workflow produced it is gone.
-Combined with the fact that **no PlatformIO or ESP-IDF is installed on the Mac** (see `AGENTS.md`),
-the practical situation is that firmware can be written and pushed with nobody having compiled it;
-the first compile happens on the Orin, at the kart, when someone tries to flash.
+
+**Correction, 2026-07-31: the Mac half of this is no longer true.** This entry used to say no
+PlatformIO or ESP-IDF was installed locally. Both are now present and working:
+
+    pio test -e native -f test_km_pid          # ~1 s, pure C against test/fakes
+    pio run -e esp32-s3-devkitc-1              # ~5 s, links a real S3 image
+
+The second was run on 2026-07-31 and succeeded in 5.36 s (RAM 6.4 %, flash 31.8 % of 1 MB). There is
+no longer any excuse for pushing firmware nobody compiled.
+
+Note this entry was already contradicting itself: it cited `AGENTS.md` for "no PlatformIO or ESP-IDF
+is installed on the Mac", while `AGENTS.md`'s toolchain note (rechecked the same day, 2026-07-26)
+says the opposite — PlatformIO IS installed at `~/.platformio/penv/bin/pio`, not on `PATH`, verified
+by linking both `esp32-s3-devkitc-1` and `esp32dev`. `AGENTS.md` was right and needs no change; this
+entry was the stale one.
 
 That is how commit `f156921` went out: reviewed and reasoned about, but never built. It touches
 `control_task`, the object store and the pneumatic frame, so a typo lands as a failed flash at the
@@ -703,6 +715,87 @@ S3 image doesn't exist.
 Note the comment's *other* claims were not checked and may still hold: that the throttle/brake DAC
 (MCP4922 over SPI), the PCF8574, and the safety-pin/watchdog drive are still gaps. "It links" is
 not "those peripherals are implemented" — verify separately before treating them as done.
+
+### Two stale statements about the control-loop rate, and the loop is UART-bound at 500 Hz
+
+Found 2026-07-31 while answering "what rate does the steering PID run at". The rate itself is
+settled: `control_task` is registered with a 2 ms period in `main/main.c` (`KM_COMS_CreateTask(...,
+2, ...)`), `CONFIG_FREERTOS_HZ=1000` makes that exactly 2 ticks, and `history.md` records it
+measured on the kart — `control_iters` advancing by exactly 25 between consecutive 20 Hz pneumatic
+frames. 500 Hz, confirmed. Two comments say otherwise:
+
+- [ ] **`main/main.c:949`, the `system_init` docstring, says "control (10 Hz)".** It is 500 Hz.
+  Fix the number.
+- [ ] **`main/main.c:1058` says the "I2C AS5600 read caps real rate".** That was true on the
+  classic-ESP32 path and is the stall `history.md` documents (~8.9 Hz in bursts). On the S3 the
+  angle comes from MCPWM capture of the MT6701's PWM output and never blocks. The real cap now is
+  the UART, so the comment points at the wrong bottleneck.
+
+- [ ] **Decide whether the per-cycle steering frame should stay per-cycle.** `control_task` sends a
+  20-byte `ESP_ACT_STEERING` frame every cycle (SOM + len + type + 4x int32 + CRC). At 8N1 that is
+  200 bits x 500 Hz = 100 kbit/s of a 115200 bit/s link — 87% — before the 20 Hz pneumatics frame
+  (~8.8 kbit/s) and any `ESP_LOG` output, which share UART0. `uart_driver_install(UART_NUM_0, 1024,
+  0, 0, NULL, 0)` passes tx_buffer_size = 0, so `uart_write_bytes` blocks the control task until
+  the hardware FIFO drains. The loop therefore cannot be raised toward 1 kHz without either
+  decoupling telemetry from the control cycle (send feedback at 50-100 Hz) or raising the baud —
+  raising the rate alone converts the shortfall into a stalled loop rather than dropped frames.
+  Not urgent: nothing currently needs a faster loop (see the next item), but the headroom figure
+  should be written down somewhere the next person changing the frame will see it.
+
+- [x] **The median-of-5 was removed on 2026-07-31.** It cost a group delay of 2 samples (~2.0 ms at
+  994.4 Hz) on the angle every consumer sees, and the evidence said there was nothing to filter: the
+  accepted-frame counter measured 993/s with zero rejects, and one angle count is 244 ns of high
+  time against MCPWM's 12.5 ns tick. `KM_SDIR_PWM_Median()` is now `KM_SDIR_PWM_Latest()`; the
+  validity contract is unchanged. Full reasoning in `history.md`, 2026-07-31.
+
+- [ ] **AT THE KART: watch `ESP_HEALTH_STATUS` field 6 (rejected frames) while driving.** This is
+  the check the removal above is riding on, and it has not been done. The zero-reject measurement
+  was taken with the kart quiet — the compressor MOSFET (12 V, ~6 A) and the steering H-bridge were
+  not switching, and those are the noise sources. Rejects still zero with everything running means
+  the removal was right. Rejects climbing means put protection back, and prefer a **slew-rate gate**
+  over a median: drop any sample jumping further than the column can physically move in 1 ms
+  (~45 counts per frame covers even 4000 deg/s) and pass everything else through undelayed. The one
+  glitch that needs catching is a spurious falling edge during the frame's LOW phase — it inflates
+  `s_high_ticks` while leaving the period valid, so it decodes to a confidently too-large angle.
+  Spurious rising edges in the low phase and falling edges in the high phase are already handled by
+  the ISR.
+
+### Steering PID differentiates the error, not the measurement — worth attention
+
+Found 2026-07-31. `KM_PID_Calculate` in `components/km_pid/km_pid.c` computes
+`derivative = (error - lastError) / dt`, and `error` includes the setpoint. So a change in the
+*target* produces a derivative response that a change in the measurement would not. This is worth
+more attention than the sensor-noise question next to it, because sensor noise is roughly zero-mean
+and random — its D-term contribution averages out and costs heat and chatter rather than tracking
+error — whereas this is systematic and correlated with the command, so it does not average out.
+
+With the gains in `main/main.c` (`kd = 0.10`) and the loop's `dt = 2 ms`, `kd/dt = 50`. Compare
+`kp = 1.20`: a one-cycle jump moves the output about 42x harder than the same angle held as a
+steady error. Two consequences, at different frequencies:
+
+- **Quantization steps.** `target_raw = KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f`, so the
+  setpoint arrives in milliradians. The smallest possible target change, 1 mrad (0.057 deg), yields
+  a D term of 0.05 — 10% of the 0.50 actuator limit, from one count. A target step of 0.01 rad
+  (0.57 deg) yields 0.5, and anything larger saturates the output for that cycle.
+- **A ramping setpoint gives a constant offset, not a spike.** While Orin sweeps the target at a
+  rate `r`, the D term contributes a steady `kd x r` in the direction of travel — at 60 deg/s
+  (1.05 rad/s) that is 0.105, a persistent 21% of the limit added during every steering movement.
+  This may well be baked into the gains chosen during the 2026-07-30 live tune.
+
+Standard fix is derivative-on-measurement: differentiate `-measurement` instead of `error`. It is
+identical while the setpoint is constant and removes both effects. Small change, but it alters what
+the gains mean, and `kp`/`kd` were tuned on the vehicle on 2026-07-30 — so it needs a re-tune and a
+drive to validate, not a quiet edit.
+
+- [x] Switched to derivative-on-measurement on 2026-07-31, with a `primed` flag so the first cycle
+  after `KM_PID_Reset()` contributes no derivative (without it, resuming control would differentiate
+  the whole current angle in one dt: -54 at 1.08 rad, saturating instantly). `pio test -e native -f
+  test_km_pid` passes 14/14, including a new test that a setpoint step produces no D response.
+- [ ] **AT THE KART: re-tune `kp`/`kd` and drive it.** Not yet flashed. The 2026-07-30 live tune
+  happened with the old derivative, so whatever the setpoint-driven D term was contributing is baked
+  into the current gains — expect to re-tune. If the steering feels sluggish afterwards that is the
+  missing `kd x rate` term, and the answer is more `kp`, not reverting the derivative. Each change
+  is its own commit so `git revert` can name the cause if the kart drives worse.
 
 ## In Progress
 

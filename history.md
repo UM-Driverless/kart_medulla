@@ -1655,3 +1655,126 @@ back by moving the wire to CN10.1.
 
 The RC filter itself is not optional in either version. GPIO 38 emits a 19.5 kHz square wave, and
 without averaging the throttle input sees 0 V/3.3 V edges rather than a level.
+
+## 2026-07-31 — Removed the steering angle median filter, and moved the PID's derivative onto the measurement
+
+Two changes to the steering control path, made together because they are both about the same thing:
+how much the D term amplifies things that are not the plant moving. Neither has been flashed or
+driven yet. Both are in one commit each, deliberately, so that if the kart steers worse afterwards
+`git revert` names the cause.
+
+### What prompted it
+
+A question about what rate the PID runs at. The answer is 500 Hz — `control_task` is registered
+with a 2 ms period and `CONFIG_FREERTOS_HZ=1000` makes that exactly 2 ticks, confirmed on the kart
+by `control_iters` advancing by exactly 25 between consecutive 20 Hz pneumatic frames. Working out
+whether it could go higher turned up the arithmetic below.
+
+**The derivative divides by dt, so at 2 ms it multiplies any one-sample change by 500.** With
+`kd = 0.10` that is an effective gain of 50 on a per-sample jump, against a `kp` of 1.20 — about
+42x more response to a one-cycle step than to the same quantity held as a steady error. That number
+is what makes both of the changes below matter, and it is worth remembering before raising `kd`.
+
+### Change 1: the median filter is gone (`km_sdir_pwm.c`)
+
+`KM_SDIR_PWM_Median()` took a median over the last 5 frames and has been replaced by
+`KM_SDIR_PWM_Latest()`, which returns the newest decoded frame. The validity contract is unchanged:
+reads still return `NAN` / `-1` when no frame has been decoded yet or the newest is older than
+`KM_SDIR_PWM_STALE_US`, and still never substitute a stale value.
+
+**Why: it was filtering noise that is not there.** The health frame's accepted-frame counter was
+measured climbing at **993 per second with zero rejects**, against the MT6701's nominal 994.4 Hz —
+recorded in the entry above about validating the PWM read path. On top of that, one angle count is
+244 ns of high time and the MCPWM capture tick is 12.5 ns, so an electrical disturbance has to shift
+an edge by a full 244 ns to move the reading by even one count. The +/-2 degrees of rest jitter seen
+on the bench on 2026-07-16 was flagged in that same entry as "more than the MT6701 should show,
+check magnet gap/centering", so it was most likely the magnet mounting rather than anything
+electrical.
+
+**What it cost:** a median of 5 has a group delay of exactly 2 samples, ~2.0 ms at 994.4 Hz, on the
+angle every consumer sees — plus ~1 ms of zero-order hold at the 500 Hz loop rate. Phase lag is
+360 deg x f x tau, so ~3 ms is about 5 degrees of phase at a 5 Hz crossover and about 22 degrees at
+20 Hz. The steering loop's actual crossover has never been measured, which is precisely why paying
+the delay for an unmeasured benefit was the wrong side to err on. Removing it also removes a latent
+bug of its own: the median was taken on the linear 0..4095 scale, so a magnet sitting on the 4095/0
+wrap could put the result on the far side of it.
+
+**The gap in that evidence, stated plainly:** the zero-reject measurement was taken with the kart
+quiet. The compressor MOSFET (12 V, ~6 A) and the steering H-bridge are the noise sources on this
+vehicle and neither was switching at the time. So what is actually known is "no corrupted frames
+while nothing is switching".
+
+**How to check it, at no cost:** the diagnostic is already built and telemetered.
+`ESP_HEALTH_STATUS` fields 5 and 6 carry the accepted and rejected frame counts. Drive the kart with
+the compressor cycling and the steering working, and watch field 6. Still zero means the removal was
+right. Climbing means some protection is wanted — and in that case prefer a **slew-rate gate** over
+putting the median back: reject any sample that jumps further than the column can physically move in
+1 ms and pass everything else straight through. At 4096 counts per 360 degrees even 4000 deg/s of
+steering is only ~45 counts per frame, so a threshold near there passes all real motion untouched
+and adds no delay at all, which a median cannot do.
+
+**Which glitch actually needs catching, from re-reading the capture ISR.** Most are already handled
+and do not need a filter: a spurious *rising* edge in the low phase leaves `s_have_high` false, so
+the next frame is skipped rather than decoded wrong; a spurious *falling* edge in the high phase is
+overwritten by the real one, because `s_high_ticks` is reassigned on every NEG edge. The one case
+that survives every check is a spurious falling edge during the **low** phase — it inflates
+`s_high_ticks` while leaving the rising-to-rising period valid, so it decodes to a confidently
+too-large angle. That is the specific thing a slew gate would be for.
+
+### Change 2: derivative on measurement, not on error (`km_pid.c`)
+
+`KM_PID_Calculate()` computed `derivative = (error - lastError) / dt`. Since
+`error = setpoint - measurement`, that derivative carries `d(setpoint)/dt` with it, so the output
+responded to the *command* changing and not only to the plant moving. It now computes
+`-kd x d(measurement)/dt`, which is identical while the setpoint is held still.
+
+Two effects this removes, at different frequencies:
+
+- **Quantization steps.** `target_raw = KM_OBJ_GetObjectValue(TARGET_STEERING) / 1000.0f`, so the
+  setpoint arrives from the Orin in milliradians. The smallest possible target change — 1 mrad,
+  0.057 degrees — contributed a D term of 0.05, which is 10 % of the 0.50 steering PWM limit, off
+  one count. A 0.57 degree step contributed 0.5, and anything larger saturated the output for that
+  cycle.
+- **A ramping setpoint gave a constant offset, not a spike.** While the Orin sweeps the target at
+  rate `r`, `d(error)/dt` includes `r`, so the D term contributed a steady `kd x r` in the direction
+  of travel — at 60 deg/s that is 0.105, a persistent 21 % of the limit for as long as the kart is
+  turning.
+
+**This is the part most likely to change how the kart drives**, because `kp` and `kd` were tuned
+live on the vehicle on 2026-07-30 through the dashboard's PID panel — so whatever those two effects
+were contributing is baked into the gains that were chosen. Expect to re-tune. If the steering feels
+sluggish afterwards, that is the missing `kd x r` term and the answer is more `kp`, not putting the
+old derivative back.
+
+**A priming flag came with it, and it is not optional.** `PID_Controller` gained `lastMeasurement`
+and `primed`; `KM_PID_Reset()` clears both and the first `KM_PID_Calculate()` afterwards contributes
+no derivative at all. Without it, derivative-on-measurement would be *worse* than what it replaced
+at exactly the wrong moment: `Reset()` zeroes `lastMeasurement`, and `main.c` calls `Reset()`
+whenever gains change or steering goes inactive, so the first cycle back would differentiate the
+whole current angle in one dt. At 1.08 rad that is `-0.10 x 1.08 / 0.002 = -54`, saturating the
+output the instant control resumes.
+
+### Verification, and what is still unverified
+
+`pio test -e native -f test_km_pid` passes 14/14 on the Mac, up from 12 — the derivative test was
+rewritten for the new definition and two behavioural tests were added:
+`test_derivative_ignores_setpoint_step` (a setpoint step must produce no D response; under the old
+code it would have read +2.0) and `test_no_derivative_kick_after_reset`.
+
+**The full S3 firmware also builds on this Mac now, and that is new.**
+`pio run -e esp32-s3-devkitc-1` links in **5.4 seconds** — RAM 6.4 % (21104 bytes), flash 31.8 %
+(333485 of 1048576) — with both changed files compiling: `km_pid.o` and `km_sdir_pwm.o`. So the
+`tasks.md` entry titled "No CI builds this firmware, and the Mac cannot either" is now half wrong:
+the CI half still holds (`.github/workflows/` does not exist), but the toolchain is present here and
+the Mac half is stale. That entry dates from 2026-07-26, when commit `f156921` was pushed without
+ever being compiled. **Compile before pushing — it costs five seconds.**
+
+Two commands, both fast, worth running on any firmware change:
+
+    pio test -e native -f test_km_pid          # ~1 s, pure C against test/fakes
+    pio run -e esp32-s3-devkitc-1              # ~5 s, real toolchain, catches everything else
+
+Still unverified, and this is the part that matters: **nothing here has been flashed or driven.** A
+clean link says the code compiles, not that the kart steers. The sensor change has no unit-test
+coverage either — `km_sdir_pwm.c` needs the MCPWM peripheral, so the native env cannot reach it, and
+its only real test is the kart plus the reject counter in `ESP_HEALTH_STATUS` field 6.
