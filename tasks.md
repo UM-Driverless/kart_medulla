@@ -643,8 +643,15 @@ resolved rather than rejected: the convention says to stamp the gerber-export co
       rework.
 - [x] First pairing logged in kart-brain's `history.md`: kart-brain `main` = `c200e56` against
       dv-hardware `84d6dd0`.
-- [ ] Put the QR/label on the board itself — needs a silkscreen change for future runs, a sticker for
-      the board that already exists.
+- [ ] Put the QR/label on the board itself. **Silkscreen half done 2026-07-31** (dv-hardware
+      `b4fe1e2`): `kart-medulla.kicad_pcb` now carries `kart-medulla-v2`, `Design ID`, a 9.45 mm QR
+      and the digits `1604 0948 4608 5574`, right of CN5 at (145.1, 51.65). DRC clean, and the QR
+      decodes from the plotted silkscreen. Note what it carries is the **design ID**, not the commit
+      hash — a commit cannot contain its own hash, so the board points at the kart-docs page
+      `/p/1604094846085574/` and the gerber-export hash lives on that page instead (reasoning in
+      dv-hardware `history.md`, 2026-07-31). Still to do: the sticker for the board that already
+      exists (`84d6dd0`), which *can* carry the hash directly, and filling in that page with the
+      hash, fab date and rework list.
 - [x] State the target hash in this repo's README, so the firmware side declares it
       rather than only kart-brain.
 
