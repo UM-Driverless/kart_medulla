@@ -1778,3 +1778,62 @@ Still unverified, and this is the part that matters: **nothing here has been fla
 clean link says the code compiles, not that the kart steers. The sensor change has no unit-test
 coverage either — `km_sdir_pwm.c` needs the MCPWM peripheral, so the native env cannot reach it, and
 its only real test is the kart plus the reject counter in `ESP_HEALTH_STATUS` field 6.
+
+## 2026-07-31 — The stale-object build bug does not reproduce on the Mac, and the recorded test for it gives a false positive
+
+Prompted by the question "was the slow-deploy fix ever validated?". The answer for the **upload
+baud** is no, still untested — see below. But testing the *other* half of the slow-deploy story on
+the Mac produced a result worth recording.
+
+### The `touch` test is a false positive — do not use it
+
+`tasks.md` recorded a hypothesis that the stale-object bug was a **moved build tree**: CMake/ninja
+bake absolute paths into `build.ninja` and `CMakeCache.txt`, and this repo has moved more than once.
+The recorded check was to compare `CMAKE_HOME_DIRECTORY` against `$PWD`, and the recorded symptom
+was that `touch`ing a source did not trigger a recompile.
+
+On the Mac build tree, freshly generated 2026-07-31:
+
+    CMAKE_HOME_DIRECTORY:INTERNAL=/Users/rubenayla/repos/kart-medulla
+    PWD:                          /Users/rubenayla/repos/kart-medulla
+
+They match, **and `touch` still does not trigger a recompile.** Under the recorded reasoning that
+combination means "the hypothesis is wrong, keep it open". It is more interesting than that: the
+build is not broken at all, and `touch` not rebuilding is the *correct* behaviour here. Three
+probes, each rebuilding into the same tree:
+
+| Change to `km_pid.c`             | Recompiled? | `.o` md5 | Relinked? | ELF md5 |
+|----------------------------------|-------------|----------|-----------|---------|
+| `touch` only, no content change  | no          | unchanged | no       | unchanged |
+| appended a comment line          | **yes**     | unchanged | no       | unchanged |
+| `dt` floor `0.001f` -> `0.003f`  | **yes**     | **changed** | **yes** | **changed** |
+
+That is exactly right in all three rows. The toolchain is keying on content, not mtime, so a
+no-op `touch` correctly does nothing; a comment recompiles to a byte-identical object and the link
+is correctly skipped; and a change that alters generated code propagates all the way to the ELF.
+Reverting the functional probe and rebuilding returned the ELF to the same md5
+(`7a311c54914ecf76ebb8c09da2062051`), so the build is reproducible too.
+
+**The practical consequences:**
+
+- **Do not use `touch` to test whether the build system is working.** It reports "broken" on a build
+  that is perfectly healthy. Use a real content change that alters generated code — flip a constant,
+  rebuild, check the `.o` md5 moved — and revert it afterwards.
+- **`rm -rf .pio/build/...` before every build is not needed on the Mac.** That advice costs a full
+  rebuild (~100 s vs ~30 s on the Orin) forever, and nothing here justifies it.
+- This does **not** clear the Orin. The original report was from there, this tree was generated
+  today on a different machine, and the moved-build-tree hypothesis may still hold for the Orin's
+  build directory (its workspace was renamed 2026-07-06). Run the same three probes there.
+
+### The upload baud is still unvalidated
+
+`[env:esp32-s3-devkitc-1]` has carried `upload_speed = 921600` since 2026-07-26, raised from
+`115200` because that number was the *classic* board's CP2102 limit and the S3 board's bridge is a
+WCH CH343 rated 50 bps to 6 Mbps. It has **never been flashed at that speed** — `platformio.ini`,
+`tasks.md` and `AGENTS.md` all say untested, and no entry in this file records a flash either way.
+It cannot be validated from the Mac: the board is at the kart and flashing happens from the Orin.
+Still one flash to settle it, with 460800 as the intermediate fallback and 115200 as the known-good.
+
+Worth noting what *has* changed about the deploy loop regardless: the Mac now links an S3 image in
+about 3 seconds (see the entry above), so compile errors no longer need a trip to the kart to find.
+That does not make flashing faster, but it removes most of the round trips that made it hurt.

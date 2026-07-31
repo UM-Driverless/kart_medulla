@@ -81,13 +81,24 @@ generated at the old path keeps checking the old path — which matches every sy
 and explains why deleting it cures things permanently. Glob-staleness is ruled out: the component
 `CMakeLists.txt` use explicit `SRCS "<file>.c"`, not `SRC_DIRS`.
 
-Test, one command on the Orin:
-```bash
-grep -m1 CMAKE_HOME_DIRECTORY .pio/build/esp32-s3-devkitc-1/CMakeCache.txt   # should equal $PWD
-```
-Mismatch confirms it: delete that directory once and incremental builds should stay correct. If it
-matches and a source edit still does not recompile, the hypothesis is wrong — capture the evidence in
-`history.md` and keep this open. Either way the `Compiling .../<file>.o` sanity check stays; it is free.
+**Tested on the Mac 2026-07-31: the bug does not reproduce there, and the `touch` test is a false
+positive.** `CMAKE_HOME_DIRECTORY` matched `$PWD`, `touch` did NOT trigger a recompile — and the
+build was nonetheless completely healthy. A comment-only edit recompiled to a byte-identical `.o`
+and correctly skipped the link; a functional edit (the `dt` floor) recompiled, changed the `.o`,
+relinked and changed the ELF; reverting it returned the ELF to the same md5. The toolchain keys on
+content, not mtime, so a no-op `touch` correctly does nothing. Full table in `history.md`.
+
+- [ ] **Run the same three probes on the Orin**, which is where the bug was actually reported and
+  whose workspace was renamed 2026-07-06, so the moved-build-tree hypothesis may still hold there.
+  Do NOT use `touch` as the test — it reports "broken" on a healthy build. Use a real content change
+  that alters generated code:
+  ```bash
+  grep -m1 CMAKE_HOME_DIRECTORY .pio/build/esp32-s3-devkitc-1/CMakeCache.txt   # should equal $PWD
+  md5sum .pio/build/esp32-s3-devkitc-1/components/km_pid/km_pid.o
+  # flip a constant in components/km_pid/km_pid.c, rebuild, md5sum again, then revert
+  ```
+  If the `.o` md5 moves, the build is fine and the `rm -rf .pio/build` ritual can be dropped there
+  too — it costs a full rebuild (~100 s vs ~30 s) every single time.
 
 ### No CI builds this firmware — but the Mac now can, so build before pushing
 
