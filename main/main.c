@@ -73,6 +73,13 @@ static volatile bool pump_stall_observed = false;
  * actually been measured above the arm threshold. */
 static volatile bool tank_pressure_ok = false;
 
+/* Set to 1 (via platformio.ini build_flags) to keep ESP_LOG alive and run the
+ * MCP4922 boot self-test. Off by default so a normal build stays silent on
+ * UART0 and the Orin's binary protocol is not corrupted. */
+#ifndef SPI_DIAG_LOGS
+#define SPI_DIAG_LOGS 0
+#endif
+
 #define MAX_ERROR_COUNT_SDIR 10
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
 #define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
@@ -1097,8 +1104,24 @@ void app_main(void) {
 
     system_init();
 
+#if SPI_DIAG_LOGS
+    /* Diagnostic branch only. Sweeps MCP4922 channel A with a voltmeter on
+     * U13 pin 14, then leaves logging on so every later write is visible.
+     * Blocks ~12 s before the console goes quiet, which is why it runs after
+     * system_init(): the control tasks are already up and holding the kart in
+     * its safe state (SDC open, actuators stopped) throughout. */
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+    KM_GPIO_McpSelfTest();
+#else
+    ESP_LOGW(TAG, "SPI_DIAG_LOGS is set but this is not an S3 build — no MCP4922 here");
+#endif
+    ESP_LOGW(TAG, "SPI_DIAG_LOGS build: logging stays ON, so UART0 carries ASCII "
+                  "alongside the binary protocol. The Orin will see CRC errors. "
+                  "Bench use only — do not fly this build with kart-brain running.");
+#else
     // Disable all logging on UART0 to prevent ASCII text from corrupting
     // binary protocol frames. Without this, ESP_LOG output interleaves with
     // protocol bytes and causes CRC mismatches on the Orin side.
     esp_log_level_set("*", ESP_LOG_NONE);
+#endif
 }

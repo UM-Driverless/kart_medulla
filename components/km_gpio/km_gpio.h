@@ -76,15 +76,36 @@
 #define PIN_I2C_SCL             GPIO_NUM_9
 
 /* ---------- SPI → MCP4922 external DAC (throttle/brake) ---------- */
-/* S3 has NO built-in DAC; throttle/brake go through the MCP4922 over SPI.
- * GAP: KM_GPIO_WriteDAC() still calls the classic dac_output_voltage() and
- * is not ported to SPI — the S3 build will not link until that is done. */
+/* The S3 has no built-in DAC, so throttle and brake are produced by an
+ * MCP4922 (U13) driven over SPI2. VDD and both VREF pins tie to +5V_REG, and
+ * the code below selects gain 1x, so a full-scale code gives ~5.0 V.
+ *
+ * The MCP4922 is WRITE-ONLY: the schematic's MISO net reaches the ESP32 pads
+ * and nothing else, because the chip has no data output. Nothing the firmware
+ * can read confirms that a write arrived — the only proof is a voltmeter on
+ * U13 pin 14 (channel A) or pin 10 (channel B). Diagnostics in km_gpio.c can
+ * therefore only ever say "the ESP32 transmitted", never "the DAC received".
+ *
+ * LDAC# (pin 8) is strapped to GND and SHDN# (pin 9) to +5V_REG, so writes
+ * take effect immediately and neither needs a control line. */
 #define SPI_MOSI_PIN            GPIO_NUM_11
 #define SPI_SCLK_PIN            GPIO_NUM_12
-#define SPI_MISO_PIN            GPIO_NUM_13
+#define SPI_MISO_PIN            GPIO_NUM_13  // not wired to U13; the MCP4922 has no data output
 #define SPI_CS_PIN              GPIO_NUM_14
-#define PIN_CMD_ACC             GPIO_NUM_NC  // MCP4922 channel, not a GPIO (sentinel)
-#define PIN_CMD_BRAKE           GPIO_NUM_NC  // MCP4922 channel, not a GPIO (sentinel)
+
+/* The two DAC outputs are pins of the MCP4922, not GPIOs of the ESP32, but the
+ * km_act layer identifies an analog output by "pin number" and stores it in a
+ * uint8_t. These stand-in values are chosen to survive that: distinct from each
+ * other, above the S3's GPIO range (0-48) so they can never alias a real pin,
+ * and below 256 so the uint8_t does not truncate them.
+ *
+ * Both were GPIO_NUM_NC (-1) until 2026-07-31, which broke two ways at once:
+ * the first `if` in KM_GPIO_WriteDAC() matched both channels so brake was
+ * indistinguishable from throttle, and km_act's uint8_t turned -1 into 255 so
+ * neither matched anything and every write returned ESP_ERR_INVALID_ARG. */
+#define PIN_CMD_ACC             ((gpio_num_t)200)  // MCP4922 channel A -> U14.8 -> throttle
+#define PIN_CMD_BRAKE           ((gpio_num_t)201)  // MCP4922 channel B -> U1A x2 -> brake
+
 #define PIN_SELECT_THROTTLE     GPIO_NUM_15  // MAX4660 mux; drive HIGH = throttle via DAC. GAP: not driven
 
 /* ---------- STEERING MOTOR (Cytron H-bridge) ---------- */
@@ -336,6 +357,34 @@ uint32_t KM_GPIO_ReadADC_mV(gpio_num_t pin);
  * @return  ESP_OK on success, ESP_ERR_INVALID_ARG if the pin is not a DAC output.
  */
 esp_err_t KM_GPIO_WriteDAC(gpio_num_t pin, uint8_t value);
+
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+/**
+ * @brief   Reports how the MCP4922 writes have gone since boot.
+ *
+ * @param   ok        Out: successful transmits. May be NULL.
+ * @param   fail      Out: failed transmits. May be NULL.
+ * @param   last_cmd  Out: the last 16-bit command word sent. May be NULL.
+ *
+ * @note    These count what the ESP32 *transmitted*. The MCP4922 has no data
+ *          output, so a high `ok` count says the SPI peripheral accepted the
+ *          transfers, not that the DAC received or acted on them.
+ */
+void KM_GPIO_McpStats(uint32_t *ok, uint32_t *fail, uint16_t *last_cmd);
+
+/**
+ * @brief   Steps MCP4922 channel A through 0 / 25 / 50 / 75 / 100% / 0,
+ *          holding each level 2 s, logging the voltage to expect.
+ *
+ * @return  ESP_OK if every step transmitted, otherwise the first error.
+ *
+ * @warning Blocks for ~12 s. Meter U13 pin 14 (VOUTA) against GND while it
+ *          runs. Channel A only: it stops at the MAX4660, which sits on pedal
+ *          pass-through, so nothing reaches the kart. Channel B is deliberately
+ *          not swept — brake reaches CN10.2 unmuxed and a sweep would brake.
+ */
+esp_err_t KM_GPIO_McpSelfTest(void);
+#endif
 
 /* ---------- PWM ---------- */
 
