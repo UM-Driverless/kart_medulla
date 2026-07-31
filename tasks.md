@@ -100,6 +100,28 @@ content, not mtime, so a no-op `touch` correctly does nothing. Full table in `hi
   If the `.o` md5 moves, the build is fine and the `rm -rf .pio/build` ritual can be dropped there
   too — it costs a full rebuild (~100 s vs ~30 s) every single time.
 
+### btstack and bluepad32 are compiled on every clean build and then thrown away
+
+Measured 2026-07-31. `components/btstack` (236 source files) and `components/bluepad32` (69) are
+built into `libbtstack.a` (7.6 MB) and `libbluepad32.a` (2.0 MB), 189 archive members between them —
+and **none of it reaches the firmware**: `xtensa-esp32s3-elf-nm firmware.elf` matches zero symbols
+against `uni_hid|btstack_|bluepad` out of 5334 total. The linker drops the lot, correctly, because
+nothing references it: `main/main.c` never mentions them, and `main/CMakeLists.txt` has `sketch.cpp`
+(the legacy Bluepad32 gamepad app) commented out of `srcs`.
+
+So they are pure clean-build cost. This is most of why a clean rebuild takes ~100 s against ~30 s
+incremental, and it is the part of the slow-deploy story that nobody has addressed — the upload baud
+and the `rm -rf .pio/build` ritual both got attention, this did not.
+
+- [ ] **Stop building them.** `EXCLUDE_COMPONENTS` in the ESP-IDF build, or move the two directories
+  out of `components/`. Check both envs before doing it: `esp32dev` is the classic fallback and
+  `sketch.cpp` still exists in `main/`, so confirm nothing re-enables either. Verify by rebuilding
+  clean and diffing `firmware.bin` — if the image is byte-identical, nothing was lost. Time a clean
+  build before and after so the saving is recorded rather than assumed.
+- [ ] Decide whether the two components should be in this repo at all. If the gamepad path is dead,
+  deleting them removes ~10 MB of build output and 305 source files from every clone; if it is
+  wanted later, it is in git history.
+
 ### No CI builds this firmware — but the Mac now can, so build before pushing
 
 Noticed 2026-07-26 while pushing the compressor-latch / SDC change. **Nothing compiles this repo

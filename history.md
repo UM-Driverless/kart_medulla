@@ -1837,3 +1837,49 @@ Still one flash to settle it, with 460800 as the intermediate fallback and 11520
 Worth noting what *has* changed about the deploy loop regardless: the Mac now links an S3 image in
 about 3 seconds (see the entry above), so compile errors no longer need a trip to the kart to find.
 That does not make flashing faster, but it removes most of the round trips that made it hurt.
+
+## 2026-07-31 — Why deploys were slow: measured, and one of the three causes was never addressed
+
+Follow-up to the two entries above, prompted by "why was it taking so long, and is it fixed?".
+Three compounding causes, and the repo had the middle one recorded backwards.
+
+**1. Every build was a clean build.** The standing advice was to `rm -rf .pio/build/...` before each
+one, which costs a full rebuild (~100 s vs ~30 s). The entry above shows the justification does not
+hold — the build tree is healthy and incremental rebuilds are correct; the `touch` test that seemed
+to prove otherwise is a false positive.
+
+**2. A clean build compiles two large Bluetooth stacks that are then discarded.** Measured today:
+`components/btstack` (236 source files) and `components/bluepad32` (69) build into `libbtstack.a`
+(7.6 MB) and `libbluepad32.a` (2.0 MB), 189 archive members between them, and **contribute zero
+symbols to the firmware** — `xtensa-esp32s3-elf-nm firmware.elf` matches none of
+`uni_hid|btstack_|bluepad` out of 5334 symbols. The linker drops all of it, correctly: `main.c`
+never references them and `sketch.cpp` is commented out of `main/CMakeLists.txt`'s `srcs`.
+
+Combined with cause 1 this is the real shape of the build pain — the ritual forced a clean build,
+and most of what a clean build compiled was thrown away.
+
+**`platformio.ini` had this backwards and has been corrected.** Its comment said the slow flash was
+because "this image links btstack + bluepad32". It does not link them. They cost build time, not
+flash time. The 333 KB image is ESP-IDF + newlib + the app; its largest single symbols are the
+printf family (`_vfprintf_r` 12.5 KB, `_svfprintf_r` 12.3 KB, `_vfiprintf_r` 7.9 KB,
+`_svfiprintf_r` 7.5 KB, `_dtoa_r` 3.4 KB).
+
+**3. Flashing ran at 115200 on a bridge rated to 6 Mbps.** The S3 env had inherited the classic
+board's CP2102 limit. At esptool's ~11.5 KB/s that is roughly half a minute of pure transfer for a
+333 KB image, before handshake and verify.
+
+### Is it fixed?
+
+- **Cause 1 — effectively yes on the Mac, unverified on the Orin.** Incremental builds are correct
+  here and land in 3-5 s. The Orin is where the bug was reported and its workspace was renamed
+  2026-07-06, so it still needs the three probes recorded in `tasks.md`.
+- **Cause 2 — not addressed at all.** Both components are still compiled on every clean build. Now
+  filed in `tasks.md`: exclude them, verify `firmware.bin` comes out byte-identical, and time a
+  clean build before and after so the saving is measured rather than assumed.
+- **Cause 3 — changed in config, never flashed.** `upload_speed = 921600` has sat in
+  `platformio.ini` since 2026-07-26 without a single flash at that speed. It cannot be tested from
+  the Mac. Still one flash to settle, 460800 as the intermediate fallback, 115200 as known-good.
+
+One thing that did improve regardless: the Mac links an S3 image in about 3 seconds, so compile
+errors no longer cost a trip to the kart. That does not speed up flashing, but it removes most of
+the round trips that made the loop painful.
