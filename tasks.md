@@ -550,6 +550,13 @@ merely unwritten.
 
 Try `spi-fix` first — it costs one flash and no solder.
 
+- [ ] **GPIO 38 is now taken, and two documents still say otherwise.** `dev` assigns it to the
+      throttle PWM, leaving **GPIO 39 as the only unconstrained free pin on the board**. Stale
+      claims to correct before someone allocates 38 twice: `.agents/esp32s3-pinmap.md` lists both 38
+      and 39 under "Free", and kart-brain's `history.md` (the "Where the PWM lands on medulla" entry)
+      says "GPIO 38 is earmarked for the EBS compressor PWM" — which was never true either, the
+      compressor is on GPIO 3. That same entry recommends routing the steering sensor to GPIO 39;
+      that is superseded, it went to CN5.2 / GPIO 1.
 - [ ] **Bug found while investigating, independent of which route is taken:** on the S3 both
   `PIN_CMD_ACC` and `PIN_CMD_BRAKE` are `GPIO_NUM_NC` (-1), so the first `if` in
   `KM_GPIO_WriteDAC()` (`components/km_gpio/km_gpio.c:348-368`) catches every call and the function
