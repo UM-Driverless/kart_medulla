@@ -569,23 +569,32 @@ Rubén's proposal: a code identifying the manufactured PCB, a QR of it on the bo
 logged in dv-hardware, and the code quoted from kart-medulla and kart-brain — possibly using a
 dv-hardware commit hash as the code itself.
 
-**Open decision — hash directly, or a tag plus a serial?** Three things argue against a bare hash:
-hashes have no order, so you cannot tell which of two is newer without a lookup; a commit identifies
-a *design*, while rework and per-unit defects (a lifted U13 pin 14, for instance) are properties of a
-board and do not exist in git; and the schematic's last edit is a different commit from the gerber
-export, which is the only one a fab house ever saw.
+**DECIDED 2026-07-31 (Rubén): the commit hash is the code.** The QR or label on the board carries the
+dv-hardware commit its gerbers were exported from, and firmware repos quote that hash. Written up in
+`dv-hardware/README.md` and `dv-hardware/projects/kart-medulla/README.md`.
 
-Suggested instead, not yet agreed: a git tag per fab run in dv-hardware (`fab/kart-medulla-v1`) —
-ordered for humans, resolves to a hash; a board registry mapping each physical unit's serial to its
-fab tag plus that unit's rework and defects; kart-medulla and kart-brain each declaring the fab tag
-they target. The QR then carries the serial and everything else resolves from it, which also avoids
-having to silkscreen a hash that does not exist until after the commit containing the silkscreen.
+Git tags were proposed and rejected. The argument for them was that hashes have no order — you cannot
+tell which of two is newer without a lookup — and Rubén's answer is that GitHub already does that, so
+the ordering is not worth a second identifier. Agreed; the objection does not survive.
 
-- [ ] Pick the scheme (Rubén's call).
-- [ ] Record it in the three READMEs / AGENTS.md once picked — deliberately not written yet, since a
-      README should carry the agreed convention rather than a proposal.
-- [ ] First pairing is already logged in kart-brain's `history.md`: kart-brain `main` = `c200e56`
-      against dv-hardware `84d6dd0`.
+One qualification did survive and is folded into the convention: **a board stops matching its hash the
+moment it is reworked.** The hash names a design, while a cut trace or a lifted pin exists on one
+physical board and in no commit — and this board is about to get both (the CN10.2 brake patch, and
+possibly a lifted U13 pin 14 for the throttle bypass). So each board carries a rework list beside its
+hash, and a rework entry may name the commit whose behaviour it brings the board up to.
+
+The other objection — that the last schematic edit and the gerber export are different commits — is
+resolved rather than rejected: the convention says to stamp the gerber-export commit.
+
+- [x] Pick the scheme.
+- [x] Record it in dv-hardware's READMEs, with the one existing board (`84d6dd0`) and its outstanding
+      rework.
+- [x] First pairing logged in kart-brain's `history.md`: kart-brain `main` = `c200e56` against
+      dv-hardware `84d6dd0`.
+- [ ] Put the QR/label on the board itself — needs a silkscreen change for future runs, a sticker for
+      the board that already exists.
+- [ ] State the target hash in this repo's README/AGENTS.md too, so the firmware side declares it
+      rather than only kart-brain.
 
 ### Steering sensor read over PWM — written, not yet validated on hardware
 
