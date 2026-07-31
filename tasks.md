@@ -593,7 +593,7 @@ resolved rather than rejected: the convention says to stamp the gerber-export co
       dv-hardware `84d6dd0`.
 - [ ] Put the QR/label on the board itself — needs a silkscreen change for future runs, a sticker for
       the board that already exists.
-- [ ] State the target hash in this repo's README/AGENTS.md too, so the firmware side declares it
+- [x] State the target hash in this repo's README, so the firmware side declares it
       rather than only kart-brain.
 
 ### Steering sensor read over PWM — written, not yet validated on hardware

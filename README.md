@@ -2,6 +2,32 @@
 
 ESP32-based control system for the UM Driverless autonomous go-kart. Receives commands from the Orin via UART binary protocol, runs PID-controlled steering, and outputs analog throttle/brake signals.
 
+## Hardware this firmware targets
+
+**PCB: `dv-hardware` commit `84d6dd0`.** A manufactured board is identified by the commit its gerbers
+were exported from; the convention and the board's rework list live in
+[`dv-hardware/projects/kart-medulla/README.md`](https://github.com/UM-Driverless/dv-hardware/blob/main/projects/kart-medulla/README.md).
+
+Every branch in this repo — `main`, `dev`, `spi-fix` — targets `84d6dd0`. This file deliberately does
+not record its own repo's commit: git already knows which one you have checked out, and any commit
+editing this line would invalidate the hash written in it. The pairing that has to be written down is
+the one pointing *out* of the repo, at hardware.
+
+Other software paired to the same board:
+
+| Repo | Commit | Notes |
+|---|---|---|
+| kart-brain | `main` = `c200e56` | Orin side. Recorded 2026-07-31 in its `history.md` |
+
+**The board is not the current schematic.** `dv-hardware` HEAD is ahead of `84d6dd0`, and at least
+one commit since (`f68cc1f`) changed circuitry: CN10.2's brake output moved to the LM358's amplified
+side and the DAC-to-amplifier copper was restored. The physical board still has the old behaviour —
+unamplified 0-5 V brake, amplifier input possibly unrouted — and is due a cut-and-jumper patch. So a
+netlist exported from `dv-hardware` HEAD describes the *design*, not the board on the kart.
+
+Two reworks are outstanding or pending on this board; both are listed in the dv-hardware README above,
+and neither is reflected by the hash alone, because rework exists on a physical board and in no commit.
+
 ## Hardware Overview
 
 * **Microcontroller:** ESP32-S3 (DevKitC-1, kart-medulla PCB)
