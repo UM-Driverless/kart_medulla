@@ -793,9 +793,27 @@ drive to validate, not a quiet edit.
   test_km_pid` passes 14/14, including a new test that a setpoint step produces no D response.
 - [ ] **AT THE KART: re-tune `kp`/`kd` and drive it.** Not yet flashed. The 2026-07-30 live tune
   happened with the old derivative, so whatever the setpoint-driven D term was contributing is baked
-  into the current gains — expect to re-tune. If the steering feels sluggish afterwards that is the
-  missing `kd x rate` term, and the answer is more `kp`, not reverting the derivative. Each change
-  is its own commit so `git revert` can name the cause if the kart drives worse.
+  into the current gains — expect to re-tune. Each change is its own commit so `git revert` can name
+  the cause if the kart drives worse.
+
+  **Tuning order: `kp` first, `kd` only against something you can see.** Sluggish command-following
+  is the missing `kd x rate` term the old derivative was contributing, and `kd` cannot give it back
+  — the D term no longer sees the setpoint at all, so raising it adds damping on measured motion,
+  which works against following a moving target rather than for it. That is a `kp` job, or real
+  feed-forward. Raise `kd` only for overshoot past the target or ringing around it.
+
+  Do not assume removing the median opened up room for a much larger `kd`. It cuts both ways: ~2 ms
+  less delay buys phase margin, but the same removal roughly doubles the raw jitter reaching the D
+  term (a median of 5 outputs ~0.54 sigma of Gaussian noise; a single sample is 1.0), and with
+  `kd/dt = 50` that amplification is what limits `kd` in the first place. The measured noise is
+  ~zero, so the net is a little more room, not a lot. Note also that `kd = 0.10` is already
+  substantial: `kd/kp` is 0.083 s of derivative time, and at 60 deg/s of steering the D term is
+  0.105 against a P term of 0.042 at 2 deg of error — D already dominates P during motion.
+
+  If a much larger `kd` is ever wanted, add a low-pass on the D term before raising it.
+  Derivative-on-measurement with no filtering anywhere and a large `kd` is the standard way to get
+  motor chatter, and a D-path filter costs delay only in the path that can afford it — unlike the
+  median, which delayed P and I too.
 
 ## In Progress
 
