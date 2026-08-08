@@ -949,7 +949,7 @@ void health_task(void *ctx) {
  *             started on the MT6701's PWM angle output.
  *          5. Actuator controllers (steering, throttle, brake) with output limits.
  *          6. Steering PID controller.
- *          7. Registers periodic tasks: comms (20 Hz), control (10 Hz),
+ *          7. Registers periodic tasks: comms (100 Hz), control (500 Hz),
  *             heartbeat (1 Hz), and health monitoring (1 Hz).
  *
  * @note    All controller/sensor structs are copied to file-scope statics so
@@ -1058,7 +1058,10 @@ void system_init(void) {
     // KM_COMS_CreateTask args: (name, fn, ctx, period_ms, stackWords, priority, active)
     //                                          ^^^^^^^^^ period is in MILLISECONDS, not Hz.
     //   comms:     10 ms  →  100 Hz target
-    //   control:    2 ms  →  500 Hz target (I2C AS5600 read caps real rate; measure it)
+    //   control:    2 ms  →  500 Hz, measured on the kart (control_iters). The rate cap is
+    //              the UART, not the sensor: the per-cycle steering frame uses ~87% of the
+    //              115200-baud link and TX is unbuffered (see tasks.md). The old AS5600 I2C
+    //              stall is gone — the S3 reads the MT6701 via non-blocking MCPWM capture.
     //   heartbeat: 1000 ms →    1 Hz
     RTOS_Task t1 = KM_COMS_CreateTask("comms", comms_task, NULL, 10, 4096, 2, 1);
     RTOS_Task t2 = KM_COMS_CreateTask("control", control_task, &ctrl_ctx, 2, 4096, 1, 1);

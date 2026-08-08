@@ -1,0 +1,40 @@
+# Build-only CI. No hardware: this exists to catch firmware that does not compile
+# before it reaches the kart (commit f156921 shipped unbuilt — see tasks.md, "No CI
+# builds this firmware"). Validation on the vehicle is still manual, per AGENTS.md.
+name: build
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            .pio
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini', 'dependencies.lock') }}
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build ESP32-S3 firmware
+        run: pio run -e esp32-s3-devkitc-1
+
+      # Only the suites that pass as of 2026-08-08. test_km_act asserts against
+      # outdated DAC fakes and test_km_coms does not compile natively — tracked in
+      # tasks.md ("Native test drift"). Widen this filter when they are fixed.
+      - name: Native unit tests
+        run: pio test -e native -f test_km_pid -f test_km_objects

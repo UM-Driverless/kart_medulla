@@ -139,9 +139,9 @@ and the `rm -rf .pio/build` ritual both got attention, this did not.
   333856 bytes both times, and the full defined-symbol set diffed **empty** at 5330 symbols. That
   empty diff is the proof nothing was lost. Reversible by deleting the one line; the components stay
   in `components/`. (`sketch.cpp` turned out not to exist in the repo at all.)
-- [ ] Decide whether the two components should stay in the repo. They are no longer built, so this
-  is only about clone size — deleting them removes 305 source files, and git history keeps them if
-  the gamepad path is ever wanted. Low priority.
+- [x] **Deleted 2026-08-08** per Rubén's decision. `git rm` of both components and the
+  `EXCLUDE_COMPONENTS` line; git history keeps them. S3 build and native tests verified green after
+  the removal.
 
 ### No CI builds this firmware — but the Mac now can, so build before pushing
 
@@ -173,6 +173,19 @@ and on PRs into `main`. It does not need hardware — `idf.py build` in the Espr
 the whole class of error that currently escapes. Worth checking `git log --all -- .github/workflows/`
 on a full clone first; this clone shows no history for that path, so the old workflow may be
 recoverable rather than needing to be rewritten.
+
+**Done 2026-08-08**: `.github/workflows/build.yml` — PlatformIO build of `esp32-s3-devkitc-1` plus
+the green native suites, on push to `dev` and PRs to `main`. (`git log --all` showed no recoverable
+old workflow.) Awaiting Rubén's Done once a run is seen green on GitHub.
+
+### Native test drift: test_km_act fails and test_km_coms does not compile
+
+Found 2026-08-08 while wiring up CI. `pio test -e native` without filters: 4 failures in
+`test_km_act` (asserts against the classic-ESP32 DAC fakes — e.g. expects channel 0/1 writes and
+127/191 DAC values that the S3 code path no longer produces, then dies SIGILL) and `test_km_coms`
+fails at the *compile* stage. `test_km_pid` and `test_km_objects` pass (21/21). The CI workflow
+filters to the two green suites; widen the filter in `.github/workflows/build.yml` when these are
+fixed.
 
 ### Compressor MOSFET runs too hot — run the 250 Hz comparison next
 
@@ -763,6 +776,10 @@ them.
   that file will get a wrong answer. Re-export it.
 
 ### `platformio.ini`'s S3 comment contradicts AGENTS.md — one of them is wrong
+
+**Fixed 2026-08-08** — comment rewritten to say the S3 env is the primary, working target, pointing
+at the "ESP32-S3 firmware gaps" task for the still-open peripheral claims. The main.c rate comments
+(control 10 Hz → 500 Hz; AS5600-caps-rate → UART-bound) were fixed in the same pass.
 
 The comment above `[env:esp32-s3-devkitc-1]` in `platformio.ini` says the env "does NOT link yet"
 and "exists so the S3 pin map is buildable-in-progress, not because a working S3 image exists".
