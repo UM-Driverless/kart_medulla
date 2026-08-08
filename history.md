@@ -2149,7 +2149,11 @@ branches can be restored with `git branch <name> <sha>` if anything turns out to
 | `spi-fix` | `c0b97f47509a3a9c2b922cdcfd352947b626b3a3` |
 | `feature/pedal-telemetry` | `5db6e19b8760f1bf4d8a808156c1d76eb18b4cc1` |
 
-`feature/direct-pwm-mode` was kept but is **obsolete — do not merge it**. Everything it adds is
+`feature/direct-pwm-mode` was **archived as the annotated tag `archive/feature-direct-pwm-mode`**
+(tip `093a8d8`, last commit 2026-03-28) and the branch deleted. A tag keeps the commits permanently
+while staying out of the branch list, so it cannot be mistaken for pending work; restore with
+`git branch feature/direct-pwm-mode archive/feature-direct-pwm-mode`. It is **obsolete — do not
+merge it**. Everything it adds is
 already in `dev` by another route: direct PWM steering (`main/main.c`, `steer_mode` 0=PID / 1=direct),
 `KM_COMS_GetLastCmdTick()` plus the FreeRTOS includes in `km_coms.h`, and the `sketch.cpp` deletion.
 Its only remaining unique content would be regressions: steering `kp` 0.80 against `dev`'s 1.00
