@@ -108,6 +108,13 @@ typedef enum
                                          [override, kp x1000, ki x1000, kd x1000, pwm_limit x1000].
                                          Read back from the live controller after clamping, so it
                                          reports what the firmware is using, not what was asked for. */
+    ESP_PEDALS              = 0x0E, /**< Driver pedal positions, ~20 Hz, 4 fields:
+                                         [acc_mv, brake_mv, acc_effort, brake_effort].
+                                         *_mv = calibrated millivolts at the ADC pin (GPIO 4 / GPIO 5,
+                                         half the 0-5 V pedal signal through the board's 10k/10k
+                                         divider). *_effort = normalized 0-255 from provisional
+                                         min/max constants in main.c — trust the mV fields until
+                                         those are calibrated on the kart. */
 
     // ==========================
     // Orin --> ESP32 (0x20 - 0x3F)
