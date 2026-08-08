@@ -253,3 +253,29 @@ read as established. My own additions then cited it, which made it look corrobor
 - **Stop and ask instead of escalating.** By step 3 the sensible move was "where does this 7.5 come
   from, and is that instrument real?" — one question to the person who was there. Instead I invented
   a measurement procedure for a device that does not exist.
+
+## 2026-08-08 — Flashed with steering power live; the gear broke in the bootloader window (Claude Opus 5)
+
+**What happened.** Following the AGENTS.md flashing recipe (stop kart-brain → `pio run --target
+upload` → start kart-brain), the agent flashed the ESP32-S3 while the kart's actuator power was on.
+esptool hard-resets the chip into the download bootloader; during that window GPIO 40
+(`CMD_STEER_PWM`) and GPIO 17 (`CMD_STEER_DIR`) float. The Cytron H-bridge drove the steering motor
+uncontrolled and the gear broke. Rubén had to cut power, which also killed the Orin mid-flash.
+
+**Root cause, two layers.**
+1. *Hardware*: the steering pins have no pulldowns for the reset/bootloader window. GPIO 3
+   (compressor) and GPIO 18 (SDC, R23) were given pulldowns for exactly this reason; the steering
+   PWM/DIR were not.
+2. *Process*: the flashing recipe said nothing about actuator power, and the agent executed it
+   without asking what state the kart was in. Also, `kart-brain`'s systemd service autostarts the
+   full autonomous stack — cone_follower was live-commanding full-lock steering on the bench before
+   the flash was even attempted.
+
+**Prevention.**
+- **Never flash with the steering (actuator) rail powered.** Before any flash: confirm with Rubén
+  that actuator power is off or the kart is in manual mode (firmware forces `KM_ACT_Stop()` on
+  steering in MANUAL). A software check is not enough — the protection has to hold while the
+  firmware is *not running*.
+- Fix belongs in hardware too: pulldowns on the Cytron PWM/DIR inputs (tracked in `tasks.md`).
+- Asking "is the kart safe to reset?" is necessary but not sufficient — the question has to name
+  the actual hazard (actuator power during the reset window), not just "wheels clear".
