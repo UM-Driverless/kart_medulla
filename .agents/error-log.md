@@ -279,3 +279,30 @@ uncontrolled and the gear broke. Rubén had to cut power, which also killed the 
 - Fix belongs in hardware too: pulldowns on the Cytron PWM/DIR inputs (tracked in `tasks.md`).
 - Asking "is the kart safe to reset?" is necessary but not sufficient — the question has to name
   the actual hazard (actuator power during the reset window), not just "wheels clear".
+
+## 2026-08-08 — `git checkout origin/dev -- .` run in the live repo instead of a worktree (Claude Opus 5)
+
+**What happened.** While checking whether two native test suites failed before or after the branch
+consolidation, I meant to compare against pre-merge `dev` in a scratch worktree. The command that
+created the worktree was correct, but it was preceded by `git stash -u` and
+`git checkout origin/dev -- .` aimed at the live checkout. The working tree was clean at that
+point, so the stash captured nothing and the checkout silently overwrote every merged file with
+`origin/dev` content — including the AGENTS.md runaway-throttle warning and the tasks.md blocker
+written minutes earlier.
+
+**Why it was recoverable.** The merges were already committed, so only the working tree was lost;
+`git reset --hard HEAD` restored everything, verified by grepping for both warnings. Nothing was
+pushed in the clobbered state.
+
+**Root cause.** Two ways of getting a pre-merge tree — a worktree and a path-checkout — were
+combined in one command line, and the path-checkout half acts on the current checkout with no
+confirmation. `git checkout <ref> -- .` overwrites unconditionally and is silent on success.
+
+**Prevention.** To inspect another revision, use `git worktree add` or `git show <ref>:<path>`
+only. Never `git checkout <ref> -- .` in a live checkout — its whole effect is destructive and
+indistinguishable from success. If it must be used, commit first and confirm `git status` is clean
+*for the intended reason*, not incidentally.
+
+**Result of the check itself:** pre-merge `origin/dev` fails `test_km_act` and `test_km_coms`
+identically (4 of 40 cases, `TickType_t` undefined in the native build). The failures are
+pre-existing and not caused by the merge.
