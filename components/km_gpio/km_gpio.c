@@ -222,7 +222,9 @@ esp_err_t KM_GPIO_Init(void)
      * which is why the gap went unnoticed. */
     gpio_config_t thr_mux_cfg = {
         .pin_bit_mask = 1ULL << PIN_SELECT_THROTTLE,
-        .mode = GPIO_MODE_OUTPUT,
+        /* INPUT_OUTPUT (spi-test-50 diagnostic): keeps the input buffer on so
+         * gpio_get_level() reports the level the pin is really driving. */
+        .mode = GPIO_MODE_INPUT_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_ENABLE,   // keep the pedal if the pin floats
         .intr_type = GPIO_INTR_DISABLE

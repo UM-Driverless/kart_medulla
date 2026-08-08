@@ -734,8 +734,20 @@ void control_task(void *ctx) {
      * the dashboard, the comms watchdog and the mission mode entirely, so the
      * analog output can be measured without any upstream dependency. Returns
      * early: steering and brake stay stopped. */
-    KM_GPIO_SetThrottleSource(true);
+    esp_err_t sel_ret = KM_GPIO_SetThrottleSource(true);
     KM_ACT_SetOutput(c->throttle_act, 0.5f);
+    {
+        /* Once a second: did KM_GPIO_Init() complete (a failure anywhere before
+         * the GPIO-15 config leaves the pin unconfigured and only R32's pulldown
+         * acting), did the set call succeed, and what level does the pin's own
+         * input buffer read back? */
+        static uint32_t diag_n = 0;
+        if ((diag_n++ % 500) == 0) {
+            ESP_LOGW(TAG, "DAC-TEST diag: gpio_init_err=%ld set15=%s read15=%d",
+                     (long)g_gpio_init_err, esp_err_to_name(sel_ret),
+                     gpio_get_level(GPIO_NUM_15));
+        }
+    }
     return;
 
     // --- Safety: comms watchdog + manual mode ---
