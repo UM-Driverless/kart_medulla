@@ -2095,3 +2095,18 @@ occasional transfer (the blips). Fix = the v2 change (dv-hardware 16a35fb): run 
 3.3 V — on this board a bodge lifting VDD (pin 1) AND both VREFs (pins 11, 13) off +5V_REG
 onto 3.3 V, since VREF must not exceed VDD. Full scale then becomes 3.3 V and firmware
 voltage expectations rescale. Not yet done — decision pending.
+
+## 2026-08-08 — SELECT_THROTTLE reads 0 too: diagnosis shifts from V_IH margin to socket contact
+
+With spi-test-50 running, the meter on the SELECT_THROTTLE net shows ~0 V with brief jumps
+to ~2.5 V. Ruled out firmware: 46 s clean serial log (no panic/reboot, self-test "6029 ok"),
+the 500 writes/s counter proves control_task cycles, GPIO 15 is configured push-pull output
+and driven high every cycle, and GPIO_NUM_15 appears nowhere else in the tree (no ADC/LEDC
+clobber; S3 HYDRAULIC_2 is GPIO 2). A plain GPIO into R32's 10 k pulldown cannot read 0 from
+that code — the signal is not crossing from the module to the board. Both this line (socket
+pin 30) and the SPI lines (socket pins 39-42) ride the same SSW-122 socket strip, so one
+poorly-seated dev board explains the dead DAC, the dead select line, and the intermittent
+blips together. The earlier V_IH-margin diagnosis required the select line to work; it
+doesn't, so that entry's conclusion is superseded until the module is reseated and retested.
+Next: power off, reseat, retest; if still dead, module header pin 15 vs U14.6 splits
+module-pin from socket/trace.
