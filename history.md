@@ -2239,3 +2239,19 @@ before every flash. That holds whichever mechanism it turns out to be.
 Ruben also asked whether the throttle mux could be removed, since v2 will not have it. It is not
 involved: the mux only switches the throttle signal, and steering never passes through it. The mux
 is the part of this board that already fails safe.
+
+## 2026-08-08 — "STEER TRIPPED" root cause: a stale latched fault, not a code or sensor failure
+
+Symptom: in remote_control, neither throttle nor steering responded; dashboard showed STEER
+TRIPPED. Version-comparison test (Rubén's suggestion): old firmware 4b788cb streamed a valid
+angle (−0.317 rad, raw 1035, valid=1, continuous) — sensor and wiring healthy. A parallel code
+review of 4b788cb..dev found the capture path logically unchanged (GPIO 1 untouched by any new
+pin claim; S3 adc1_pins excludes GPIO 1; the `== GPIO_NUM_1` ADC branch is dead code on the S3)
+and named one software state matching frames=0: KM_SDIR_PWM_Begin failing at boot, visible only
+in one boot-log line. Reflashing dev tip and capturing from reset (pyserial DTR toggle — the
+reliable way to get the first boot lines) showed the line: "capture on GPIO 1" + "steering
+sensor OK −0.152 rad". Conclusion: the steer-fault latch (deliberately sticky until ESP32
+reboot) was set during some earlier boot when the sensor didn't answer, and every symptom since
+was the latch, not a live fault. Boot log also shows a harmless known "i2c driver install
+error" from the legacy AS5600 path. Stale comment noted by the reviewer: platformio.ini S3
+comment still claims GPIO 18/15 are not driven — filed in tasks.md.
