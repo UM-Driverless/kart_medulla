@@ -1,0 +1,300 @@
+- generic [ref=f40e1]:
+  - link [ref=f40e2] [cursor=pointer]: Skip to main content
+  - link [ref=f40e3] [cursor=pointer]:
+    - /url: https://support.google.com/websearch/answer/181196?hl=en-ES
+    - text: Accessibility help
+  - dialog "Before you continue to Google Search" [active]:
+    - generic [ref=f40e10]:
+      - generic [ref=f40e12]:
+        - img "Google" [ref=f40e13]
+        - generic [ref=f40e14]:
+          - 'button "Language: ‪English‬" [ref=f40e16] [cursor=pointer]':
+            - generic [ref=f40e17]: en
+          - link "Sign in" [ref=f40e19] [cursor=pointer]
+      - generic [ref=f40e20]:
+        - heading "Before you continue to Google" [level=1] [ref=f40e21]
+        - generic [ref=f40e22]:
+          - generic [ref=f40e23]:
+            - text: We use
+            - link "cookies" [ref=f40e24] [cursor=pointer]:
+              - /url: https://policies.google.com/technologies/cookies?utm_source=ucbs&hl=en-ES
+            - text: and data to
+            - list [ref=f40e25]:
+              - listitem [ref=f40e26]: Deliver and maintain Google services
+              - listitem [ref=f40e27]: Track outages and protect against spam, fraud and abuse
+              - listitem [ref=f40e28]: Measure audience engagement and site statistics to understand how our services are used and enhance the quality of those services
+          - generic [ref=f40e29]:
+            - text: If you choose to 'Accept all', we will also use cookies and data to
+            - list [ref=f40e30]:
+              - listitem [ref=f40e31]: Develop and improve new services
+              - listitem [ref=f40e32]: Deliver and measure the effectiveness of ads
+              - listitem [ref=f40e33]: Show personalised content, depending on your settings
+              - listitem [ref=f40e34]: Show personalised ads, depending on your settings
+            - generic [ref=f40e35]: If you choose to 'Reject all', we will not use cookies for these additional purposes.
+          - generic [ref=f40e36]: Non-personalised content is influenced by things like the content that you’re currently viewing, activity in your active Search session, and your location. Non-personalised ads are influenced by the content that you’re currently viewing and your general location. Personalised content and ads can also include more relevant results, recommendations and tailored ads based on past activity from this browser, like previous Google searches. We also use cookies and data to tailor the experience to be age-appropriate, if relevant.
+          - generic [ref=f40e37]: Select 'More options' to see additional information, including details about managing your privacy settings. You can also visit g.co/privacytools at any time.
+      - generic [ref=f40e38]:
+        - generic [ref=f40e39]:
+          - button "Reject all" [ref=f40e40] [cursor=pointer]
+          - button "Accept all" [ref=f40e41] [cursor=pointer]
+        - link "More options for personalisation settings and cookies" [ref=f40e43] [cursor=pointer]:
+          - generic "More options for personalisation settings and cookies" [ref=f40e44]: More options
+      - generic [ref=f40e45]:
+        - link "Privacy" [ref=f40e46] [cursor=pointer]:
+          - /url: https://policies.google.com/privacy?hl=en-ES&fg=1&utm_source=ucbs
+        - generic [ref=f40e47]: ·
+        - link "Terms" [ref=f40e48] [cursor=pointer]:
+          - /url: https://policies.google.com/terms?hl=en-ES&fg=1&utm_source=ucbs
+  - generic [ref=f40e53]:
+    - search [ref=f40e54]:
+      - generic [ref=f40e56]:
+        - link [ref=f40e58] [cursor=pointer]:
+          - /url: https://www.google.com/webhp?hl=en&ictx=2&sa=X&ved=0ahUKEwiN8oqh3NyVAxVIQkEAHW30DLQQPQhr
+        - generic [ref=f40e60]:
+          - generic [ref=f40e61]:
+            - combobox [ref=f40e64]: szwengao WG-12S1910 datasheet szwengao WG-12S1910 datasheet
+            - generic [ref=f40e65]:
+              - button [ref=f40e67] [cursor=pointer]
+              - generic [ref=f40e72]:
+                - button [ref=f40e73] [cursor=pointer]
+                - button [ref=f40e76] [cursor=pointer]
+          - button [ref=f40e79] [cursor=pointer]
+    - generic [ref=f40e84]:
+      - button [ref=f40e86] [cursor=pointer]
+      - button [ref=f40e87] [cursor=pointer]
+      - generic [ref=f40e93]:
+        - button [ref=f40e95] [cursor=pointer]
+        - link [ref=f40e100] [cursor=pointer]:
+          - /url: https://accounts.google.com/ServiceLogin?hl=en&passive=true&continue=https://www.google.com/search%3Fq%3Dszwengao%2BWG-12S1910%2Bdatasheet&ec=futura_srp_og_si_72236_p
+          - text: Sign in
+  - generic [ref=f40e102]:
+    - navigation [ref=f40e108]:
+      - list [ref=f40e111]:
+        - listitem [ref=f40e112]:
+          - link [ref=f40e115] [cursor=pointer]:
+            - /url: /search?q=szwengao+WG-12S1910+datasheet&sca_esv=ff0f52d8df50e9c0&udm=50&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&aep=1&ntc=1&cs=0&sa=X&ved=2ahUKEwiN8oqh3NyVAxVIQkEAHW30DLQQ2J8OegQIEBAD
+            - generic [ref=f40e116]: AI Mode
+        - listitem [ref=f40e119]:
+          - link [disabled] [ref=f40e120]:
+            - generic [ref=f40e121]: All
+        - listitem [ref=f40e123]:
+          - link [ref=f40e124] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=2&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&q=szwengao+WG-12S1910+datasheet&sa=X&ved=2ahUKEwiN8oqh3NyVAxVIQkEAHW30DLQQtKgLegQIFhAB
+            - generic [ref=f40e125]: Images
+        - listitem [ref=f40e127]:
+          - link [ref=f40e128] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=7&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&q=szwengao+WG-12S1910+datasheet&sa=X&ved=2ahUKEwiN8oqh3NyVAxVIQkEAHW30DLQQtKgLegQIExAB
+            - generic [ref=f40e129]: Videos
+        - listitem [ref=f40e131]:
+          - link [ref=f40e132] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=18&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&q=szwengao+WG-12S1910+datasheet&sa=X&ved=2ahUKEwiN8oqh3NyVAxVIQkEAHW30DLQQs6gLegQIEhAB
+            - generic [ref=f40e133]: Forums
+        - listitem [ref=f40e135]:
+          - link [ref=f40e136] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=39&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&q=szwengao+WG-12S1910+datasheet&sa=X&ved=2ahUKEwiN8oqh3NyVAxVIQkEAHW30DLQQs6gLegQIFRAB
+            - generic [ref=f40e137]: Short videos
+        - listitem [ref=f40e139]:
+          - link [ref=f40e140] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&q=szwengao+WG-12S1910+datasheet&tbm=nws&source=lnms&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&sa=X&ved=2ahUKEwiN8oqh3NyVAxVIQkEAHW30DLQQ0pQJegQIFBAB
+            - generic [ref=f40e141]: News
+        - listitem [ref=f40e143]:
+          - button [ref=f40e144] [cursor=pointer]:
+            - generic [ref=f40e145]: More
+    - heading [level=1] [ref=f40e151]: Search Results
+    - main [ref=f40e157]:
+      - generic [ref=f40e161]:
+        - generic [ref=f40e164]:
+          - heading [level=2] [ref=f40e165]: Web results
+          - generic [ref=f40e166]:
+            - generic [ref=f40e169]:
+              - link [ref=f40e171] [cursor=pointer]:
+                - /url: https://shopcdnpro.grainajz.com/1081/upload/product/e903e82226c0f61f836cc56d9add6416bdd3916287a2a1b054125e01b0343647.pdf
+                - heading [level=3] [ref=f40e172]: WG-12S1910
+                - generic [ref=f40e181]:
+                  - generic [ref=f40e182]: 小满科技
+                  - generic [ref=f40e184]: https://shopcdnpro.grainajz.com › upload › product
+              - generic [ref=f40e186]: PDF
+              - button [ref=f40e189] [cursor=pointer]
+            - generic [ref=f40e194]:
+              - generic [ref=f40e195]:
+                - generic [ref=f40e196]:
+                  - text: The WG-12S1910 is a
+                  - emphasis [ref=f40e197]: Non-isolated DC-DC converter
+                  - text: that uses a synchronous rectification technology, and features high efficiency and power density.
+                - link [ref=f40e198] [cursor=pointer]:
+                  - /url: https://shopcdnpro.grainajz.com/1081/upload/product/e903e82226c0f61f836cc56d9add6416bdd3916287a2a1b054125e01b0343647.pdf#:~:text=The%20WG%2D12S1910%20is%20a%20Non%2Disolated,efficiency%20and%20power%20density.
+                  - text: Read more
+              - generic [ref=f40e199]: 6 pages
+        - generic [ref=f40e210]:
+          - heading [level=2] [ref=f40e214]:
+            - generic [ref=f40e215]: Thinking
+          - progressbar [ref=f40e217]
+        - generic [ref=f40e222]:
+          - heading [level=2] [ref=f40e226]: Images
+          - generic [ref=f40e230]:
+            - generic [ref=f40e234] [cursor=pointer]:
+              - link [ref=f40e235]:
+                - /url: https://www.rcscomponents.kiev.ua/product/dc-dc-peretvoriuvach-12v-v-19v-10a-wg-12s1910-szwengao_206452.html?srsltid=AfmBOordfoPPdvFM58HwM6szJJWD_yMd6DTAliq6lf2djap-ubf0WmBq
+              - button [ref=f40e237]
+              - generic [ref=f40e241]:
+                - generic [ref=f40e242]: DC/DC перетворювач 12V в 19V/10A (WG-12S1910 – szwengao)
+                - generic [ref=f40e244]:
+                  - generic [ref=f40e245]: РАДІОМАГ
+                  - button [ref=f40e254]
+            - generic [ref=f40e262] [cursor=pointer]:
+              - link [ref=f40e263]:
+                - /url: https://www.alibaba.com/product-detail/Step-Up-12V-to-19V-5A_1600755547792.html
+              - button [ref=f40e265]
+              - generic [ref=f40e269]:
+                - generic [ref=f40e270]: Step up 12V to 19V 5A 6A 8A 10A DC-DC Boost Converter 95W 114W 152W 190W Power Regulator Module Supply
+                - generic [ref=f40e272]:
+                  - generic [ref=f40e273]: Alibaba.com
+                  - button [ref=f40e282]
+            - generic [ref=f40e290] [cursor=pointer]:
+              - link [ref=f40e291]:
+                - /url: https://www.alibaba.com/product-detail/Step-Up-12V-to-19V-5A_1600755547792.html
+              - button [ref=f40e293]
+              - generic [ref=f40e297]:
+                - generic [ref=f40e298]: Step up 12V to 19V 5A 6A 8A 10A DC-DC Boost Converter 95W 114W 152W 190W Power Regulator Module Supply
+                - generic [ref=f40e300]:
+                  - generic [ref=f40e301]: Alibaba.com
+                  - button [ref=f40e310]
+          - button [ref=f40e316] [cursor=pointer]:
+            - separator [ref=f40e317]
+            - generic [ref=f40e318]: Show more images
+        - generic [ref=f40e325]:
+          - heading [level=2] [ref=f40e326]: Web results
+          - generic [ref=f40e327]:
+            - generic [ref=f40e330]:
+              - link [ref=f40e332] [cursor=pointer]:
+                - /url: https://www.wengaoelec.com/12V-to-19V
+                - heading [level=3] [ref=f40e333]: 12V to 19V Boost DC-DC Power Converters for
+                - generic [ref=f40e342]:
+                  - generic [ref=f40e343]: wengaoelec.com
+                  - generic [ref=f40e345]: https://www.wengaoelec.com › ...
+              - button [ref=f40e349] [cursor=pointer]
+            - generic [ref=f40e355]:
+              - generic [ref=f40e356]:
+                - emphasis [ref=f40e357]: WG-12S1910
+                - text: . 10-16V, 19V, 0 ~ 190W, 93.1%. WG-12S1915. 10-18V, 19V, 0 ~ 285W, 96.2%. WG ... Copyright © 2023 SZWENGAO. All Rights Reserved. 粤ICP备15048703号-1.
+              - link [ref=f40e358] [cursor=pointer]:
+                - /url: https://www.wengaoelec.com/12V-to-19V#:~:text=WG%2D12S1910,WG%2D12S1920&text=Copyright%20%C2%A9%202023%20SZWENGAO.%20All,%E7%B2%A4ICP%E5%A4%8715048703%E5%8F%B7%2D1
+                - text: Read more
+            - generic [ref=f40e360]:
+              - text: "Missing: datasheet ‎| Show results with:"
+              - link [ref=f40e361] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=szwengao+WG-12S1910+%22datasheet%22&sa=X&ved=2ahUKEwiN8oqh3NyVAxVIQkEAHW30DLQQ5t4CegQINBAB
+                - text: datasheet
+        - generic [ref=f40e365]:
+          - generic [ref=f40e368]:
+            - link [ref=f40e370] [cursor=pointer]:
+              - /url: https://www.alibaba.com/product-detail/Step-Up-12V-to-19V-5A_1600755547792.html
+              - heading [level=3] [ref=f40e371]: Step up 12V to 19V 5A 6A 8A 10A DC-DC Boost Converter ...
+              - generic [ref=f40e377]:
+                - generic [ref=f40e378]: Alibaba.com
+                - generic [ref=f40e380]: https://www.alibaba.com › ... › Inverters & Converters
+            - button [ref=f40e384] [cursor=pointer]
+          - generic [ref=f40e390]:
+            - generic [ref=f40e391]:
+              - emphasis [ref=f40e392]: szwengao
+              - text: . Model no. WG-12S1905/WG-12S1906/WG-12S1908/
+              - emphasis [ref=f40e393]: WG
+              - text: "-"
+              - emphasis [ref=f40e394]: 12S1910
+              - text: . Input rated voltage. 12V DC. Input voltage range. 10-19V DC. Efficiency. 96% ( @ 12V input ).
+            - link [ref=f40e395] [cursor=pointer]:
+              - /url: https://www.alibaba.com/product-detail/Step-Up-12V-to-19V-5A_1600755547792.html#:~:text=szwengao,(%20%40%2012V%20input%20)
+              - text: Read more
+        - generic [ref=f40e399]:
+          - generic [ref=f40e402]:
+            - link [ref=f40e404] [cursor=pointer]:
+              - /url: https://www.wengaoelec.com/12V-to-24V
+              - heading [level=3] [ref=f40e405]: 12V to 24V Step-up DC-DC Power Converters Boost Module
+              - generic [ref=f40e414]:
+                - generic [ref=f40e415]: wengaoelec.com
+                - generic [ref=f40e417]: https://www.wengaoelec.com › ...
+            - button [ref=f40e421] [cursor=pointer]
+          - generic [ref=f40e426]: "Shenzhen Wengao Electronic Co., High efficiency: 94% (@12V input) 100% full load burn-in test Waterproof level IP68 Over load, Over Voltage and Over ..."
+          - generic [ref=f40e428]: "Missing: 12S1910 ‎datasheet"
+        - generic [ref=f40e433]:
+          - generic [ref=f40e436]:
+            - link [ref=f40e438] [cursor=pointer]:
+              - /url: https://www.rcscomponents.kiev.ua/product/dc-dc-peretvoriuvach-12v-v-19v-10a-wg-12s1910-szwengao_206452.html?srsltid=AfmBOor9bzSSxZdhlv2_DOVo7hCiUJ25gd9QxSJlYXF7zc3Xa0fzmSKp
+              - heading [level=3] [ref=f40e439]: DC/DC перетворювач 12V в 19V/10A (WG-12S1910
+              - generic [ref=f40e445]:
+                - generic [ref=f40e446]: РКС Компоненти - РАДІОМАГ
+                - generic [ref=f40e448]: https://www.rcscomponents.kiev.ua › ...
+            - generic [ref=f40e450]:
+              - generic [ref=f40e451]: ·
+              - link [ref=f40e452] [cursor=pointer]:
+                - /url: https://translate.google.com/translate?u=https://www.rcscomponents.kiev.ua/product/dc-dc-peretvoriuvach-12v-v-19v-10a-wg-12s1910-szwengao_206452.html&hl=en&sl=uk&tl=en&client=search
+                - text: Translate this page
+            - button [ref=f40e455] [cursor=pointer]
+          - generic [ref=f40e461]:
+            - generic [ref=f40e462]:
+              - emphasis [ref=f40e463]: DC/DC перетворювач 12V в 19V/10A (WG-12S1910 – szwengao
+              - text: ") ; Потужність, Вт: 190 Вт ; Напруга вх., В: 12 VDC ; Напруга вих., VDC: 19 В ; Макс. вих. струм: 10 А"
+            - link [ref=f40e464] [cursor=pointer]:
+              - /url: https://www.rcscomponents.kiev.ua/product/dc-dc-peretvoriuvach-12v-v-19v-10a-wg-12s1910-szwengao_206452.html?srsltid=AfmBOor9bzSSxZdhlv2_DOVo7hCiUJ25gd9QxSJlYXF7zc3Xa0fzmSKp#:~:text=DC%2FDC%20%D0%BF%D0%B5%D1%80%D0%B5%D1%82%D0%B2%D0%BE%D1%80%D1%8E%D0%B2%D0%B0%D1%87%2012V%20%D0%B2%2019V%2F10A,(WG%2D12S1910%20%E2%80%93%20szwengao)&text=%D0%9F%D0%BE%D1%82%D1%83%D0%B6%D0%BD%D1%96%D1%81%D1%82%D1%8C%2C%20%D0%92%D1%82%3A%20190%20%D0%92%D1%82&text=%D0%9D%D0%B0%D0%BF%D1%80%D1%83%D0%B3%D0%B0%20%D0%B2%D1%85.%2C%20%D0%92%3A%2012%20VDC&text=%D0%9D%D0%B0%D0%BF%D1%80%D1%83%D0%B3%D0%B0%20%D0%B2%D0%B8%D1%85.%2C%20VDC%3A%2019%20%D0%92&text=%D0%9C%D0%B0%D0%BA%D1%81.%20%D0%B2%D0%B8%D1%85.%20%D1%81%D1%82%D1%80%D1%83%D0%BC%3A%2010%20%D0%90
+              - text: Read more
+        - generic [ref=f40e468]:
+          - generic [ref=f40e471]:
+            - link [ref=f40e473] [cursor=pointer]:
+              - /url: https://www.wengaoelec.com/12V-Lithium-Battery-Charger
+              - heading [level=3] [ref=f40e474]: 12V Lithium Battery Charger
+              - generic [ref=f40e483]:
+                - generic [ref=f40e484]: wengaoelec.com
+                - generic [ref=f40e486]: https://www.wengaoelec.com › ...
+            - button [ref=f40e490] [cursor=pointer]
+          - generic [ref=f40e497]:
+            - emphasis [ref=f40e498]: Full charge current design and efficiency up to 97
+            - text: "% Non-isolated between input and output"
+          - generic [ref=f40e500]:
+            - text: "Missing: 12S1910 ‎| Show results with:"
+            - link [ref=f40e501] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=szwengao+WG-+%2212S1910%22+datasheet&sa=X&ved=2ahUKEwiN8oqh3NyVAxVIQkEAHW30DLQQ5t4CegQINxAB
+              - text: 12S1910
+        - generic [ref=f40e505]:
+          - generic [ref=f40e508]:
+            - link [ref=f40e510] [cursor=pointer]:
+              - /url: https://pl.meest-shop.com/ru/product/alibaba1688/520549027172
+              - heading [level=3] [ref=f40e511]: 【厂家直销】12V转19V 5A 8A 10A 190W车载笔记本升压电源 ...
+              - generic [ref=f40e517]:
+                - generic [ref=f40e518]: Meest China Shop
+                - generic [ref=f40e520]: https://pl.meest-shop.com › product
+            - generic [ref=f40e522]:
+              - generic [ref=f40e523]: ·
+              - link [ref=f40e524] [cursor=pointer]:
+                - /url: https://translate.google.com/translate?u=https://pl.meest-shop.com/ru/product/alibaba1688/520549027172&hl=en&sl=ru&tl=en&client=search
+                - text: Translate this page
+            - button [ref=f40e527] [cursor=pointer]
+          - generic [ref=f40e533]:
+            - generic [ref=f40e534]:
+              - emphasis [ref=f40e535]: 品牌SZWENGAO
+              - text: · 型号WG-12S1905,WG-12S1906,WG-12S1908,WG-12S1910 · 产品认证CE, RoHS · 外形尺寸74*74*32mm · 重量300g · 质保时间1年保修 · 防水等级IP67 · 转换效率94% ...
+            - link [ref=f40e536] [cursor=pointer]:
+              - /url: https://pl.meest-shop.com/ru/product/alibaba1688/520549027172#:~:text=%D0%9F%D1%80%D0%BE%D0%B4%D0%B0%D0%B2%D0%B5%D1%86&text=%D0%9F%D1%80%D0%BE%D0%B4%D0%B0%D0%B2%D0%B5%D1%86&text=%D0%9F%D1%80%D0%BE%D0%B4%D0%B0%D0%B2%D0%B5%D1%86&text=%D0%9F%D1%80%D0%BE%D0%B4%D0%B0%D0%B2%D0%B5%D1%86&text=%D0%9F%D1%80%D0%BE%D0%B4%D0%B0%D0%B2%D0%B5%D1%86&text=%D0%9F%D1%80%D0%BE%D0%B4%D0%B0%D0%B2%D0%B5%D1%86&text=%D0%9F%D1%80%D0%BE%D0%B4%D0%B0%D0%B2%D0%B5%D1%86&text=%D0%9F%D1%80%D0%BE%D0%B4%D0%B0%D0%B2%D0%B5%D1%86
+              - text: Read more
+          - generic [ref=f40e537]: UAH 6.83
+        - generic [ref=f40e543]:
+          - generic [ref=f40e546]:
+            - link [ref=f40e548] [cursor=pointer]:
+              - /url: https://www.wengaoelec.com/60V-to-12V
+              - heading [level=3] [ref=f40e549]: 60V to 12V DC-DC Buck Power Converters for Golf Carts
+              - generic [ref=f40e558]:
+                - generic [ref=f40e559]: wengaoelec.com
+                - generic [ref=f40e561]: https://www.wengaoelec.com › ...
+            - button [ref=f40e565] [cursor=pointer]
+          - generic [ref=f40e570]: "Wengao Electronic Co., 100% full load burn-in test Waterproof level IP68 Short circuit,Over load, and Over temperature protections Applications: Electromotor, ..."
+          - generic [ref=f40e572]: "Missing: 12S1910 ‎datasheet"
+      - generic [ref=f40e576]:
+        - heading [level=2] [ref=f40e577]: Notices about Filtered Results
+        - paragraph [ref=f40e579]:
+          - generic [ref=f40e580]:
+            - text: In order to show you the most relevant results, we have omitted some entries very similar to the 8 already displayed. If you like, you can
+            - link [ref=f40e581] [cursor=pointer]:
+              - /url: /search?q=szwengao+WG-12S1910+datasheet&sca_esv=ff0f52d8df50e9c0&filter=0
+              - text: repeat the search with the omitted results included
+            - text: .
+    - contentinfo [ref=f40e582]:
+      - heading [level=1] [ref=f40e583]: Footer links

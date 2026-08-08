@@ -1959,6 +1959,103 @@ MANUAL, so the motor cannot be driven), the flash was repeated and succeeded.
 floating, so **steering power must be off (or the kart in a state where the Cytron cannot drive)
 before any flash**. And `kart-brain`'s default service brings up the full autonomous stack with
 vision actively steering — that was live on the bench before anyone touched anything.
+## 2026-08-01 — the throttle mux was never driven, which is why the DAC could not reach the kart
+
+### What was actually wrong
+
+"Throttle has no working output" has been on the board's rework list for months, and the recorded
+cause was that `KM_GPIO_WriteDAC()` was a stub on `dev` — `TODO: Implement MCP4922 SPI write for S3`,
+returning `ESP_OK` without touching SPI. This branch fixed that in `45580ff`.
+
+That was not the whole story. **GPIO 15 — `SELECT_THROTTLE`, the MAX4660's control pin — has never
+been driven by anything.** A grep over the whole tree finds it only in the bluepad32 vendor
+component, unrelated. R32's 10 kΩ pulldown holds the line LOW, so the mux has sat on
+COM→NC (pedal pass-through) since the board was built.
+
+So even with the SPI write implemented and working perfectly, the DAC's VOUTA reaches U14 pin 8 and
+stops there. Nothing it produces can appear at CN10.1. Fixing the SPI write alone would have
+produced a board that still shows no throttle output, and the obvious next suspicion would have been
+the DAC or its logic levels — neither of which is the problem.
+
+### Why nobody wrote it
+
+Manual-versus-autonomous safety is implemented a different way: `control_task()` zeroes every actuator
+when `comms_stale || mission == MISSION_MANUAL`. That is a real safety measure and it works, so the
+mux was never needed to make the kart safe, and a pin nobody needs is a pin nobody writes code for.
+The gap only becomes visible when you ask the different question — *can the DAC's output physically
+reach the connector* — which nothing had asked until the throttle was traced end to end.
+
+### The change, and why it is shaped this way
+
+`KM_GPIO_SetThrottleSource(bool use_dac)` sets the pin; `control_task()` calls it on both sides of the
+safety gate. Three choices worth recording:
+
+**`false` inside the safety gate, not just zeroed outputs.** Zeroing the DAC leaves the kart on a
+DAC-sourced throttle that happens to be commanding zero. Handing the mux back to the pedal means a
+later DAC write — a bug, a stale queue entry, a half-initialised peripheral — cannot reach the kart
+at all. It also puts the hardware in the same state the pulldown gives before firmware runs, so
+"manual mode" and "firmware not running" look identical at the connector.
+
+**Re-asserted every cycle, not latched.** `control_task()` has several early returns above the point
+where the DAC takes over — the steering-fault latch is one. Setting the mux once at startup would
+leave those paths running with the DAC still selected. Deciding it every cycle means any path that
+returns early leaves the pedal in control by construction.
+
+**Pulldown left enabled on a driven output.** Costs nothing while the pin is driven and preserves the
+fail-safe if it is ever left floating — a reset, a reconfiguration, a half-configured boot. Same
+reasoning as the `PIN_SDC_NOT_EMERGENCY` config directly below it in `KM_GPIO_Init()`.
+
+### What this does not verify
+
+Builds clean for `esp32dev`, the only environment in `platformio.ini`. That is the *classic* ESP32,
+so everything behind `#if defined(CONFIG_IDF_TARGET_ESP32S3)` — including the whole MCP4922 path —
+was not compiled. The S3 build goes through `idf.py` with `sdkconfig.esp32-s3-devkitc-1`, which is
+not installed on this machine. The change itself is not target-guarded, so it did compile; the claim
+being made is only that, not that the S3 image is verified.
+
+### The test this unblocks
+
+Flash this branch to the S3 and meter **CN10.1**. Before this commit the measurement had to be taken
+at U13 pin 14, the DAC's own output pin, because nothing downstream of it was reachable. Now the mux
+passes the signal through whenever comms are fresh and the mission is not manual.
+
+Note the `mcp4922_writes_ok` / `writes_fail` counters only prove the ESP32 clocked the bits out of the
+SPI peripheral. They say nothing about whether the DAC latched them. The meter is the test.
+
+Also relevant if the reading looks low: `dv-hardware` changed the MCP4922's supply from 5 V to 3.3 V
+on the v2 schematic that same day, because the part's V_IH is 0.7 × V_DD and a 5 V supply puts that at
+3.5 V, which a 3.3 V ESP32 cannot guarantee to reach. **The v1 board in hand is still wired at 5 V**,
+so this test is being run in the marginal configuration — typical parts switch near 2.5 V and usually
+work, but a failure here is as likely to be that margin as anything in this branch.
+
+## 2026-08-08 — spi-test-50 bench firmware + amp-gain discovery
+
+Merged `spi-fix` onto latest `dev` as branch `spi-test-50`, resolving the km_gpio conflict in favour of the MCP4922 SPI path (dev's LEDC-PWM throttle stopgap deleted). Added a hard-coded test block in the control loop: 50% throttle + SELECT_THROTTLE high every cycle, ignoring the dashboard/comms watchdog, early-return so steering and brake stay stopped. NEVER merge this branch. Flashed to the S3 from the Orin (921600, /dev/ttyACM0) after confirming actuator power off.
+
+While tracing the measurement points in the schematic netlist: U1B (LM358, throttle) is not a unity buffer — gain 1+5.1K/10K = 1.51 (R37/R38). U1A (brake) is gain 3 (R19 2K / R20 1K). Both gains only produce the advertised 0–5 V / 0–10 V from a 0–3.3 V input, i.e. the classic ESP32's internal DAC the board was originally designed around. With the MCP4922 at VREF=5 V the chain overranges (~7.6 V throttle full scale). Expected voltages for the 50% test: 2.5 V at U13.14, ~3.8 V at U14.8 and CN10.1. Filed in tasks.md.
+
+## 2026-08-08 — Correction: the amp-gain "finding" was the v2 design, not the physical board
+
+The entry above analysed the dv-hardware working tree, which carries post-fab v2 changes
+(`ba63e25` throttle gain stage ×1.51, `16a35fb` MCP4922 to +3V3 / brake gain 3). The physical
+board is dv-hardware `84d6dd0` (tag `kart-medulla-v1`) + README rework: throttle is
+**U13.14 → U14.8 direct**, no amp, MCP4922 at +5V_REG. Expected reading for the running
+spi-test-50 firmware is therefore **~2.5 V at U13.14, U14.8 and CN10.1 alike**, not 3.8 V.
+AGENTS.md now pins the physical-board hash/tag so schematic questions get answered from the
+right commit. Still open (tasks.md): whether the GPIO 38 RC bypass was ever physically
+soldered — the dev-branch km_gpio.h comment says yes, history records only the plan.
+
+## 2026-08-08 — The version mess, in one place
+
+What happened this session, so nobody re-derives it: the throttle chain was first analysed from
+the dv-hardware *working tree*, which silently mixed the future v2 design into statements about
+the physical board. Wrong claims produced and later corrected: "U1B buffers the throttle" (v1
+routes U13.14 → U14.8 direct, U1B is parked), "gain 1.51 overranges the 5 V DAC" (that gain only
+exists at HEAD, paired with the +3V3 VREF change `16a35fb`, so no overrange in either version),
+and probe-B/A expectations of 3.8 V (correct value 2.5 V). Root cause: no statement anywhere in
+this repo of *which* dv-hardware commit the physical board is. Fix: AGENTS.md now pins it —
+`84d6dd0` / tag `kart-medulla-v1` + README rework list — with the command to netlist from the tag.
+Rule going forward: any electrical claim names the dv-hardware commit it was read from.
 
 ## 2026-08-08 — CN5.2 rework: this repo said remove R9+R10, the board is R10 only
 
@@ -1984,3 +2081,59 @@ this repo pointed at the CN terminal assignments, only at `pinout-esp32-s3.md`, 
 CN8.2" had no answer here. kart-docs now republishes that same file as a page, pinned to
 dv-hardware commit `61f5a1c9`; this repo reads dv-hardware directly rather than through kart-docs,
 since it is a peer of the hardware repo and a hop through the docs site could only be staler.
+
+## 2026-08-08 — DAC bench test result: the MCP4922 is not latching at 3.3 V logic on its 5 V supply
+
+spi-test-50 running (50% chA, mux forced to DAC). Serial log confirms ~500 SPI writes/s
+(`chA val=127 code=2039 cmd=0x37F7`) plus the boot self-test stepping 0→1.25→2.51→3.76 V.
+Meter: CN10.1 ≈ 0 V with brief jumps to ~1.16 V; U13 pin 14 (DAC VOUTA) behaves the same,
+so the fault is at the DAC, not mux/wiring. Ruled out from the v1 sources (dv-hardware
+84d6dd0): SPI GPIOs 11/12/14 match the pinout doc; firmware SPI is mode 0, 1 MHz, hardware
+CS. Diagnosis: the failure history.md predicted on 2026-08-01 — v1 powers the MCP4922 from
++5V_REG, V_IH = 0.7×VDD = 3.5 V, above the ESP32's 3.3 V drive; this part only decodes an
+occasional transfer (the blips). Fix = the v2 change (dv-hardware 16a35fb): run U13 from
+3.3 V — on this board a bodge lifting VDD (pin 1) AND both VREFs (pins 11, 13) off +5V_REG
+onto 3.3 V, since VREF must not exceed VDD. Full scale then becomes 3.3 V and firmware
+voltage expectations rescale. Not yet done — decision pending.
+
+## 2026-08-08 — SELECT_THROTTLE reads 0 too: diagnosis shifts from V_IH margin to socket contact
+
+With spi-test-50 running, the meter on the SELECT_THROTTLE net shows ~0 V with brief jumps
+to ~2.5 V. Ruled out firmware: 46 s clean serial log (no panic/reboot, self-test "6029 ok"),
+the 500 writes/s counter proves control_task cycles, GPIO 15 is configured push-pull output
+and driven high every cycle, and GPIO_NUM_15 appears nowhere else in the tree (no ADC/LEDC
+clobber; S3 HYDRAULIC_2 is GPIO 2). A plain GPIO into R32's 10 k pulldown cannot read 0 from
+that code — the signal is not crossing from the module to the board. Both this line (socket
+pin 30) and the SPI lines (socket pins 39-42) ride the same SSW-122 socket strip, so one
+poorly-seated dev board explains the dead DAC, the dead select line, and the intermittent
+blips together. The earlier V_IH-margin diagnosis required the select line to work; it
+doesn't, so that entry's conclusion is superseded until the module is reseated and retested.
+Next: power off, reseat, retest; if still dead, module header pin 15 vs U14.6 splits
+module-pin from socket/trace.
+
+## 2026-08-08 — branches consolidated into dev, runaway throttle included on purpose
+
+Rubén's call: fold the outstanding branches into `dev` rather than keep chasing the DAC signal
+across five of them. `origin/main` merged into `dev` first (it was 1 ahead, 88 behind — the
+AGENTS.md rule says to do that before adding commits), then `spi-test-50`, then
+`feature/pedal-telemetry`.
+
+**`dev` now commands a constant 50% throttle.** The spi-test-50 bench block in `control_task()`
+returns above the comms-watchdog / manual-mode gate, so it overrides the dashboard, comms loss and
+manual mode, and brake and steering never run. This was merged knowingly — the signal-read problem
+is still open and the branch's diagnostics are worth having in one place — but it means the SDC
+kill switches are the only thing that stops the kart on a `dev` build. Recorded at the top of the
+AGENTS.md branch-workflow section and as the first item in `tasks.md`, because the failure mode is
+invisible to anyone who merges `dev` → `main` without reading the diff.
+
+`spi-fix` needed no merge: its three commits (`45580ff`, `1ef47ff`, `c0b97f4`) were already
+contained in `spi-test-50`.
+
+`feature/direct-pwm-mode` was NOT merged, and merging it would regress the kart. It was last
+touched 2026-03-28 and is 100 commits behind: it sets steering `kp` to 0.80 where `dev` is now at
+1.00 after the 2026-07-30 live tune, and sets an AS5600 centre value for a sensor retired
+2026-07-12. Its comms-watchdog / manual-kill commit is already in `dev` by another route. The only
+parts not superseded are the `sketch.cpp` deletion and its `km_coms` direct-PWM message.
+
+Two `tasks.md` items closed by the same session's work: the CN5.2 R9/R10 contradiction (settled as
+remove-R10-only) and README's AS5600 naming.

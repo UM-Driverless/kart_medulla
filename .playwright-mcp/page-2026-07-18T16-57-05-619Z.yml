@@ -1,0 +1,697 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - generic [ref=f3e3]:
+      - list
+      - generic [ref=f3e5]:
+        - button [ref=f3e6] [cursor=pointer]
+        - textbox "Enter search term" [ref=f3e7]
+    - generic [ref=f3e8]:
+      - link [ref=f3e11] [cursor=pointer]:
+        - /url: /maxon/view/catalog/
+        - img "alt Maxon en" [ref=f3e12]
+      - generic [ref=f3e14]:
+        - heading "Switzerland" [level=3] [ref=f3e16] [cursor=pointer]
+        - heading [level=3] [ref=f3e20] [cursor=pointer]
+  - generic [ref=f3e26]:
+    - list [ref=f3e30]:
+      - listitem [ref=f3e31]:
+        - link [ref=f3e32] [cursor=pointer]:
+          - /url: /maxon/view/category/Compact-Drive?target=filter
+          - img "Compact Drives" [ref=f3e33]
+          - text: Compact Drives
+      - listitem [ref=f3e34]:
+        - link [ref=f3e35] [cursor=pointer]:
+          - /url: /maxon/view/category/motor?target=filter
+          - img "Motor" [ref=f3e36]
+          - text: Motor
+      - listitem [ref=f3e37]:
+        - link [ref=f3e38] [cursor=pointer]:
+          - /url: /maxon/view/category/gear?target=filter
+          - img "Gear" [ref=f3e39]
+          - text: Gear
+      - listitem [ref=f3e40]:
+        - link [ref=f3e41] [cursor=pointer]:
+          - /url: /maxon/view/category/control?target=filter
+          - img "Controller" [ref=f3e42]
+          - text: Controller
+      - listitem [ref=f3e43]:
+        - link [ref=f3e44] [cursor=pointer]:
+          - /url: /maxon/view/category/sensor?target=filter
+          - img "Sensor" [ref=f3e45]
+          - text: Sensor
+      - listitem [ref=f3e46]:
+        - link [ref=f3e47] [cursor=pointer]:
+          - /url: /maxon/view/category/accessory?target=filter
+          - img "Accessories" [ref=f3e48]
+          - text: Accessories
+    - generic [ref=f3e50]:
+      - generic [ref=f3e51]:
+        - generic [ref=f3e52]:
+          - generic [ref=f3e53]: Details
+          - link "X" [ref=f3e55] [cursor=pointer]:
+            - /url: /maxon/view/catalog?target=filter
+          - heading "EPOS4 Compact 50/5 CAN, digital positioning controller, 5 A, 10 - 50 VDC" [level=1] [ref=f3e56]
+          - paragraph [ref=f3e57]: Part number 541718
+        - figure [ref=f3e58]:
+          - img "EPOS4 Compact 50/5 CAN, digital positioning controller, 5 A, 10 - 50 VDC" [ref=f3e59]
+        - table [ref=f3e60]:
+          - rowgroup [ref=f3e61]:
+            - row [ref=f3e62]:
+              - columnheader "Price scales" [ref=f3e63]
+              - columnheader "Quantity" [ref=f3e64]
+              - columnheader "Price per unit" [ref=f3e65]
+          - rowgroup [ref=f3e66]:
+            - row [ref=f3e67]:
+              - cell [ref=f3e68]:
+                - text: Prices excluding VAT and
+                - link "shipping costs" [ref=f3e69] [cursor=pointer]:
+                  - /url: /maxon/view/content/Versandkosten
+              - cell "1-4" [ref=f3e70]
+              - cell "€536.93" [ref=f3e71]
+            - row [ref=f3e72]:
+              - cell "5-19" [ref=f3e73]
+              - cell "€472.72" [ref=f3e74]
+            - row [ref=f3e75]:
+              - cell "20-49" [ref=f3e76]
+              - cell "€406.30" [ref=f3e77]
+            - row [ref=f3e78]:
+              - cell "from 50" [ref=f3e79]
+              - cell "On request" [ref=f3e80]
+        - generic [ref=f3e81]:
+          - button "Start combination" [ref=f3e82] [cursor=pointer]
+          - paragraph [ref=f3e85]:
+            - text: Order quantity
+            - spinbutton "Order quantity" [ref=f3e86]: "1"
+            - button "Add to cart" [ref=f3e87] [cursor=pointer]
+      - generic [ref=f3e88]:
+        - generic [ref=f3e89]:
+          - heading "Specifications" [level=2] [ref=f3e90]
+          - table [ref=f3e92]:
+            - rowgroup [ref=f3e93]:
+              - row [ref=f3e94]:
+                - cell "Product" [ref=f3e95]
+            - rowgroup [ref=f3e96]:
+              - row [ref=f3e97]:
+                - cell "Weight" [ref=f3e98]
+                - cell "58 g" [ref=f3e99]
+            - rowgroup [ref=f3e100]:
+              - row [ref=f3e101]:
+                - cell "Motor" [ref=f3e102]
+            - rowgroup [ref=f3e103]:
+              - row [ref=f3e104]:
+                - cell "DC motors up to" [ref=f3e105]
+                - cell "250 W" [ref=f3e106]
+              - row [ref=f3e107]:
+                - cell "EC motors up to" [ref=f3e108]
+                - cell "250 W" [ref=f3e109]
+            - rowgroup [ref=f3e110]:
+              - row [ref=f3e111]:
+                - cell "Sensor" [ref=f3e112]
+            - rowgroup [ref=f3e113]:
+              - row [ref=f3e114]:
+                - cell "Without sensor (DC motors)" [ref=f3e115]
+                - cell "Yes" [ref=f3e116]
+              - row [ref=f3e117]:
+                - cell "Digital incremental encoder (2-channel, single-ended)" [ref=f3e118]
+                - cell "Yes" [ref=f3e119]
+              - row [ref=f3e120]:
+                - cell "Digital incremental encoder (2-channel, differential)" [ref=f3e121]
+                - cell "Yes" [ref=f3e122]
+              - row [ref=f3e123]:
+                - cell "Digital incremental encoder (3-channel, differential)" [ref=f3e124]
+                - cell "Yes" [ref=f3e125]
+              - row [ref=f3e126]:
+                - cell "Digital Hall sensors (EC motors)" [ref=f3e127]
+                - cell "Yes" [ref=f3e128]
+              - row [ref=f3e129]:
+                - cell "SSI Absolut Encoder" [ref=f3e130]
+                - cell "Yes" [ref=f3e131]
+              - row [ref=f3e132]:
+                - cell "Analog incremental encoder (2-channel, differential)" [ref=f3e133]
+                - cell "Yes" [ref=f3e134]
+            - rowgroup [ref=f3e135]:
+              - row [ref=f3e136]:
+                - cell "Operating modes" [ref=f3e137]
+            - rowgroup [ref=f3e138]:
+              - row [ref=f3e139]:
+                - cell "Current controller" [ref=f3e140]
+                - cell "Yes (Torque)" [ref=f3e141]
+              - row [ref=f3e142]:
+                - cell "Speed controller (closed loop)" [ref=f3e143]
+                - cell "Yes" [ref=f3e144]
+              - row [ref=f3e145]:
+                - cell "Position controller" [ref=f3e146]
+                - cell "Yes" [ref=f3e147]
+            - rowgroup [ref=f3e148]:
+              - row [ref=f3e149]:
+                - cell "Electrical data" [ref=f3e150]
+            - rowgroup [ref=f3e151]:
+              - row [ref=f3e152]:
+                - cell [ref=f3e153]:
+                  - text: Operating voltage V
+                  - subscript [ref=f3e154]: cc
+                  - text: (min.)
+                - cell "10 V" [ref=f3e155]
+              - row [ref=f3e156]:
+                - cell [ref=f3e157]:
+                  - text: Operating voltage V
+                  - subscript [ref=f3e158]: cc
+                  - text: (max.)
+                - cell "50 V" [ref=f3e159]
+              - row [ref=f3e160]:
+                - cell [ref=f3e161]:
+                  - text: Logic supply voltage V
+                  - subscript [ref=f3e162]: c
+                  - text: (min.)
+                - cell "10 V" [ref=f3e163]
+              - row [ref=f3e164]:
+                - cell [ref=f3e165]:
+                  - text: Logic supply voltage V
+                  - subscript [ref=f3e166]: c
+                  - text: (max.)
+                - cell "50 V" [ref=f3e167]
+              - row [ref=f3e168]:
+                - cell [ref=f3e169]:
+                  - text: Max. output voltage (factor * V
+                  - subscript [ref=f3e170]: cc
+                  - text: )
+                - cell "0.9" [ref=f3e171]
+              - row [ref=f3e172]:
+                - cell [ref=f3e173]:
+                  - text: Max. output current I
+                  - subscript [ref=f3e174]: max
+                - cell "15 A" [ref=f3e175]
+              - row [ref=f3e176]:
+                - cell [ref=f3e177]:
+                  - text: Max. time of peak output current I
+                  - subscript [ref=f3e178]: max
+                - cell "3 s" [ref=f3e179]
+              - row [ref=f3e180]:
+                - cell [ref=f3e181]:
+                  - text: Continuous output current I
+                  - subscript [ref=f3e182]: cont
+                - cell "5 A" [ref=f3e183]
+              - row [ref=f3e184]:
+                - cell "PWM clock frequency of power stage" [ref=f3e185]
+                - cell "50 kHz" [ref=f3e186]
+              - row [ref=f3e187]:
+                - cell "Sampling rate PI current controller" [ref=f3e188]
+                - cell "25 kHz" [ref=f3e189]
+              - row [ref=f3e190]:
+                - cell "Sampling rate PI speed controller" [ref=f3e191]
+                - cell "2.5 kHz" [ref=f3e192]
+              - row [ref=f3e193]:
+                - cell "Sampling rate PID positioning controller" [ref=f3e194]
+                - cell "2.5 kHz" [ref=f3e195]
+              - row [ref=f3e196]:
+                - cell "Max. efficiency" [ref=f3e197]
+                - cell "97 %" [ref=f3e198]
+              - row [ref=f3e199]:
+                - cell "Max. speed (DC)" [ref=f3e200]
+                - cell "100000 rpm" [ref=f3e201]
+              - row [ref=f3e202]:
+                - cell "Max. speed (EC; 1 pole pair) block commutation" [ref=f3e203]
+                - cell "100000 rpm" [ref=f3e204]
+              - row [ref=f3e205]:
+                - cell "Max. speed (EC; 1 pole pair) sinusoidal commutation" [ref=f3e206]
+                - cell "50000 rpm" [ref=f3e207]
+              - row [ref=f3e208]:
+                - cell "Built-in motor choke per phase" [ref=f3e209]
+                - cell "9.4 µH" [ref=f3e210]
+            - rowgroup [ref=f3e211]:
+              - row [ref=f3e212]:
+                - cell "Inputs" [ref=f3e213]
+            - rowgroup [ref=f3e214]:
+              - row [ref=f3e215]:
+                - cell "Hall sensor signals" [ref=f3e216]
+                - cell "H1, H2, H3" [ref=f3e217]
+              - row [ref=f3e218]:
+                - cell "Encoder signals" [ref=f3e219]
+                - cell "A, A\\, B, B\\, I, I\\" [ref=f3e220]
+              - row [ref=f3e221]:
+                - cell "Max. encoder input frequency" [ref=f3e222]
+                - cell "6.2 MHz" [ref=f3e223]
+              - row [ref=f3e224]:
+                - cell "Sensor signals" [ref=f3e225]
+                - cell "A, A\\, B, B\\, I, I\\, Clock, Clock\\, Data, Data\\" [ref=f3e226]
+              - row [ref=f3e227]:
+                - cell "Digital inputs" [ref=f3e228]
+                - cell "8" [ref=f3e229]
+              - row [ref=f3e230]:
+                - cell "Functionality of digital inputs" [ref=f3e231]
+                - cell "limit switch, reference switch, general purpose, touch probe" [ref=f3e232]
+              - row [ref=f3e233]:
+                - cell "Analog inputs" [ref=f3e234]
+                - cell "2" [ref=f3e235]
+              - row [ref=f3e236]:
+                - cell "Resolution, range, circuit" [ref=f3e237]
+                - cell "12-bit, -10…+10V, differential" [ref=f3e238]
+              - row [ref=f3e239]:
+                - cell "Functionality of analog inputs" [ref=f3e240]
+                - cell "General Purpose, Set Value Current, Set Value Velocity" [ref=f3e241]
+              - row [ref=f3e242]:
+                - cell "DIP switch" [ref=f3e243]
+                - cell "8" [ref=f3e244]
+              - row [ref=f3e245]:
+                - cell "Functionality of the DIP switch" [ref=f3e246]
+                - cell "CAN Node-ID, Autobitrate, CAN-Bus Termination, I/O-level (TTL, PLC)" [ref=f3e247]
+            - rowgroup [ref=f3e248]:
+              - row [ref=f3e249]:
+                - cell "Outputs" [ref=f3e250]
+            - rowgroup [ref=f3e251]:
+              - row [ref=f3e252]:
+                - cell "Digital outputs" [ref=f3e253]
+                - cell "3" [ref=f3e254]
+              - row [ref=f3e255]:
+                - cell "Functionality of digital outputs" [ref=f3e256]
+                - cell "holding brake, general purpose" [ref=f3e257]
+              - row [ref=f3e258]:
+                - cell "Analog outputs" [ref=f3e259]
+                - cell "2" [ref=f3e260]
+              - row [ref=f3e261]:
+                - cell "Resolution, range" [ref=f3e262]
+                - cell "12-bit, -4…+4V" [ref=f3e263]
+              - row [ref=f3e264]:
+                - cell "Functionality of analog outputs" [ref=f3e265]
+                - cell "General Purpose" [ref=f3e266]
+            - rowgroup [ref=f3e267]:
+              - row [ref=f3e268]:
+                - cell "Voltage outputs" [ref=f3e269]
+            - rowgroup [ref=f3e270]:
+              - row [ref=f3e271]:
+                - cell "Hall sensor supply voltage" [ref=f3e272]
+                - cell "see \"Sensor supply voltage\"" [ref=f3e273]
+              - row [ref=f3e274]:
+                - cell "Encoder supply voltage" [ref=f3e275]
+                - cell "see \"Sensor supply voltage\"" [ref=f3e276]
+              - row [ref=f3e277]:
+                - cell "Sensor supply voltage" [ref=f3e278]
+                - cell "+5 VDC, max. 100 mA" [ref=f3e279]
+              - row [ref=f3e280]:
+                - cell "Auxiliary output voltage" [ref=f3e281]
+                - cell "+5 VDC, max. 145 mA" [ref=f3e282]
+            - rowgroup [ref=f3e283]:
+              - row [ref=f3e284]:
+                - cell "Interface" [ref=f3e285]
+            - rowgroup [ref=f3e286]:
+              - row [ref=f3e287]:
+                - cell "RS232" [ref=f3e288]
+                - cell "Yes" [ref=f3e289]
+              - row [ref=f3e290]:
+                - cell "USB (full speed)" [ref=f3e291]
+                - cell "Yes" [ref=f3e292]
+              - row [ref=f3e293]:
+                - cell "CAN" [ref=f3e294]
+                - cell "Yes" [ref=f3e295]
+              - row [ref=f3e296]:
+                - cell "CANopen" [ref=f3e297]
+                - cell "Slave" [ref=f3e298]
+              - row [ref=f3e299]:
+                - cell "CANopen application layer" [ref=f3e300]
+                - cell "CiA 301" [ref=f3e301]
+              - row [ref=f3e302]:
+                - cell "CANopen frameworks" [ref=f3e303]
+                - cell "CiA 305" [ref=f3e304]
+              - row [ref=f3e305]:
+                - cell "CANopen profiles motion control" [ref=f3e306]
+                - cell "CiA 402" [ref=f3e307]
+              - row [ref=f3e308]:
+                - cell "Gateway function RS232-to-CAN" [ref=f3e309]
+                - cell "Yes" [ref=f3e310]
+              - row [ref=f3e311]:
+                - cell "Gateway function USB-to-CAN" [ref=f3e312]
+                - cell "Yes" [ref=f3e313]
+            - rowgroup [ref=f3e314]:
+              - row [ref=f3e315]:
+                - cell "Display" [ref=f3e316]
+            - rowgroup [ref=f3e317]:
+              - row [ref=f3e318]:
+                - cell "Status indicator \"Ready\"" [ref=f3e319]
+                - cell "green LED" [ref=f3e320]
+              - row [ref=f3e321]:
+                - cell "Status indicator \"Error\"" [ref=f3e322]
+                - cell "red LED" [ref=f3e323]
+            - rowgroup [ref=f3e324]:
+              - row [ref=f3e325]:
+                - cell "Protective functions" [ref=f3e326]
+            - rowgroup [ref=f3e327]:
+              - row [ref=f3e328]:
+                - cell "Protective functions" [ref=f3e329]
+                - cell "current limit, overcurrent, excess temperature, undervoltage, overvoltage, voltage transients, short-circuits in the motor cable, loss of feedback signal" [ref=f3e330]
+            - rowgroup [ref=f3e331]:
+              - row [ref=f3e332]:
+                - cell "Ambient conditions" [ref=f3e333]
+            - rowgroup [ref=f3e334]:
+              - row [ref=f3e335]:
+                - cell "Temperature – Operation (min.)" [ref=f3e336]
+                - cell "-30 °C" [ref=f3e337]
+              - row [ref=f3e338]:
+                - cell "Temperature – Operation (max.)" [ref=f3e339]
+                - cell "25 °C" [ref=f3e340]
+              - row [ref=f3e341]:
+                - cell "Temperature – Extended Range" [ref=f3e342]
+                - 'cell "+25…+70 °C, Derating: -0.111 A/°C" [ref=f3e343]'
+              - row [ref=f3e344]:
+                - cell "Temperature – Storage (min.)" [ref=f3e345]
+                - cell "-40 °C" [ref=f3e346]
+              - row [ref=f3e347]:
+                - cell "Temperature – Storage (max.)" [ref=f3e348]
+                - cell "85 °C" [ref=f3e349]
+              - row [ref=f3e350]:
+                - cell "Humidity (non-condensing) (min.)" [ref=f3e351]
+                - cell "5 %" [ref=f3e352]
+              - row [ref=f3e353]:
+                - cell "Humidity (non-condensing) (max.)" [ref=f3e354]
+                - cell "90 %" [ref=f3e355]
+            - rowgroup [ref=f3e356]:
+              - row [ref=f3e357]:
+                - cell "Mechanical data" [ref=f3e358]
+            - rowgroup [ref=f3e359]:
+              - row [ref=f3e360]:
+                - cell "Weight" [ref=f3e361]
+                - cell "58 g" [ref=f3e362]
+              - row [ref=f3e363]:
+                - cell "Dimension (length)" [ref=f3e364]
+                - cell "55 mm" [ref=f3e365]
+              - row [ref=f3e366]:
+                - cell "Dimension (width)" [ref=f3e367]
+                - cell "40 mm" [ref=f3e368]
+              - row [ref=f3e369]:
+                - cell "Dimension (height)" [ref=f3e370]
+                - cell "26.9 mm" [ref=f3e371]
+              - row [ref=f3e372]:
+                - cell "Mounting" [ref=f3e373]
+                - cell "mounting holes for M2.5 screws" [ref=f3e374]
+            - rowgroup [ref=f3e375]:
+              - row [ref=f3e376]:
+                - cell "Software" [ref=f3e377]
+            - rowgroup [ref=f3e378]:
+              - row [ref=f3e379]:
+                - cell "Installation program" [ref=f3e380]
+                - cell "EPOS Setup" [ref=f3e381]
+              - row [ref=f3e382]:
+                - cell "Graphical User Interface" [ref=f3e383]
+                - cell "EPOS Studio" [ref=f3e384]
+              - row [ref=f3e385]:
+                - cell "Operating system" [ref=f3e386]
+                - cell "Windows 11, 10" [ref=f3e387]
+              - row [ref=f3e388]:
+                - cell "Windows DLL for PC" [ref=f3e389]
+                - cell "32-/64-bit" [ref=f3e390]
+              - row [ref=f3e391]:
+                - cell "PC master" [ref=f3e392]
+                - cell "IXXAT, Vector, National Instruments, Kvaser" [ref=f3e393]
+              - row [ref=f3e394]:
+                - cell "Programming examples" [ref=f3e395]
+                - cell "MS Visual C#, MS Visual C++, MS Visual Basic, MS Visual Basic.NET, Borland C++, Borland Delphi, NI LabView, NI LabWindows/CVI" [ref=f3e396]
+              - row [ref=f3e397]:
+                - cell "Linux Shared Object Library" [ref=f3e398]
+                - cell "X86 32-/64-bit, ARMv6/v7/v8 32-bit, ARMv8 64-bit" [ref=f3e399]
+              - row [ref=f3e400]:
+                - cell "CAN Interfaces" [ref=f3e401]
+                - cell "IXXAT, Kvaser" [ref=f3e402]
+              - row [ref=f3e403]:
+                - cell "Programming examples" [ref=f3e404]
+                - cell "C++" [ref=f3e405]
+            - rowgroup [ref=f3e406]:
+              - row [ref=f3e407]:
+                - cell "Functions" [ref=f3e408]
+            - rowgroup [ref=f3e409]:
+              - row [ref=f3e410]:
+                - cell "CANopen Profile Position Mode" [ref=f3e411]
+                - cell "Yes" [ref=f3e412]
+              - row [ref=f3e413]:
+                - cell "CANopen Profile Velocity Mode" [ref=f3e414]
+                - cell "Yes" [ref=f3e415]
+              - row [ref=f3e416]:
+                - cell "CANopen Homing Mode" [ref=f3e417]
+                - cell "Yes" [ref=f3e418]
+              - row [ref=f3e419]:
+                - cell "CANopen Cyclic Synchronuous Position" [ref=f3e420]
+                - cell "Yes" [ref=f3e421]
+              - row [ref=f3e422]:
+                - cell "CANopen Cyclic Synchronuous Velocity" [ref=f3e423]
+                - cell "Yes" [ref=f3e424]
+              - row [ref=f3e425]:
+                - cell "CANopen Cyclic Synchronuous Torque" [ref=f3e426]
+                - cell "Yes" [ref=f3e427]
+              - row [ref=f3e428]:
+                - cell "Analog set value" [ref=f3e429]
+                - cell "Yes" [ref=f3e430]
+              - row [ref=f3e431]:
+                - cell "Position Control Feed Forward" [ref=f3e432]
+                - cell "Yes" [ref=f3e433]
+              - row [ref=f3e434]:
+                - cell "Velocity Control Feed Forward" [ref=f3e435]
+                - cell "Yes" [ref=f3e436]
+              - row [ref=f3e437]:
+                - cell "Dual loop position and velocity control" [ref=f3e438]
+                - cell "Yes" [ref=f3e439]
+              - row [ref=f3e440]:
+                - cell "Position Marker / Touch Probe" [ref=f3e441]
+                - cell "Yes" [ref=f3e442]
+              - row [ref=f3e443]:
+                - cell "Quickstop" [ref=f3e444]
+                - cell "Yes" [ref=f3e445]
+              - row [ref=f3e446]:
+                - cell "Enable" [ref=f3e447]
+                - cell "Yes" [ref=f3e448]
+              - row [ref=f3e449]:
+                - cell "Control of holding brakes" [ref=f3e450]
+                - cell "Yes" [ref=f3e451]
+              - row [ref=f3e452]:
+                - cell "STO (Safe Torque Off)" [ref=f3e453]
+                - cell "yes (not certified)" [ref=f3e454]
+              - row [ref=f3e455]:
+                - cell "Advanced automatic control settings" [ref=f3e456]
+                - cell "Yes" [ref=f3e457]
+        - generic [ref=f3e459]:
+          - heading "Description" [level=2] [ref=f3e460]
+          - generic [ref=f3e461]:
+            - text: The
+            - strong [ref=f3e462]: EPOS4 Compact 50/5 CAN
+            - text: is a dynamic, ready-to-connect positioning controller in a compact design. Designed for use with brushed DC motors with encoders and brushless EC motors (BLDC) with Hall sensors and encoders up to 250 W / 750 W.
+        - generic [ref=f3e464]:
+          - heading "Downloads" [level=2] [ref=f3e465]
+          - generic [ref=f3e466]:
+            - generic [ref=f3e467]:
+              - heading "Software/firmware" [level=3] [ref=f3e468]
+              - list [ref=f3e469]:
+                - listitem [ref=f3e470]:
+                  - heading "English" [level=3] [ref=f3e471]
+                  - list [ref=f3e472]:
+                    - listitem [ref=f3e473]:
+                      - link "EPOS IDX Setup Release Notes (english, PDF 646 KB) Version May 2025" [ref=f3e474] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9444047650846/EPOS-IDX-Setup-Release-Notes-En.pdf
+                        - text: EPOS IDX Setup Release Notes (english, PDF 646 KB)
+                        - generic [ref=f3e475]: Version May 2025
+                    - listitem [ref=f3e476]:
+                      - link "EPOS Command Library Documentation (english, PDF 5 MB) Version July 2023" [ref=f3e477] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9157360353310/EPOS-Command-Library-En.pdf
+                        - text: EPOS Command Library Documentation (english, PDF 5 MB)
+                        - generic [ref=f3e478]: Version July 2023
+                    - listitem [ref=f3e479]:
+                      - link "EPOS Windows 32-Bit and 64-Bit DLL (english, ZIP 98 MB) Version 6.8.1.0" [ref=f3e480] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9443687104542/EPOS-Windows-DLL-En.zip
+                        - text: EPOS Windows 32-Bit and 64-Bit DLL (english, ZIP 98 MB)
+                        - generic [ref=f3e481]: Version 6.8.1.0
+                    - listitem [ref=f3e482]:
+                      - link "EPOS .Net Library (english, ZIP 32 MB) Version 6.8.1.0" [ref=f3e483] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9443687137310/EPOS-DotNet-Library-En.zip
+                        - text: EPOS .Net Library (english, ZIP 32 MB)
+                        - generic [ref=f3e484]: Version 6.8.1.0
+                    - listitem [ref=f3e485]:
+                      - link "EPOS LabVIEW VI’s for PC (english, ZIP 19 MB) Version 6.8.1.0" [ref=f3e486] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9443687170078/EPOS-LabVIEW-Instrument-Driver-En.zip
+                        - text: EPOS LabVIEW VI’s for PC (english, ZIP 19 MB)
+                        - generic [ref=f3e487]: Version 6.8.1.0
+                    - listitem [ref=f3e488]:
+                      - link "EPOS Linux Library (ARM/Intel 32/64-Bit) (english, ZIP 7 MB) Version 6.8.1.0" [ref=f3e489] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9443687202846/EPOS-Linux-Library-En.zip
+                        - text: EPOS Linux Library (ARM/Intel 32/64-Bit) (english, ZIP 7 MB)
+                        - generic [ref=f3e490]: Version 6.8.1.0
+                    - listitem [ref=f3e491]:
+                      - link "Setup EPOS, IDX - Studio 3.7 (ZIP -1 bytes) Version 37" [ref=f3e492] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9535503007774/EPOS-2-4-IDX-Setup.zip
+                        - text: Setup EPOS, IDX - Studio 3.7 (ZIP -1 bytes)
+                        - generic [ref=f3e493]: Version 37
+            - generic [ref=f3e494]:
+              - heading "CAD-Files (DXF, STP,....)" [level=3] [ref=f3e495]
+              - list [ref=f3e496]:
+                - listitem [ref=f3e497]:
+                  - link "CAD Model EPOS4 Compact 50/5 CAN (ZIP 41 MB) Version 01" [ref=f3e498] [cursor=pointer]:
+                    - /url: /medias/sys_master/root/8834327347230/EPOS4-Compact-50-5-CAN-CAD-Files.zip
+                    - text: CAD Model EPOS4 Compact 50/5 CAN (ZIP 41 MB)
+                    - generic [ref=f3e499]: Version 01
+            - generic [ref=f3e500]:
+              - heading "Catalog page" [level=3] [ref=f3e501]
+              - list [ref=f3e502]:
+                - listitem [ref=f3e503]:
+                  - link "目录页 (chinesisch, PDF 4 MB) Version 2020" [ref=f3e504] [cursor=pointer]:
+                    - /url: /medias/sys_master/root/8846820409374/CN-492-493-494-499.pdf
+                    - text: 目录页 (chinesisch, PDF 4 MB)
+                    - generic [ref=f3e505]: Version 2020
+                - listitem [ref=f3e506]:
+                  - link "Katalogseiten (deutsch, PDF 46 MB) Version 2020" [ref=f3e507] [cursor=pointer]:
+                    - /url: /medias/sys_master/root/8839997816862/DE-492-493-494-499.pdf
+                    - text: Katalogseiten (deutsch, PDF 46 MB)
+                    - generic [ref=f3e508]: Version 2020
+                - listitem [ref=f3e509]:
+                  - link "Catalog page (english, PDF 1 MB) Version 2021" [ref=f3e510] [cursor=pointer]:
+                    - /url: /medias/sys_master/root/8884194803742/EN-21-506-507-508-513.pdf
+                    - text: Catalog page (english, PDF 1 MB)
+                    - generic [ref=f3e511]: Version 2021
+                - listitem [ref=f3e512]:
+                  - link "Catálogo Pagina (español, PDF 500 KB) Version 2020" [ref=f3e513] [cursor=pointer]:
+                    - /url: /medias/sys_master/root/8846820311070/20-ES-492-493-494-499.pdf
+                    - text: Catálogo Pagina (español, PDF 500 KB)
+                    - generic [ref=f3e514]: Version 2020
+                - listitem [ref=f3e515]:
+                  - link "Page de catalogue (française, PDF 2 MB) Version 2020" [ref=f3e516] [cursor=pointer]:
+                    - /url: /medias/sys_master/root/8846820212766/F-492-493-494-499.pdf
+                    - text: Page de catalogue (française, PDF 2 MB)
+                    - generic [ref=f3e517]: Version 2020
+                - listitem [ref=f3e518]:
+                  - link "カタログページ (日本語, PDF 1 MB) Version 2020" [ref=f3e519] [cursor=pointer]:
+                    - /url: /medias/sys_master/root/8846820147230/20-JP-492-493-494-499.pdf
+                    - text: カタログページ (日本語, PDF 1 MB)
+                    - generic [ref=f3e520]: Version 2020
+            - generic [ref=f3e521]:
+              - heading "Manuals" [level=3] [ref=f3e522]
+              - list [ref=f3e523]:
+                - listitem [ref=f3e524]:
+                  - heading "English" [level=3] [ref=f3e525]
+                  - list [ref=f3e526]:
+                    - listitem [ref=f3e527]:
+                      - link "EPOS4 Feature Chart (english, PDF 3 MB) Version March 2026" [ref=f3e528] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9567255691294/EPOS4-Feature-Chart-En.pdf
+                        - text: EPOS4 Feature Chart (english, PDF 3 MB)
+                        - generic [ref=f3e529]: Version March 2026
+                    - listitem [ref=f3e530]:
+                      - link "EPOS4 Firmware Specification (english, PDF 10 MB) Version May 2025" [ref=f3e531] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9444047912990/EPOS4-Firmware-Specification-En.pdf
+                        - text: EPOS4 Firmware Specification (english, PDF 10 MB)
+                        - generic [ref=f3e532]: Version May 2025
+                    - listitem [ref=f3e533]:
+                      - link "EPOS4 Communication Guide (english, PDF 3 MB) Version April 2026" [ref=f3e534] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9567255756830/EPOS4-Communication-Guide-En.pdf
+                        - text: EPOS4 Communication Guide (english, PDF 3 MB)
+                        - generic [ref=f3e535]: Version April 2026
+                    - listitem [ref=f3e536]:
+                      - link "EPOS4 Module-Compact 50/5 Hardware Reference (english, PDF 8 MB) Version January 2025" [ref=f3e537] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9444048273438/EPOS4-Module-Compact-50-5-Hardware-Reference-En.pdf
+                        - text: EPOS4 Module-Compact 50/5 Hardware Reference (english, PDF 8 MB)
+                        - generic [ref=f3e538]: Version January 2025
+                    - listitem [ref=f3e539]:
+                      - link "EPOS4 Application Notes Collection (english, PDF 21 MB) Version May 2026" [ref=f3e540] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9567255887902/EPOS4-Application-Notes-Collection-En.pdf
+                        - text: EPOS4 Application Notes Collection (english, PDF 21 MB)
+                        - generic [ref=f3e541]: Version May 2026
+                    - listitem [ref=f3e542]:
+                      - link "EPOS4 Firmware Version Readme (english, PDF 529 KB) Version May 2025" [ref=f3e543] [cursor=pointer]:
+                        - /url: /medias/sys_master/root/9444048863262/EPOS4-Firmware-Version-Readme-En.pdf
+                        - text: EPOS4 Firmware Version Readme (english, PDF 529 KB)
+                        - generic [ref=f3e544]: Version May 2025
+        - generic [ref=f3e546]:
+          - heading "Videos" [level=2] [ref=f3e547]
+          - list [ref=f3e548]:
+            - listitem [ref=f3e549]:
+              - link "EPOS Studio Getting Started" [ref=f3e550] [cursor=pointer]:
+                - /url: "#hls-video-overlay-200793075"
+            - listitem [ref=f3e551]:
+              - link "EPOS Studio - Firmware Update Wizard" [ref=f3e552] [cursor=pointer]:
+                - /url: "#hls-video-overlay-203409453"
+            - listitem [ref=f3e553]:
+              - link "maxon EPOS4 Compact 50/5 CAN, Digital Positioning Controller, 5 A, 10 - 50 VDC nt" [ref=f3e554] [cursor=pointer]:
+                - /url: "#hls-video-overlay-220763436"
+            - listitem [ref=f3e555]:
+              - link "Startup wizard brushed DC motor" [ref=f3e556] [cursor=pointer]:
+                - /url: "#hls-video-overlay-225519816"
+            - listitem [ref=f3e557]:
+              - link "EPOS Studio - Startup Wizard (BLDC motor)" [ref=f3e558] [cursor=pointer]:
+                - /url: "#hls-video-overlay-228770799"
+            - listitem [ref=f3e559]:
+              - link "Regulation Tuning - Auto tune function" [ref=f3e560] [cursor=pointer]:
+                - /url: "#hls-video-overlay-233980987"
+            - listitem [ref=f3e561]:
+              - link "maxon EPOS4 Labyrinth" [ref=f3e562] [cursor=pointer]:
+                - /url: "#hls-video-overlay-241678722"
+            - listitem [ref=f3e563]:
+              - link "EPOS Studio – Parameter Export/Import Wizard" [ref=f3e564] [cursor=pointer]:
+                - /url: "#hls-video-overlay-296015631"
+        - link "Buy suitable accessories" [ref=f3e569] [cursor=pointer]:
+          - /url: /maxon/view/category/match/accessory/541718/?target=articleList
+      - list [ref=f3e571]:
+        - listitem [ref=f3e572]:
+          - link "Add to wish list" [ref=f3e573] [cursor=pointer]:
+            - /url: "/maxon/view/add2watchlist?addProduct=541718 "
+        - listitem [ref=f3e575]:
+          - link "Make a request" [ref=f3e576] [cursor=pointer]:
+            - /url: /maxon/view/content/servicerequest?product=541718
+        - listitem [ref=f3e578]:
+          - link "Send to a colleague" [ref=f3e579] [cursor=pointer]:
+            - /url: "mailto:?Subject=Recommendation: EPOS4 Compact 50/5 CAN, digital positioning controller, 5 A, 10 - 50 VDC&Body=controller - 541718 - EPOS4 Compact 50/5 CAN, digital positioning controller, 5 A, 10 - 50 VDC%0d%0dThe EPOS4 Compact 50/5 CAN is a dynamic, ready-to-connect positioning controller in a compact design. Designed for use with brushed DC motors with encoders and brushless EC motors (BLDC) with Hall sensors and encoders up to 250 W / 750 W.%0d%0dDetails:%20https://www.maxongroup.com/maxon/view/product/control/Positionierung/EPOS-4/541718%20%0dAdd to cart:%20https://www.maxongroup.com/maxon/view/FastOrderController?code=541718%26quantity=1%26orderMail=true"
+        - listitem [ref=f3e581]:
+          - link "Print specifications" [ref=f3e582] [cursor=pointer]:
+            - /url: "#"
+  - generic [ref=f3e585]:
+    - list [ref=f3e587]:
+      - listitem [ref=f3e588]: Selecting, combining, and configuring drive systems
+      - listitem [ref=f3e589]: Short delivery times for custom drives
+      - listitem [ref=f3e590]: Extensive product specifications and software
+    - generic [ref=f3e591]:
+      - generic [ref=f3e593]:
+        - heading "Product support" [level=2] [ref=f3e594]
+        - list [ref=f3e595]:
+          - listitem [ref=f3e596]:
+            - heading "+41 (41) 666 18 00" [level=2] [ref=f3e597]
+      - generic [ref=f3e599]:
+        - heading "Shopping made easy" [level=2] [ref=f3e600]
+        - list [ref=f3e601]:
+          - listitem [ref=f3e602]:
+            - list [ref=f3e603]:
+              - listitem [ref=f3e604]:
+                - link "Product selection" [ref=f3e605] [cursor=pointer]:
+                  - /url: /maxon/view/content/Shopping-made-easier
+              - listitem [ref=f3e606]:
+                - link "Shipping" [ref=f3e607] [cursor=pointer]:
+                  - /url: /maxon/view/content/Shipping-costs
+              - listitem [ref=f3e608]:
+                - link "Delivery" [ref=f3e609] [cursor=pointer]:
+                  - /url: /maxon/view/content/Information-about-delivery
+              - listitem [ref=f3e610]:
+                - link "Payment" [ref=f3e611] [cursor=pointer]:
+                  - /url: /maxon/view/content/Payment
+      - generic [ref=f3e613]:
+        - heading "Payment options" [level=2] [ref=f3e614]
+        - list [ref=f3e615]:
+          - listitem [ref=f3e616]
+      - generic [ref=f3e618]:
+        - heading "Knowledge" [level=2] [ref=f3e619]
+        - list [ref=f3e620]:
+          - listitem [ref=f3e621]:
+            - paragraph [ref=f3e622]: Find out more about the interaction of motor, gearhead, sensors, and controller.
+          - listitem [ref=f3e623]:
+            - link "Knowledge & e-learning" [ref=f3e624] [cursor=pointer]:
+              - /url: /maxon/view/content/maxon-Knowledge
+  - generic [ref=f3e627]:
+    - list [ref=f3e628]:
+      - listitem [ref=f3e629]:
+        - link "Cookie Policy" [ref=f3e630] [cursor=pointer]:
+          - /url: /maxon/view/content/Cookie_Policy
+      - listitem [ref=f3e631]:
+        - link "Sitemap" [ref=f3e632] [cursor=pointer]:
+          - /url: /maxon/view/content/sitemap
+      - listitem [ref=f3e633]:
+        - link "Privacy" [ref=f3e634] [cursor=pointer]:
+          - /url: /maxon/view/content/privacy
+      - listitem [ref=f3e635]:
+        - link "Terms and conditions" [ref=f3e636] [cursor=pointer]:
+          - /url: /maxon/view/content/AGB-Board
+      - listitem [ref=f3e637]:
+        - link "Imprint" [ref=f3e638] [cursor=pointer]:
+          - /url: /maxon/view/content/Imprint
+      - listitem [ref=f3e639]:
+        - link "Legal Information" [ref=f3e640] [cursor=pointer]:
+          - /url: /maxon/view/content/legal-notice
+    - paragraph [ref=f3e641]: © 2026 maxon. All rights reserved.

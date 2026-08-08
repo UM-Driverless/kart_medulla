@@ -73,6 +73,13 @@ static volatile bool pump_stall_observed = false;
  * actually been measured above the arm threshold. */
 static volatile bool tank_pressure_ok = false;
 
+/* Set to 1 (via platformio.ini build_flags) to keep ESP_LOG alive and run the
+ * MCP4922 boot self-test. Off by default so a normal build stays silent on
+ * UART0 and the Orin's binary protocol is not corrupted. */
+#ifndef SPI_DIAG_LOGS
+#define SPI_DIAG_LOGS 0
+#endif
+
 #define MAX_ERROR_COUNT_SDIR 10
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
 #define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
@@ -721,12 +728,45 @@ void control_task(void *ctx) {
     // return, meant the request was silently ignored and the readback silently lied.
     pid_apply_override(c->dir_pid, c->dir_act);
 
+    /* =================== HARD-CODED DAC TEST (spi-test-50 branch) ===================
+     * Bench test only, NEVER merge to dev/main: command a constant 50% throttle
+     * (DAC ~2.5 V on U13 pin 14) and select the DAC on the MAX4660 mux, ignoring
+     * the dashboard, the comms watchdog and the mission mode entirely, so the
+     * analog output can be measured without any upstream dependency. Returns
+     * early: steering and brake stay stopped. */
+    /* BEACON: toggle SELECT_THROTTLE at 0.5 Hz (1 s high, 1 s low) so the real
+     * GPIO 15 pin can be found with a multimeter — it is the only pin bouncing
+     * between 0 and 3.3 V every second. The DAC keeps its constant 50%. */
+    static uint32_t beacon_n = 0;
+    bool beacon_high = ((beacon_n++ / 500) % 2) == 0;
+    esp_err_t sel_ret = KM_GPIO_SetThrottleSource(beacon_high);
+    KM_ACT_SetOutput(c->throttle_act, 0.5f);
+    {
+        /* Once a second: did KM_GPIO_Init() complete (a failure anywhere before
+         * the GPIO-15 config leaves the pin unconfigured and only R32's pulldown
+         * acting), did the set call succeed, and what level does the pin's own
+         * input buffer read back? */
+        static uint32_t diag_n = 0;
+        if ((diag_n++ % 500) == 0) {
+            ESP_LOGW(TAG, "DAC-TEST diag: gpio_init_err=%ld set15=%s read15=%d",
+                     (long)g_gpio_init_err, esp_err_to_name(sel_ret),
+                     gpio_get_level(GPIO_NUM_15));
+        }
+    }
+    return;
+
     // --- Safety: comms watchdog + manual mode ---
     // last_cmd / mission / comms_stale are computed at the top of this function,
     // because the SDC decision needs comms_stale and must not be skipped by the
     // early return below.
     if (comms_stale || mission == MISSION_MANUAL) {
-        // No commands received recently OR manual mode → zero all outputs
+        // No commands received recently OR manual mode → zero all outputs and
+        // hand the throttle line back to the pedal. Zeroing the DAC alone left
+        // the kart on a DAC-sourced throttle commanding zero; giving the mux
+        // back to the pedal means the driver keeps physical control even if a
+        // later DAC write happens, and it matches the state R32's pulldown
+        // gives us before firmware runs.
+        KM_GPIO_SetThrottleSource(false);
         KM_ACT_Stop(c->throttle_act);
         KM_ACT_Stop(c->brake_act);
         KM_ACT_Stop(c->dir_act);
@@ -734,6 +774,11 @@ void control_task(void *ctx) {
         last_pid_out = 0.0f;
         return;
     }
+
+    // Past the safety gate: comms are fresh and the mission is not manual, so
+    // the DAC owns the throttle. Re-asserted every cycle rather than latched,
+    // so any path that returns early above leaves the pedal in control.
+    KM_GPIO_SetThrottleSource(true);
 
     // Steering mode: 0=PID (default), 1=direct PWM
     int steer_mode = (int)KM_OBJ_GetObjectValue(STEER_MODE);
@@ -1103,8 +1148,24 @@ void app_main(void) {
 
     system_init();
 
+#if SPI_DIAG_LOGS
+    /* Diagnostic branch only. Sweeps MCP4922 channel A with a voltmeter on
+     * U13 pin 14, then leaves logging on so every later write is visible.
+     * Blocks ~12 s before the console goes quiet, which is why it runs after
+     * system_init(): the control tasks are already up and holding the kart in
+     * its safe state (SDC open, actuators stopped) throughout. */
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+    KM_GPIO_McpSelfTest();
+#else
+    ESP_LOGW(TAG, "SPI_DIAG_LOGS is set but this is not an S3 build — no MCP4922 here");
+#endif
+    ESP_LOGW(TAG, "SPI_DIAG_LOGS build: logging stays ON, so UART0 carries ASCII "
+                  "alongside the binary protocol. The Orin will see CRC errors. "
+                  "Bench use only — do not fly this build with kart-brain running.");
+#else
     // Disable all logging on UART0 to prevent ASCII text from corrupting
     // binary protocol frames. Without this, ESP_LOG output interleaves with
     // protocol bytes and causes CRC mismatches on the Orin side.
     esp_log_level_set("*", ESP_LOG_NONE);
+#endif
 }

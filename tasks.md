@@ -11,6 +11,21 @@ this repo that means flashed *and* driven, per the branch workflow in `AGENTS.md
 
 ## TODO
 
+- [ ] **BLOCKER before any `dev` → `main` PR: `dev` commands 50% throttle unconditionally.**
+  `control_task()` in `main/main.c` carries the spi-test-50 bench block — it calls
+  `KM_GPIO_SetThrottleSource(true)`, sets throttle `0.5f`, and `return`s **above** the
+  comms-watchdog / manual-mode gate, so a `dev` build ignores the dashboard, comms loss and manual
+  mode, and never runs brake or steering. The SDC is decided above that return, so the kill
+  switches remain the only thing that stops the kart. `platformio.ini` also sets
+  `-D SPI_DIAG_LOGS=1`, leaving ESP_LOG on UART0 where it corrupts the Orin's binary protocol.
+  Merged deliberately on 2026-08-08 (Rubén) to consolidate branches while the DAC signal is still
+  being chased. **Delete the block and the flag before merging to `main` or driving a `dev` build.**
+
+- [ ] **`tasks.md` structure: the "Docs across kart-medulla, dv-hardware and kart-docs contradict
+  the code and each other" section sits under `## Done` but holds open `- [ ]` items.** Found
+  2026-08-08 while closing two of them. Either move the section back under TODO or split the
+  closed items out — as it stands, open work is filed under Done and is easy to miss.
+
 ### Pump-stall detector: watch it, then decide whether to arm it
 
 Added 2026-07-27, **reporting only**. A full-length compressor burst that starts below 4 bar and
@@ -917,9 +932,11 @@ soldering iron. Listed worst first.
   This is also the only place in the repo where "35" and a pressure table appear together, which is
   the likely origin of the wrong-pad measurement. Either delete these tables or head them
   "classic ESP32 — previous board, do not use for the S3".
-- [ ] **`README.md` still calls the steering sensor an AS5600** (lines ~7 and ~22, the latter saying
+- [x] **`README.md` still calls the steering sensor an AS5600** (lines ~7 and ~22, the latter saying
   CN5.2 carries "the AS5600's PWM angle output"). It is an **MT6701** read over PWM; `AGENTS.md:20`
   already records the AS5600 as retired on 2026-07-12.
+  **Done 2026-08-08** — both lines now say MT6701, with a pointer to the AGENTS.md section and a
+  note that `km_sdir`'s AS5600 I²C driver is the classic-ESP32 fallback only.
 - [ ] **`.agents/esp32s3-pinmap.md` header and gap 1 are both false.** The header says "This is NOT
   the pin map the firmware currently uses. `km_gpio.h` still holds the classic-ESP32 map"; gap 1
   says "The S3 build does not exist. `platformio.ini` has only `esp32dev` and `native`" and that the
@@ -929,9 +946,13 @@ soldering iron. Listed worst first.
 - [ ] **`.agents/esp32s3-pinmap.md:12` still lists `PRESSURE_3` on GPIO 1 as "analog in (ADC1)".**
   GPIO 1 is now MCPWM capture for the MT6701's PWM output and is deliberately excluded from ADC
   setup. The same file's line 66 already says so; line 12 was never updated.
-- [ ] **Contradictory rework instruction for the ex-`PRESSURE_3` terminal (CN5.2).** kart-docs says
+- [x] **Contradictory rework instruction for the ex-`PRESSURE_3` terminal (CN5.2).** kart-docs says
   "remove R10 only (keep R8 + R9)"; this repo's `.agents/esp32s3-pinmap.md:66` says "keep R8 series,
   remove R9+R10". **Do not solder CN5.2 until this is settled** — one of the two is wrong.
+  **Settled 2026-08-08 (Rubén): remove R10 only.** kart-docs was right. R8 + R9 stay, leaving 20 kΩ
+  in series into GPIO 1 — which is *why* that pin is read as digital PWM through MCPWM capture
+  rather than as an ADC channel, so removing R9 would have defeated the design. `README.md` and a
+  dated correction appended under the 2026-07-11 entry in `.agents/esp32s3-pinmap.md` now say so.
 - [ ] **dv-hardware's schematic and its fabricated PCB disagree on connector designators.** The
   schematic and `output/netlist.net` put the pressure channels on `CN2.1`/`CN2.2`/`CN2.3`; the v1
   silkscreen and PCB put them on `CN7.1`/`CN7.2`/`CN5.2`, where PCB `CN2` is HALL3/HALL2/+5V_REG.
@@ -984,3 +1005,6 @@ soldering iron. Listed worst first.
   `message_type_t` enum in `components/km_coms/km_coms.h`, whose doc comments carry the payload shapes.
   Decide whether to regenerate the tables from that enum or delete them and point at the header —
   a table that is wrong about the encoding is worse than no table, because it reads as authoritative.
+
+- [ ] **[v2 design only — not the physical board]** The amp stages in dv-hardware HEAD (throttle U1B gain 1+R37/R38 = 1.51, brake U1A gain 1+R19/R20 = 3) are matched to the MCP4922 having moved to +3V3 (dv-hardware `16a35fb`): 3.3 V × 1.51 ≈ 5 V, 3.3 V × 3 ≈ 10 V. On the physical v1 board (`84d6dd0`) none of this exists: throttle is U13.14 → U14.8 direct, MCP4922 at +5V_REG. Verify the gain/VREF pairing stays consistent when v2 is fabbed. (This entry originally claimed a live overrange bug — wrong: it mixed the HEAD schematic with the v1 board. Corrected 2026-08-08.)
+- [ ] **dev's `km_gpio.h` claims the GPIO 38 PWM+RC network is "wired by hand" to the throttle net; history.md (2026-07-31/08-01) records only the decision, never the soldering, and the spi-fix plan assumes the DAC path intact.** One of the two is wrong. Physically check the board: a flying wire from the U24 socket's GPIO 38 pin to the U14.8 area, and whether U13 pin 14 is lifted. Then correct the code comment (or history) to match.

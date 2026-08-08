@@ -1,0 +1,327 @@
+- generic [ref=f2e1]:
+  - link [ref=f2e2] [cursor=pointer]: Skip to main content
+  - link [ref=f2e3] [cursor=pointer]:
+    - /url: https://support.google.com/websearch/answer/181196?hl=en-ES
+    - text: Accessibility help
+  - dialog "Before you continue to Google Search" [active]:
+    - generic [ref=f2e10]:
+      - generic [ref=f2e12]:
+        - img "Google" [ref=f2e13]
+        - generic [ref=f2e14]:
+          - 'button "Language: ‪English‬" [ref=f2e16] [cursor=pointer]':
+            - generic [ref=f2e17]: en
+          - link "Sign in" [ref=f2e19] [cursor=pointer]
+      - generic [ref=f2e20]:
+        - heading "Before you continue to Google" [level=1] [ref=f2e21]
+        - generic [ref=f2e22]:
+          - generic [ref=f2e23]:
+            - text: We use
+            - link "cookies" [ref=f2e24] [cursor=pointer]:
+              - /url: https://policies.google.com/technologies/cookies?utm_source=ucbs&hl=en-ES
+            - text: and data to
+            - list [ref=f2e25]:
+              - listitem [ref=f2e26]: Deliver and maintain Google services
+              - listitem [ref=f2e27]: Track outages and protect against spam, fraud and abuse
+              - listitem [ref=f2e28]: Measure audience engagement and site statistics to understand how our services are used and enhance the quality of those services
+          - generic [ref=f2e29]:
+            - text: If you choose to 'Accept all', we will also use cookies and data to
+            - list [ref=f2e30]:
+              - listitem [ref=f2e31]: Develop and improve new services
+              - listitem [ref=f2e32]: Deliver and measure the effectiveness of ads
+              - listitem [ref=f2e33]: Show personalised content, depending on your settings
+              - listitem [ref=f2e34]: Show personalised ads, depending on your settings
+            - generic [ref=f2e35]: If you choose to 'Reject all', we will not use cookies for these additional purposes.
+          - generic [ref=f2e36]: Non-personalised content is influenced by things like the content that you’re currently viewing, activity in your active Search session, and your location. Non-personalised ads are influenced by the content that you’re currently viewing and your general location. Personalised content and ads can also include more relevant results, recommendations and tailored ads based on past activity from this browser, like previous Google searches. We also use cookies and data to tailor the experience to be age-appropriate, if relevant.
+          - generic [ref=f2e37]: Select 'More options' to see additional information, including details about managing your privacy settings. You can also visit g.co/privacytools at any time.
+      - generic [ref=f2e38]:
+        - generic [ref=f2e39]:
+          - button "Reject all" [ref=f2e40] [cursor=pointer]
+          - button "Accept all" [ref=f2e41] [cursor=pointer]
+        - link "More options for personalisation settings and cookies" [ref=f2e43] [cursor=pointer]:
+          - generic "More options for personalisation settings and cookies" [ref=f2e44]: More options
+      - generic [ref=f2e45]:
+        - link "Privacy" [ref=f2e46] [cursor=pointer]:
+          - /url: https://policies.google.com/privacy?hl=en-ES&fg=1&utm_source=ucbs
+        - generic [ref=f2e47]: ·
+        - link "Terms" [ref=f2e48] [cursor=pointer]:
+          - /url: https://policies.google.com/terms?hl=en-ES&fg=1&utm_source=ucbs
+  - generic [ref=f2e53]:
+    - search [ref=f2e54]:
+      - generic [ref=f2e56]:
+        - link [ref=f2e58] [cursor=pointer]:
+          - /url: https://www.google.com/webhp?hl=en&ictx=2&sa=X&ved=0ahUKEwifno_82NyVAxU6WkEAHaaaEe8QPQhr
+        - generic [ref=f2e60]:
+          - generic [ref=f2e61]:
+            - combobox [ref=f2e64]: maxongroup.com 541718 EPOS4 Compact 50/5 CAN datasheet maxongroup.com 541718 EPOS4 Compact 50/5 CAN datasheet
+            - generic [ref=f2e65]:
+              - button [ref=f2e67] [cursor=pointer]
+              - generic [ref=f2e72]:
+                - button [ref=f2e73] [cursor=pointer]
+                - button [ref=f2e76] [cursor=pointer]
+          - button [ref=f2e79] [cursor=pointer]
+    - generic [ref=f2e84]:
+      - button [ref=f2e86] [cursor=pointer]
+      - button [ref=f2e87] [cursor=pointer]
+      - generic [ref=f2e93]:
+        - button [ref=f2e95] [cursor=pointer]
+        - link [ref=f2e100] [cursor=pointer]:
+          - /url: https://accounts.google.com/ServiceLogin?hl=en&passive=true&continue=https://www.google.com/search%3Fq%3Dmaxongroup.com%2B541718%2BEPOS4%2BCompact%2B50%252F5%2BCAN%2Bdatasheet%26sei%3DV7BbarWGFsm1hbIP4JWnsA8&ec=futura_srp_og_si_72236_p
+          - text: Sign in
+  - generic [ref=f2e102]:
+    - navigation [ref=f2e108]:
+      - list [ref=f2e111]:
+        - listitem [ref=f2e112]:
+          - link [ref=f2e115] [cursor=pointer]:
+            - /url: /search?q=maxongroup.com+541718+EPOS4+Compact+50/5+CAN+datasheet&sca_esv=ff0f52d8df50e9c0&udm=50&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&aep=1&ntc=1&cs=0&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q2J8OegQIEBAD
+            - generic [ref=f2e116]: AI Mode
+        - listitem [ref=f2e119]:
+          - link [disabled] [ref=f2e120]:
+            - generic [ref=f2e121]: All
+        - listitem [ref=f2e123]:
+          - link [ref=f2e124] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=2&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=maxongroup.com+541718+EPOS4+Compact+50/5+CAN+datasheet&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8QtKgLegQIGhAB
+            - generic [ref=f2e125]: Images
+        - listitem [ref=f2e127]:
+          - link [ref=f2e128] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=39&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=maxongroup.com+541718+EPOS4+Compact+50/5+CAN+datasheet&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Qs6gLegQIGRAB
+            - generic [ref=f2e129]: Short videos
+        - listitem [ref=f2e131]:
+          - link [ref=f2e132] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=7&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=maxongroup.com+541718+EPOS4+Compact+50/5+CAN+datasheet&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8QtKgLegQIFxAB
+            - generic [ref=f2e133]: Videos
+        - listitem [ref=f2e135]:
+          - link [ref=f2e136] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=18&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=maxongroup.com+541718+EPOS4+Compact+50/5+CAN+datasheet&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Qs6gLegQIGBAB
+            - generic [ref=f2e137]: Forums
+        - listitem [ref=f2e139]:
+          - link [ref=f2e140] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&q=maxongroup.com+541718+EPOS4+Compact+50/5+CAN+datasheet&tbm=nws&source=lnms&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q0pQJegQIFhAB
+            - generic [ref=f2e141]: News
+        - listitem [ref=f2e143]:
+          - button [ref=f2e144] [cursor=pointer]:
+            - generic [ref=f2e145]: More
+    - navigation [ref=f2e152]:
+      - navigation [ref=f2e155]:
+        - list [ref=f2e162]:
+          - listitem [ref=f2e163]:
+            - link [ref=f2e164] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+541718+epos4+compact+50+5+can+datasheet+spec&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rLaUwqZaoC5jbP-ON7GCqolsYINy4YLOKUzaGlrzokFl1y2QU8ksqbFZ8WjUexpKWvC1j-1W4FEA_TbvKtxoZ2Aiyceb1pGpskZHicL2l3k5U_Lht13-zipLkToWOAyUHJkQ24763RI_VpOg-J0m2h2yK9rV4FqDRmYaEVQw3ya2XwqJiVIeGkB_5LhAbiCT0Jq8Q9V2BzgSLONrZu-wNKFR3-gqhBTGhZ9VZWVbFbq5c7Od66fiWKkqm5t4FVT9wk0-VpTyVG1Bwb0HGHIXetnP_zK0&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8QxKsJKAB6BAgSEAE&ictx=0
+              - generic [ref=f2e165]: Spec
+          - listitem [ref=f2e167]:
+            - link [ref=f2e168] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+541718+epos4+compact+50+5+can+datasheet+manual&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rYWTn2tOMg0Cm7OrOQhh39IoD-oRSufVFMTiGsl9rVUcGS212ov4EqJc15NBqC5DNWxZZ8B6oTs9j93BkZaHTdsmVIKIngYU8piL8-aJakLfqj9vS7ZUEfgqT5Uyko2riiqnKA846XaZBWovXzGyuFIJ7RJO4CNhmBaT4XLQLrYNUEeuDmND5cdwsHfh1G8K5SoCYblPIMVSFM69Kvldg1U8xuxE6vJjJDty7nL-YYehDiQZ2XW5beX4zY9PPbfrG6XKQrSigfzPTJNah7LxVAV3EWrE&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8QxKsJKAF6BAgUEAE&ictx=0
+              - generic [ref=f2e169]: Manual
+          - listitem [ref=f2e171]:
+            - link [ref=f2e172] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+541718+epos4+compact+50+5+can+datasheet+diagram&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rtaTLTiLACqA5I8kVs2x-DCFcYlzsB1NcWQPo7a6UoG_iBs9qyXVrN00cipfOU5wbmgQopU2KatZc9xjxTFXS0G4-NMtnhNJFzqXjvuTrR8Vq0c2ZJTiclUZQAOsg2FTZUlUcl9uhrISQibGqsxkSXBzJvHDpgCOGDd_QWGePXbBqeTu_reMEE73p62CwwA90OcxmKJ4pDtsXf6aoq4N2eEJTxITCs1umwt7sk2uUit8cldMYzxVl8A6NReDCI2_FPHbJTWclzGBKrC7ZzHBsu3Ou4-c&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8QxKsJKAJ6BAgVEAE&ictx=0
+              - generic [ref=f2e173]: Diagram
+    - heading [level=1] [ref=f2e175]: Search Results
+    - main [ref=f2e181]:
+      - generic [ref=f2e185]:
+        - generic [ref=f2e188]:
+          - heading [level=2] [ref=f2e189]: Web results
+          - generic [ref=f2e190]:
+            - generic [ref=f2e193]:
+              - link [ref=f2e195] [cursor=pointer]:
+                - /url: https://www.maxongroup.com/medias/sys_master/root/8834325053470/EPOS4-Module-50-5-Hardware-Reference-En.pdf
+                - heading [level=3] [ref=f2e196]: EPOS4 Module/Compact 50/5 Hardware Reference
+                - generic [ref=f2e202]:
+                  - generic [ref=f2e203]: Maxon Motor
+                  - generic [ref=f2e205]: https://www.maxongroup.com › 8834325053470
+              - generic [ref=f2e207]: PDF
+              - button [ref=f2e210] [cursor=pointer]
+            - generic [ref=f2e215]:
+              - generic [ref=f2e217]:
+                - emphasis [ref=f2e218]: EPOS4 Compact 50/5 CAN (541718
+                - text: ) Technical Data maxon motor control EPOS4 Positioning Controller. Compact 50/5 CAN (541718) 58 V 56 V Overcurrent. Connection ...
+              - generic [ref=f2e219]: 102 pages
+        - generic [ref=f2e230]:
+          - heading [level=2] [ref=f2e234]:
+            - generic [ref=f2e235]: Thinking
+          - progressbar [ref=f2e237]
+        - generic [ref=f2e241]:
+          - heading [level=2] [ref=f2e242]: Resultados web
+          - generic [ref=f2e243]:
+            - generic [ref=f2e246]:
+              - link [ref=f2e248] [cursor=pointer]:
+                - /url: https://www.maxongroup.es/maxon/view/product/control/Positionierung/EPOS-4/541718
+                - heading [level=3] [ref=f2e249]: EPOS4 Compact 50/5 CAN, controlador de posición digital, 5 ...
+                - generic [ref=f2e255]:
+                  - generic [ref=f2e256]: Maxon Motor
+                  - generic [ref=f2e258]: https://www.maxongroup.es › view
+              - generic [ref=f2e260]:
+                - generic [ref=f2e261]: ·
+                - link [ref=f2e262] [cursor=pointer]:
+                  - /url: https://translate.google.com/translate?u=https://www.maxongroup.es/maxon/view/product/control/Positionierung/EPOS-4/541718&hl=en&sl=es&tl=en&client=search
+                  - text: Translate this page
+              - button [ref=f2e265] [cursor=pointer]
+            - generic [ref=f2e271]:
+              - generic [ref=f2e272]:
+                - text: El
+                - emphasis [ref=f2e273]: EPOS4 Compact 50/5 CAN
+                - text: es un controlador de posición dinámico listo para su conexión y de diseño compacto. Adecuado para motores DC con escobillas y encoder, ...
+              - link [ref=f2e274] [cursor=pointer]:
+                - /url: https://www.maxongroup.es/maxon/view/product/control/Positionierung/EPOS-4/541718#:~:text=El%20EPOS4%20Compact%2050%2F5%20CAN,250%20W%20%2F%20750%20W.
+                - text: Read more
+        - generic [ref=f2e278]:
+          - generic [ref=f2e281]:
+            - link [ref=f2e283] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/maxon/view/product/541718
+              - heading [level=3] [ref=f2e284]: "541718"
+              - generic [ref=f2e290]:
+                - generic [ref=f2e291]: Maxon Motor
+                - generic [ref=f2e293]: https://www.maxongroup.com › maxon › view › product
+            - button [ref=f2e297] [cursor=pointer]
+          - generic [ref=f2e304]:
+            - text: The EPOS4 Compact 50/5 CAN is a dynamic,
+            - emphasis [ref=f2e305]: ready-to-connect positioning controller in a compact design
+            - text: . Designed for use with brushed DC motors with encoders ...
+        - generic [ref=f2e309]:
+          - generic [ref=f2e312]:
+            - link [ref=f2e314] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/medias/sys_master/8830261592094.pdf
+              - heading [level=3] [ref=f2e315]: EPOS4 Feature Chart
+              - generic [ref=f2e321]:
+                - generic [ref=f2e322]: Maxon Motor
+                - generic [ref=f2e324]: https://www.maxongroup.com › sys_master
+            - generic [ref=f2e326]: PDF
+            - button [ref=f2e329] [cursor=pointer]
+          - generic [ref=f2e336]:
+            - text: EPOS4 products are
+            - emphasis [ref=f2e337]: small-sized, full digital, smart positioning control units
+            - text: . approximately 1'050 Watts. Compact 50/5 CAN (541718)
+        - generic [ref=f2e341]:
+          - generic [ref=f2e344]:
+            - link [ref=f2e346] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/maxon/view/product/control/Positionierung/EPOS-4/541718
+              - heading [level=3] [ref=f2e347]: EPOS4
+              - generic [ref=f2e353]:
+                - generic [ref=f2e354]: Maxon Motor
+                - generic [ref=f2e356]: https://www.maxongroup.com › EPOS-4 › 541718
+            - button [ref=f2e360] [cursor=pointer]
+          - generic [ref=f2e367]:
+            - text: The EPOS4 Compact 50/5 CAN is a dynamic,
+            - emphasis [ref=f2e368]: ready-to-connect positioning controller in a compact design
+            - text: . Designed for use with brushed DC motors with encoders ...
+        - generic [ref=f2e372]:
+          - generic [ref=f2e375]:
+            - link [ref=f2e377] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/medias/sys_master/root/8834325250078/EPOS4-50-5-Hardware-Reference-En.pdf
+              - heading [level=3] [ref=f2e378]: EPOS4 50/5 Hardware Reference
+              - generic [ref=f2e384]:
+                - generic [ref=f2e385]: maxon group
+                - generic [ref=f2e387]: https://www.maxongroup.com › sys_master › root
+            - generic [ref=f2e389]: PDF
+            - button [ref=f2e392] [cursor=pointer]
+          - generic [ref=f2e398]:
+            - generic [ref=f2e399]:
+              - text: The
+              - emphasis [ref=f2e400]: EPOS4 50/5
+              - text: positioning controller is considered as partly completed machinery according to EU Directive 2006/42/EC,.
+            - link [ref=f2e401] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/medias/sys_master/root/8834325250078/EPOS4-50-5-Hardware-Reference-En.pdf#:~:text=The%20EPOS4%2050%2F5%20positioning%20controller,according%20to%20EU%20Directive%202006%2F42%2FEC%2C
+              - text: Read more
+        - generic [ref=f2e405]:
+          - generic [ref=f2e408]:
+            - link [ref=f2e410] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/medias/sys_master/8830265917470.pdf
+              - heading [level=3] [ref=f2e411]: EPOS4 Application Notes
+              - generic [ref=f2e417]:
+                - generic [ref=f2e418]: maxon group
+                - generic [ref=f2e420]: https://www.maxongroup.com › sys_master
+            - generic [ref=f2e422]: PDF
+            - button [ref=f2e425] [cursor=pointer]
+          - generic [ref=f2e431]:
+            - generic [ref=f2e432]:
+              - emphasis [ref=f2e433]: maxon motor control's EPOS4 positioning controllers
+              - text: are small-sized, full digital, smart positioning con- trol units. Their high power density allow flexible ...
+            - link [ref=f2e434] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/medias/sys_master/8830265917470.pdf#:~:text=maxon%20motor%20control's%20EPOS4%20positioning,and%20brushless%20EC%20(BLDC)%20motors
+              - text: Read more
+        - generic [ref=f2e438]:
+          - generic [ref=f2e441]:
+            - link [ref=f2e443] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/maxon/view/product/control/Positionierung/EPOS-4/628094
+              - heading [level=3] [ref=f2e444]: Programs
+              - generic [ref=f2e450]:
+                - generic [ref=f2e451]: maxon group
+                - generic [ref=f2e453]: https://www.maxongroup.com › Positionierung › EPOS-4
+            - button [ref=f2e457] [cursor=pointer]
+          - generic [ref=f2e463]:
+            - generic [ref=f2e464]:
+              - text: The
+              - emphasis [ref=f2e465]: EPOS4 Compact 50/5 EtherCAT
+              - text: is a dynamic, ready-to-connect positioning controller in a compact design. Designed for use with brushed DC motors with encoders ...
+            - link [ref=f2e466] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/maxon/view/product/control/Positionierung/EPOS-4/628094#:~:text=Buy%20suitable%20accessories
+              - text: Read more
+        - generic [ref=f2e470]:
+          - generic [ref=f2e473]:
+            - link [ref=f2e475] [cursor=pointer]:
+              - /url: https://www.maxongroup.us/medias/sys_master/8823581442078.pdf
+              - heading [level=3] [ref=f2e476]: EPOS4 Feature Chart - maxon group
+              - generic [ref=f2e482]:
+                - generic [ref=f2e483]: maxon group
+                - generic [ref=f2e485]: https://www.maxongroup.us › medias › sys_master
+            - generic [ref=f2e487]: PDF
+            - button [ref=f2e490] [cursor=pointer]
+          - generic [ref=f2e496]:
+            - generic [ref=f2e497]:
+              - emphasis [ref=f2e498]: EPOS4
+              - text: controllers are specially designed to be commanded and controlled as a slave node in the CANopen network. In addition, the units
+              - emphasis [ref=f2e499]: can
+              - text: be operated via any ...
+            - link [ref=f2e500] [cursor=pointer]:
+              - /url: https://www.maxongroup.us/medias/sys_master/8823581442078.pdf#:~:text=EPOS4%20controllers%20are%20specially%20designed,any%20USB%20or%20RS232%20communication
+              - text: Read more
+      - generic [ref=f2e502]:
+        - generic [ref=f2e507]:
+          - heading [level=2] [ref=f2e509]: People also search for
+          - generic [ref=f2e511]:
+            - generic [ref=f2e512]:
+              - link [ref=f2e516] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Epos4+50+5+manual&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q1QJ6BAgtEAE
+                - generic [ref=f2e517]: Epos4 50 5 manual
+              - link [ref=f2e530] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+541718+epos4+compact+50+5+can+datasheet+spec&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q1QJ6BAgxEAE
+                - generic [ref=f2e531]: Maxongroup com 541718 epos4 compact 50 5 can datasheet spec
+              - link [ref=f2e544] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+541718+epos4+compact+50+5+can+datasheet+manual&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q1QJ6BAgzEAE
+                - generic [ref=f2e545]: Maxongroup com 541718 epos4 compact 50 5 can datasheet manual
+              - link [ref=f2e558] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+541718+epos4+compact+50+5+can+datasheet+diagram&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q1QJ6BAgyEAE
+                - generic [ref=f2e559]: Maxongroup com 541718 epos4 compact 50 5 can datasheet diagram
+            - generic [ref=f2e569]:
+              - link [ref=f2e573] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxon+EPOS4&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q1QJ6BAgwEAE
+                - generic [ref=f2e574]: Maxon EPOS4
+              - link [ref=f2e587] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=DEC+Module+50/5&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q1QJ6BAguEAE
+                - generic [ref=f2e588]: DEC Module 50/5
+              - link [ref=f2e601] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Epos4+hardware+reference&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q1QJ6BAgvEAE
+                - generic [ref=f2e602]: Epos4 hardware reference
+              - link [ref=f2e615] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxon+ec+32+flat&sa=X&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q1QJ6BAgsEAE
+                - generic [ref=f2e616]: Maxon ec 32 flat
+        - navigation [ref=f2e626]:
+          - heading [level=1] [ref=f2e627]: Page navigation
+          - text: "1"
+          - link [ref=f2e630] [cursor=pointer]:
+            - /url: /search?q=maxongroup.com+541718+EPOS4+Compact+50/5+CAN+datasheet&sca_esv=ff0f52d8df50e9c0&ei=V7Bbat-WIbq0hbIPprXG-A4&start=10&sa=N&sstk=AU9db-AR_oUOC2TpKqzjSuADFe7qAlsmNu9AvwoZzhKFRDnGxVOMrNqbLcBG99Asm12azCwYIjPQW5Dw_1tOaDnxcwsdmKnQ6OoQvg&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q8tMDegQIKhAE
+            - text: "2"
+          - link [ref=f2e632] [cursor=pointer]:
+            - /url: /search?q=maxongroup.com+541718+EPOS4+Compact+50/5+CAN+datasheet&sca_esv=ff0f52d8df50e9c0&ei=V7Bbat-WIbq0hbIPprXG-A4&start=20&sa=N&sstk=AU9db-AR_oUOC2TpKqzjSuADFe7qAlsmNu9AvwoZzhKFRDnGxVOMrNqbLcBG99Asm12azCwYIjPQW5Dw_1tOaDnxcwsdmKnQ6OoQvg&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q8tMDegQIKhAG
+            - text: "3"
+          - link [ref=f2e634] [cursor=pointer]:
+            - /url: /search?q=maxongroup.com+541718+EPOS4+Compact+50/5+CAN+datasheet&sca_esv=ff0f52d8df50e9c0&ei=V7Bbat-WIbq0hbIPprXG-A4&start=30&sa=N&sstk=AU9db-AR_oUOC2TpKqzjSuADFe7qAlsmNu9AvwoZzhKFRDnGxVOMrNqbLcBG99Asm12azCwYIjPQW5Dw_1tOaDnxcwsdmKnQ6OoQvg&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q8tMDegQIKhAI
+            - text: "4"
+          - link [ref=f2e636] [cursor=pointer]:
+            - /url: /search?q=maxongroup.com+541718+EPOS4+Compact+50/5+CAN+datasheet&sca_esv=ff0f52d8df50e9c0&ei=V7Bbat-WIbq0hbIPprXG-A4&start=40&sa=N&sstk=AU9db-AR_oUOC2TpKqzjSuADFe7qAlsmNu9AvwoZzhKFRDnGxVOMrNqbLcBG99Asm12azCwYIjPQW5Dw_1tOaDnxcwsdmKnQ6OoQvg&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q8tMDegQIKhAK
+            - text: "5"
+          - heading [level=2] [ref=f2e638]:
+            - link [ref=f2e639] [cursor=pointer]:
+              - /url: /search?q=maxongroup.com+541718+EPOS4+Compact+50/5+CAN+datasheet&sca_esv=ff0f52d8df50e9c0&ei=V7Bbat-WIbq0hbIPprXG-A4&start=10&sa=N&sstk=AU9db-AR_oUOC2TpKqzjSuADFe7qAlsmNu9AvwoZzhKFRDnGxVOMrNqbLcBG99Asm12azCwYIjPQW5Dw_1tOaDnxcwsdmKnQ6OoQvg&ved=2ahUKEwifno_82NyVAxU6WkEAHaaaEe8Q8NMDegQIKhAM
+              - generic [ref=f2e641]: Next
+    - contentinfo [ref=f2e642]:
+      - heading [level=1] [ref=f2e643]: Footer links

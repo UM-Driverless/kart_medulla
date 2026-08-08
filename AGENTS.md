@@ -8,6 +8,7 @@
   - **I²C:** SDA = **GPIO 8**, SCL = **GPIO 9** (classic map says 21/22). On-board PCF8574 at 0x20; the MT6701 also answers at **0x06** when its I²C pins are wired.
   - **Steering-sensor PWM angle output** is read on **GPIO 1** (the ex-`PRESSURE_3` terminal CN5.2). This pad belongs to MCPWM capture, so it is deliberately NOT set up as an ADC channel — nothing else may claim it.
   - **EBS compressor MOSFET** is on **GPIO 3** (the ex-`BUZZER` net, now `CMD_COMPRESSOR_PWM`, CN8.2).
+- **The physical board this firmware targets is dv-hardware commit `84d6dd0` (tag `kart-medulla-v1`), plus the rework listed in that repo's README under "Boards in existence".** dv-hardware `main` HEAD carries post-fab v2 design changes that do NOT exist on the physical board (throttle gain stage ×1.51, brake gain 3, MCP4922 moved to +3V3, WAGO connectors). Update this line when a new board is built. **Any electrical claim (pin wiring, part value, voltage range) must name the dv-hardware commit it was read from** — mixing HEAD with the physical board produced a string of wrong conclusions on 2026-08-08 (see history.md).
 - **The schematic and PCB live in a different repo, and the board physically on the kart is revision v1: `~/repos/dv-hardware-v1/projects/kart-medulla/`.** `~/repos/dv-hardware` is the evolving next revision — when asking "what is this pin wired to on the real kart", read v1, not it (Rubén, 2026-08-08). `kart-medulla.kicad_sch` (sheet `kart-medulla_P1.kicad_sch` holds the circuitry), `kart-medulla.kicad_pcb`, `docs/pinout-esp32-s3.md` (module pin → signal), `docs/pinout-cn-connectors.md` (**which signal is on which CN1–CN10 screw terminal** — read this when wiring or probing the outside world), `datasheets/`, `parts.md`. **The schematic is the authority on anything electrical** — what a pin physically connects to, part values, signal voltage ranges. When a question is "what is this pin wired to", export a fresh netlist and read it rather than trusting any table: `kicad-cli sch export netlist --format kicadxml -o /tmp/net.xml kart-medulla.kicad_sch`. The checked-in `output/netlist.net` is dated 2026-05-07 and is stale. Note the PCB silkscreen and the schematic disagree on some connector designators — trust the silkscreen for wiring (see `tasks.md`).
 - **USB bridge is a WCH CH343** (VID 0x1A86 / PID 0x55D3) → shows up as `/dev/cu.usbmodem*`. This does NOT mean native-USB / does NOT tell you classic-vs-S3 on its own. Serial goes over UART0 through the bridge, so bench builds use **`ARDUINO_USB_CDC_ON_BOOT=0`** (see `history.md` / error-log on Mac bench flashing).
 
@@ -19,6 +20,21 @@ The AS5600 was retired on 2026-07-12 — it could not detect the kart's large sh
 - **Bench tool for the sensor itself: `~/dv/kart/steering/mt6701-bench/`** — I²C console for reading the raw 14-bit angle and checking/setting reg 0x38 (OUT_MODE). Use it to confirm the sensor is still in PWM mode before blaming the firmware.
 
 ## Branch Workflow (READ THIS)
+
+!!! DEV CURRENTLY COMMANDS 50% THROTTLE UNCONDITIONALLY — DO NOT MERGE TO MAIN !!!
+
+`control_task()` in `main/main.c` carries the spi-test-50 bench block: it calls
+`KM_GPIO_SetThrottleSource(true)`, sets throttle to `0.5f`, and `return`s **above** the
+comms-watchdog / manual-mode gate. So a build of `dev` commands a constant 50% throttle
+forever and ignores the dashboard, comms loss, and manual mode; brake and steering never
+run. The SDC decision is computed above that return, so the kill switches still work —
+they are the only thing that stops the kart. `platformio.ini` also sets
+`-D SPI_DIAG_LOGS=1`, which leaves ESP_LOG on UART0 and corrupts the Orin's binary
+protocol.
+
+Merged deliberately on 2026-08-08 (Rubén) to consolidate branches while the DAC signal is
+still being chased — see history.md. **Delete that block and the build flag before any
+`dev` → `main` PR, and before driving the kart with a `dev` build.** Tracked in `tasks.md`.
 
 **All day-to-day work happens on `dev`.** `main` is a protected release branch — it only receives merges from `dev` (or feature branches) *after* the change has been physically validated on the kart. Same convention as `kart-brain` and the other UM-Driverless repos.
 
