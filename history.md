@@ -2027,3 +2027,9 @@ on the v2 schematic that same day, because the part's V_IH is 0.7 × V_DD and a 
 3.5 V, which a 3.3 V ESP32 cannot guarantee to reach. **The v1 board in hand is still wired at 5 V**,
 so this test is being run in the marginal configuration — typical parts switch near 2.5 V and usually
 work, but a failure here is as likely to be that margin as anything in this branch.
+
+## 2026-08-08 — spi-test-50 bench firmware + amp-gain discovery
+
+Merged `spi-fix` onto latest `dev` as branch `spi-test-50`, resolving the km_gpio conflict in favour of the MCP4922 SPI path (dev's LEDC-PWM throttle stopgap deleted). Added a hard-coded test block in the control loop: 50% throttle + SELECT_THROTTLE high every cycle, ignoring the dashboard/comms watchdog, early-return so steering and brake stay stopped. NEVER merge this branch. Flashed to the S3 from the Orin (921600, /dev/ttyACM0) after confirming actuator power off.
+
+While tracing the measurement points in the schematic netlist: U1B (LM358, throttle) is not a unity buffer — gain 1+5.1K/10K = 1.51 (R37/R38). U1A (brake) is gain 3 (R19 2K / R20 1K). Both gains only produce the advertised 0–5 V / 0–10 V from a 0–3.3 V input, i.e. the classic ESP32's internal DAC the board was originally designed around. With the MCP4922 at VREF=5 V the chain overranges (~7.6 V throttle full scale). Expected voltages for the 50% test: 2.5 V at U13.14, ~3.8 V at U14.8 and CN10.1. Filed in tasks.md.

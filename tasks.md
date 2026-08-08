@@ -984,3 +984,5 @@ soldering iron. Listed worst first.
   `message_type_t` enum in `components/km_coms/km_coms.h`, whose doc comments carry the payload shapes.
   Decide whether to regenerate the tables from that enum or delete them and point at the header —
   a table that is wrong about the encoding is worse than no table, because it reads as authoritative.
+
+- [ ] **Throttle/brake amp gains assume a 3.3 V DAC that no longer exists.** U1B (throttle) has gain 1+R37/R38 = 1.51, U1A (brake) gain 1+R19/R20 = 3 — both sized so a classic-ESP32 internal DAC (0–3.3 V) lands on 0–5 V / 0–10 V. The MCP4922 (VREF = +5V_REG) outputs 0–5 V, so after the amps full scale is ~7.6 V throttle / ~15 V brake (clips near the 12 V rail). Either rescale in firmware (cap DAC codes at ~66% / ~66%) or change R37 or R19. Found 2026-08-08 while preparing the spi-test-50 DAC bench test; schematic values verified from kart-medulla_P1.kicad_sch.
