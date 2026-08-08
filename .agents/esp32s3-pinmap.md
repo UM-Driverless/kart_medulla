@@ -68,6 +68,18 @@ a CN — see `dv/kart/pneumatics/history.md` 2026-07-10. So **both GPIO 38 and 3
 terminal, and GPIO 39 isn't on a CN. **GPIO 38 and 39 both remain spare.** Capture routes via the
 GPIO matrix (MCPWM/PCNT/RMT), so the choice of pin doesn't constrain the peripheral.
 
+**Correction 2026-08-08 (amends the 2026-07-11 entry above on two points; CN5.2 → GPIO 1 stands):**
+
+1. **The sensor is an MT6701, not an AS5600.** The AS5600 was retired 2026-07-12 — it could not
+   detect the kart's large shaft magnet. The MT6701 is EEPROM-configured for 994.4 Hz PWM output,
+   high-valid, and is mounted and validated on the kart. See "The Steering Sensor Is an MT6701, Not
+   an AS5600" in `AGENTS.md`.
+2. **Remove R10 only, not R9+R10.** R8 and R9 both stay. The net is
+   `CN5.2 —[R8 10k]— node —[R9 10k]— GPIO 1 —[R10 10k]— GND`, so R10 is the only shunt to ground and
+   R8 + R9 remain as a 20 kΩ series into the pin. That series impedance is too high for the ADC,
+   which is the reason the pin is read as digital PWM via MCPWM capture rather than as an analog
+   voltage — removing R9 as well would defeat that.
+
 ## Known firmware gaps against this hardware
 
 1. **The S3 build does not exist.** `platformio.ini` has only `esp32dev` and `native`. The
