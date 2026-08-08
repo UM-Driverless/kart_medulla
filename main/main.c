@@ -259,6 +259,29 @@ static void pid_apply_override(PID_Controller *pid, ACT_Controller *act) {
  * no calibration constant here and none is needed. */
 #define PRESSURE_BAR_PER_PIN_VOLT 3.0f
 
+/* Driver pedals. Each pedal outputs 0-5 V (nets PEDAL_ACC__0_5V on CN6.2 and
+ * PEDAL_BRAKE__0_5V on CN6.1); the board halves it with a 10k/10k divider
+ * (R14/R15 for the accelerator, R16/R17 for the brake, dv-hardware schematic
+ * kart-medulla_P1) into the __3V3 nets on GPIO 4 / GPIO 5 (ADC1). So the pin
+ * sees at most ~2.5 V, inside the 11 dB attenuation range.
+ *
+ * The min/max below are PROVISIONAL: derived from the divider math (full 0-5 V
+ * span -> 0-2500 mV at the pin), not measured. Real pedals rest above 0 V and
+ * top out below full scale — measure both ends on the kart and replace these.
+ * Until then the *_effort fields of ESP_PEDALS are approximate; the *_mv fields
+ * are always trustworthy (eFuse-calibrated). */
+#define PEDAL_MIN_MV 0     // pin mV at pedal released — PROVISIONAL, calibrate on kart
+#define PEDAL_MAX_MV 2500  // pin mV at pedal floored  — PROVISIONAL, calibrate on kart
+
+/** Map a pedal pin reading (mV) to a 0-255 effort using the provisional span. */
+static inline int32_t pedal_effort_255(int32_t mv)
+{
+    int32_t e = (mv - PEDAL_MIN_MV) * 255 / (PEDAL_MAX_MV - PEDAL_MIN_MV);
+    if (e < 0) e = 0;
+    if (e > 255) e = 255;
+    return e;
+}
+
 /* Minimum pressure rise a full-length compressor burst must produce. The compressor
  * manages roughly 0.1 bar/s (0 -> 6 bar in about a minute, bench 2026-07-18), so a
  * 15 s burst should deliver well over a bar. 0.5 sits comfortably above the SDE5's
@@ -717,6 +740,19 @@ void control_task(void *ctx) {
             pres2_mv                   // PRESSURE_2 in mV at the pin (calibrated)
         };
         KM_COMS_SendMsg(ESP_PNEUMATIC, pneum, 10);
+
+        // Driver pedals, same 20 Hz throttle as the pneumatics frame. mV first
+        // (always trustworthy, eFuse-calibrated), then the normalized effort from
+        // the provisional PEDAL_MIN_MV/PEDAL_MAX_MV span — see their definition.
+        int32_t acc_mv   = (int32_t)KM_GPIO_ReadADC_mV(PIN_PEDAL_ACC);
+        int32_t brake_mv = (int32_t)KM_GPIO_ReadADC_mV(PIN_PEDAL_BRAKE);
+        int32_t pedals[4] = {
+            acc_mv,                    // accelerator pedal, mV at GPIO 4 (half of 0-5 V signal)
+            brake_mv,                  // brake pedal, mV at GPIO 5 (half of 0-5 V signal)
+            pedal_effort_255(acc_mv),  // accelerator effort 0-255 (provisional calibration)
+            pedal_effort_255(brake_mv) // brake effort 0-255 (provisional calibration)
+        };
+        KM_COMS_SendMsg(ESP_PEDALS, pedals, 4);
     }
 
     // Pick up any PID gains the dashboard has pushed. Deliberately ABOVE the manual /
