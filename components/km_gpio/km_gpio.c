@@ -222,8 +222,11 @@ esp_err_t KM_GPIO_Init(void)
      * which is why the gap went unnoticed. */
     gpio_config_t thr_mux_cfg = {
         .pin_bit_mask = 1ULL << PIN_SELECT_THROTTLE,
-        /* INPUT_OUTPUT (spi-test-50 diagnostic): keeps the input buffer on so
-         * gpio_get_level() reports the level the pin is really driving. */
+        /* INPUT_OUTPUT, not OUTPUT: keeps the input buffer on so
+         * gpio_get_level() reports the level the pin is really driving —
+         * same reasoning as PIN_SDC_NOT_EMERGENCY below. Proved its worth on
+         * the 2026-08-08 bench session, where the read-back separated
+         * "firmware isn't driving the pin" from "meter is on the wrong pin". */
         .mode = GPIO_MODE_INPUT_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_ENABLE,   // keep the pedal if the pin floats

@@ -2174,3 +2174,15 @@ pointer is harmless and goes away once that worktree is removed.
   full-press measurement and update both constants. Brake input reads 0 mV — CN6.1 not wired yet.
 - The physical board is `~/repos/dv-hardware-v1` (v1), recorded in AGENTS.md the same day;
   `~/repos/dv-hardware` is the next revision.
+
+## 2026-08-08 — DAC confirmed working at 5 V supply; hardcoded 50% test removed, throttle back on dashboard control
+
+The mystery 0 V on GPIO 15 resolved as a flashing problem (per Rubén: after other flashes it
+now outputs a steady 3.3 V — the exact mechanism was not pinned down; the firmware-side
+readback had shown the pad high all along). With SELECT_THROTTLE high, the accelerator
+command line shows live voltage on the meter, so **the MCP4922 does latch 3.3 V logic while
+powered at 5 V** — the V_IH margin (3.5 V guaranteed threshold) did not bite on this part.
+The 5 V→3.3 V supply bodge is NOT needed on the v1 board. Removed the spi-test-50 hardcode
+from dev: throttle now follows TARGET_THROTTLE from the Orin again, behind the comms
+watchdog and manual-mode gate as designed. Kept SELECT_THROTTLE as INPUT_OUTPUT with its
+read-back, promoted from bench diagnostic to permanent (same pattern as the SDC pin).

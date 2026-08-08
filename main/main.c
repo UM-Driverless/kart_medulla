@@ -764,28 +764,6 @@ void control_task(void *ctx) {
     // return, meant the request was silently ignored and the readback silently lied.
     pid_apply_override(c->dir_pid, c->dir_act);
 
-    /* =================== HARD-CODED DAC TEST (spi-test-50 branch) ===================
-     * Bench test only, NEVER merge to dev/main: command a constant 50% throttle
-     * (DAC ~2.5 V on U13 pin 14) and select the DAC on the MAX4660 mux, ignoring
-     * the dashboard, the comms watchdog and the mission mode entirely, so the
-     * analog output can be measured without any upstream dependency. Returns
-     * early: steering and brake stay stopped. */
-    esp_err_t sel_ret = KM_GPIO_SetThrottleSource(true);
-    KM_ACT_SetOutput(c->throttle_act, 0.5f);
-    {
-        /* Once a second: did KM_GPIO_Init() complete (a failure anywhere before
-         * the GPIO-15 config leaves the pin unconfigured and only R32's pulldown
-         * acting), did the set call succeed, and what level does the pin's own
-         * input buffer read back? */
-        static uint32_t diag_n = 0;
-        if ((diag_n++ % 500) == 0) {
-            ESP_LOGW(TAG, "DAC-TEST diag: gpio_init_err=%ld set15=%s read15=%d",
-                     (long)g_gpio_init_err, esp_err_to_name(sel_ret),
-                     gpio_get_level(GPIO_NUM_15));
-        }
-    }
-    return;
-
     // --- Safety: comms watchdog + manual mode ---
     // last_cmd / mission / comms_stale are computed at the top of this function,
     // because the SDC decision needs comms_stale and must not be skipped by the
