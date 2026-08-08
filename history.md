@@ -2033,3 +2033,14 @@ work, but a failure here is as likely to be that margin as anything in this bran
 Merged `spi-fix` onto latest `dev` as branch `spi-test-50`, resolving the km_gpio conflict in favour of the MCP4922 SPI path (dev's LEDC-PWM throttle stopgap deleted). Added a hard-coded test block in the control loop: 50% throttle + SELECT_THROTTLE high every cycle, ignoring the dashboard/comms watchdog, early-return so steering and brake stay stopped. NEVER merge this branch. Flashed to the S3 from the Orin (921600, /dev/ttyACM0) after confirming actuator power off.
 
 While tracing the measurement points in the schematic netlist: U1B (LM358, throttle) is not a unity buffer — gain 1+5.1K/10K = 1.51 (R37/R38). U1A (brake) is gain 3 (R19 2K / R20 1K). Both gains only produce the advertised 0–5 V / 0–10 V from a 0–3.3 V input, i.e. the classic ESP32's internal DAC the board was originally designed around. With the MCP4922 at VREF=5 V the chain overranges (~7.6 V throttle full scale). Expected voltages for the 50% test: 2.5 V at U13.14, ~3.8 V at U14.8 and CN10.1. Filed in tasks.md.
+
+## 2026-08-08 — Correction: the amp-gain "finding" was the v2 design, not the physical board
+
+The entry above analysed the dv-hardware working tree, which carries post-fab v2 changes
+(`ba63e25` throttle gain stage ×1.51, `16a35fb` MCP4922 to +3V3 / brake gain 3). The physical
+board is dv-hardware `84d6dd0` (tag `kart-medulla-v1`) + README rework: throttle is
+**U13.14 → U14.8 direct**, no amp, MCP4922 at +5V_REG. Expected reading for the running
+spi-test-50 firmware is therefore **~2.5 V at U13.14, U14.8 and CN10.1 alike**, not 3.8 V.
+AGENTS.md now pins the physical-board hash/tag so schematic questions get answered from the
+right commit. Still open (tasks.md): whether the GPIO 38 RC bypass was ever physically
+soldered — the dev-branch km_gpio.h comment says yes, history records only the plan.
