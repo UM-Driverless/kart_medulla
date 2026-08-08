@@ -100,6 +100,27 @@ content, not mtime, so a no-op `touch` correctly does nothing. Full table in `hi
   If the `.o` md5 moves, the build is fine and the `rm -rf .pio/build` ritual can be dropped there
   too — it costs a full rebuild (~100 s vs ~30 s) every single time.
 
+**Both settled on the Orin 2026-08-08** (full data in `history.md`, that date):
+- **921600 works**: 15.0 s total flash, ~3 s writing at effective ~1.06 Mbit/s, hash verified. No
+  fallback needed; the number stays.
+- **Build is healthy on the Orin too**: `CMAKE_HOME_DIRECTORY` matches `$PWD`; a constant flip
+  changed the `km_pid.o` and ELF md5s, the revert returned both to baseline exactly. Drop the
+  `rm -rf .pio/build` ritual on the Orin as well. Timings there: near-clean 80 s, no-op 13 s,
+  one-file edit ~18 s. Awaiting Rubén's Done.
+
+### Steering pins float during reset/bootloader — the window that broke the gear on 2026-08-08
+
+The flash-time bootloader window leaves GPIO 40 (`CMD_STEER_PWM`) and GPIO 17 (`CMD_STEER_DIR`)
+floating, and the Cytron drove the steering motor uncontrolled into the endstop — gear broken
+(`.agents/error-log.md`, 2026-08-08). GPIO 3 (compressor) and GPIO 18 (SDC, R23) already have
+pulldowns for exactly this window; the steering pins do not.
+
+- [ ] Add pulldowns on the Cytron PWM/DIR inputs (hardware change — belongs in
+  `~/repos/dv-hardware/projects/kart-medulla/`, note it there too).
+- [ ] Until then, the AGENTS.md flashing section now requires actuator power off (or manual mode)
+  before any flash — procedure only, not protection.
+- [ ] Assess/repair the broken steering gear; check whether the motor or Cytron took damage too.
+
 ### btstack and bluepad32 are compiled on every clean build and then thrown away
 
 Measured 2026-07-31. `components/btstack` (236 source files) and `components/bluepad32` (69) are

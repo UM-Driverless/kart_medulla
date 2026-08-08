@@ -83,6 +83,13 @@ kart-medulla/
 
 ## Flashing
 
+**BEFORE ANY FLASH: the steering/actuator power must be off, or the kart in manual mode.**
+Flashing hard-resets the ESP32 into the download bootloader, and in that window GPIO 40
+(`CMD_STEER_PWM`) and GPIO 17 (`CMD_STEER_DIR`) float — they have no hardware pulldowns (unlike
+GPIO 3 and GPIO 18), so the Cytron can drive the steering motor uncontrolled. This broke the
+steering gear on 2026-08-08 (see `.agents/error-log.md`). Confirm the power state with Rubén
+before resetting the chip; software cannot protect a window where the firmware is not running.
+
 **Flash from the Orin** (the Mac has no toolchain — see the stale-path warning below):
 ```bash
 ssh orin-remote 'echo 0 | sudo -S systemctl stop kart-brain'   # KB_Coms_micro holds the port
