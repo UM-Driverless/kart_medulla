@@ -2137,3 +2137,24 @@ parts not superseded are the `sketch.cpp` deletion and its `km_coms` direct-PWM 
 
 Two `tasks.md` items closed by the same session's work: the CN5.2 R9/R10 contradiction (settled as
 remove-R10-only) and README's AS5600 naming.
+
+### Branch cleanup, same day
+
+Deleted on `origin` after confirming each was 0 commits ahead of `dev`. Tip SHAs kept here so the
+branches can be restored with `git branch <name> <sha>` if anything turns out to be missing:
+
+| Branch | Tip SHA |
+|---|---|
+| `spi-test-50` | `12f8e055ec1049926b3dddf6dd8c0209ed7aba4e` |
+| `spi-fix` | `c0b97f47509a3a9c2b922cdcfd352947b626b3a3` |
+| `feature/pedal-telemetry` | `5db6e19b8760f1bf4d8a808156c1d76eb18b4cc1` |
+
+`feature/direct-pwm-mode` was kept but is **obsolete — do not merge it**. Everything it adds is
+already in `dev` by another route: direct PWM steering (`main/main.c`, `steer_mode` 0=PID / 1=direct),
+`KM_COMS_GetLastCmdTick()` plus the FreeRTOS includes in `km_coms.h`, and the `sketch.cpp` deletion.
+Its only remaining unique content would be regressions: steering `kp` 0.80 against `dev`'s 1.00
+after the 2026-07-30 live tune, and an AS5600 centre value for a sensor retired 2026-07-12.
+
+The local `feature/pedal-telemetry` branch could not be deleted — another session holds a worktree
+on it under `/private/tmp/claude-501/.../medulla-pedals`. The remote branch is gone; the local
+pointer is harmless and goes away once that worktree is removed.
