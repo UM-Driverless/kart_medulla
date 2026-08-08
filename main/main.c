@@ -734,7 +734,12 @@ void control_task(void *ctx) {
      * the dashboard, the comms watchdog and the mission mode entirely, so the
      * analog output can be measured without any upstream dependency. Returns
      * early: steering and brake stay stopped. */
-    esp_err_t sel_ret = KM_GPIO_SetThrottleSource(true);
+    /* BEACON: toggle SELECT_THROTTLE at 0.5 Hz (1 s high, 1 s low) so the real
+     * GPIO 15 pin can be found with a multimeter — it is the only pin bouncing
+     * between 0 and 3.3 V every second. The DAC keeps its constant 50%. */
+    static uint32_t beacon_n = 0;
+    bool beacon_high = ((beacon_n++ / 500) % 2) == 0;
+    esp_err_t sel_ret = KM_GPIO_SetThrottleSource(beacon_high);
     KM_ACT_SetOutput(c->throttle_act, 0.5f);
     {
         /* Once a second: did KM_GPIO_Init() complete (a failure anywhere before
