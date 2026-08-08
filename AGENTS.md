@@ -106,6 +106,11 @@ GPIO 3 and GPIO 18), so the Cytron can drive the steering motor uncontrolled. Th
 steering gear on 2026-08-08 (see `.agents/error-log.md`). Confirm the power state with Rubén
 before resetting the chip; software cannot protect a window where the firmware is not running.
 
+**Before flashing the kart, check for bench-only diagnostic flags: `grep -n DIAG platformio.ini main/main.c`.**
+Any hit in the env being flashed (e.g. `SPI_DIAG_LOGS=1`) keeps ESP_LOG text on UART0, which corrupts
+the binary protocol — the Orin then drops every frame on CRC and the dashboard loses the heartbeat
+(happened 2026-08-08, see `.agents/error-log.md`). Strip the flag before flashing anything the kart will run.
+
 **Flash from the Orin** (the Mac has no toolchain — see the stale-path warning below):
 ```bash
 ssh orin-remote 'echo 0 | sudo -S systemctl stop kart-brain'   # KB_Coms_micro holds the port
