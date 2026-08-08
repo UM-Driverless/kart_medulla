@@ -2044,3 +2044,15 @@ spi-test-50 firmware is therefore **~2.5 V at U13.14, U14.8 and CN10.1 alike**, 
 AGENTS.md now pins the physical-board hash/tag so schematic questions get answered from the
 right commit. Still open (tasks.md): whether the GPIO 38 RC bypass was ever physically
 soldered — the dev-branch km_gpio.h comment says yes, history records only the plan.
+
+## 2026-08-08 — The version mess, in one place
+
+What happened this session, so nobody re-derives it: the throttle chain was first analysed from
+the dv-hardware *working tree*, which silently mixed the future v2 design into statements about
+the physical board. Wrong claims produced and later corrected: "U1B buffers the throttle" (v1
+routes U13.14 → U14.8 direct, U1B is parked), "gain 1.51 overranges the 5 V DAC" (that gain only
+exists at HEAD, paired with the +3V3 VREF change `16a35fb`, so no overrange in either version),
+and probe-B/A expectations of 3.8 V (correct value 2.5 V). Root cause: no statement anywhere in
+this repo of *which* dv-hardware commit the physical board is. Fix: AGENTS.md now pins it —
+`84d6dd0` / tag `kart-medulla-v1` + README rework list — with the command to netlist from the tag.
+Rule going forward: any electrical claim names the dv-hardware commit it was read from.
