@@ -2056,3 +2056,28 @@ and probe-B/A expectations of 3.8 V (correct value 2.5 V). Root cause: no statem
 this repo of *which* dv-hardware commit the physical board is. Fix: AGENTS.md now pins it —
 `84d6dd0` / tag `kart-medulla-v1` + README rework list — with the command to netlist from the tag.
 Rule going forward: any electrical claim names the dv-hardware commit it was read from.
+
+## 2026-08-08 — CN5.2 rework: this repo said remove R9+R10, the board is R10 only
+
+Two docs here disagreed with kart-docs about the same physical rework, found while giving
+kart-docs a published CN1–CN10 pinout page. `README.md` and the 2026-07-11 correction in
+`.agents/esp32s3-pinmap.md` both said "keep R8 series, remove R9+R10 pulldown"; kart-docs said
+remove R10 only. Ruben confirmed **R10 only** — R8 and R9 both stay, leaving
+`CN5.2 —[R8 10k]— node —[R9 10k]— GPIO 1 —[R10 10k]— GND` with 20 kΩ in series into the pin.
+
+That series impedance is not incidental: it is *why* GPIO 1 is read as digital PWM through MCPWM
+capture rather than as an ADC channel. Removing R9 as well would have dropped the series to 10 kΩ
+and lost the reason the design reads for granted. Anyone who had followed this repo's text with a
+soldering iron would have desoldered a resistor that belongs on the board.
+
+Same edit fixed the sensor name in both files: the CN5.2 signal comes from the **MT6701**, not the
+AS5600 — the AS5600 was retired 2026-07-12 (could not see the kart's large shaft magnet) and
+`AGENTS.md` has said so since, while `README.md` still called it an AS5600 in the hardware
+overview and the repurposed-pin list. The 2026-07-11 pinmap entry was left standing and a dated
+2026-08-08 correction appended below it, rather than rewritten — it was true when written.
+
+Also added: `docs/pinout-cn-connectors.md` to the dv-hardware file list in `AGENTS.md`. Nothing in
+this repo pointed at the CN terminal assignments, only at `pinout-esp32-s3.md`, so "what is on
+CN8.2" had no answer here. kart-docs now republishes that same file as a page, pinned to
+dv-hardware commit `61f5a1c9`; this repo reads dv-hardware directly rather than through kart-docs,
+since it is a peer of the hardware repo and a hop through the docs site could only be staler.

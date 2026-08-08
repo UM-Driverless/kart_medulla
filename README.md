@@ -31,7 +31,7 @@ and neither is reflected by the hash alone, because rework exists on a physical 
 ## Hardware Overview
 
 * **Microcontroller:** ESP32-S3 (DevKitC-1, kart-medulla PCB)
-* **Steering Sensor:** AS5600 magnetic angle encoder (I2C)
+* **Steering Sensor:** MT6701 magnetic angle encoder, read as PWM on GPIO 1 (see "The Steering Sensor Is an MT6701, Not an AS5600" in `AGENTS.md`; the AS5600 I²C driver in `km_sdir` is the classic-ESP32 fallback only)
 * **Steering Motor:** Cytron H-bridge (PWM + DIR)
 * **Throttle/Brake:** DAC analog outputs
 * **Comms to Orin:** UART0 binary protocol (int32 encoding, 115200 baud)
@@ -42,10 +42,10 @@ All pin assignments are defined in [`components/km_gpio/km_gpio.h`](components/k
 
 ### Repurposed pins (current hardware — read this first)
 
-Two nets on the actual kart-medulla PCB no longer do what their original name says. The firmware header hasn't caught up; the authoritative map is [`.agents/esp32s3-pinmap.md`](.agents/esp32s3-pinmap.md).
+Two nets on the actual kart-medulla PCB no longer do what their original name says. The firmware header carries both (checked 2026-07-31); the authoritative map is [`.agents/esp32s3-pinmap.md`](.agents/esp32s3-pinmap.md).
 
 - **BUZZER (old name) → EBS compressor MOSFET.** The old buzzer output now drives the compressor gate (net renamed `CMD_COMPRESSOR_PWM`, terminal CN8.2). The buzzer itself was dropped. On the S3 board this is GPIO 3.
-- **PRESSURE_3 → steering-sensor PWM input.** The Pressure-3 terminal (CN5.2) now reads the AS5600's PWM angle output instead of a pressure transducer (keep R8 series, remove the R9/R10 pulldown). On the S3 board this is GPIO 1.
+- **PRESSURE_3 → steering-sensor PWM input.** The Pressure-3 terminal (CN5.2) now reads the **MT6701**'s single-wire PWM angle output (~994 Hz, angle in the duty cycle) instead of a pressure transducer. On the S3 board this is GPIO 1, decoded with MCPWM capture. **Rework: remove R10 only** — the pulldown to GND — keeping R8 + R9. The net is `CN5.2 —[R8 10k]— node —[R9 10k]— GPIO 1 —[R10 10k]— GND`, so R10 is the only shunt to ground; R8 + R9 remain as a 20 kΩ series into the pin, which is too high-impedance for the ADC and is why this pin is read as digital PWM rather than an analog voltage.
 
 The firmware now supports the ESP32-S3 board natively via the `esp32-s3-devkitc-1` PlatformIO target, which automatically applies the correct pinmap from [`.agents/esp32s3-pinmap.md`](.agents/esp32s3-pinmap.md). (The classic ESP32-WROOM-32E pinmap is still available for legacy testing using `esp32dev`).
 
