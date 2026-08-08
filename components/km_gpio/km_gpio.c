@@ -65,6 +65,37 @@ esp_err_t KM_GPIO_Init(void)
            PIN_STEER_PWM, PIN_STEER_DIR,
            PIN_MOTOR_HALL_2, PIN_HYDRAULIC_1, PIN_HYDRAULIC_2);
 
+    /* ============ STEERING MOTOR PINS — FIRST, BEFORE ANYTHING ELSE ============
+     * On 2026-08-08 the steering swung to full lock and broke gear teeth while the
+     * ESP32-S3 was being reflashed. Steering is the one actuator with no hardware
+     * safe default: the throttle passes through the MAX4660 mux whose SELECT line
+     * R32 holds low, but CMD_STEER_PWM runs from GPIO 40 straight to the Cytron
+     * H-bridge, so whenever this pin is not actively driven low the motor's state
+     * is whatever the floating line happens to look like to the Cytron's input.
+     *
+     * Driving both pins low here, before the ADC/DAC/I2C/SPI setup that used to
+     * come first, shortens that undriven window to the earliest instant code can
+     * act. The internal pulldowns then keep holding the pads low if a later fault
+     * detaches the peripheral or hangs the firmware.
+     *
+     * WHAT THIS DOES NOT FIX: the window from chip reset until this line runs —
+     * the bootloader, and the whole of a flash. No firmware can cover that, because
+     * no firmware is executing. Only an external pulldown on CMD_STEER_PWM (CN9.1)
+     * does, which is why one is still needed on the board; see kart-docs tasks.md.
+     * The internal pulldown is ~45 kOhm, weaker than the 10 kOhm used elsewhere on
+     * this board, so it is a backstop and not the primary hold. */
+    gpio_config_t steer_safe_cfg = {
+        .pin_bit_mask = (1ULL << PIN_STEER_PWM) | (1ULL << PIN_STEER_DIR),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_ENABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    ret = gpio_config(&steer_safe_cfg);
+    if (ret != ESP_OK) return ret;
+    gpio_set_level((gpio_num_t)PIN_STEER_PWM, 0);
+    gpio_set_level((gpio_num_t)PIN_STEER_DIR, 0);
+
     /* ======================== ADC ======================== */
     // Configurar ADC1/ADC2 pins como entrada
     gpio_config_t adc_pin_cfg = {
@@ -196,11 +227,13 @@ esp_err_t KM_GPIO_Init(void)
     if (ret != ESP_OK) return ret;
 
     /* ======================== DIR PIN ======================== */
+    /* Pulldown stays ENABLED to match the early safe-state block at the top of this
+     * function — configuring it off here would silently undo that hold. */
     gpio_config_t dir_cfg = {
         .pin_bit_mask = 1ULL << PIN_STEER_DIR,
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_ENABLE,
         .intr_type = GPIO_INTR_DISABLE
     };
     ret = gpio_config(&dir_cfg);
