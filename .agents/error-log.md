@@ -349,3 +349,22 @@ pin state, then make the pin identify itself) came third instead of first.
 **Prevention:** On hardware "signal is dead" problems, put self-reporting instrumentation in the
 firmware (init result, set-call result, pad readback) before theorizing about analog margins or
 mechanical contact. The GPIO INPUT_OUTPUT readback is now permanent for SELECT_THROTTLE.
+
+## 2026-08-08 — Asked the user to disambiguate "the dashboard is off" instead of looking (Claude Opus 5)
+
+**What happened:** Rubén reported "dashboard is off". Instead of investigating, the agent replied
+with a two-option multiple-choice question (not running vs. showing a wrong value). Rubén's answer
+was "wtf". One `ssh orin-remote 'systemctl is-active kart-brain'` then produced the whole answer in
+seconds: the service was `inactive`, so nothing was reading `/dev/ttyACM0` and the dashboard had no
+source. It had been stopped for a flash (the documented procedure in AGENTS.md stops it to free the
+port) and never restarted. `systemctl start kart-brain` fixed it.
+
+**Root cause:** The ambiguity was real but irrelevant — both readings of "off" start with the same
+cheap check, and that check distinguishes them. The question cost a round-trip and pushed diagnosis
+back onto the person who reported the symptom.
+
+**Prevention:** When a symptom is reported on the kart, run the state checks first and ask only if
+they come back ambiguous. The standing first three, all read-only and one SSH call:
+`systemctl is-active kart-brain`, `ls -l /dev/ttyACM*`, and the recent `journalctl -u kart-brain`.
+A stopped `kart-brain` is the single most likely cause of a dead dashboard in this repo, because
+every flash stops it and restarting is a manual step.
