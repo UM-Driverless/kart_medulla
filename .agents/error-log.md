@@ -316,3 +316,36 @@ pre-existing and not caused by the merge.
 **Prevention:**
 - Before flashing the kart, `grep -n DIAG platformio.ini main/main.c` — any bench/diagnostic flag means stop and strip it first.
 - A "do not merge to dev" comment is not protection; if a flag must never fly, gate it out of the S3 env by default and require an explicit `-e` bench env to enable it.
+
+## 2026-08-08 — Electrical analysis done on the wrong schematic revision (Claude Fable 5)
+
+**What happened:** Asked where to probe the throttle chain, the agent netlisted the dv-hardware
+*working tree* and confidently reported an op-amp gain stage (×1.51) in the throttle path, an
+"overrange bug" (5 V DAC × 1.51 ≈ 7.6 V), and probe expectations of ~3.8 V. All wrong for the
+physical board: the working tree carries post-fab v2 design changes; the manufactured board is
+`84d6dd0` (tag `kart-medulla-v1`), where the DAC feeds the mux directly and 50% = 2.5 V. A
+tasks.md entry and probe voltages had to be corrected mid-session.
+
+**Root cause:** Nothing in this repo stated which dv-hardware commit the physical board is, and
+the agent didn't ask which revision it was reading before making electrical claims.
+
+**Prevention:** AGENTS.md now pins the physical board (`84d6dd0` / `kart-medulla-v1` + README
+rework list) with the netlist-from-tag command, and requires every electrical claim to name the
+dv-hardware commit it was read from.
+
+## 2026-08-08 — Two confident wrong diagnoses before the real one during the DAC bench test (Claude Fable 5)
+
+**What happened:** CN10.1 read 0 V with blips. Diagnosis 1: MCP4922 V_IH margin (3.5 V needed,
+3.3 V driven) — plausible, pre-recorded in history, stated as near-certain. Then SELECT_THROTTLE
+also read 0 V, which V_IH cannot explain; diagnosis 2: bad socket contact — the board was seated
+fine. The firmware-side GPIO readback then proved the pin driving high; the 0 V turned out to be
+a flashing problem (mechanism not pinned down — after later flashes by other agents the pin
+measured 3.3 V, and the DAC works at 5 V supply with 3.3 V logic).
+
+**Root cause:** Each hypothesis fit the evidence available at the time, but was reported as a
+conclusion rather than a candidate; the cheap decisive test (make the firmware report its own
+pin state, then make the pin identify itself) came third instead of first.
+
+**Prevention:** On hardware "signal is dead" problems, put self-reporting instrumentation in the
+firmware (init result, set-call result, pad readback) before theorizing about analog margins or
+mechanical contact. The GPIO INPUT_OUTPUT readback is now permanent for SELECT_THROTTLE.
