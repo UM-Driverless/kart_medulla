@@ -306,3 +306,13 @@ indistinguishable from success. If it must be used, commit first and confirm `gi
 **Result of the check itself:** pre-merge `origin/dev` fails `test_km_act` and `test_km_coms`
 identically (4 of 40 cases, `TickType_t` undefined in the native build). The failures are
 pre-existing and not caused by the merge.
+
+## 2026-08-08 — Flashed a bench-only diagnostic build to the kart (Claude Fable 5)
+
+**What happened:** After merging `feature/pedal-telemetry`, the ESP32-S3 was flashed with `dev` tip. Heartbeat died on the dashboard and pedal values lagged ~3 s. Raw serial showed ESP_LOG ASCII interleaved with binary frames → CRC mismatches → KB_Coms_micro stuck in a 5 s watchdog reconnect loop.
+
+**Root cause:** `platformio.ini`'s S3 env carried `build_flags = -D SPI_DIAG_LOGS=1`, commented "BRANCH `spi-fix` ONLY — do not merge this flag to dev", but it had been merged to dev anyway. The flash step didn't check for bench-only flags before flashing the kart.
+
+**Prevention:**
+- Before flashing the kart, `grep -n DIAG platformio.ini main/main.c` — any bench/diagnostic flag means stop and strip it first.
+- A "do not merge to dev" comment is not protection; if a flag must never fly, gate it out of the S3 env by default and require an explicit `-e` bench env to enable it.
