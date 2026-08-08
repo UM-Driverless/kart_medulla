@@ -2186,3 +2186,56 @@ The 5 V→3.3 V supply bodge is NOT needed on the v1 board. Removed the spi-test
 from dev: throttle now follows TARGET_THROTTLE from the Orin again, behind the comms
 watchdog and manual-mode gate as designed. Kept SELECT_THROTTLE as INPUT_OUTPUT with its
 read-back, promoted from bench diagnostic to permanent (same pattern as the SDC pin).
+
+## 2026-08-08 — Steering swung to full lock during a reflash and broke the gear teeth
+
+The kart was in autonomous mode while the ESP32-S3 was being reflashed. The steering swung hard to
+one side and broke teeth off the steering gears. The Cytron H-bridge is fed permanently from the
+48 V traction pack, deliberately, so the motor is live whenever the kart is.
+
+**The cause is not settled.** Two mechanisms fit what was seen and they need opposite fixes:
+
+1. *Stale command obeyed at boot.* Nothing on the Orin stops commanding — `kb_coms_micro`
+   subscribes to the ESP32 heartbeat but does not gate its output on it, so autonomous steering
+   targets kept streaming throughout the flash. The firmware's watchdog in `control_task` only
+   blocks output when `comms_stale` or the mission is manual, so within ~10 ms of the new firmware
+   booting a fresh target arrives and `KM_ACT_SetOutput(c->dir_act, steer_out)` applies the PID
+   result at full authority — no ramp, no rate limit, no startup gate. A large angle error against
+   kp=1.5 saturates to the 0.75 PWM limit and drives into the mechanical stop.
+2. *Pins floating during the reset.* `CMD_STEER_PWM` (GPIO 40) and `CMD_STEER_DIR` (GPIO 17) are
+   high-impedance from reset until firmware configures them, which is the whole bootloader window.
+
+Ruben's reading is that it was the flashing itself, i.e. mechanism 2. If that is right, nothing on
+the Orin and nothing in this firmware can prevent a repeat, because no code is executing then.
+
+**The separating test, not yet run:** unplug the steering motor, put a meter on CN9.1 against GND,
+and flash. Clearly above 0 V during the bootloader window confirms mechanism 2; near 0 V throughout
+points back at mechanism 1.
+
+**What the board does and does not protect.** Throttle passes through the MAX4660 mux whose
+`SELECT_THROTTLE` line R32 pulls low, so an unbooted ESP32 leaves the driver's pedal in control by
+physics. The compressor MOSFET gate has a 100 kΩ pulldown. Steering has neither — `kart-docs` says
+it plainly: "Steering is NOT muxed — the ESP32 always drives the Cytron H-bridge directly; in
+manual mode firmware sets PWM = 0." Its only safety has always been firmware writing zero, which
+does not exist during a reset.
+
+**Firmware change made (`2092130`).** `KM_GPIO_Init` now drives both steering pins to output-low as
+its first action, before the ADC/DAC/I2C/SPI setup that used to come first, and enables their
+internal pulldowns; the later `dir_cfg` block had its pulldown flipped from disabled to enabled so
+it does not undo that. This shortens the undriven window to the earliest instant code can act. It
+does **not** close it — the internal pulldowns are ~45 kΩ and, more to the point, only exist once
+firmware has configured them. Committed but not built or flashed: flashing a kart with broken gears
+and no external pulldown was not worth the risk.
+
+**Recorded as a hardware requirement**, since only a component fixes the bootloader window:
+dv-hardware `projects/kart-medulla/requirements.md` REQ-08, pulldowns on `CMD_STEER_PWM` and
+`CMD_STEER_DIR` at the Cytron end. One trap noted there — the firmware drives the Cytron in
+sign-magnitude mode where a low PWM line means off, but under locked-antiphase a low line means
+full reverse, so the Cytron's mode switches must be checked before trusting the pulldown.
+
+**Operating rule until the resistors exist:** de-power the Cytron or unplug the steering motor
+before every flash. That holds whichever mechanism it turns out to be.
+
+Ruben also asked whether the throttle mux could be removed, since v2 will not have it. It is not
+involved: the mux only switches the throttle signal, and steering never passes through it. The mux
+is the part of this board that already fails safe.
