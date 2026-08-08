@@ -1924,3 +1924,38 @@ cause actually dominated the slow loop:
 
 Neither number has been checked on the Orin. Both belong in the same at-the-kart pass as the
 upload-baud flash.
+
+## 2026-08-08 — First remote flash from the Mac session: gear broken during the bootloader window; 921600 confirmed
+
+**The steering gear broke during the first flash attempt of the day.** Sequence, reconstructed from
+the Orin journal (boot `8e50895c…`):
+
+- `kart-brain` was running the **full autonomous stack on the bench** — at 11:04:59 `cone_follower`
+  was commanding full-lock steering (`steer=1.309 rad`, speed 2.6) from live camera detections.
+- 11:05:27 — `systemctl stop kart-brain` (remote agent, preparing to flash per the AGENTS.md recipe).
+- The flash then hard-reset the ESP32 into the download bootloader. In that window **GPIO 40
+  (`CMD_STEER_PWM`) and GPIO 17 (`CMD_STEER_DIR`) are undriven floating inputs** — unlike GPIO 3
+  (compressor) and GPIO 18 (SDC), which have hardware pulldowns for exactly this window, the Cytron
+  steering inputs have none. The steering motor drove uncontrolled and the gear broke.
+- Rubén cut kart power (which also powers the Orin — the SSH session died mid-flash with exit 255,
+  which is the SSH failure code, not esptool's).
+
+After power-up with the kart in **manual mode** (firmware calls `KM_ACT_Stop()` on steering in
+MANUAL, so the motor cannot be driven), the flash was repeated and succeeded.
+
+**Results that close two open tasks' questions:**
+- **921600 upload baud works on the CH343**: 15.0 s total flash, ~3 s of writing at effective
+  ~1.06 Mbit/s, hash verified, clean RTS reset. No fallback needed.
+- **The stale-object build bug does not reproduce on the Orin either.** `CMAKE_HOME_DIRECTORY`
+  matches `$PWD` (`/home/orin/kart_medulla`). The same three probes as the 2026-07-31 Mac test:
+  baseline `km_pid.o` md5 `c50c06c3…`, ELF `1b2eb6eb…`; flipping the `dt` floor constant recompiled
+  and changed both (`1f93588a…` / `b3361f5e…`); reverting returned both to the exact baseline
+  md5s. The `rm -rf .pio/build` ritual can be dropped on the Orin too.
+- **Build times on the Orin** (post btstack/bluepad32 exclusion): near-clean 80 s, no-op incremental
+  13 s, one-file edit ~18 s.
+- Firmware confirmed alive after flashing: 0xAA-framed telemetry streaming on `/dev/ttyACM0`.
+
+**Lessons (also in `.agents/error-log.md`):** flashing resets the chip with the steering pins
+floating, so **steering power must be off (or the kart in a state where the Cytron cannot drive)
+before any flash**. And `kart-brain`'s default service brings up the full autonomous stack with
+vision actively steering — that was live on the bench before anyone touched anything.
