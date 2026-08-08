@@ -6,6 +6,8 @@
 #include "km_gpio.h"
 #include "esp_adc_cal.h"
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 /******************************* INCLUDES INTERNOS ****************************/
 // Headers internos opcionales, dependencias privadas
@@ -16,6 +18,35 @@
 
 /******************************* VARIABLES PRIVADAS ***************************/
 // Variables globales internas (static)
+
+static const char *GPIO_TAG = "km_gpio";
+
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+static const char *SPI_TAG = "mcp4922";
+
+/* File scope, NOT function scope. This handle used to be declared `static`
+ * inside KM_GPIO_Init(), where KM_GPIO_WriteDAC() could not see it — so even a
+ * fully implemented write had nothing to transmit through. */
+static spi_device_handle_t mcp4922_handle = NULL;
+
+/* Counters the diagnostics report. Reads/writes are not atomic; they are
+ * indicative only and must not be used for control decisions. */
+static uint32_t mcp4922_writes_ok   = 0;
+static uint32_t mcp4922_writes_fail = 0;
+static uint16_t mcp4922_last_cmd    = 0;
+
+/* MCP4922 16-bit command word (datasheet section 5.0), MSB first:
+ *   bit 15    channel: 0 = A, 1 = B
+ *   bit 14    BUF:  0 = VREF unbuffered
+ *   bit 13    /GA:  1 = gain 1x  (0 would be 2x and clip against the 5 V rail)
+ *   bit 12    /SHDN: 1 = output active
+ *   bits 11-0 the 12-bit code */
+#define MCP4922_CH_A    0x0000u
+#define MCP4922_CH_B    0x8000u
+#define MCP4922_BUF_OFF 0x0000u
+#define MCP4922_GAIN_1X 0x2000u
+#define MCP4922_ACTIVE  0x1000u
+#endif
 
 
 /******************************* DECLARACION FUNCIONES PRIVADAS ***************/
@@ -103,8 +134,9 @@ esp_err_t KM_GPIO_Init(void)
 #endif
 
 #ifdef CONFIG_IDF_TARGET_ESP32S3
-    // SPI config for MCP4922 (DAC externo)
-    static spi_device_handle_t mcp4922_handle = NULL;
+    /* ---------- SPI2 → MCP4922 external DAC ---------- */
+    /* miso_io_num stays -1 on purpose: the MCP4922 has no data output, so there
+     * is nothing on the bus to read back. See the note in km_gpio.h. */
     spi_bus_config_t buscfg = {
         .miso_io_num = -1,
         .mosi_io_num = SPI_MOSI_PIN,
@@ -113,6 +145,9 @@ esp_err_t KM_GPIO_Init(void)
         .quadhd_io_num = -1,
         .max_transfer_sz = 2
     };
+    /* Mode 0 (CPOL=0, CPHA=0) — the MCP4922 accepts 0,0 or 1,1. 1 MHz is far
+     * inside the chip's 20 MHz ceiling and keeps the edges kind to a hand-wired
+     * board. CS is driven by the driver and must stay low for all 16 bits. */
     spi_device_interface_config_t devcfg = {
         .clock_speed_hz = 1000000,
         .mode = 0,
@@ -120,9 +155,22 @@ esp_err_t KM_GPIO_Init(void)
         .queue_size = 1
     };
     ret = spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO);
+    ESP_LOGI(SPI_TAG, "spi_bus_initialize(SPI2, mosi=%d sclk=%d) -> %s",
+             (int)SPI_MOSI_PIN, (int)SPI_SCLK_PIN, esp_err_to_name(ret));
     if (ret != ESP_OK) return ret;
+
     ret = spi_bus_add_device(SPI2_HOST, &devcfg, &mcp4922_handle);
+    ESP_LOGI(SPI_TAG, "spi_bus_add_device(cs=%d, 1 MHz, mode 0) -> %s, handle=%p",
+             (int)SPI_CS_PIN, esp_err_to_name(ret), (void *)mcp4922_handle);
     if (ret != ESP_OK) return ret;
+
+    if (mcp4922_handle == NULL) {
+        /* Belt and braces: a NULL handle with ESP_OK would mean every later
+         * write silently does nothing, which is the failure this whole branch
+         * exists to rule out. */
+        ESP_LOGE(SPI_TAG, "handle is NULL despite ESP_OK — refusing to continue");
+        return ESP_ERR_INVALID_STATE;
+    }
 #endif
 
     /* ---------- PWM (LEDC) ---------- */
@@ -157,6 +205,33 @@ esp_err_t KM_GPIO_Init(void)
     };
     ret = gpio_config(&dir_cfg);
     if (ret != ESP_OK) return ret;
+
+#ifdef PIN_SELECT_THROTTLE
+    /* ================= THROTTLE SOURCE MUX (MAX4660 U14) ================= */
+    /* LOW  = COM->NC = the pedal passes through to the kart (safe default).
+     * HIGH = COM->NO = the MCP4922's VOUTA drives the throttle instead.
+     *
+     * R32's 10 k pulldown already holds this LOW before firmware runs, so
+     * configuring it here does not change the boot state — it replaces a weak
+     * pulldown with a driven level so KM_GPIO_SetThrottleSource() has a pin it
+     * can actually assert. control_task() re-decides it every cycle.
+     *
+     * Until 2026-08-01 nothing drove this pin at all, so the mux never left the
+     * pedal and the DAC's output could not reach CN10.1 however well the SPI
+     * write worked. Manual-mode safety was handled by zeroing the DAC instead,
+     * which is why the gap went unnoticed. */
+    gpio_config_t thr_mux_cfg = {
+        .pin_bit_mask = 1ULL << PIN_SELECT_THROTTLE,
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_ENABLE,   // keep the pedal if the pin floats
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    ret = gpio_config(&thr_mux_cfg);
+    if (ret != ESP_OK) return ret;
+    ret = gpio_set_level(PIN_SELECT_THROTTLE, 0);   // 0 = pedal
+    if (ret != ESP_OK) return ret;
+#endif
 
 #ifdef PIN_SDC_NOT_EMERGENCY
     /* ==================== SHUTDOWN CIRCUIT — SAFETY ==================== */
@@ -375,6 +450,115 @@ uint32_t KM_GPIO_ReadADC_mV(gpio_num_t pin)
 
 
 /* ---------- DAC ---------- */
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+/**
+ * @brief   Writes one 12-bit code to one MCP4922 channel over SPI2.
+ *
+ * @param   channel_bit  MCP4922_CH_A or MCP4922_CH_B.
+ * @param   value        8-bit level from the actuator layer.
+ *
+ * @details The caller's 8 bits are widened to the chip's 12 by replicating the
+ *          top nibble into the bottom one, so 0x00 maps to 0x000 and 0xFF maps
+ *          to 0xFFF. A plain `value << 4` would top out at 0xFF0 and quietly
+ *          cost the last 0.4% of travel.
+ *
+ *          Uses polling_transmit rather than the queued path: a 16-bit word at
+ *          1 MHz is ~16 us, so an interrupt round-trip would cost more than the
+ *          transfer, and the control loop wants this to be over when it returns.
+ */
+static esp_err_t mcp4922_write(uint16_t channel_bit, uint8_t value)
+{
+    if (mcp4922_handle == NULL) {
+        ESP_LOGE(SPI_TAG, "write with NULL handle — KM_GPIO_Init() did not run or failed");
+        mcp4922_writes_fail++;
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    uint16_t code = ((uint16_t)value << 4) | (value >> 4);
+    uint16_t cmd  = channel_bit | MCP4922_BUF_OFF | MCP4922_GAIN_1X | MCP4922_ACTIVE | (code & 0x0FFFu);
+
+    uint8_t tx[2] = { (uint8_t)(cmd >> 8), (uint8_t)(cmd & 0xFF) };
+    spi_transaction_t t = {
+        .length    = 16,        // bits, not bytes
+        .tx_buffer = tx,
+        .rx_buffer = NULL
+    };
+
+    esp_err_t ret = spi_device_polling_transmit(mcp4922_handle, &t);
+    mcp4922_last_cmd = cmd;
+
+    if (ret != ESP_OK) {
+        mcp4922_writes_fail++;
+        ESP_LOGE(SPI_TAG, "transmit failed: %s (cmd=0x%04X)", esp_err_to_name(ret), cmd);
+        return ret;
+    }
+
+    mcp4922_writes_ok++;
+    /* First few writes verbosely, then one line per 500 so a running kart does
+     * not drown the console. ESP_LOGD is compiled out at the default level. */
+    if (mcp4922_writes_ok <= 5 || (mcp4922_writes_ok % 500) == 0) {
+        ESP_LOGI(SPI_TAG, "write #%lu ch%c val=%3u code=%4u cmd=0x%04X expect ~%.2f V",
+                 (unsigned long)mcp4922_writes_ok,
+                 (channel_bit == MCP4922_CH_A) ? 'A' : 'B',
+                 value, (unsigned)(code & 0x0FFF), cmd,
+                 5.0 * (double)(code & 0x0FFF) / 4095.0);
+    }
+    return ESP_OK;
+}
+
+/** @copydoc KM_GPIO_McpStats */
+void KM_GPIO_McpStats(uint32_t *ok, uint32_t *fail, uint16_t *last_cmd)
+{
+    if (ok)       *ok       = mcp4922_writes_ok;
+    if (fail)     *fail     = mcp4922_writes_fail;
+    if (last_cmd) *last_cmd = mcp4922_last_cmd;
+}
+
+/** @copydoc KM_GPIO_McpSelfTest */
+esp_err_t KM_GPIO_McpSelfTest(void)
+{
+    /* Safe to run at boot ONLY because SELECT_THROTTLE (GPIO 15) has a 10 kOhm
+     * pulldown and nothing drives it: the MAX4660 sits on the pedal
+     * pass-through, so channel A's output stops at U14 pin 8 and never reaches
+     * CN10.1. If firmware ever starts driving GPIO 15, this must move behind an
+     * explicit operator request. Channel B is NOT swept — brake goes through
+     * U1A to CN10.2 unmuxed, so a sweep there would command real brake. */
+    static const uint8_t steps[] = { 0, 64, 128, 192, 255, 0 };
+
+    ESP_LOGW(SPI_TAG, "self-test: sweeping channel A. Meter U13 pin 14 (VOUTA) to GND.");
+    ESP_LOGW(SPI_TAG, "self-test: this does NOT reach the kart — the mux is on pedal pass-through.");
+
+    for (size_t i = 0; i < sizeof(steps); i++) {
+        esp_err_t ret = mcp4922_write(MCP4922_CH_A, steps[i]);
+        if (ret != ESP_OK) {
+            ESP_LOGE(SPI_TAG, "self-test aborted at step %u: %s", (unsigned)i, esp_err_to_name(ret));
+            return ret;
+        }
+        ESP_LOGW(SPI_TAG, "self-test: step %u/%u — expect ~%.2f V, holding 2 s",
+                 (unsigned)(i + 1), (unsigned)sizeof(steps), 5.0 * (double)steps[i] / 255.0);
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+
+    ESP_LOGW(SPI_TAG, "self-test done: %lu ok, %lu failed. If the ESP32 side reports all-ok "
+                      "but the meter never moved, the fault is downstream of the MCU: check "
+                      "U13 VDD (pin 1) and VREFA/VREFB (pins 13/11) sit at 5 V.",
+             (unsigned long)mcp4922_writes_ok, (unsigned long)mcp4922_writes_fail);
+    return ESP_OK;
+}
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
+
+/** @copydoc KM_GPIO_SetThrottleSource */
+esp_err_t KM_GPIO_SetThrottleSource(bool use_dac)
+{
+#ifdef PIN_SELECT_THROTTLE
+    return gpio_set_level(PIN_SELECT_THROTTLE, use_dac ? 1 : 0);
+#else
+    (void)use_dac;
+    return ESP_ERR_NOT_SUPPORTED;
+#endif
+}
+
+
 /** @copydoc KM_GPIO_WriteDAC */
 esp_err_t KM_GPIO_WriteDAC(gpio_num_t pin, uint8_t value)
 {
@@ -384,31 +568,23 @@ esp_err_t KM_GPIO_WriteDAC(gpio_num_t pin, uint8_t value)
 #if defined(CONFIG_IDF_TARGET_ESP32)
         return dac_output_voltage(DAC_CHAN_0, value);
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-        /* No DAC on this chip — the analog level is a 12-bit PWM duty that an
-         * external RC network averages. Widening the caller's 8 bits by
-         * replicating the top nibble into the bottom makes 0x00 -> 0x000 and
-         * 0xFF -> 0xFFF; a plain `value << 4` would stop at 0xFF0 and quietly
-         * cost the last 0.4% of travel. */
-        uint32_t duty = ((uint32_t)value << 4) | (value >> 4);
-        esp_err_t ret = ledc_set_duty(LEDC_HIGH_SPEED_MODE, THROTTLE_PWM_CHANNEL, duty);
-        if (ret != ESP_OK) return ret;
-        return ledc_update_duty(LEDC_HIGH_SPEED_MODE, THROTTLE_PWM_CHANNEL);
+        return mcp4922_write(MCP4922_CH_A, value);
 #else
-        return ESP_ERR_NOT_SUPPORTED;
+        return ESP_ERR_NOT_SUPPORTED;   // no DAC and no MCP4922 on this target
 #endif
     }
     if (gpio == PIN_CMD_BRAKE) {
 #if defined(CONFIG_IDF_TARGET_ESP32)
         return dac_output_voltage(DAC_CHAN_1, value);
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+        return mcp4922_write(MCP4922_CH_B, value);
 #else
-        /* Brake has no output on the S3. It needs the MCP4922 (unimplemented on
-         * this branch — see `spi-fix`) or its own filtered-PWM pin and gain
-         * stage, since CN10.2 is scaled 0-10 V. Returning an error rather than
-         * ESP_OK so a caller cannot mistake silence for a working brake. */
         return ESP_ERR_NOT_SUPPORTED;
 #endif
     }
 
+    ESP_LOGE(GPIO_TAG, "WriteDAC: unknown channel %d (expected %d=ACC or %d=BRAKE)",
+             (int)gpio, (int)PIN_CMD_ACC, (int)PIN_CMD_BRAKE);
     return ESP_ERR_INVALID_ARG;
 }
 

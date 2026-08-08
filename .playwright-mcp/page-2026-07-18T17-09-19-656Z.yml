@@ -1,0 +1,264 @@
+- generic [ref=f8e1]:
+  - link [ref=f8e2] [cursor=pointer]: Skip to main content
+  - link [ref=f8e3] [cursor=pointer]:
+    - /url: https://support.google.com/websearch/answer/181196?hl=en-ES
+    - text: Accessibility help
+  - dialog "Before you continue to Google Search" [active]:
+    - generic [ref=f8e10]:
+      - generic [ref=f8e12]:
+        - img "Google" [ref=f8e13]
+        - generic [ref=f8e14]:
+          - 'button "Language: ‪English‬" [ref=f8e16] [cursor=pointer]':
+            - generic [ref=f8e17]: en
+          - link "Sign in" [ref=f8e19] [cursor=pointer]
+      - generic [ref=f8e20]:
+        - heading "Before you continue to Google" [level=1] [ref=f8e21]
+        - generic [ref=f8e22]:
+          - generic [ref=f8e23]:
+            - text: We use
+            - link "cookies" [ref=f8e24] [cursor=pointer]:
+              - /url: https://policies.google.com/technologies/cookies?utm_source=ucbs&hl=en-ES
+            - text: and data to
+            - list [ref=f8e25]:
+              - listitem [ref=f8e26]: Deliver and maintain Google services
+              - listitem [ref=f8e27]: Track outages and protect against spam, fraud and abuse
+              - listitem [ref=f8e28]: Measure audience engagement and site statistics to understand how our services are used and enhance the quality of those services
+          - generic [ref=f8e29]:
+            - text: If you choose to 'Accept all', we will also use cookies and data to
+            - list [ref=f8e30]:
+              - listitem [ref=f8e31]: Develop and improve new services
+              - listitem [ref=f8e32]: Deliver and measure the effectiveness of ads
+              - listitem [ref=f8e33]: Show personalised content, depending on your settings
+              - listitem [ref=f8e34]: Show personalised ads, depending on your settings
+            - generic [ref=f8e35]: If you choose to 'Reject all', we will not use cookies for these additional purposes.
+          - generic [ref=f8e36]: Non-personalised content is influenced by things like the content that you’re currently viewing, activity in your active Search session, and your location. Non-personalised ads are influenced by the content that you’re currently viewing and your general location. Personalised content and ads can also include more relevant results, recommendations and tailored ads based on past activity from this browser, like previous Google searches. We also use cookies and data to tailor the experience to be age-appropriate, if relevant.
+          - generic [ref=f8e37]: Select 'More options' to see additional information, including details about managing your privacy settings. You can also visit g.co/privacytools at any time.
+      - generic [ref=f8e38]:
+        - generic [ref=f8e39]:
+          - button "Reject all" [ref=f8e40] [cursor=pointer]
+          - button "Accept all" [ref=f8e41] [cursor=pointer]
+        - link "More options for personalisation settings and cookies" [ref=f8e43] [cursor=pointer]:
+          - generic "More options for personalisation settings and cookies" [ref=f8e44]: More options
+      - generic [ref=f8e45]:
+        - link "Privacy" [ref=f8e46] [cursor=pointer]:
+          - /url: https://policies.google.com/privacy?hl=en-ES&fg=1&utm_source=ucbs
+        - generic [ref=f8e47]: ·
+        - link "Terms" [ref=f8e48] [cursor=pointer]:
+          - /url: https://policies.google.com/terms?hl=en-ES&fg=1&utm_source=ucbs
+  - generic [ref=f8e53]:
+    - search [ref=f8e54]:
+      - generic [ref=f8e56]:
+        - link [ref=f8e58] [cursor=pointer]:
+          - /url: https://www.google.com/webhp?hl=en&ictx=2&sa=X&ved=0ahUKEwih6sze29yVAxUbQUEAHbOOEk0QPQhr
+        - generic [ref=f8e60]:
+          - generic [ref=f8e61]:
+            - combobox [ref=f8e64]: phoenixcontact.com 1990012 PTSA datasheet phoenixcontact.com 1990012 PTSA datasheet
+            - generic [ref=f8e65]:
+              - button [ref=f8e67] [cursor=pointer]
+              - generic [ref=f8e72]:
+                - button [ref=f8e73] [cursor=pointer]
+                - button [ref=f8e76] [cursor=pointer]
+          - button [ref=f8e79] [cursor=pointer]
+    - generic [ref=f8e84]:
+      - button [ref=f8e86] [cursor=pointer]
+      - button [ref=f8e87] [cursor=pointer]
+      - generic [ref=f8e93]:
+        - button [ref=f8e95] [cursor=pointer]
+        - link [ref=f8e100] [cursor=pointer]:
+          - /url: https://accounts.google.com/ServiceLogin?hl=en&passive=true&continue=https://www.google.com/search%3Fq%3Dphoenixcontact.com%2B1990012%2BPTSA%2Bdatasheet&ec=futura_srp_og_si_72236_p
+          - text: Sign in
+  - generic [ref=f8e102]:
+    - navigation [ref=f8e108]:
+      - list [ref=f8e111]:
+        - listitem [ref=f8e112]:
+          - link [ref=f8e115] [cursor=pointer]:
+            - /url: /search?q=phoenixcontact.com+1990012+PTSA+datasheet&sca_esv=ff0f52d8df50e9c0&udm=50&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&aep=1&ntc=1&cs=0&sa=X&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Q2J8OegQIEBAD
+            - generic [ref=f8e116]: AI Mode
+        - listitem [ref=f8e119]:
+          - link [disabled] [ref=f8e120]:
+            - generic [ref=f8e121]: All
+        - listitem [ref=f8e123]:
+          - link [ref=f8e124] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=2&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&q=phoenixcontact.com+1990012+PTSA+datasheet&sa=X&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0QtKgLegQIFhAB
+            - generic [ref=f8e125]: Images
+        - listitem [ref=f8e127]:
+          - link [ref=f8e128] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=7&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&q=phoenixcontact.com+1990012+PTSA+datasheet&sa=X&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0QtKgLegQIFRAB
+            - generic [ref=f8e129]: Videos
+        - listitem [ref=f8e131]:
+          - link [ref=f8e132] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=18&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&q=phoenixcontact.com+1990012+PTSA+datasheet&sa=X&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Qs6gLegQIFBAB
+            - generic [ref=f8e133]: Forums
+        - listitem [ref=f8e135]:
+          - link [ref=f8e136] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=39&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&q=phoenixcontact.com+1990012+PTSA+datasheet&sa=X&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Qs6gLegQIEhAB
+            - generic [ref=f8e137]: Short videos
+        - listitem [ref=f8e139]:
+          - link [ref=f8e140] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&q=phoenixcontact.com+1990012+PTSA+datasheet&tbm=nws&source=lnms&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832a9BVCEiB2iPJNekNderQwJGZIG7YID1eBGNWasq2rzBIURiSCrdR156KVg_RXap7nymj7qwomXHj_SiILyyw7TcR3PVsX7LYP5lqUywwLYwse9eq2FeU_-NVh-70aseSA4lTx9cXY16UPdF4e2jlvrjfGwp&sa=X&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Q0pQJegQIExAB
+            - generic [ref=f8e141]: News
+        - listitem [ref=f8e143]:
+          - button [ref=f8e144] [cursor=pointer]:
+            - generic [ref=f8e145]: More
+    - heading [level=1] [ref=f8e151]: Search Results
+    - main [ref=f8e157]:
+      - generic [ref=f8e161]:
+        - generic [ref=f8e164]:
+          - heading [level=2] [ref=f8e165]: Web results
+          - generic [ref=f8e166]:
+            - generic [ref=f8e169]:
+              - link [ref=f8e171] [cursor=pointer]:
+                - /url: https://www.phoenixcontact.com/gb/products/1990012/pdf
+                - heading [level=3] [ref=f8e172]: PTSA 0,5/ 3-2,5-Z - PCB terminal block
+                - generic [ref=f8e178]:
+                  - generic [ref=f8e179]: Phoenix Contact
+                  - generic [ref=f8e181]: https://www.phoenixcontact.com › 1990012 › pdf
+              - generic [ref=f8e183]: PDF
+              - button [ref=f8e186] [cursor=pointer]
+            - generic [ref=f8e193]:
+              - emphasis [ref=f8e194]: Printed circuit board terminal
+              - text: ", nominal current: 2 A, rated voltage (III/2): 250 V, nominal cross section: 0.5 mm2, number of potentials: 3, number of rows: ..."
+        - generic [ref=f8e205]:
+          - heading [level=2] [ref=f8e209]:
+            - generic [ref=f8e210]: Thinking
+          - progressbar [ref=f8e212]
+        - generic [ref=f8e216]:
+          - heading [level=2] [ref=f8e217]: Web results
+          - generic [ref=f8e218]:
+            - generic [ref=f8e221]:
+              - link [ref=f8e223] [cursor=pointer]:
+                - /url: https://www.phoenixcontact.com/en-ae/products/printed-circuit-board-terminal-ptsa-05-3-25-z-1990012
+                - heading [level=3] [ref=f8e224]: PTSA 0,5/ 3-2,5-Z - PCB terminal block - 1990012
+                - generic [ref=f8e230]:
+                  - generic [ref=f8e231]: Phoenix Contact
+                  - generic [ref=f8e233]: https://www.phoenixcontact.com › en-ae › products › pri...
+              - button [ref=f8e237] [cursor=pointer]
+            - generic [ref=f8e244]:
+              - emphasis [ref=f8e245]: Printed circuit board terminal
+              - text: ", nominal current: 2 A, rated voltage (III/2): 250 V, nominal cross section: 0.5 mm"
+              - superscript [ref=f8e246]: "2"
+              - text: ", number of potentials: 3, number of rows: ..."
+        - generic [ref=f8e250]:
+          - generic [ref=f8e253]:
+            - link [ref=f8e255] [cursor=pointer]:
+              - /url: https://www.phoenixcontact.com/en-pc/products/pcb-terminal-block-ptsa-05-3-25-z-1990012
+              - heading [level=3] [ref=f8e256]: PTSA 0,5/ 3-2,5-Z - PCB terminal block - 1990012
+              - generic [ref=f8e262]:
+                - generic [ref=f8e263]: Phoenix Contact
+                - generic [ref=f8e265]: https://www.phoenixcontact.com › en-pc › products › pc...
+            - button [ref=f8e269] [cursor=pointer]
+          - generic [ref=f8e276]:
+            - emphasis [ref=f8e277]: Printed circuit board terminal
+            - text: ", nominal current: 2 A, rated voltage (III/2): 250 V, nominal cross section: 0.5 mm2, pitch: 2.5 mm, connection"
+        - generic [ref=f8e281]:
+          - generic [ref=f8e284]:
+            - link [ref=f8e286] [cursor=pointer]:
+              - /url: https://www.phoenixcontact.com/en-sk/products/printed-circuit-board-terminal-ptsa-05-3-25-z-1990012
+              - heading [level=3] [ref=f8e287]: PTSA 0,5/ 3-2,5-Z - PCB terminal block - 1990012
+              - generic [ref=f8e293]:
+                - generic [ref=f8e294]: Phoenix Contact
+                - generic [ref=f8e296]: https://www.phoenixcontact.com › en-sk › products › pri...
+            - button [ref=f8e300] [cursor=pointer]
+          - generic [ref=f8e307]:
+            - emphasis [ref=f8e308]: PCB terminal block
+            - text: ", nominal current: 2 A, rated voltage (III/2): 250 V, pitch: 2.5 mm, connection method: Push-in spring connection, mounting: Wave soldering, ..."
+        - generic [ref=f8e312]:
+          - generic [ref=f8e315]:
+            - link [ref=f8e317] [cursor=pointer]:
+              - /url: https://static.chipdip.ru/lib/115/DOC057115587.pdf
+              - heading [level=3] [ref=f8e318]: PCB terminal block - PTSA 0,5/ 3-2,5-Z
+              - generic [ref=f8e327]:
+                - generic [ref=f8e328]: Чип и Дип
+                - generic [ref=f8e330]: https://static.chipdip.ru › lib › DOC057115587
+            - generic [ref=f8e332]: PDF
+            - button [ref=f8e335] [cursor=pointer]
+          - generic [ref=f8e342]:
+            - emphasis [ref=f8e343]: PCB terminal block
+            - text: ", nominal current: 2 A, rated voltage (III/2): 250 V, nominal cross section: 0.5 mm2, number of potentials: 3, number of rows: 1, ..."
+        - generic [ref=f8e347]:
+          - generic [ref=f8e350]:
+            - link [ref=f8e352] [cursor=pointer]:
+              - /url: http://media.digikey.com/pdf/Data%20Sheets/Phoenix%20Contact%20PDFs/1990012.pdf
+              - heading [level=3] [ref=f8e353]: PCB terminal block - PTSA 0.5/ 3-2.5-Z - 1990012
+              - generic [ref=f8e362]:
+                - generic [ref=f8e363]: DigiKey
+                - generic [ref=f8e365]: http://media.digikey.com › pdf › 1990012
+            - generic [ref=f8e367]: PDF
+            - button [ref=f8e370] [cursor=pointer]
+          - generic [ref=f8e377]:
+            - emphasis [ref=f8e378]: PC terminal block
+            - text: ", Nominal current: 2 A, Nom. voltage: 250 V, Pitch: 2.5 mm, Number of positions: 3, Connection method: Spring-cage conn.,"
+        - generic [ref=f8e382]:
+          - generic [ref=f8e385]:
+            - link [ref=f8e387] [cursor=pointer]:
+              - /url: https://www.electricautomationnetwork.com/en/phoenixcontact/pcb-terminal-block-phoenix-contact-ptsa-05-3-25-z-1990012
+              - heading [level=3] [ref=f8e388]: PTSA 0,5/ 3-2,5-Z 1990012 PHOENIX CONTACT PCB terminal ...
+              - generic [ref=f8e394]:
+                - generic [ref=f8e395]: Electric Automation Network
+                - generic [ref=f8e397]: https://www.electricautomationnetwork.com › pcb-term...
+            - button [ref=f8e401] [cursor=pointer]
+          - generic [ref=f8e408]:
+            - text: "Description:"
+            - emphasis [ref=f8e409]: PCB terminal block
+            - text: ". Terminal block for printed circuit board, nominal current: 2 A, nominal voltage (III/2): 250 V, nominal cross-section: 0.5 ..."
+        - generic [ref=f8e413]:
+          - generic [ref=f8e416]:
+            - link [ref=f8e418] [cursor=pointer]:
+              - /url: https://www.tme.eu/en/details/ptsa0.5_3-2.5-z/pcb-terminal-blocks/phoenix-contact/1990012/
+              - heading [level=3] [ref=f8e419]: "1990012 PHOENIX CONTACT - Connector: PCB terminal ..."
+              - generic [ref=f8e425]:
+                - generic [ref=f8e426]: TME
+                - generic [ref=f8e428]: https://www.tme.eu › ... › PCB terminal blocks
+            - button [ref=f8e432] [cursor=pointer]
+          - generic [ref=f8e438]:
+            - generic [ref=f8e439]:
+              - emphasis [ref=f8e440]: "1990012"
+              - text: ; Number of pins. 3 ; Connector variant. with push button ; Mechanical mounting. on PCBs ; Electrical mounting. spring clamp, THT ; Contact plating. tinned.
+            - link [ref=f8e441] [cursor=pointer]:
+              - /url: https://www.tme.eu/en/details/ptsa0.5_3-2.5-z/pcb-terminal-blocks/phoenix-contact/1990012/#:~:text=1990012&text=Number%20of%20pins,3&text=Connector%20variant,with%20push%20button&text=Mechanical%20mounting,on%20PCBs&text=Electrical%20mounting,spring%20clamp%2C%20THT&text=Contact%20plating,tinned
+              - text: Read more
+          - generic [ref=f8e442]: €7.14 delivery
+        - generic [ref=f8e448]:
+          - generic [ref=f8e451]:
+            - link [ref=f8e453] [cursor=pointer]:
+              - /url: https://www.mouser.com/ProductDetail/Phoenix-Contact/1990012?qs=sps7W%2FwBcGGWSVcoaRrR7w%3D%3D&srsltid=AfmBOoo-GsEbMrnJWEjFMv0cTEYr19bBqO56LjBt0BZ19WADBDhRdN2r
+              - heading [level=3] [ref=f8e454]: 1990012 Phoenix Contact
+              - generic [ref=f8e460]:
+                - generic [ref=f8e461]: Mouser Electronics
+                - generic [ref=f8e463]: https://www.mouser.com › ProductDetail › 1990012
+            - button [ref=f8e467] [cursor=pointer]
+          - generic [ref=f8e474]:
+            - text: "Phoenix Contact Fixed Terminal Blocks PTSA 0.5/ 3-2.5-Z datasheet, :"
+            - emphasis [ref=f8e475]: 1990012 Datasheet (PDF
+            - text: ) They have 2.5, 3.5, 5, and 7mm pitch, current ratings from 2 to 12 ...
+          - generic [ref=f8e476]: US$0.50
+      - navigation [ref=f8e481]:
+        - heading [level=1] [ref=f8e482]: Page navigation
+        - text: "1"
+        - link [ref=f8e485] [cursor=pointer]:
+          - /url: /search?q=phoenixcontact.com+1990012+PTSA+datasheet&sca_esv=ff0f52d8df50e9c0&ei=PrNbaqHTOZuChbIPs53K6AQ&start=10&sa=N&sstk=AU9db-C185DXdq0nlN2p6DZAtpO5llDH3MPAnF1DWgjvlmnKHCfs0fYwIUKtNwi9GGWkGkiXAjPEZgEOc6SON8e-HYzRqEK-52EaZA&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Q8tMDegQIJhAE
+          - text: "2"
+        - link [ref=f8e487] [cursor=pointer]:
+          - /url: /search?q=phoenixcontact.com+1990012+PTSA+datasheet&sca_esv=ff0f52d8df50e9c0&ei=PrNbaqHTOZuChbIPs53K6AQ&start=20&sa=N&sstk=AU9db-C185DXdq0nlN2p6DZAtpO5llDH3MPAnF1DWgjvlmnKHCfs0fYwIUKtNwi9GGWkGkiXAjPEZgEOc6SON8e-HYzRqEK-52EaZA&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Q8tMDegQIJhAG
+          - text: "3"
+        - link [ref=f8e489] [cursor=pointer]:
+          - /url: /search?q=phoenixcontact.com+1990012+PTSA+datasheet&sca_esv=ff0f52d8df50e9c0&ei=PrNbaqHTOZuChbIPs53K6AQ&start=30&sa=N&sstk=AU9db-C185DXdq0nlN2p6DZAtpO5llDH3MPAnF1DWgjvlmnKHCfs0fYwIUKtNwi9GGWkGkiXAjPEZgEOc6SON8e-HYzRqEK-52EaZA&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Q8tMDegQIJhAI
+          - text: "4"
+        - link [ref=f8e491] [cursor=pointer]:
+          - /url: /search?q=phoenixcontact.com+1990012+PTSA+datasheet&sca_esv=ff0f52d8df50e9c0&ei=PrNbaqHTOZuChbIPs53K6AQ&start=40&sa=N&sstk=AU9db-C185DXdq0nlN2p6DZAtpO5llDH3MPAnF1DWgjvlmnKHCfs0fYwIUKtNwi9GGWkGkiXAjPEZgEOc6SON8e-HYzRqEK-52EaZA&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Q8tMDegQIJhAK
+          - text: "5"
+        - link [ref=f8e493] [cursor=pointer]:
+          - /url: /search?q=phoenixcontact.com+1990012+PTSA+datasheet&sca_esv=ff0f52d8df50e9c0&ei=PrNbaqHTOZuChbIPs53K6AQ&start=50&sa=N&sstk=AU9db-C185DXdq0nlN2p6DZAtpO5llDH3MPAnF1DWgjvlmnKHCfs0fYwIUKtNwi9GGWkGkiXAjPEZgEOc6SON8e-HYzRqEK-52EaZA&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Q8tMDegQIJhAM
+          - text: "6"
+        - link [ref=f8e495] [cursor=pointer]:
+          - /url: /search?q=phoenixcontact.com+1990012+PTSA+datasheet&sca_esv=ff0f52d8df50e9c0&ei=PrNbaqHTOZuChbIPs53K6AQ&start=60&sa=N&sstk=AU9db-C185DXdq0nlN2p6DZAtpO5llDH3MPAnF1DWgjvlmnKHCfs0fYwIUKtNwi9GGWkGkiXAjPEZgEOc6SON8e-HYzRqEK-52EaZA&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Q8tMDegQIJhAO
+          - text: "7"
+        - link [ref=f8e497] [cursor=pointer]:
+          - /url: /search?q=phoenixcontact.com+1990012+PTSA+datasheet&sca_esv=ff0f52d8df50e9c0&ei=PrNbaqHTOZuChbIPs53K6AQ&start=70&sa=N&sstk=AU9db-C185DXdq0nlN2p6DZAtpO5llDH3MPAnF1DWgjvlmnKHCfs0fYwIUKtNwi9GGWkGkiXAjPEZgEOc6SON8e-HYzRqEK-52EaZA&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Q8tMDegQIJhAQ
+          - text: "8"
+        - heading [level=2] [ref=f8e499]:
+          - link [ref=f8e500] [cursor=pointer]:
+            - /url: /search?q=phoenixcontact.com+1990012+PTSA+datasheet&sca_esv=ff0f52d8df50e9c0&ei=PrNbaqHTOZuChbIPs53K6AQ&start=10&sa=N&sstk=AU9db-C185DXdq0nlN2p6DZAtpO5llDH3MPAnF1DWgjvlmnKHCfs0fYwIUKtNwi9GGWkGkiXAjPEZgEOc6SON8e-HYzRqEK-52EaZA&ved=2ahUKEwih6sze29yVAxUbQUEAHbOOEk0Q8NMDegQIJhAS
+            - generic [ref=f8e502]: Next
+    - contentinfo [ref=f8e503]:
+      - heading [level=1] [ref=f8e504]: Footer links

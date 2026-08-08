@@ -1,0 +1,416 @@
+- generic [ref=f26e2]:
+  - banner [ref=f26e4]:
+    - generic [ref=f26e7]:
+      - generic [ref=f26e9]:
+        - generic [ref=f26e11]:
+          - generic [ref=f26e12]:
+            - heading "Your Choices Regarding Cookies on this Site" [level=1] [ref=f26e13]
+            - img "TE" [ref=f26e15]
+          - paragraph [ref=f26e17]: Cookies are important to the proper functioning of a site. To improve your experience, we use cookies to remember log-in details and provide secure log-in, collect statistics to optimize site functionality, and deliver content tailored to your interests. Click Agree and Proceed to accept cookies and go directly to the site or click on More Information to see detailed descriptions of the types of cookies and choose whether to accept certain cookies while on the site.
+        - generic [ref=f26e19]:
+          - button "Agree and Proceed" [ref=f26e20] [cursor=pointer]
+          - button "Manage cookie settings" [ref=f26e21] [cursor=pointer]
+        - button [ref=f26e22] [cursor=pointer]:
+          - img "Close icon" [ref=f26e23]
+      - generic [ref=f26e25]:
+        - link "Cookie Policy" [ref=f26e26] [cursor=pointer]:
+          - /url: https://www.te.com/usa-en/policies-agreements/privacy-policy/cookie-usage.html
+        - text: "|"
+        - link "Privacy Policy" [ref=f26e27] [cursor=pointer]:
+          - /url: http://www.te.com/usa-en/policies-agreements/privacy-policy.html
+        - text: "| Powered by:"
+        - link [ref=f26e28] [cursor=pointer]:
+          - /url: http://trustarc.com/
+          - img "Company logo for TrustArc" [ref=f26e29]
+    - generic [ref=f26e31]:
+      - generic [ref=f26e32]:
+        - generic [ref=f26e33]: TE Connectivity (TE)
+        - link "Need Help? +1 800 522 6752" [ref=f26e39] [cursor=pointer]:
+          - /url: tel:+1 800 522 6752
+        - text: or
+        - generic [ref=f26e40] [cursor=pointer]:
+          - generic [ref=f26e41]: 
+          - text: Chat
+      - button " English (EN) United States ($USD)" [ref=f26e48]:
+        - paragraph [ref=f26e49] [cursor=pointer]:
+          - generic [ref=f26e50]: 
+          - text: English (EN)
+        - paragraph [ref=f26e52] [cursor=pointer]: United States ($USD)
+    - generic [ref=f26e54]:
+      - paragraph:
+        - link "Skip Navigation" [ref=f26e55] [cursor=pointer]:
+          - /url: "#te-body"
+      - generic [ref=f26e56]:
+        - link "TE Connectivity" [ref=f26e58] [cursor=pointer]:
+          - /url: https://www.te.com/en/home.html
+        - search [ref=f26e59]:
+          - generic [ref=f26e61]:
+            - list [ref=f26e64] [cursor=pointer]:
+              - listitem [ref=f26e65]:
+                - paragraph [ref=f26e67]: All Products
+              - text: 
+            - textbox "Search resizing" [ref=f26e68]:
+              - /placeholder: "Search by part # or keyword"
+            - text: 
+            - button "Search submit button" [ref=f26e69] [cursor=pointer]: "Search by part # or keyword"
+        - generic [ref=f26e70]:
+          - tree [ref=f26e72]:
+            - treeitem [level=1] [ref=f26e73]:
+              - link " Login/Register My Account " [ref=f26e74] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=f26e75]: 
+                - generic [ref=f26e76]:
+                  - generic [ref=f26e77]: Login/Register
+                  - generic [ref=f26e78]: My Account  
+              - text:                  
+          - link " 0 Cart" [ref=f26e81] [cursor=pointer]:
+            - /url: https://www.te.com/en/commerce/shop/shopping-cart.html
+            - generic [ref=f26e82]:
+              - text: 
+              - generic [ref=f26e83]: "0"
+            - generic [ref=f26e84]: Cart
+        - text:                  
+    - navigation [ref=f26e86]:
+      - list [ref=f26e87]:
+        - listitem [level=1] [ref=f26e88] [cursor=pointer]:
+          - generic [ref=f26e89]: Products  
+        - listitem [level=1] [ref=f26e90] [cursor=pointer]:
+          - generic [ref=f26e91]: Industries  
+        - listitem [level=1] [ref=f26e92] [cursor=pointer]:
+          - generic [ref=f26e93]: Services & Trainings  
+        - listitem [level=1] [ref=f26e94] [cursor=pointer]:
+          - generic [ref=f26e95]: Tools & Resources  
+        - listitem [level=1] [ref=f26e96] [cursor=pointer]:
+          - generic [ref=f26e97]: About TE  
+        - listitem [level=1] [ref=f26e98] [cursor=pointer]:
+          - generic [ref=f26e99]: Sustainability  
+        - listitem [ref=f26e100] [cursor=pointer]:
+          - link "Shop TE Store" [ref=f26e101]:
+            - /url: https://www.te.com/en/store.html
+        - listitem [level=1]
+    - text:  
+  - generic [ref=f26e102]:
+    - banner [ref=f26e103]:
+      - text: 
+      - generic [ref=f26e107]:
+        - text: 
+        - paragraph [ref=f26e108]: The product information below may not be complete. If you need documentation, similar, compatible or replacement products, please contact us.
+    - generic [ref=f26e110]:
+      - generic [ref=f26e114]:
+        - generic [ref=f26e115]:
+          - heading "IME06TS" [level=1] [ref=f26e116]
+          - list [ref=f26e117]:
+            - listitem:
+              - generic [ref=f26e118]:
+                - generic [ref=f26e119]: 
+                - text: Active
+          - heading "IME06TS=IM RELAY 140mW 12V 2NO" [level=2] [ref=f26e121]
+        - generic [ref=f26e126]:
+          - list [ref=f26e127]:
+            - listitem [ref=f26e128]:
+              - list [ref=f26e130]:
+                - listitem [ref=f26e131]: Axicom
+                - listitem [ref=f26e132]
+                - listitem [ref=f26e133]: Axicom IM
+          - list [ref=f26e134]:
+            - listitem [ref=f26e135]: "TE Internal #: 1462043-8"
+            - listitem [ref=f26e136]: "TE Internal Description: IME06TS=IM RELAY 140mW 12V 2NO"
+          - generic [ref=f26e137]:
+            - list
+          - generic [ref=f26e138]:
+            - list:
+              - listitem [ref=f26e139]:
+                - link " Add to List " [ref=f26e141] [cursor=pointer]:
+                  - /url: "#"
+          - list [ref=f26e143]:
+            - listitem [ref=f26e144]:
+              - link "Compatible Parts & Tooling" [ref=f26e145] [cursor=pointer]:
+                - /url: "#scetion-pdp-related-info-compatible"
+      - generic [ref=f26e146]:
+        - tabpanel [ref=f26e154]:
+          - text:     
+          - generic [ref=f26e157]:
+            - heading "Shop Our Distributors" [level=3] [ref=f26e158]
+            - generic [ref=f26e160]:
+              - combobox "Select region" [ref=f26e161]:
+                - option "North America" [selected]
+                - option "South America"
+                - option "Central America"
+                - option "Europe"
+                - option "Asia"
+                - option "Middle East"
+                - option "Africa"
+                - option "Oceania"
+                - option "Japan"
+              - text: 
+        - generic [ref=f26e164]:
+          - generic [ref=f26e165]:
+            - heading "We are here to help!" [level=3] [ref=f26e166]
+            - paragraph [ref=f26e167]: Get in touch with our product experts.
+          - generic [ref=f26e168]:
+            - link " Chat with us" [ref=f26e169] [cursor=pointer]:
+              - /url: ""
+            - link " Email us" [ref=f26e170] [cursor=pointer]:
+              - /url: /en/customer-support/email-us.html?p_prod_desc=IME06TS+%3A+%7C+TE+Connectivity&p_url=https%3A%2F%2Fwww.te.com%2Fen%2Fproduct-1462043-8.html
+            - link " Call us" [ref=f26e171] [cursor=pointer]:
+              - /url: /en/customer-support/connect-with-us.html
+      - generic [ref=f26e176]:
+        - tablist [ref=f26e177]:
+          - tab "Documents" [active] [selected] [ref=f26e178] [cursor=pointer]
+          - tab "Features" [ref=f26e180] [cursor=pointer]
+          - tab "Product Compliance" [ref=f26e182] [cursor=pointer]
+        - generic [ref=f26e184]:
+          - heading [level=2]:  
+          - tabpanel "Documents" [ref=f26e185]:
+            - generic [ref=f26e186]:
+              - heading "Product Drawings" [level=3] [ref=f26e188]
+              - list [ref=f26e190]:
+                - listitem [ref=f26e191]:
+                  - generic [ref=f26e192]: IME-T-Relay
+                  - link " ENG_CD_1462043-1_A3_1462043-1.pdf" [ref=f26e193] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1462043-1&DocType=Customer%20Drawing&DocLang=English&DocFormat=pdf&PartCntxt=1462043-8
+                  - text: English
+            - generic [ref=f26e195]:
+              - heading "CAD Files" [level=3] [ref=f26e197]
+              - list [ref=f26e199]:
+                - listitem [ref=f26e200]:
+                  - generic [ref=f26e201]: 3D PDF
+                  - link " 3D_CVM_CVM_1462043-1_B5.pdf" [ref=f26e202] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=CVM_1462043-1&DocType=Customer%20View%20Model&DocLang=3D&DocFormat=pdf&PartCntxt=1462043-8
+                  - text: 3D
+                - listitem [ref=f26e203]:
+                  - link " 3D_CVM_CVM_1462043-8_B4.pdf" [ref=f26e204] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=CVM_1462043-8&DocType=Customer%20View%20Model&DocLang=3D&DocFormat=pdf&PartCntxt=1462043-8
+                  - text: 3D
+                - listitem [ref=f26e205]:
+                  - generic [ref=f26e206]: Customer View Model
+                  - link " ENG_CVM_CVM_1462043-1_B5.3d_igs.zip" [ref=f26e207] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=CVM_1462043-1&DocType=Customer%20View%20Model&DocLang=English&DocFormat=3d_igs.zip&PartCntxt=1462043-8
+                  - text: English
+                - listitem [ref=f26e208]:
+                  - link " ENG_CVM_CVM_1462043-1_B5.3d_stp.zip" [ref=f26e209] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=CVM_1462043-1&DocType=Customer%20View%20Model&DocLang=English&DocFormat=3d_stp.zip&PartCntxt=1462043-8
+                  - text: English
+                - listitem [ref=f26e210]:
+                  - link " ENG_CVM_CVM_1462043-1_B5.2d_dxf.zip" [ref=f26e211] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=CVM_1462043-1&DocType=Customer%20View%20Model&DocLang=English&DocFormat=2d_dxf.zip&PartCntxt=1462043-8
+                  - text: English
+                - listitem [ref=f26e212]:
+                  - link " ENG_CVM_CVM_1462043-8_B4.3d_igs.zip" [ref=f26e213] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=CVM_1462043-8&DocType=Customer%20View%20Model&DocLang=English&DocFormat=3d_igs.zip&PartCntxt=1462043-8
+                  - text: English
+                - listitem [ref=f26e214]:
+                  - link " ENG_CVM_CVM_1462043-8_B4.3d_stp.zip" [ref=f26e215] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=CVM_1462043-8&DocType=Customer%20View%20Model&DocLang=English&DocFormat=3d_stp.zip&PartCntxt=1462043-8
+                  - text: English
+                - listitem [ref=f26e216]:
+                  - link " ENG_CVM_CVM_1462043-8_B4.2d_dxf.zip" [ref=f26e217] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=CVM_1462043-8&DocType=Customer%20View%20Model&DocLang=English&DocFormat=2d_dxf.zip&PartCntxt=1462043-8
+                  - text: English
+            - generic [ref=f26e218]:
+              - heading "Datasheets & Catalog Pages" [level=3] [ref=f26e220]
+              - list [ref=f26e222]:
+                - listitem [ref=f26e223]:
+                  - generic [ref=f26e224]: Transportation, Storage, Handling, Assembly and Testing of Axicom Through Hole Terminal (THT) Relays
+                  - link " ENG_CS_1-1773931-2-Axicom-AppNote1_718.pdf" [ref=f26e225] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1-1773931-2-Axicom-AppNote1&DocType=Catalog%20Section&DocLang=English&DocFormat=pdf&PartCntxt=1462043-8
+                  - text: English
+                - listitem [ref=f26e226]:
+                  - generic [ref=f26e227]: IM/E Relay
+                  - link " ENG_DS_108-98026_0721.pdf" [ref=f26e228] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=108-98026&DocType=Data%20Sheet&DocLang=English&DocFormat=pdf&PartCntxt=1462043-8
+                  - text: English
+            - generic [ref=f26e229]:
+              - heading "Agency Approvals" [level=3] [ref=f26e231]
+              - generic [ref=f26e232]:
+                - list [ref=f26e233]:
+                  - listitem [ref=f26e234]:
+                    - generic [ref=f26e235]: VDE Certificate
+                    - link " ENG_AAD_VDE_CERT_40047930_C1_8.pdf" [ref=f26e236] [cursor=pointer]:
+                      - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=VDE_CERT_40047930_C1&DocType=Agency%20Approval%20Document&DocLang=English&DocFormat=pdf&PartCntxt=1462043-8
+                    - text: English
+                - list [ref=f26e237]:
+                  - listitem [ref=f26e238]:
+                    - generic [ref=f26e239]: UL
+                    - link " ENG_AAD_UL_CERT_E214025_20000427_C1_6.pdf" [ref=f26e240] [cursor=pointer]:
+                      - /url: https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=UL_CERT_E214025_20000427_C1&DocType=Agency%20Approval%20Document&DocLang=English&DocFormat=pdf&PartCntxt=1462043-8
+                    - text: English
+            - generic [ref=f26e241]:
+              - heading "Product Change Notification" [level=3] [ref=f26e243]
+              - list [ref=f26e245]:
+                - listitem [ref=f26e246]:
+                  - link "View Product Change Notification" [ref=f26e247] [cursor=pointer]:
+                    - /url: https://www.te.com/commerce/pcnws/PCNHomePage
+                  - text: Login required to access product change notifications
+          - heading [level=2]:  
+          - heading [level=2]:  
+    - generic [ref=f26e248]:
+      - generic [ref=f26e254]:
+        - heading "Compatible Parts" [level=3] [ref=f26e257]
+        - tabpanel [ref=f26e259]:
+          - paragraph [ref=f26e260] [cursor=pointer]:
+            - link "Filter By Specification" [ref=f26e261]:
+              - /url: /en/compatible-1462043-8.html?r=3
+          - generic [ref=f26e264]:
+            - generic [ref=f26e265]:
+              - link [ref=f26e267] [cursor=pointer]:
+                - /url: /en/product-1462043-4.html
+                - img "IME06GR=IM RELAY 140mW 12V 2NO-1462043-4" [ref=f26e268]
+              - generic [ref=f26e269]: Associated
+              - link "IME06GR" [ref=f26e271] [cursor=pointer]:
+                - /url: /en/product-1462043-4.html
+              - generic [ref=f26e272]: General Purpose Signal Relay, DC, Polarized, Monostable, 2 Form A...
+            - generic [ref=f26e273]:
+              - generic [ref=f26e274]:
+                - paragraph [ref=f26e275]: "From: 2.506"
+                - paragraph [ref=f26e276]: In-Stock
+              - link "View Product" [ref=f26e278] [cursor=pointer]:
+                - /url: /en/product-1462043-4.html
+      - generic [ref=f26e288]:
+        - heading [level=3] [ref=f26e289]:
+          - generic [ref=f26e290]: Also in the Series
+          - link "Axicom IM" [ref=f26e292] [cursor=pointer]:
+            - /url: https://www.te.com/en/plp/im/X266x.html
+        - generic [ref=f26e295]:
+          - list [ref=f26e297]:
+            - listitem [ref=f26e298]:
+              - link [ref=f26e300] [cursor=pointer]:
+                - /url: https://www.te.com/en/plp/pcb-relays-im/Y45eGX266x.html
+                - img "PCB Relays-862094" [ref=f26e302]
+              - link "PCB Relays (132)" [ref=f26e304] [cursor=pointer]:
+                - /url: https://www.te.com/en/plp/pcb-relays-im/Y45eGX266x.html
+          - list [ref=f26e306]:
+            - listitem [ref=f26e307]:
+              - link [ref=f26e309] [cursor=pointer]:
+                - /url: https://www.te.com/en/plp/rj45-connectors-im/Y30mjX266x.html
+                - img "RJ45 Connectors-539797" [ref=f26e311]
+              - link "RJ45 Connectors (2)" [ref=f26e313] [cursor=pointer]:
+                - /url: https://www.te.com/en/plp/rj45-connectors-im/Y30mjX266x.html
+  - contentinfo [ref=f26e315]:
+    - generic [ref=f26e316]:
+      - navigation [ref=f26e317]:
+        - list [ref=f26e318]:
+          - listitem [ref=f26e319]:
+            - heading "Contact Our Team – 24/7 Support" [level=4] [ref=f26e320]
+            - region "Contact Our Team – 24/7 Support" [ref=f26e321]:
+              - list [ref=f26e322]:
+                - listitem [level=2] [ref=f26e323]:
+                  - link " +1 800 522 6752" [ref=f26e328] [cursor=pointer]:
+                    - /url: tel:+1 800 522 6752
+                    - generic [ref=f26e329]:
+                      - generic [ref=f26e330]: 
+                      - text: +1 800 522 6752
+                - listitem [level=2] [ref=f26e331]:
+                  - button " Chat" [ref=f26e332] [cursor=pointer]:
+                    - generic [ref=f26e333]:
+                      - generic [ref=f26e334]: 
+                      - text: Chat
+                - listitem [level=2]
+                - listitem [level=2] [ref=f26e335]:
+                  - link "See Support Details" [ref=f26e336] [cursor=pointer]:
+                    - /url: https://www.te.com/en/customer-support/customer-service.html
+          - listitem [ref=f26e337]:
+            - heading "Access Partner Information" [level=4] [ref=f26e338]
+            - region "Access Partner Information" [ref=f26e339]:
+              - list [ref=f26e340]:
+                - listitem [level=2] [ref=f26e341]:
+                  - link "Distributors" [ref=f26e342] [cursor=pointer]:
+                    - /url: https://www.te.com/en/partners/distributors.html
+                - listitem [level=2] [ref=f26e343]:
+                  - link "Suppliers" [ref=f26e344] [cursor=pointer]:
+                    - /url: https://supplier.te.com/web/supplier-portal/home
+                - listitem [level=2] [ref=f26e345]:
+                  - link "Supplier Diversity" [ref=f26e346] [cursor=pointer]:
+                    - /url: https://www.te.com/en/about-te/corporate-responsibility/supplier-diversity.html
+          - listitem [ref=f26e347]:
+            - heading "Get Answers Now" [level=4] [ref=f26e348]
+            - region "Get Answers Now" [ref=f26e349]:
+              - list [ref=f26e350]:
+                - listitem [level=2] [ref=f26e351]:
+                  - link [ref=f26e352] [cursor=pointer]:
+                    - /url: https://www.te.com/en/customer-support/authorized-distributors.html
+                    - paragraph [ref=f26e353]: Authorized Distributors & Resellers
+                - listitem [level=2] [ref=f26e354]:
+                  - link [ref=f26e355] [cursor=pointer]:
+                    - /url: https://www.te.com/en/faqs.html
+                    - paragraph [ref=f26e356]: Product FAQs
+                - listitem [level=2] [ref=f26e357]:
+                  - link [ref=f26e358] [cursor=pointer]:
+                    - /url: https://www.te.com/en/utilities/te-digital-resources/how-to-order-samples.html
+                    - paragraph [ref=f26e359]: Samples FAQs
+                - listitem [level=2] [ref=f26e360]:
+                  - link [ref=f26e361] [cursor=pointer]:
+                    - /url: https://www.te.com/en/commerce/shopping-online-with-te-connectivity.html
+                    - paragraph [ref=f26e362]: TE Store FAQs
+                - listitem [level=2] [ref=f26e363]:
+                  - link [ref=f26e364] [cursor=pointer]:
+                    - /url: https://www.te.com/en/policies-agreements/terms-of-use-te-com/terms-conditions-sale.html
+                    - paragraph [ref=f26e365]: Terms and Conditions of Sale
+                - listitem [level=2] [ref=f26e366]:
+                  - link [ref=f26e367] [cursor=pointer]:
+                    - /url: https://www.te.com/en/policies-agreements/terms-of-use-te-com/sample-terms-conditions.html
+                    - paragraph [ref=f26e368]: Samples Terms and Conditions
+          - listitem [ref=f26e369]:
+            - heading "Select Your Preferences" [level=4] [ref=f26e370]
+            - region "Select Your Preferences" [ref=f26e371]:
+              - list [ref=f26e377]:
+                - listitem [level=2] [ref=f26e378]:
+                  - generic [ref=f26e379]: 
+                  - text: Language
+                - listitem [level=2] [ref=f26e381]: English (EN)
+                - listitem [level=2] [ref=f26e382]: Ship to
+                - listitem [level=2] [ref=f26e383]: United States ($USD)
+              - list [ref=f26e386]:
+                - complementary "Open Cookie Preferences Modal" [ref=f26e387]:
+                  - link "Cookie Preferences, opens a dedicated popup modal window" [ref=f26e388] [cursor=pointer]: Cookie Preferences
+              - text:    
+        - generic [ref=f26e389]:
+          - heading "Connect With Us" [level=4] [ref=f26e390]
+          - list "Connect With Us" [ref=f26e391]:
+            - listitem [level=2] [ref=f26e392]:
+              - link " Facebook" [ref=f26e393] [cursor=pointer]:
+                - /url: https://www.facebook.com/teconnectivity
+                - text: 
+                - generic [ref=f26e394]: Facebook
+            - listitem [level=2] [ref=f26e395]:
+              - link " LinkedIn" [ref=f26e396] [cursor=pointer]:
+                - /url: https://www.linkedin.com/company/te-connectivity
+                - text: 
+                - generic [ref=f26e397]: LinkedIn
+            - listitem [level=2] [ref=f26e398]:
+              - link " YouTube" [ref=f26e399] [cursor=pointer]:
+                - /url: https://www.youtube.com/teconnectivity
+                - text: 
+                - generic [ref=f26e400]: YouTube
+            - listitem [level=2] [ref=f26e401]:
+              - link " Instagram" [ref=f26e402] [cursor=pointer]:
+                - /url: https://www.instagram.com/teconnectivity/
+                - text: 
+                - generic [ref=f26e403]: Instagram
+      - contentinfo [ref=f26e404]:
+        - generic [ref=f26e406]:
+          - paragraph [ref=f26e408]: TE Connectivity empowers engineers by designing and manufacturing sensor and connectivity solutions for our increasingly connected world.
+          - navigation [ref=f26e409]:
+            - list [ref=f26e410]:
+              - listitem [level=2] [ref=f26e411]:
+                - link "Terms of Use" [ref=f26e412] [cursor=pointer]:
+                  - /url: https://www.te.com/en/policies-agreements/terms-of-use-te-com.html
+              - listitem [level=2] [ref=f26e413]:
+                - link "Privacy" [ref=f26e414] [cursor=pointer]:
+                  - /url: https://www.te.com/en/policies-agreements/privacy-policy.html
+              - listitem [level=2] [ref=f26e415]:
+                - link "US Privacy" [ref=f26e416] [cursor=pointer]:
+                  - /url: https://www.te.com/en/policies-agreements/usa-privacy-policy.html
+              - listitem [level=2] [ref=f26e417]:
+                - link "Cookie Policy" [ref=f26e418] [cursor=pointer]:
+                  - /url: https://www.te.com/en/policies-agreements/privacy-policy/cookie-usage.html
+              - listitem [level=2] [ref=f26e419]:
+                - link "Accessibility" [ref=f26e420] [cursor=pointer]:
+                  - /url: https://www.te.com/en/policies-agreements/accessibility.html
+              - listitem [level=2] [ref=f26e421]:
+                - link "Security" [ref=f26e422] [cursor=pointer]:
+                  - /url: https://www.te.com/en/policies-agreements/digital-security.html
+              - listitem [level=2] [ref=f26e423]:
+                - link "Site Map" [ref=f26e424] [cursor=pointer]:
+                  - /url: https://www.te.com/en/policies-agreements/site-map.html
+              - listitem [ref=f26e425]: © 2026 TE Connectivity. All Rights Reserved.

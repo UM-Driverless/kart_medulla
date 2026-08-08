@@ -1,0 +1,295 @@
+- generic [ref=f7e1]:
+  - link [ref=f7e2] [cursor=pointer]: Skip to main content
+  - link [ref=f7e3] [cursor=pointer]:
+    - /url: https://support.google.com/websearch/answer/181196?hl=en-ES
+    - text: Accessibility help
+  - dialog "Before you continue to Google Search" [active]:
+    - generic [ref=f7e10]:
+      - generic [ref=f7e12]:
+        - img "Google" [ref=f7e13]
+        - generic [ref=f7e14]:
+          - 'button "Language: ‪English‬" [ref=f7e16] [cursor=pointer]':
+            - generic [ref=f7e17]: en
+          - link "Sign in" [ref=f7e19] [cursor=pointer]
+      - generic [ref=f7e20]:
+        - heading "Before you continue to Google" [level=1] [ref=f7e21]
+        - generic [ref=f7e22]:
+          - generic [ref=f7e23]:
+            - text: We use
+            - link "cookies" [ref=f7e24] [cursor=pointer]:
+              - /url: https://policies.google.com/technologies/cookies?utm_source=ucbs&hl=en-ES
+            - text: and data to
+            - list [ref=f7e25]:
+              - listitem [ref=f7e26]: Deliver and maintain Google services
+              - listitem [ref=f7e27]: Track outages and protect against spam, fraud and abuse
+              - listitem [ref=f7e28]: Measure audience engagement and site statistics to understand how our services are used and enhance the quality of those services
+          - generic [ref=f7e29]:
+            - text: If you choose to 'Accept all', we will also use cookies and data to
+            - list [ref=f7e30]:
+              - listitem [ref=f7e31]: Develop and improve new services
+              - listitem [ref=f7e32]: Deliver and measure the effectiveness of ads
+              - listitem [ref=f7e33]: Show personalised content, depending on your settings
+              - listitem [ref=f7e34]: Show personalised ads, depending on your settings
+            - generic [ref=f7e35]: If you choose to 'Reject all', we will not use cookies for these additional purposes.
+          - generic [ref=f7e36]: Non-personalised content is influenced by things like the content that you’re currently viewing, activity in your active Search session, and your location. Non-personalised ads are influenced by the content that you’re currently viewing and your general location. Personalised content and ads can also include more relevant results, recommendations and tailored ads based on past activity from this browser, like previous Google searches. We also use cookies and data to tailor the experience to be age-appropriate, if relevant.
+          - generic [ref=f7e37]: Select 'More options' to see additional information, including details about managing your privacy settings. You can also visit g.co/privacytools at any time.
+      - generic [ref=f7e38]:
+        - generic [ref=f7e39]:
+          - button "Reject all" [ref=f7e40] [cursor=pointer]
+          - button "Accept all" [ref=f7e41] [cursor=pointer]
+        - link "More options for personalisation settings and cookies" [ref=f7e43] [cursor=pointer]:
+          - generic "More options for personalisation settings and cookies" [ref=f7e44]: More options
+      - generic [ref=f7e45]:
+        - link "Privacy" [ref=f7e46] [cursor=pointer]:
+          - /url: https://policies.google.com/privacy?hl=en-ES&fg=1&utm_source=ucbs
+        - generic [ref=f7e47]: ·
+        - link "Terms" [ref=f7e48] [cursor=pointer]:
+          - /url: https://policies.google.com/terms?hl=en-ES&fg=1&utm_source=ucbs
+  - generic [ref=f7e53]:
+    - search [ref=f7e54]:
+      - generic [ref=f7e56]:
+        - link [ref=f7e58] [cursor=pointer]:
+          - /url: https://www.google.com/webhp?hl=en&ictx=2&sa=X&ved=0ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQPQhr
+        - generic [ref=f7e60]:
+          - generic [ref=f7e61]:
+            - combobox [ref=f7e64]: festo 3569 B-1/4 datasheet festo 3569 B-1/4 datasheet
+            - generic [ref=f7e65]:
+              - button [ref=f7e67] [cursor=pointer]
+              - generic [ref=f7e72]:
+                - button [ref=f7e73] [cursor=pointer]
+                - button [ref=f7e76] [cursor=pointer]
+          - button [ref=f7e79] [cursor=pointer]
+    - generic [ref=f7e84]:
+      - button [ref=f7e86] [cursor=pointer]
+      - button [ref=f7e87] [cursor=pointer]
+      - generic [ref=f7e93]:
+        - button [ref=f7e95] [cursor=pointer]
+        - link [ref=f7e100] [cursor=pointer]:
+          - /url: https://accounts.google.com/ServiceLogin?hl=en&passive=true&continue=https://www.google.com/search%3Fq%3Dfesto%2B3569%2BB-1/4%2Bdatasheet&ec=futura_srp_og_si_72236_p
+          - text: Sign in
+  - generic [ref=f7e102]:
+    - navigation [ref=f7e108]:
+      - list [ref=f7e111]:
+        - listitem [ref=f7e112]:
+          - link [ref=f7e115] [cursor=pointer]:
+            - /url: /search?q=festo+3569+B-1/4+datasheet&sca_esv=ff0f52d8df50e9c0&udm=50&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTC1yKEsCDbducfkmH8L__VOt_P5vivEa2izeceTdIkdMrCl9w9W8gxLVcZpaKKJAUgQQ9_Caedcujo_oZzgXC2iK0X1G254RuUJNvJ-VBWgWd_tgGp&aep=1&ntc=1&cs=0&sa=X&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQ2J8OegQIEhAD
+            - generic [ref=f7e116]: AI Mode
+        - listitem [ref=f7e119]:
+          - link [disabled] [ref=f7e120]:
+            - generic [ref=f7e121]: All
+        - listitem [ref=f7e123]:
+          - link [ref=f7e124] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=3&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTC1yKEsCDbducfkmH8L__VOt_P5vivEa2izeceTdIkdMrCl9w9W8gxLVcZpaKKJAUgQQ9_Caedcujo_oZzgXC2iK0X1G254RuUJNvJ-VBWgWd_tgGp&q=festo+3569+B-1/4+datasheet&sa=X&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQs6gLegQIFRAB
+            - generic [ref=f7e125]: Products
+        - listitem [ref=f7e127]:
+          - link [ref=f7e128] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=2&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTC1yKEsCDbducfkmH8L__VOt_P5vivEa2izeceTdIkdMrCl9w9W8gxLVcZpaKKJAUgQQ9_Caedcujo_oZzgXC2iK0X1G254RuUJNvJ-VBWgWd_tgGp&q=festo+3569+B-1/4+datasheet&sa=X&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQtKgLegQIFhAB
+            - generic [ref=f7e129]: Images
+        - listitem [ref=f7e131]:
+          - link [ref=f7e132] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=39&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTC1yKEsCDbducfkmH8L__VOt_P5vivEa2izeceTdIkdMrCl9w9W8gxLVcZpaKKJAUgQQ9_Caedcujo_oZzgXC2iK0X1G254RuUJNvJ-VBWgWd_tgGp&q=festo+3569+B-1/4+datasheet&sa=X&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQs6gLegQIFxAB
+            - generic [ref=f7e133]: Short videos
+        - listitem [ref=f7e135]:
+          - link [ref=f7e136] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=7&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTC1yKEsCDbducfkmH8L__VOt_P5vivEa2izeceTdIkdMrCl9w9W8gxLVcZpaKKJAUgQQ9_Caedcujo_oZzgXC2iK0X1G254RuUJNvJ-VBWgWd_tgGp&q=festo+3569+B-1/4+datasheet&sa=X&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQtKgLegQIGBAB
+            - generic [ref=f7e137]: Videos
+        - listitem [ref=f7e139]:
+          - link [ref=f7e140] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=18&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTC1yKEsCDbducfkmH8L__VOt_P5vivEa2izeceTdIkdMrCl9w9W8gxLVcZpaKKJAUgQQ9_Caedcujo_oZzgXC2iK0X1G254RuUJNvJ-VBWgWd_tgGp&q=festo+3569+B-1/4+datasheet&sa=X&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQs6gLegQIGRAB
+            - generic [ref=f7e141]: Forums
+        - listitem [ref=f7e143]:
+          - button [ref=f7e144] [cursor=pointer]:
+            - generic [ref=f7e145]: More
+    - heading [level=1] [ref=f7e151]: Search Results
+    - main [ref=f7e157]:
+      - generic [ref=f7e161]:
+        - generic [ref=f7e164]:
+          - heading [level=2] [ref=f7e165]: Web results
+          - generic [ref=f7e166]:
+            - generic [ref=f7e169]:
+              - link [ref=f7e171] [cursor=pointer]:
+                - /url: https://ftp.festo.com/Public/PNEUMATIC/SOFTWARE_SERVICE/Datasheet/EN_US/3569.pdf
+                - heading [level=3] [ref=f7e172]: Blanking plug B-1/4
+                - generic [ref=f7e181]:
+                  - generic [ref=f7e182]: Festo
+                  - generic [ref=f7e184]: https://ftp.festo.com › Datasheet › EN_US › 3569
+              - generic [ref=f7e186]: PDF
+              - button [ref=f7e189] [cursor=pointer]
+            - generic [ref=f7e194]:
+              - generic [ref=f7e196]:
+                - emphasis [ref=f7e197]: 3569 Data sheet
+                - text: Feature Value Pack size 10 Conforms to standard DIN 908 … torque 11 Nm. Product weight 15 g Type of mounting Internal hexagon, AF 6 Pneumatic ...
+              - generic [ref=f7e198]: 1 page
+        - generic [ref=f7e209]:
+          - heading [level=2] [ref=f7e213]:
+            - generic [ref=f7e214]: Thinking
+          - progressbar [ref=f7e216]
+        - generic [ref=f7e220]:
+          - heading [level=2] [ref=f7e221]: Web results
+          - generic [ref=f7e222]:
+            - generic [ref=f7e225]:
+              - link [ref=f7e227] [cursor=pointer]:
+                - /url: https://ftp.festo.com/Public/PNEUMATIC/SOFTWARE_SERVICE/Datasheet/EN_GB/3569.pdf
+                - heading [level=3] [ref=f7e228]: Blanking plug B-1/4
+                - generic [ref=f7e237]:
+                  - generic [ref=f7e238]: Festo
+                  - generic [ref=f7e240]: https://ftp.festo.com › Datasheet › EN_GB › 3569
+              - generic [ref=f7e242]: PDF
+              - button [ref=f7e245] [cursor=pointer]
+            - generic [ref=f7e250]:
+              - generic [ref=f7e251]:
+                - generic [ref=f7e252]:
+                  - emphasis [ref=f7e253]: B-1/4
+                  - text: ". Part number: 3569. Data sheet. Feature. Value. Size of pack. 10. Conforms to standard. DIN 908. LABS (PWIS) conformity. VDMA24364-B1/B2-L. Nominal torque."
+                - link [ref=f7e254] [cursor=pointer]:
+                  - /url: https://ftp.festo.com/Public/PNEUMATIC/SOFTWARE_SERVICE/Datasheet/EN_GB/3569.pdf#:~:text=B%2D1%2F4,Nominal%20torque
+                  - text: Read more
+              - generic [ref=f7e255]: 1 page
+        - generic [ref=f7e259]:
+          - generic [ref=f7e262]:
+            - link [ref=f7e264] [cursor=pointer]:
+              - /url: https://www.festo.com/es/es/a/3569/
+              - heading [level=3] [ref=f7e265]: Tapón ciego B-1/4
+              - generic [ref=f7e271]:
+                - generic [ref=f7e272]: Festo
+                - generic [ref=f7e274]: https://www.festo.com › 3569
+            - generic [ref=f7e276]:
+              - generic [ref=f7e277]: ·
+              - link [ref=f7e278] [cursor=pointer]:
+                - /url: https://translate.google.com/translate?u=https://www.festo.com/es/es/a/3569/&hl=en&sl=es&tl=en&client=search
+                - text: Translate this page
+            - button [ref=f7e281] [cursor=pointer]
+          - generic [ref=f7e288]:
+            - emphasis [ref=f7e289]: B-1/4 3569
+            - text: . Downloads B_ES.PDF Descargar hoja de datos Datos … © 2026 Festo Automation S.A.U.
+        - generic [ref=f7e293]:
+          - generic [ref=f7e296]:
+            - link [ref=f7e298] [cursor=pointer]:
+              - /url: https://media-pim.rubix.com/medias/technical_datasheet/20/73/1300000057320/3569.pdf?v=200815212405+0200&attachment=true
+              - heading [level=3] [ref=f7e299]: Blanking plug B-1/4
+              - generic [ref=f7e305]:
+                - generic [ref=f7e306]: RUBIX Industrial Supply
+                - generic [ref=f7e308]: https://media-pim.rubix.com › medias › 3569
+            - generic [ref=f7e310]: PDF
+            - button [ref=f7e313] [cursor=pointer]
+          - generic [ref=f7e319]:
+            - generic [ref=f7e320]:
+              - emphasis [ref=f7e321]: B-1/4
+              - text: ". Part number: 3569. Data sheet. Feature. Value. Type of mounting. Internal hexagon, AF 6. Conforms to standard. DIN 908. Type code. B. Pack size. 10."
+            - link [ref=f7e322] [cursor=pointer]:
+              - /url: https://media-pim.rubix.com/medias/technical_datasheet/20/73/1300000057320/3569.pdf?v=200815212405+0200&attachment=true#:~:text=B%2D1%2F4,10
+              - text: Read more
+        - generic [ref=f7e326]:
+          - generic [ref=f7e329]:
+            - link [ref=f7e331] [cursor=pointer]:
+              - /url: https://www.festo.com/gb/en/a/3569/
+              - heading [level=3] [ref=f7e332]: Blanking plug B-1/4
+              - generic [ref=f7e338]:
+                - generic [ref=f7e339]: Festo
+                - generic [ref=f7e341]: https://www.festo.com › 3569
+            - button [ref=f7e345] [cursor=pointer]
+          - generic [ref=f7e351]:
+            - generic [ref=f7e352]:
+              - emphasis [ref=f7e353]: "3569"
+              - text: ". GTIN: 4052568000431. The Global Trade Item Number (GTIN) is an international, unique number for labeling products. Downloads. B_EN."
+              - emphasis [ref=f7e354]: PDF
+              - text: · Technical data.
+            - link [ref=f7e355] [cursor=pointer]:
+              - /url: https://www.festo.com/gb/en/a/3569/#:~:text=3569,Technical%20data
+              - text: Read more
+        - generic [ref=f7e359]:
+          - generic [ref=f7e362]:
+            - link [ref=f7e364] [cursor=pointer]:
+              - /url: https://ftp.festo.com/Public/PNEUMATIC/SOFTWARE_SERVICE/Datasheet/ES_ES/3569.pdf
+              - heading [level=3] [ref=f7e365]: Tapón ciego B-1/4
+              - generic [ref=f7e374]:
+                - generic [ref=f7e375]: Festo
+                - generic [ref=f7e377]: https://ftp.festo.com › Datasheet › ES_ES › 3569
+            - generic [ref=f7e379]: PDF
+            - button [ref=f7e382] [cursor=pointer]
+          - generic [ref=f7e389]:
+            - emphasis [ref=f7e390]: Tapón ciego B-1/4
+            - text: ". Número de artículo: 3569 ・ nominal 11 Nm Tolerancia ・ producto 15 g Tipo de jación Hexágono interior entrecaras. Material del tapón ciego ..."
+        - generic [ref=f7e394]:
+          - generic [ref=f7e397]:
+            - link [ref=f7e399] [cursor=pointer]:
+              - /url: https://docs.rs-online.com/cd9c/0900766b816a1efd.pdf
+              - heading [level=3] [ref=f7e400]: blanking plug B-1/4
+              - generic [ref=f7e406]:
+                - generic [ref=f7e407]: RS Online
+                - generic [ref=f7e409]: https://docs.rs-online.com › ...
+            - button [ref=f7e413] [cursor=pointer]
+          - generic [ref=f7e418]: Feature. Value. Container size. 10. Conforms to standard. DIN 908. Nominal tightening torque. 11 Nm. Tolerance for nominal tightening torque.
+        - generic [ref=f7e423]:
+          - generic [ref=f7e426]:
+            - link [ref=f7e428] [cursor=pointer]:
+              - /url: https://www.easternia.com/festo-3569
+              - heading [level=3] [ref=f7e429]: Festo 3569 FES B-1/4
+              - generic [ref=f7e435]:
+                - generic [ref=f7e436]: Eastern Industrial Automation
+                - generic [ref=f7e438]: https://www.easternia.com › ... › Pneumatic Plugs & Caps
+            - button [ref=f7e442] [cursor=pointer]
+          - generic [ref=f7e448]:
+            - generic [ref=f7e449]:
+              - emphasis [ref=f7e450]: SPECIFICATIONS
+              - text: ". Series, : B Series. Nominal Size, : G1/4. Hex Size, : 6 mm. Length, : 0.59 in. Dimensions, : 0.71 in OD. Documents. pdf Specification Sheet ..."
+            - link [ref=f7e451] [cursor=pointer]:
+              - /url: https://www.easternia.com/festo-3569#:~:text=SPECIFICATIONS,Documents
+              - text: Read more
+          - generic [ref=f7e453]:
+            - generic [ref=f7e454]: US$2.43
+            - text: ·
+            - generic [ref=f7e455]: In stock
+        - generic [ref=f7e461]:
+          - generic [ref=f7e464]:
+            - link [ref=f7e466] [cursor=pointer]:
+              - /url: https://www.tme.eu/en/details/b-1_4/connectors-and-tubing/festo/3569/
+              - heading [level=3] [ref=f7e467]: 3569 FESTO - Protection cap | zinc plated steel; Thread
+              - generic [ref=f7e473]:
+                - generic [ref=f7e474]: TME
+                - generic [ref=f7e476]: https://www.tme.eu › ... › Connectors and tubing
+            - button [ref=f7e480] [cursor=pointer]
+          - generic [ref=f7e486]:
+            - generic [ref=f7e487]:
+              - emphasis [ref=f7e488]: "3569"
+              - text: ; Manufacturer. FESTO ; Body material. zinc plated steel ; Thread. G 1/4" ; Gasket material. polyamide, polyurethane thermoplastic TPE-U ; Torque. 11Nm ...
+            - link [ref=f7e489] [cursor=pointer]:
+              - /url: https://www.tme.eu/en/details/b-1_4/connectors-and-tubing/festo/3569/#:~:text=3569&text=Manufacturer,FESTO&text=Body%20material,zinc%20plated%20steel&text=Thread,G%201%2F4%22&text=Gasket%20material,polyamide%2C%20polyurethane%20thermoplastic%20TPE%2DU&text=Torque,11Nm
+              - text: Read more
+          - generic [ref=f7e490]: €7.14 delivery
+      - navigation [ref=f7e495]:
+        - heading [level=1] [ref=f7e496]: Page navigation
+        - text: "1"
+        - link [ref=f7e499] [cursor=pointer]:
+          - /url: /search?q=festo+3569+B-1/4+datasheet&sca_esv=ff0f52d8df50e9c0&ei=HLNbaqj3DLq_hbIPhL72sQc&start=10&sa=N&sstk=AU9db-AKDeNhdOga2cdyDdjSpt1cBaoVQafAnW4L1oDuEOx1U3LKM67vZaep_vBHtkcT0jCPgCnBM5cow3D8Fu1pKHFIPaH7oHnoqg&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQ8tMDegQIKRAE
+          - text: "2"
+        - link [ref=f7e501] [cursor=pointer]:
+          - /url: /search?q=festo+3569+B-1/4+datasheet&sca_esv=ff0f52d8df50e9c0&ei=HLNbaqj3DLq_hbIPhL72sQc&start=20&sa=N&sstk=AU9db-AKDeNhdOga2cdyDdjSpt1cBaoVQafAnW4L1oDuEOx1U3LKM67vZaep_vBHtkcT0jCPgCnBM5cow3D8Fu1pKHFIPaH7oHnoqg&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQ8tMDegQIKRAG
+          - text: "3"
+        - link [ref=f7e503] [cursor=pointer]:
+          - /url: /search?q=festo+3569+B-1/4+datasheet&sca_esv=ff0f52d8df50e9c0&ei=HLNbaqj3DLq_hbIPhL72sQc&start=30&sa=N&sstk=AU9db-AKDeNhdOga2cdyDdjSpt1cBaoVQafAnW4L1oDuEOx1U3LKM67vZaep_vBHtkcT0jCPgCnBM5cow3D8Fu1pKHFIPaH7oHnoqg&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQ8tMDegQIKRAI
+          - text: "4"
+        - link [ref=f7e505] [cursor=pointer]:
+          - /url: /search?q=festo+3569+B-1/4+datasheet&sca_esv=ff0f52d8df50e9c0&ei=HLNbaqj3DLq_hbIPhL72sQc&start=40&sa=N&sstk=AU9db-AKDeNhdOga2cdyDdjSpt1cBaoVQafAnW4L1oDuEOx1U3LKM67vZaep_vBHtkcT0jCPgCnBM5cow3D8Fu1pKHFIPaH7oHnoqg&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQ8tMDegQIKRAK
+          - text: "5"
+        - link [ref=f7e507] [cursor=pointer]:
+          - /url: /search?q=festo+3569+B-1/4+datasheet&sca_esv=ff0f52d8df50e9c0&ei=HLNbaqj3DLq_hbIPhL72sQc&start=50&sa=N&sstk=AU9db-AKDeNhdOga2cdyDdjSpt1cBaoVQafAnW4L1oDuEOx1U3LKM67vZaep_vBHtkcT0jCPgCnBM5cow3D8Fu1pKHFIPaH7oHnoqg&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQ8tMDegQIKRAM
+          - text: "6"
+        - link [ref=f7e509] [cursor=pointer]:
+          - /url: /search?q=festo+3569+B-1/4+datasheet&sca_esv=ff0f52d8df50e9c0&ei=HLNbaqj3DLq_hbIPhL72sQc&start=60&sa=N&sstk=AU9db-AKDeNhdOga2cdyDdjSpt1cBaoVQafAnW4L1oDuEOx1U3LKM67vZaep_vBHtkcT0jCPgCnBM5cow3D8Fu1pKHFIPaH7oHnoqg&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQ8tMDegQIKRAO
+          - text: "7"
+        - link [ref=f7e511] [cursor=pointer]:
+          - /url: /search?q=festo+3569+B-1/4+datasheet&sca_esv=ff0f52d8df50e9c0&ei=HLNbaqj3DLq_hbIPhL72sQc&start=70&sa=N&sstk=AU9db-AKDeNhdOga2cdyDdjSpt1cBaoVQafAnW4L1oDuEOx1U3LKM67vZaep_vBHtkcT0jCPgCnBM5cow3D8Fu1pKHFIPaH7oHnoqg&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQ8tMDegQIKRAQ
+          - text: "8"
+        - link [ref=f7e513] [cursor=pointer]:
+          - /url: /search?q=festo+3569+B-1/4+datasheet&sca_esv=ff0f52d8df50e9c0&ei=HLNbaqj3DLq_hbIPhL72sQc&start=80&sa=N&sstk=AU9db-AKDeNhdOga2cdyDdjSpt1cBaoVQafAnW4L1oDuEOx1U3LKM67vZaep_vBHtkcT0jCPgCnBM5cow3D8Fu1pKHFIPaH7oHnoqg&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQ8tMDegQIKRAS
+          - text: "9"
+        - link [ref=f7e515] [cursor=pointer]:
+          - /url: /search?q=festo+3569+B-1/4+datasheet&sca_esv=ff0f52d8df50e9c0&ei=HLNbaqj3DLq_hbIPhL72sQc&start=90&sa=N&sstk=AU9db-AKDeNhdOga2cdyDdjSpt1cBaoVQafAnW4L1oDuEOx1U3LKM67vZaep_vBHtkcT0jCPgCnBM5cow3D8Fu1pKHFIPaH7oHnoqg&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQ8tMDegQIKRAU
+          - text: "10"
+        - heading [level=2] [ref=f7e517]:
+          - link [ref=f7e518] [cursor=pointer]:
+            - /url: /search?q=festo+3569+B-1/4+datasheet&sca_esv=ff0f52d8df50e9c0&ei=HLNbaqj3DLq_hbIPhL72sQc&start=10&sa=N&sstk=AU9db-AKDeNhdOga2cdyDdjSpt1cBaoVQafAnW4L1oDuEOx1U3LKM67vZaep_vBHtkcT0jCPgCnBM5cow3D8Fu1pKHFIPaH7oHnoqg&ved=2ahUKEwio9YTO29yVAxW6X0EAHQSfPXYQ8NMDegQIKRAW
+            - generic [ref=f7e520]: Next
+    - contentinfo [ref=f7e521]:
+      - heading [level=1] [ref=f7e522]: Footer links

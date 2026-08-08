@@ -1,0 +1,75 @@
+- generic [active] [ref=f13e1]:
+  - generic [ref=f13e2]:
+    - generic [ref=f13e3]:
+      - list
+      - generic [ref=f13e5]:
+        - button [ref=f13e6] [cursor=pointer]
+        - textbox "Enter search term" [ref=f13e7]
+    - generic [ref=f13e8]:
+      - link [ref=f13e11] [cursor=pointer]:
+        - /url: /maxon/view/catalog/
+        - img "alt Maxon en" [ref=f13e12]
+      - generic [ref=f13e14]:
+        - heading "Switzerland" [level=3] [ref=f13e16] [cursor=pointer]
+        - heading [level=3] [ref=f13e20] [cursor=pointer]
+  - generic [ref=f13e28]:
+    - list [ref=f13e30]:
+      - listitem [ref=f13e31]: Selecting, combining, and configuring drive systems
+      - listitem [ref=f13e32]: Short delivery times for custom drives
+      - listitem [ref=f13e33]: Extensive product specifications and software
+    - generic [ref=f13e34]:
+      - generic [ref=f13e36]:
+        - heading "Product support" [level=2] [ref=f13e37]
+        - list [ref=f13e38]:
+          - listitem [ref=f13e39]:
+            - heading "+41 (41) 666 18 00" [level=2] [ref=f13e40]
+      - generic [ref=f13e42]:
+        - heading "Shopping made easy" [level=2] [ref=f13e43]
+        - list [ref=f13e44]:
+          - listitem [ref=f13e45]:
+            - list [ref=f13e46]:
+              - listitem [ref=f13e47]:
+                - link "Product selection" [ref=f13e48] [cursor=pointer]:
+                  - /url: /maxon/view/content/Shopping-made-easier
+              - listitem [ref=f13e49]:
+                - link "Shipping" [ref=f13e50] [cursor=pointer]:
+                  - /url: /maxon/view/content/Shipping-costs
+              - listitem [ref=f13e51]:
+                - link "Delivery" [ref=f13e52] [cursor=pointer]:
+                  - /url: /maxon/view/content/Information-about-delivery
+              - listitem [ref=f13e53]:
+                - link "Payment" [ref=f13e54] [cursor=pointer]:
+                  - /url: /maxon/view/content/Payment
+      - generic [ref=f13e56]:
+        - heading "Payment options" [level=2] [ref=f13e57]
+        - list [ref=f13e58]:
+          - listitem [ref=f13e59]
+      - generic [ref=f13e61]:
+        - heading "Knowledge" [level=2] [ref=f13e62]
+        - list [ref=f13e63]:
+          - listitem [ref=f13e64]:
+            - paragraph [ref=f13e65]: Find out more about the interaction of motor, gearhead, sensors, and controller.
+          - listitem [ref=f13e66]:
+            - link "Knowledge & e-learning" [ref=f13e67] [cursor=pointer]:
+              - /url: /maxon/view/content/maxon-Knowledge
+  - generic [ref=f13e70]:
+    - list [ref=f13e71]:
+      - listitem [ref=f13e72]:
+        - link "Cookie Policy" [ref=f13e73] [cursor=pointer]:
+          - /url: /maxon/view/content/Cookie_Policy
+      - listitem [ref=f13e74]:
+        - link "Sitemap" [ref=f13e75] [cursor=pointer]:
+          - /url: /maxon/view/content/sitemap
+      - listitem [ref=f13e76]:
+        - link "Privacy" [ref=f13e77] [cursor=pointer]:
+          - /url: /maxon/view/content/privacy
+      - listitem [ref=f13e78]:
+        - link "Terms and conditions" [ref=f13e79] [cursor=pointer]:
+          - /url: /maxon/view/content/AGB-Board
+      - listitem [ref=f13e80]:
+        - link "Imprint" [ref=f13e81] [cursor=pointer]:
+          - /url: /maxon/view/content/Imprint
+      - listitem [ref=f13e82]:
+        - link "Legal Information" [ref=f13e83] [cursor=pointer]:
+          - /url: /maxon/view/content/legal-notice
+    - paragraph [ref=f13e84]: © 2026 maxon. All rights reserved.

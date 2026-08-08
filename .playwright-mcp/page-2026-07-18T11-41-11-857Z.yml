@@ -1,0 +1,44 @@
+- generic [ref=e2]:
+  - banner [ref=e8]:
+    - generic [ref=e10]:
+      - link [ref=e11] [cursor=pointer]:
+        - /url: https://www.global.toshiba/en/top.html
+        - img "Toshiba" [ref=e13]
+      - img "Toshiba Electronic Devices & Strage Corporation" [ref=e15]
+    - navigation [ref=e16]:
+      - list [ref=e17]:
+        - listitem [ref=e18]:
+          - link " CONTACT US" [ref=e20] [cursor=pointer]:
+            - /url: https://toshiba.semicon-storage.com/en/contact.html
+  - generic [ref=e28]:
+    - list [ref=e31]:
+      - listitem [ref=e32]:
+        - link "Semiconductor&Storage Products Home" [ref=e33] [cursor=pointer]:
+          - /url: https://toshiba.semicon-storage.com/ap-en/top.html
+      - listitem [ref=e34]:
+        - link "Parametric Search" [ref=e35] [cursor=pointer]:
+          - /url: https://toshiba.semicon-storage.com/ap-en/search/parametric.html
+      - listitem [ref=e36]:
+        - link "Isolators/Solid State Relays" [ref=e37] [cursor=pointer]:
+          - /url: https://toshiba.semicon-storage.com/ap-en/semiconductor/product/isolators-solid-state-relays.html
+    - heading "Automotive Photocouplers" [level=1] [ref=e39]
+    - generic [ref=e40]:
+      - generic [ref=e42]:
+        - button [ref=e43] [cursor=pointer]
+        - paragraph [ref=e45]: How to use parametric search
+      - generic [ref=e46]:
+        - button "Select category" [ref=e47] [cursor=pointer]
+        - separator [ref=e48]
+  - contentinfo [ref=e55]:
+    - generic [ref=e57]:
+      - list [ref=e59]:
+        - listitem [ref=e60]:
+          - link "PRIVACY POLICY" [ref=e61] [cursor=pointer]:
+            - /url: https://toshiba.semicon-storage.com/en/privacy-policy.html
+        - listitem [ref=e62]:
+          - link "TERMS AND CONDITIONS" [ref=e63] [cursor=pointer]:
+            - /url: https://toshiba.semicon-storage.com/en/terms.html
+        - listitem [ref=e64]:
+          - link "COOKIE SETTINGS" [ref=e65] [cursor=pointer]:
+            - /url: javascript:void(0);
+      - generic [ref=e66]: Copyright © 2026 TOSHIBA ELECTRONIC DEVICES & STORAGE CORPORATION, All Rights Reserved.

@@ -1,0 +1,264 @@
+- generic [ref=f41e2]:
+  - generic [ref=f41e5]:
+    - link [ref=f41e9] [cursor=pointer]:
+      - /url: https://www.wengaoelec.com/Home1
+    - generic [ref=f41e12]:
+      - link "Shop Online" [ref=f41e14] [cursor=pointer]:
+        - /url: http://wengaoelec.en.alibaba.com
+      - text: "|"
+      - link "在线购物" [ref=f41e16] [cursor=pointer]:
+        - /url: http://wengaoelec.en.alibaba.com
+    - list [ref=f41e20]:
+      - listitem [ref=f41e21]:
+        - link "Home" [ref=f41e22] [cursor=pointer]:
+          - /url: https://www.wengaoelec.com
+      - listitem [ref=f41e24]:
+        - link "About us" [ref=f41e25] [cursor=pointer]:
+          - /url: https://www.wengaoelec.com/About-us
+      - listitem [ref=f41e27]:
+        - link "Products" [ref=f41e28] [cursor=pointer]:
+          - /url: https://www.wengaoelec.com/Products
+      - listitem [ref=f41e30]:
+        - link "Support" [ref=f41e31] [cursor=pointer]:
+          - /url: https://www.wengaoelec.com/Support
+      - listitem [ref=f41e33]:
+        - link "Contact us" [ref=f41e34] [cursor=pointer]:
+          - /url: https://www.wengaoelec.com/Contact-us
+    - generic [ref=f41e48]:
+      - generic [ref=f41e53]: 72V to 12V 60A 48V to 24V 85A 60V to 12V 40A 12V to 24V 50A
+      - generic [ref=f41e57]:
+        - generic [ref=f41e60]:
+          - textbox [ref=f41e62]
+          - generic [ref=f41e63]: Product
+        - generic:
+          - radio [checked] [ref=f41e69]
+          - generic [ref=f41e70]: Name
+          - radio [ref=f41e71]
+          - generic [ref=f41e72]: Description
+          - radio [ref=f41e73]
+          - generic [ref=f41e74]: Content
+    - list [ref=f41e77]:
+      - listitem [ref=f41e78]:
+        - link "lsolated DC-DC Converters" [ref=f41e79] [cursor=pointer]:
+          - /url: https://www.wengaoelec.com/lsolated-DC-DC-Converters
+      - listitem [ref=f41e80]:
+        - link "Buck DC-DC Converters" [ref=f41e81] [cursor=pointer]:
+          - /url: https://www.wengaoelec.com/Buck-DC-DC-Converter
+      - listitem [ref=f41e82]:
+        - link "Boost DC-DC Converters" [ref=f41e83] [cursor=pointer]:
+          - /url: https://www.wengaoelec.com/Boost-DC-DC-Converter
+      - listitem [ref=f41e84]:
+        - link "Boost-Buck Converters" [ref=f41e85] [cursor=pointer]:
+          - /url: https://www.wengaoelec.com/BuckBoost-Converter
+      - listitem [ref=f41e86]:
+        - link "DC-DC Battery Chargers" [ref=f41e87] [cursor=pointer]:
+          - /url: https://www.wengaoelec.com/DC-DC-Battery-Chargers
+      - listitem [ref=f41e88]:
+        - link "Marine Battery Chargers" [ref=f41e89] [cursor=pointer]:
+          - /url: https://www.wengaoelec.com/MarineBatteryChargers
+    - generic [ref=f41e95]:
+      - link "Home" [ref=f41e97] [cursor=pointer]:
+        - /url: https://www.wengaoelec.com/
+      - text: ">>"
+      - link "Products" [ref=f41e99] [cursor=pointer]:
+        - /url: https://www.wengaoelec.com/Products
+      - text: ">>"
+      - link "Boost DC-DC Converters" [ref=f41e101] [cursor=pointer]:
+        - /url: https://www.wengaoelec.com/Boost-DC-DC-Converters
+      - text: ">>"
+      - link "12V to 19V" [ref=f41e103] [cursor=pointer]:
+        - /url: https://www.wengaoelec.com/12V-to-19V
+    - strong [ref=f41e109]: 12V to 19V Series
+    - generic [ref=f41e111]:
+      - strong [ref=f41e113]: 12V to 19V Boost DC-DC Power Converters for
+      - generic [ref=f41e114]: Car Laptop
+    - strong [ref=f41e123]: Features
+    - generic [ref=f41e125]:
+      - generic [ref=f41e126]: Design meeting ROHS / CE
+      - generic [ref=f41e127]: "High efficiency: 95% (@12V input)"
+      - generic [ref=f41e128]: Non-isolated between input and output
+      - generic [ref=f41e129]: lnternal capacitor:NCC & NICHICON (high reliability)
+      - generic [ref=f41e130]: 100% full load burn-in test
+      - generic [ref=f41e131]: Waterproof level IP68
+      - generic [ref=f41e132]: Over voltage, Over load, and Over temperature protections
+      - generic [ref=f41e133]: "Applications: Electromotor Telecommunications, Logging Vehicles Forklifts and on."
+    - generic [ref=f41e166]: Specifications
+    - table [ref=f41e174]:
+      - rowgroup [ref=f41e175]:
+        - row [ref=f41e176]:
+          - cell [ref=f41e177]:
+            - strong [ref=f41e179]: Model
+          - cell [ref=f41e180]:
+            - strong [ref=f41e182]: Input Voltage
+          - cell [ref=f41e183]:
+            - strong [ref=f41e185]: Output Voltage
+          - cell [ref=f41e186]:
+            - strong [ref=f41e188]: Output Power
+          - cell [ref=f41e189]:
+            - strong [ref=f41e191]: Efficiency
+          - cell [ref=f41e192]:
+            - strong [ref=f41e194]: Download
+        - row [ref=f41e195]:
+          - cell [ref=f41e196]:
+            - paragraph [ref=f41e197]:
+              - strong [ref=f41e198]:
+                - generic [ref=f41e199]: WG-12S1903
+          - cell [ref=f41e200]:
+            - strong [ref=f41e201]: 10-16V
+          - cell [ref=f41e202]:
+            - strong [ref=f41e204]: 19V
+          - cell [ref=f41e205]:
+            - strong [ref=f41e207]: 0 ~ 57W
+          - cell [ref=f41e208]:
+            - strong [ref=f41e210]: 96.3%
+          - cell [ref=f41e211]
+        - row [ref=f41e212]:
+          - cell [ref=f41e213]:
+            - paragraph [ref=f41e214]:
+              - strong [ref=f41e216]: WG-12S1905
+          - cell [ref=f41e217]:
+            - strong [ref=f41e218]: 10-18V
+          - cell [ref=f41e219]:
+            - strong [ref=f41e220]: 19V
+          - cell [ref=f41e221]:
+            - strong [ref=f41e223]: 0 ~ 95W
+          - cell [ref=f41e224]:
+            - strong [ref=f41e226]: 94.5%
+          - cell [ref=f41e227]
+        - row [ref=f41e228]:
+          - cell [ref=f41e229]:
+            - paragraph [ref=f41e230]:
+              - strong [ref=f41e232]: WG-12S1906F
+          - cell [ref=f41e233]:
+            - strong [ref=f41e234]: 10-18V
+          - cell [ref=f41e235]:
+            - strong [ref=f41e236]: 19V
+          - cell [ref=f41e237]:
+            - strong [ref=f41e239]: 0 ~ 114W
+          - cell [ref=f41e240]:
+            - strong [ref=f41e242]: 93.9%
+          - cell [ref=f41e243]
+        - row [ref=f41e244]:
+          - cell [ref=f41e245]:
+            - paragraph [ref=f41e246]:
+              - strong [ref=f41e248]: WG-12S1910
+          - cell [ref=f41e249]:
+            - strong [ref=f41e250]: 10-16V
+          - cell [ref=f41e251]:
+            - strong [ref=f41e252]: 19V
+          - cell [ref=f41e253]:
+            - strong [ref=f41e255]: 0 ~ 190W
+          - cell [ref=f41e256]:
+            - strong [ref=f41e258]: 93.1%
+          - cell [ref=f41e259]
+        - row [ref=f41e260]:
+          - cell [ref=f41e261]:
+            - paragraph [ref=f41e262]:
+              - strong [ref=f41e264]: WG-12S1915
+          - cell [ref=f41e265]:
+            - strong [ref=f41e266]: 10-18V
+          - cell [ref=f41e267]:
+            - strong [ref=f41e268]: 19V
+          - cell [ref=f41e269]:
+            - strong [ref=f41e271]: 0 ~ 285W
+          - cell [ref=f41e272]:
+            - strong [ref=f41e274]: 96.2%
+          - cell [ref=f41e275]
+        - row [ref=f41e276]:
+          - cell [ref=f41e277]:
+            - paragraph [ref=f41e278]:
+              - strong [ref=f41e280]: WG-12S1920
+          - cell [ref=f41e281]:
+            - strong [ref=f41e282]: 10-18V
+          - cell [ref=f41e283]:
+            - strong [ref=f41e284]: 19V
+          - cell [ref=f41e285]:
+            - strong [ref=f41e287]: 0 ~ 380W
+          - cell [ref=f41e288]:
+            - strong [ref=f41e290]: 97.6%
+          - cell [ref=f41e291]
+        - row [ref=f41e292]:
+          - cell [ref=f41e293]:
+            - paragraph [ref=f41e294]:
+              - strong [ref=f41e296]: WG-12S1930
+          - cell [ref=f41e297]:
+            - strong [ref=f41e298]: 10-18V
+          - cell [ref=f41e299]:
+            - strong [ref=f41e300]: 19V
+          - cell [ref=f41e301]:
+            - strong [ref=f41e303]: 0 ~ 570W
+          - cell [ref=f41e304]:
+            - strong [ref=f41e306]: 95.8%
+          - cell [ref=f41e307]
+        - row [ref=f41e308]:
+          - cell [ref=f41e309]:
+            - paragraph [ref=f41e310]:
+              - strong [ref=f41e312]: WG-12S1930M
+          - cell [ref=f41e313]:
+            - strong [ref=f41e314]: 10-18V
+          - cell [ref=f41e315]:
+            - strong [ref=f41e316]: 19V
+          - cell [ref=f41e317]:
+            - strong [ref=f41e319]: 0 ~ 570W
+          - cell [ref=f41e320]:
+            - strong [ref=f41e322]: 97%
+          - cell [ref=f41e323]
+        - row [ref=f41e324]:
+          - cell [ref=f41e325]
+          - cell [ref=f41e326]:
+            - paragraph [ref=f41e327]
+          - cell [ref=f41e328]
+          - cell [ref=f41e329]
+          - cell [ref=f41e330]
+          - cell [ref=f41e331]
+        - row [ref=f41e332]:
+          - cell [ref=f41e333]
+          - cell [ref=f41e334]:
+            - paragraph [ref=f41e335]
+          - cell [ref=f41e336]
+          - cell [ref=f41e337]
+          - cell [ref=f41e338]
+          - cell [ref=f41e339]
+        - row [ref=f41e340]:
+          - cell [ref=f41e341]:
+            - paragraph [ref=f41e342]
+          - cell [ref=f41e343]
+          - cell [ref=f41e344]
+          - cell [ref=f41e345]
+          - cell [ref=f41e346]
+          - cell [ref=f41e347]
+        - row [ref=f41e348]:
+          - cell [ref=f41e349]:
+            - paragraph [ref=f41e350]
+          - cell [ref=f41e351]
+          - cell [ref=f41e352]
+          - cell [ref=f41e353]
+          - cell [ref=f41e354]
+          - cell [ref=f41e355]
+    - link [ref=f41e359] [cursor=pointer]:
+      - /url: https://proa2427b-pic7.websiteonline.cn/upload/WG-12S1903.pdf
+    - link [ref=f41e364] [cursor=pointer]:
+      - /url: https://proa2427b-pic7.websiteonline.cn/upload/WG-12S1905.pdf
+    - link [ref=f41e369] [cursor=pointer]:
+      - /url: https://proa2427b-pic7.websiteonline.cn/upload/WG-12S1906F.pdf
+    - link [ref=f41e374] [cursor=pointer]:
+      - /url: https://proa2427b-pic7.websiteonline.cn/upload/WG-12S1910.pdf
+    - link [ref=f41e379] [cursor=pointer]:
+      - /url: https://proa2427b-pic7.websiteonline.cn/upload/WG-12S1915.pdf
+    - link [ref=f41e384] [cursor=pointer]:
+      - /url: https://proa2427b-pic7.websiteonline.cn/upload/WG-12S1920.pdf
+    - link [ref=f41e389] [cursor=pointer]:
+      - /url: https://proa2427b-pic7.websiteonline.cn/upload/WG-12S1930.pdf
+    - link [ref=f41e394] [cursor=pointer]:
+      - /url: https://proa2427b-pic7.websiteonline.cn/upload/WG-12S1930M.pdf
+  - generic [ref=f41e398]:
+    - generic [ref=f41e399]: Shenzhen WenGao Electronic Co., Ltd. | 2/F A, Bldg.A2, Anle Ind. Hangcheng RD., GuShu, Xixiang Street, Baoan Dist., Shenzhen, China 518102
+    - generic [ref=f41e403]: "Tel: +86 0755 29418061 | Fax: +86 0755 29418061"
+    - generic [ref=f41e407]:
+      - paragraph [ref=f41e408]: Copyright © 2023 SZWENGAO. All Rights Reserved.
+      - paragraph [ref=f41e409]
+    - generic [ref=f41e411]:
+      - list:
+        - listitem [ref=f41e412]:
+          - link "粤ICP备15048703号-1" [ref=f41e414] [cursor=pointer]:
+            - /url: http://beian.miit.gov.cn

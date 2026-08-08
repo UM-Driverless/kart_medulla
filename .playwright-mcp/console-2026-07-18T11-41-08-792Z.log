@@ -1,0 +1,1 @@
+[    3188ms] [WARNING] Options props is deprecated, add sortable options directly as vue.draggable item, or use v-bind. See https://github.com/SortableJS/Vue.Draggable/blob/master/documentation/migrate.md#options-props @ https://toshiba.semicon-storage.com/_nuxt/vendors/app.js?20260421:1

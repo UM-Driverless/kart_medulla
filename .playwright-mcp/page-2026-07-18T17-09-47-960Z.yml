@@ -1,0 +1,287 @@
+- generic [ref=f12e1]:
+  - link [ref=f12e2] [cursor=pointer]: Skip to main content
+  - link [ref=f12e3] [cursor=pointer]:
+    - /url: https://support.google.com/websearch/answer/181196?hl=en-ES
+    - text: Accessibility help
+  - dialog "Before you continue to Google Search" [active]:
+    - generic [ref=f12e10]:
+      - generic [ref=f12e12]:
+        - img "Google" [ref=f12e13]
+        - generic [ref=f12e14]:
+          - 'button "Language: ‪English‬" [ref=f12e16] [cursor=pointer]':
+            - generic [ref=f12e17]: en
+          - link "Sign in" [ref=f12e19] [cursor=pointer]
+      - generic [ref=f12e20]:
+        - heading "Before you continue to Google" [level=1] [ref=f12e21]
+        - generic [ref=f12e22]:
+          - generic [ref=f12e23]:
+            - text: We use
+            - link "cookies" [ref=f12e24] [cursor=pointer]:
+              - /url: https://policies.google.com/technologies/cookies?utm_source=ucbs&hl=en-ES
+            - text: and data to
+            - list [ref=f12e25]:
+              - listitem [ref=f12e26]: Deliver and maintain Google services
+              - listitem [ref=f12e27]: Track outages and protect against spam, fraud and abuse
+              - listitem [ref=f12e28]: Measure audience engagement and site statistics to understand how our services are used and enhance the quality of those services
+          - generic [ref=f12e29]:
+            - text: If you choose to 'Accept all', we will also use cookies and data to
+            - list [ref=f12e30]:
+              - listitem [ref=f12e31]: Develop and improve new services
+              - listitem [ref=f12e32]: Deliver and measure the effectiveness of ads
+              - listitem [ref=f12e33]: Show personalised content, depending on your settings
+              - listitem [ref=f12e34]: Show personalised ads, depending on your settings
+            - generic [ref=f12e35]: If you choose to 'Reject all', we will not use cookies for these additional purposes.
+          - generic [ref=f12e36]: Non-personalised content is influenced by things like the content that you’re currently viewing, activity in your active Search session, and your location. Non-personalised ads are influenced by the content that you’re currently viewing and your general location. Personalised content and ads can also include more relevant results, recommendations and tailored ads based on past activity from this browser, like previous Google searches. We also use cookies and data to tailor the experience to be age-appropriate, if relevant.
+          - generic [ref=f12e37]: Select 'More options' to see additional information, including details about managing your privacy settings. You can also visit g.co/privacytools at any time.
+      - generic [ref=f12e38]:
+        - generic [ref=f12e39]:
+          - button "Reject all" [ref=f12e40] [cursor=pointer]
+          - button "Accept all" [ref=f12e41] [cursor=pointer]
+        - link "More options for personalisation settings and cookies" [ref=f12e43] [cursor=pointer]:
+          - generic "More options for personalisation settings and cookies" [ref=f12e44]: More options
+      - generic [ref=f12e45]:
+        - link "Privacy" [ref=f12e46] [cursor=pointer]:
+          - /url: https://policies.google.com/privacy?hl=en-ES&fg=1&utm_source=ucbs
+        - generic [ref=f12e47]: ·
+        - link "Terms" [ref=f12e48] [cursor=pointer]:
+          - /url: https://policies.google.com/terms?hl=en-ES&fg=1&utm_source=ucbs
+  - generic [ref=f12e53]:
+    - search [ref=f12e54]:
+      - generic [ref=f12e56]:
+        - link [ref=f12e58] [cursor=pointer]:
+          - /url: https://www.google.com/webhp?hl=en&ictx=2&sa=X&ved=0ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQPQhr
+        - generic [ref=f12e60]:
+          - generic [ref=f12e61]:
+            - combobox [ref=f12e64]: te.com 1462043-3 Axicom relay datasheet IME03GR te.com 1462043-3 Axicom relay datasheet IME03GR
+            - generic [ref=f12e65]:
+              - button [ref=f12e67] [cursor=pointer]
+              - generic [ref=f12e72]:
+                - button [ref=f12e73] [cursor=pointer]
+                - button [ref=f12e76] [cursor=pointer]
+          - button [ref=f12e79] [cursor=pointer]
+    - generic [ref=f12e84]:
+      - button [ref=f12e86] [cursor=pointer]
+      - button [ref=f12e87] [cursor=pointer]
+      - generic [ref=f12e93]:
+        - button [ref=f12e95] [cursor=pointer]
+        - link [ref=f12e100] [cursor=pointer]:
+          - /url: https://accounts.google.com/ServiceLogin?hl=en&passive=true&continue=https://www.google.com/search%3Fq%3Dte.com%2B1462043-3%2BAxicom%2Brelay%2Bdatasheet%2BIME03GR&ec=futura_srp_og_si_72236_p
+          - text: Sign in
+  - generic [ref=f12e102]:
+    - navigation [ref=f12e108]:
+      - list [ref=f12e111]:
+        - listitem [ref=f12e112]:
+          - link [ref=f12e115] [cursor=pointer]:
+            - /url: /search?q=te.com+1462043-3+Axicom+relay+datasheet+IME03GR&sca_esv=ff0f52d8df50e9c0&udm=50&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&aep=1&ntc=1&cs=0&sa=X&ved=2ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQ2J8OegQIEBAD
+            - generic [ref=f12e116]: AI Mode
+        - listitem [ref=f12e119]:
+          - link [disabled] [ref=f12e120]:
+            - generic [ref=f12e121]: All
+        - listitem [ref=f12e123]:
+          - link [ref=f12e124] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=2&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=te.com+1462043-3+Axicom+relay+datasheet+IME03GR&sa=X&ved=2ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQtKgLegQIFhAB
+            - generic [ref=f12e125]: Images
+        - listitem [ref=f12e127]:
+          - link [ref=f12e128] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=39&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=te.com+1462043-3+Axicom+relay+datasheet+IME03GR&sa=X&ved=2ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQs6gLegQIFBAB
+            - generic [ref=f12e129]: Short videos
+        - listitem [ref=f12e131]:
+          - link [ref=f12e132] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=7&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=te.com+1462043-3+Axicom+relay+datasheet+IME03GR&sa=X&ved=2ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQtKgLegQIFRAB
+            - generic [ref=f12e133]: Videos
+        - listitem [ref=f12e135]:
+          - link [ref=f12e136] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=18&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=te.com+1462043-3+Axicom+relay+datasheet+IME03GR&sa=X&ved=2ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQs6gLegQIEhAB
+            - generic [ref=f12e137]: Forums
+        - listitem [ref=f12e139]:
+          - link [ref=f12e140] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&q=te.com+1462043-3+Axicom+relay+datasheet+IME03GR&tbm=nws&source=lnms&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&sa=X&ved=2ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQ0pQJegQIExAB
+            - generic [ref=f12e141]: News
+        - listitem [ref=f12e143]:
+          - button [ref=f12e144] [cursor=pointer]:
+            - generic [ref=f12e145]: More
+    - heading [level=1] [ref=f12e151]: Search Results
+    - main [ref=f12e157]:
+      - generic [ref=f12e161]:
+        - generic [ref=f12e164]:
+          - heading [level=2] [ref=f12e165]: Web results
+          - generic [ref=f12e166]:
+            - generic [ref=f12e169]:
+              - link [ref=f12e171] [cursor=pointer]:
+                - /url: https://www.te.com/en/product-1462043-3.html
+                - heading [level=3] [ref=f12e172]: "IME03GR : Axicom Signal Relay: 2 Form A, 2 NO Contacts"
+                - generic [ref=f12e178]:
+                  - generic [ref=f12e179]: TE Connectivity
+                  - generic [ref=f12e181]: https://www.te.com › product-1462043-3
+              - button [ref=f12e185] [cursor=pointer]
+            - generic [ref=f12e191]:
+              - generic [ref=f12e192]:
+                - emphasis [ref=f12e193]: General Purpose Signal Relay
+                - text: ", DC, Polarized, Monostable, 2 Form A DPST-NO, 2 A Contact Rating, 5 VDC Coil Voltage, 250 VAC Contact Voltage."
+              - link [ref=f12e194] [cursor=pointer]:
+                - /url: https://www.te.com/en/product-1462043-3.html#:~:text=General%20Purpose%20Signal%20Relay%2C%20DC%2C,VAC%20Contact%20Voltage%2C%20Axicom%20IM
+                - text: Read more
+        - generic [ref=f12e205]:
+          - heading [level=2] [ref=f12e209]:
+            - generic [ref=f12e210]: Thinking
+          - progressbar [ref=f12e212]
+        - generic [ref=f12e216]:
+          - heading [level=2] [ref=f12e217]: Web results
+          - generic [ref=f12e218]:
+            - generic [ref=f12e221]:
+              - link [ref=f12e223] [cursor=pointer]:
+                - /url: https://datasheet.octopart.com/IME03GR-TE-Connectivity-datasheet-179946168.pdf
+                - heading [level=3] [ref=f12e224]: IME03GR  ACTIVE
+                - generic [ref=f12e230]:
+                  - generic [ref=f12e231]: Octopart
+                  - generic [ref=f12e233]: https://datasheet.octopart.com › IME03GR-TE-Co...
+              - generic [ref=f12e235]: PDF
+              - button [ref=f12e238] [cursor=pointer]
+            - generic [ref=f12e245]:
+              - emphasis [ref=f12e246]: Axicom
+              - text: .
+              - emphasis [ref=f12e247]: TE
+              - text: "Internal #:"
+              - emphasis [ref=f12e248]: 1462043-3
+              - text: . Signal
+              - emphasis [ref=f12e249]: Relays
+              - text: ", 220 VDC Contact Voltage, 250 VAC Contact Voltage,. 140mW Coil Power Rating DC, Printed Circuit Board,"
+              - emphasis [ref=f12e250]: Axicom
+              - text: IM.
+        - generic [ref=f12e254]:
+          - generic [ref=f12e257]:
+            - link [ref=f12e259] [cursor=pointer]:
+              - /url: https://www.mouser.co.uk/ProductDetail/TE-Connectivity-Axicom/1462043-3?qs=kSbAZawwBnyZc0kc5%2Fr7kg%3D%3D&srsltid=AfmBOooTi6A_Oo9D8oeRw18bxmur14c-Qdh9QRgdT9cRO9V1wjvv3L0C
+              - heading [level=3] [ref=f12e260]: 1462043-3 TE Connectivity / Axicom
+              - generic [ref=f12e266]:
+                - generic [ref=f12e267]: Mouser Electronics United Kingdom
+                - generic [ref=f12e269]: https://www.mouser.co.uk › ProductDetail › 1462043-3
+            - button [ref=f12e273] [cursor=pointer]
+          - generic [ref=f12e280]:
+            - text: High Frequency / RF
+            - emphasis [ref=f12e281]: Relays IME03GR
+            - text: =140MW 5V 2NO.
+            - emphasis [ref=f12e282]: Datasheet
+            - text: ":"
+            - emphasis [ref=f12e283]: 1462043-3 Datasheet
+            - text: "(PDF). ECAD Model: Build or request PCB Symbol, Footprint or Model for ..."
+        - generic [ref=f12e287]:
+          - generic [ref=f12e290]:
+            - link [ref=f12e292] [cursor=pointer]:
+              - /url: https://www.digikey.ca/en/products/detail/te-connectivity-potter-brumfield-relays/1462043-3/4924690
+              - heading [level=3] [ref=f12e293]: 1462043-3 TE Connectivity Potter & Brumfield Relays
+              - generic [ref=f12e299]:
+                - generic [ref=f12e300]: DigiKey
+                - generic [ref=f12e302]: https://www.digikey.ca › products › detail › 1462043-3
+            - button [ref=f12e306] [cursor=pointer]
+          - generic [ref=f12e313]:
+            - emphasis [ref=f12e314]: Telecom Relay DPST-NO (2 Form A) Surface Mount
+            - text: . Image shown is a representation only. Exact specifications should be obtained from the product data sheet.
+        - generic [ref=f12e318]:
+          - generic [ref=f12e321]:
+            - link [ref=f12e323] [cursor=pointer]:
+              - /url: https://www.farnell.com/datasheets/477186.pdf
+              - heading [level=3] [ref=f12e324]: IM Series
+              - generic [ref=f12e330]:
+                - generic [ref=f12e331]: Farnell
+                - generic [ref=f12e333]: https://www.farnell.com › datasheets
+            - generic [ref=f12e335]: PDF
+            - button [ref=f12e338] [cursor=pointer]
+          - generic [ref=f12e343]:
+            - generic [ref=f12e345]:
+              - text: AXICOM Telecom, Signal and RF Relays IM Relay. AXICOM Telecom, Signal and RF Relays 48.50.
+              - emphasis [ref=f12e346]: IME03GR 1462043-3
+              - text: 12 9.00 … 4th generation slim line – low profile ...
+            - generic [ref=f12e347]: 28 pages
+        - generic [ref=f12e351]:
+          - generic [ref=f12e354]:
+            - link [ref=f12e356] [cursor=pointer]:
+              - /url: https://docs.rs-online.com/8340/A700000006723902.pdf
+              - heading [level=3] [ref=f12e357]: AXICOM Signal Relays IM
+              - generic [ref=f12e363]:
+                - generic [ref=f12e364]: RS Online
+                - generic [ref=f12e366]: https://docs.rs-online.com › ...
+            - generic [ref=f12e368]: PDF
+            - button [ref=f12e371] [cursor=pointer]
+          - generic [ref=f12e377]:
+            - text: Contact Data. Contact arrangement. 2 Form A, 2 NO. Max. switching voltage. 220VDC, 250VAC. Rated current. 2A. Limiting continuous current.
+            - link [ref=f12e378] [cursor=pointer]:
+              - /url: https://docs.rs-online.com/8340/A700000006723902.pdf#:~:text=Contact%20Data,Limiting%20continuous%20current
+              - text: Read more
+        - generic [ref=f12e382]:
+          - generic [ref=f12e385]:
+            - link [ref=f12e387] [cursor=pointer]:
+              - /url: https://www.tti.com/content/ttiinc/en/apps/part-detail.html?partsNumber=1462043-3&mfgShortname=TYC&srsltid=AfmBOop-Rd_tBhrYfNhNwvum-FwUnk9V6o_cDptvdI_-JdE26kgAhJXa
+              - heading [level=3] [ref=f12e388]: 1462043-3 - TE Connectivity / Axicom Part Detail
+              - generic [ref=f12e394]:
+                - generic [ref=f12e395]: TTI, Inc.
+                - generic [ref=f12e397]: https://www.tti.com › content › ttiinc › apps › part-detail
+            - button [ref=f12e401] [cursor=pointer]
+          - generic [ref=f12e408]:
+            - emphasis [ref=f12e409]: IME03GR
+            - text: TE Connectivity / Axicom High Frequency / RF Relays IME03GR=140MW 5V 2NO datasheets, pricing, and inventory.
+        - generic [ref=f12e413]:
+          - generic [ref=f12e416]:
+            - link [ref=f12e418] [cursor=pointer]:
+              - /url: https://www.tme.eu/en/details/ime03gr/miniature-electromagnetic-relays/te-connectivity/1462043-3/
+              - heading [level=3] [ref=f12e419]: "1462043-3 TE Connectivity - Relay: electromagnetic"
+              - generic [ref=f12e425]:
+                - generic [ref=f12e426]: TME
+                - generic [ref=f12e428]: https://www.tme.eu › details › ime03gr › 1462043-3
+            - button [ref=f12e432] [cursor=pointer]
+          - generic [ref=f12e438]:
+            - generic [ref=f12e439]:
+              - emphasis [ref=f12e440]: Specification
+              - text: ; Mounting. SMT ; Coil resistance. 178Ω ; Coil voltage min. 3.75V DC ; Body dimensions. 10x6x5.65mm ; Coil power consumption. 140mW.
+            - link [ref=f12e441] [cursor=pointer]:
+              - /url: https://www.tme.eu/en/details/ime03gr/miniature-electromagnetic-relays/te-connectivity/1462043-3/#:~:text=Specification&text=Mounting,SMT&text=Coil%20resistance,178%CE%A9&text=Coil%20voltage%20min.,3.75V%20DC&text=Body%20dimensions,10x6x5.65mm&text=Coil%20power%20consumption,140mW
+              - text: Read more
+          - generic [ref=f12e443]:
+            - generic [ref=f12e444]: US$3.06 to US$3.31
+            - text: ·
+            - generic [ref=f12e445]: Out of stock
+          - generic [ref=f12e449]:
+            - text: "Missing: Axicom ‎| Show results with:"
+            - link [ref=f12e450] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=te.com+1462043-3+%22Axicom%22+relay+datasheet+IME03GR&sa=X&ved=2ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQ5t4CegQINRAB
+              - text: Axicom
+        - generic [ref=f12e454]:
+          - generic [ref=f12e457]:
+            - link [ref=f12e459] [cursor=pointer]:
+              - /url: https://au.mouser.com/ProductDetail/TE-Connectivity-Axicom/1462043-3?qs=kSbAZawwBnyZc0kc5%2Fr7kg%3D%3D&srsltid=AfmBOoqbEPWDMq54lnIeJJSNdGuJBBz0zEq0WM0w5_BPRKmz5tuafFrh
+              - heading [level=3] [ref=f12e460]: 1462043-3 TE Connectivity / Axicom
+              - generic [ref=f12e466]:
+                - generic [ref=f12e467]: Mouser Electronics Australia
+                - generic [ref=f12e469]: https://au.mouser.com › ProductDetail › 1462043-3
+            - button [ref=f12e473] [cursor=pointer]
+          - generic [ref=f12e480]:
+            - emphasis [ref=f12e481]: 1462043-3 TE
+            - text: Connectivity /
+            - emphasis [ref=f12e482]: Axicom
+            - text: High Frequency / RF
+            - emphasis [ref=f12e483]: Relays IME03GR
+            - text: =140MW 5V 2NO
+            - emphasis [ref=f12e484]: datasheet
+            - text: ", inventory & pricing."
+      - generic [ref=f12e486]:
+        - generic [ref=f12e491]:
+          - heading [level=2] [ref=f12e493]: People also search for
+          - generic [ref=f12e495]:
+            - link [ref=f12e500] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Te+com+1462043+3+axicom+relay+datasheet+ime03gr+spec&sa=X&ved=2ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQ1QJ6BAgoEAE
+              - generic [ref=f12e501]: Te com 1462043 3 axicom relay datasheet ime03gr spec
+            - link [ref=f12e515] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Te+com+1462043+3+axicom+relay+datasheet+ime03gr+user&sa=X&ved=2ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQ1QJ6BAgpEAE
+              - generic [ref=f12e516]: Te com 1462043 3 axicom relay datasheet ime03gr user
+        - navigation [ref=f12e526]:
+          - heading [level=1] [ref=f12e527]: Page navigation
+          - text: "1"
+          - link [ref=f12e530] [cursor=pointer]:
+            - /url: /search?q=te.com+1462043-3+Axicom+relay+datasheet+IME03GR&sca_esv=ff0f52d8df50e9c0&ei=W7Nbas7aD7K2hbIPioznmAo&start=10&sa=N&sstk=AU9db-Ah0DrP4AVHo1GpUQp4E69D-JBPuOG-6yoSgAsJigx-7-sdG2OuUPs2pFc8gxlaO3j5EVqOn6HkNJYw58ACdQQn8cKOluAC2A&ved=2ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQ8tMDegQIJhAE
+            - text: "2"
+          - heading [level=2] [ref=f12e532]:
+            - link [ref=f12e533] [cursor=pointer]:
+              - /url: /search?q=te.com+1462043-3+Axicom+relay+datasheet+IME03GR&sca_esv=ff0f52d8df50e9c0&ei=W7Nbas7aD7K2hbIPioznmAo&start=10&sa=N&sstk=AU9db-Ah0DrP4AVHo1GpUQp4E69D-JBPuOG-6yoSgAsJigx-7-sdG2OuUPs2pFc8gxlaO3j5EVqOn6HkNJYw58ACdQQn8cKOluAC2A&ved=2ahUKEwiO9Izs29yVAxUyW0EAHQrGGaMQ8NMDegQIJhAG
+              - generic [ref=f12e535]: Next
+    - contentinfo [ref=f12e536]:
+      - heading [level=1] [ref=f12e537]: Footer links

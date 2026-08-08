@@ -1,0 +1,202 @@
+- generic [ref=f39e1]:
+  - link [ref=f39e2] [cursor=pointer]: Skip to main content
+  - link [ref=f39e3] [cursor=pointer]:
+    - /url: https://support.google.com/websearch/answer/181196?hl=en-ES
+    - text: Accessibility help
+  - dialog "Before you continue to Google Search" [active]:
+    - generic [ref=f39e10]:
+      - generic [ref=f39e12]:
+        - img "Google" [ref=f39e13]
+        - generic [ref=f39e14]:
+          - 'button "Language: ‪English‬" [ref=f39e16] [cursor=pointer]':
+            - generic [ref=f39e17]: en
+          - link "Sign in" [ref=f39e19] [cursor=pointer]
+      - generic [ref=f39e20]:
+        - heading "Before you continue to Google" [level=1] [ref=f39e21]
+        - generic [ref=f39e22]:
+          - generic [ref=f39e23]:
+            - text: We use
+            - link "cookies" [ref=f39e24] [cursor=pointer]:
+              - /url: https://policies.google.com/technologies/cookies?utm_source=ucbs&hl=en-ES
+            - text: and data to
+            - list [ref=f39e25]:
+              - listitem [ref=f39e26]: Deliver and maintain Google services
+              - listitem [ref=f39e27]: Track outages and protect against spam, fraud and abuse
+              - listitem [ref=f39e28]: Measure audience engagement and site statistics to understand how our services are used and enhance the quality of those services
+          - generic [ref=f39e29]:
+            - text: If you choose to 'Accept all', we will also use cookies and data to
+            - list [ref=f39e30]:
+              - listitem [ref=f39e31]: Develop and improve new services
+              - listitem [ref=f39e32]: Deliver and measure the effectiveness of ads
+              - listitem [ref=f39e33]: Show personalised content, depending on your settings
+              - listitem [ref=f39e34]: Show personalised ads, depending on your settings
+            - generic [ref=f39e35]: If you choose to 'Reject all', we will not use cookies for these additional purposes.
+          - generic [ref=f39e36]: Non-personalised content is influenced by things like the content that you’re currently viewing, activity in your active Search session, and your location. Non-personalised ads are influenced by the content that you’re currently viewing and your general location. Personalised content and ads can also include more relevant results, recommendations and tailored ads based on past activity from this browser, like previous Google searches. We also use cookies and data to tailor the experience to be age-appropriate, if relevant.
+          - generic [ref=f39e37]: Select 'More options' to see additional information, including details about managing your privacy settings. You can also visit g.co/privacytools at any time.
+      - generic [ref=f39e38]:
+        - generic [ref=f39e39]:
+          - button "Reject all" [ref=f39e40] [cursor=pointer]
+          - button "Accept all" [ref=f39e41] [cursor=pointer]
+        - link "More options for personalisation settings and cookies" [ref=f39e43] [cursor=pointer]:
+          - generic "More options for personalisation settings and cookies" [ref=f39e44]: More options
+      - generic [ref=f39e45]:
+        - link "Privacy" [ref=f39e46] [cursor=pointer]:
+          - /url: https://policies.google.com/privacy?hl=en-ES&fg=1&utm_source=ucbs
+        - generic [ref=f39e47]: ·
+        - link "Terms" [ref=f39e48] [cursor=pointer]:
+          - /url: https://policies.google.com/terms?hl=en-ES&fg=1&utm_source=ucbs
+  - generic [ref=f39e53]:
+    - search [ref=f39e54]:
+      - generic [ref=f39e56]:
+        - link [ref=f39e58] [cursor=pointer]:
+          - /url: https://www.google.com/webhp?hl=en&ictx=2&sa=X&ved=0ahUKEwjkuf6S3NyVAxUOVEEAHfNrBN4QPQhr
+        - generic [ref=f39e60]:
+          - generic [ref=f39e61]:
+            - combobox [ref=f39e64]: Bardahl 4457 lubricante silicona ficha tecnica pdf Bardahl 4457 lubricante silicona ficha tecnica pdf
+            - generic [ref=f39e65]:
+              - button [ref=f39e67] [cursor=pointer]
+              - generic [ref=f39e72]:
+                - button [ref=f39e73] [cursor=pointer]
+                - button [ref=f39e76] [cursor=pointer]
+          - button [ref=f39e79] [cursor=pointer]
+    - generic [ref=f39e84]:
+      - button [ref=f39e86] [cursor=pointer]
+      - button [ref=f39e87] [cursor=pointer]
+      - generic [ref=f39e93]:
+        - button [ref=f39e95] [cursor=pointer]
+        - link [ref=f39e100] [cursor=pointer]:
+          - /url: https://accounts.google.com/ServiceLogin?hl=en&passive=true&continue=https://www.google.com/search%3Fq%3DBardahl%2B4457%2Blubricante%2Bsilicona%2Bficha%2Btecnica%2Bpdf&ec=futura_srp_og_si_72236_p
+          - text: Sign in
+  - generic [ref=f39e102]:
+    - navigation [ref=f39e108]:
+      - list [ref=f39e111]:
+        - listitem [ref=f39e112]:
+          - link [ref=f39e115] [cursor=pointer]:
+            - /url: /search?q=Bardahl+4457+lubricante+silicona+ficha+tecnica+pdf&sca_esv=ff0f52d8df50e9c0&udm=50&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTCrtAFYc7S_kA3vbgyebKvsolxuuHfyaI1uynbmJ9ZzwhsYOm0v2q0YGUCaQKGzWKCEaUfBFub4hKjpia3odgmZU01uu4hngUPiisFQpu_AGArvgLg&aep=1&ntc=1&cs=0&sa=X&ved=2ahUKEwjkuf6S3NyVAxUOVEEAHfNrBN4Q2J8OegQIEBAD
+            - generic [ref=f39e116]: AI Mode
+        - listitem [ref=f39e119]:
+          - link [disabled] [ref=f39e120]:
+            - generic [ref=f39e121]: All
+        - listitem [ref=f39e123]:
+          - link [ref=f39e124] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=3&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTCrtAFYc7S_kA3vbgyebKvsolxuuHfyaI1uynbmJ9ZzwhsYOm0v2q0YGUCaQKGzWKCEaUfBFub4hKjpia3odgmZU01uu4hngUPiisFQpu_AGArvgLg&q=Bardahl+4457+lubricante+silicona+ficha+tecnica+pdf&sa=X&ved=2ahUKEwjkuf6S3NyVAxUOVEEAHfNrBN4Qs6gLegQIFhAB
+            - generic [ref=f39e125]: Products
+        - listitem [ref=f39e127]:
+          - link [ref=f39e128] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=2&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTCrtAFYc7S_kA3vbgyebKvsolxuuHfyaI1uynbmJ9ZzwhsYOm0v2q0YGUCaQKGzWKCEaUfBFub4hKjpia3odgmZU01uu4hngUPiisFQpu_AGArvgLg&q=Bardahl+4457+lubricante+silicona+ficha+tecnica+pdf&sa=X&ved=2ahUKEwjkuf6S3NyVAxUOVEEAHfNrBN4QtKgLegQIFRAB
+            - generic [ref=f39e129]: Images
+        - listitem [ref=f39e131]:
+          - link [ref=f39e132] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=39&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTCrtAFYc7S_kA3vbgyebKvsolxuuHfyaI1uynbmJ9ZzwhsYOm0v2q0YGUCaQKGzWKCEaUfBFub4hKjpia3odgmZU01uu4hngUPiisFQpu_AGArvgLg&q=Bardahl+4457+lubricante+silicona+ficha+tecnica+pdf&sa=X&ved=2ahUKEwjkuf6S3NyVAxUOVEEAHfNrBN4Qs6gLegQIFBAB
+            - generic [ref=f39e133]: Short videos
+        - listitem [ref=f39e135]:
+          - link [ref=f39e136] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=7&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTCrtAFYc7S_kA3vbgyebKvsolxuuHfyaI1uynbmJ9ZzwhsYOm0v2q0YGUCaQKGzWKCEaUfBFub4hKjpia3odgmZU01uu4hngUPiisFQpu_AGArvgLg&q=Bardahl+4457+lubricante+silicona+ficha+tecnica+pdf&sa=X&ved=2ahUKEwjkuf6S3NyVAxUOVEEAHfNrBN4QtKgLegQIEhAB
+            - generic [ref=f39e137]: Videos
+        - listitem [ref=f39e139]:
+          - link [ref=f39e140] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Bardahl+4457+lubricante+silicona+ficha+tecnica+pdf&tbm=nws&source=lnms&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8cPkaF-xy5XA2VfHOAgdx7fEITkUchzL5ortoOgwY_kiYDDii6W3vr_xg6wwyfeqTCrtAFYc7S_kA3vbgyebKvsolxuuHfyaI1uynbmJ9ZzwhsYOm0v2q0YGUCaQKGzWKCEaUfBFub4hKjpia3odgmZU01uu4hngUPiisFQpu_AGArvgLg&sa=X&ved=2ahUKEwjkuf6S3NyVAxUOVEEAHfNrBN4Q0pQJegQIERAB
+            - generic [ref=f39e141]: News
+        - listitem [ref=f39e143]:
+          - button [ref=f39e144] [cursor=pointer]:
+            - generic [ref=f39e145]: More
+    - heading [level=1] [ref=f39e151]: Search Results
+    - main [ref=f39e157]:
+      - generic [ref=f39e161]:
+        - generic [ref=f39e164]:
+          - heading [level=2] [ref=f39e165]: Интернеттегі нәтижелер
+          - generic [ref=f39e166]:
+            - generic [ref=f39e169]:
+              - link [ref=f39e171] [cursor=pointer]:
+                - /url: https://english.bardahl.fr/getmedia/f099a960-dd90-4d8a-8a1e-0e3f64cbdd0e/4457b_en_pd.PDF
+                - heading [level=3] [ref=f39e172]: 4457B - 737445B R0 - Silicone lubrifiant - 400ml BD
+                - generic [ref=f39e178]:
+                  - generic [ref=f39e179]: Bardahl
+                  - generic [ref=f39e181]: https://english.bardahl.fr › 4457b_en_pd
+              - generic [ref=f39e183]: PDF
+              - button [ref=f39e186] [cursor=pointer]
+            - generic [ref=f39e192]:
+              - generic [ref=f39e193]:
+                - emphasis [ref=f39e194]: Lubricante de silicona
+                - text: . Facilita el deslizamiento de las partes móviles donde no se puede usar grasa. Resiste al agua y protege contra la corrosión. Elimina ...
+              - link [ref=f39e195] [cursor=pointer]:
+                - /url: https://english.bardahl.fr/getmedia/f099a960-dd90-4d8a-8a1e-0e3f64cbdd0e/4457b_en_pd.PDF#:~:text=Lubricante%20de%20silicona,el%20ruido%20y%20los%20chirridos.
+                - text: Read more
+            - generic [ref=f39e196]: "Missing: 4457 ‎ficha ‎tecnica"
+        - generic [ref=f39e208]:
+          - heading [level=2] [ref=f39e212]:
+            - generic [ref=f39e213]: Thinking
+          - progressbar [ref=f39e215]
+        - generic [ref=f39e219]:
+          - heading [level=2] [ref=f39e220]: Resultados web
+          - generic [ref=f39e221]:
+            - generic [ref=f39e224]:
+              - link [ref=f39e226] [cursor=pointer]:
+                - /url: https://b2bbardahl.es/133/1269-4457B.html
+                - heading [level=3] [ref=f39e227]: SILICONE LUBRICANT 6/400 ML.
+                - generic [ref=f39e233]:
+                  - generic [ref=f39e234]: B2B Bardahl
+                  - generic [ref=f39e236]: https://b2bbardahl.es › 1269-4457B
+              - generic [ref=f39e238]:
+                - generic [ref=f39e239]: ·
+                - link [ref=f39e240] [cursor=pointer]:
+                  - /url: https://translate.google.com/translate?u=https://b2bbardahl.es/133/1269-4457B.html&hl=en&sl=es&tl=en&client=search
+                  - text: Translate this page
+              - button [ref=f39e243] [cursor=pointer]
+            - generic [ref=f39e249]:
+              - generic [ref=f39e250]:
+                - text: "El lubricante de silicona Bardahl tiene las siguientes propiedades: •"
+                - emphasis [ref=f39e251]: Lubricante seco, limpio y de larga duración
+                - text: ", • Resiste al agua y protege contra la ..."
+              - link [ref=f39e252] [cursor=pointer]:
+                - /url: https://b2bbardahl.es/133/1269-4457B.html#:~:text=El%20lubricante%20de%20silicona%20Bardahl,y%20protege%20contra%20la%20corrosi%C3%B3n%2C
+                - text: Read more
+            - generic [ref=f39e254]:
+              - text: "Missing: pdf ‎| Show results with:"
+              - link [ref=f39e255] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Bardahl+4457+lubricante+silicona+ficha+tecnica+%22pdf%22&sa=X&ved=2ahUKEwjkuf6S3NyVAxUOVEEAHfNrBN4Q5t4CegQIIhAB
+                - text: pdf
+        - generic [ref=f39e259]:
+          - heading [level=2] [ref=f39e263]: Images
+          - generic [ref=f39e267]:
+            - generic [ref=f39e271] [cursor=pointer]:
+              - link [ref=f39e272]:
+                - /url: https://bardahl.es/133/1269-4457B.html
+              - button [ref=f39e274]
+              - generic [ref=f39e278]:
+                - generic [ref=f39e279]: SILICONE LUBRICANT 6/400 ML.
+                - generic [ref=f39e281]:
+                  - generic [ref=f39e282]: bardahl.es
+                  - button [ref=f39e291]
+            - generic [ref=f39e299] [cursor=pointer]:
+              - link [ref=f39e300]:
+                - /url: https://fr.scribd.com/document/74018889/Bardahl-Ficha-Tecnica
+              - button [ref=f39e302]
+              - generic [ref=f39e306]:
+                - generic [ref=f39e307]: Bardahl Ficha Tecnica | PDF | Sustancias químicas | Química
+                - generic [ref=f39e309]:
+                  - generic [ref=f39e310]: Scribd
+                  - button [ref=f39e319]
+            - generic [ref=f39e327] [cursor=pointer]:
+              - link [ref=f39e328]:
+                - /url: https://www.racinglubes.es/grasa-lubricante/865-grasa-de-silicona-bardahl.html
+              - button [ref=f39e330]
+              - generic [ref=f39e334]:
+                - generic [ref=f39e335]: Bardahl Grasa de Silicona
+                - generic [ref=f39e337]:
+                  - generic [ref=f39e338]: Racing Lubes
+                  - button [ref=f39e347]
+          - button [ref=f39e353] [cursor=pointer]:
+            - separator [ref=f39e354]
+            - generic [ref=f39e355]: Show more images
+      - generic [ref=f39e362]:
+        - heading [level=2] [ref=f39e363]: Notices about Filtered Results
+        - paragraph [ref=f39e365]:
+          - generic [ref=f39e366]:
+            - text: In order to show you the most relevant results, we have omitted some entries very similar to the 2 already displayed. If you like, you can
+            - link [ref=f39e367] [cursor=pointer]:
+              - /url: /search?q=Bardahl+4457+lubricante+silicona+ficha+tecnica+pdf&sca_esv=ff0f52d8df50e9c0&filter=0
+              - text: repeat the search with the omitted results included
+            - text: .
+    - contentinfo [ref=f39e368]:
+      - heading [level=1] [ref=f39e369]: Footer links

@@ -1,0 +1,44 @@
+- generic [ref=f3e2]:
+  - banner [ref=f3e8]:
+    - generic [ref=f3e10]:
+      - link [ref=f3e11] [cursor=pointer]:
+        - /url: https://www.global.toshiba/en_us/top.html
+        - img "Toshiba" [ref=f3e13]
+      - img "Toshiba Electronic Devices & Strage Corporation" [ref=f3e15]
+    - navigation [ref=f3e16]:
+      - list [ref=f3e17]:
+        - listitem [ref=f3e18]:
+          - link " CONTACT US" [ref=f3e20] [cursor=pointer]:
+            - /url: https://toshiba.semicon-storage.com/en_us/contact.html
+  - generic [ref=f3e28]:
+    - list [ref=f3e31]:
+      - listitem [ref=f3e32]:
+        - link "Semiconductor&Storage Products Home" [ref=f3e33] [cursor=pointer]:
+          - /url: https://toshiba.semicon-storage.com/us/top.html
+      - listitem [ref=f3e34]:
+        - link "Parametric Search" [ref=f3e35] [cursor=pointer]:
+          - /url: https://toshiba.semicon-storage.com/us/search/parametric.html
+      - listitem [ref=f3e36]:
+        - link "MOSFETs" [ref=f3e37] [cursor=pointer]:
+          - /url: https://toshiba.semicon-storage.com/us/semiconductor/product/mosfets.html
+    - heading "MOSFETs" [level=1] [ref=f3e39]
+    - generic [ref=f3e40]:
+      - generic [ref=f3e42]:
+        - button [ref=f3e43] [cursor=pointer]
+        - paragraph [ref=f3e45]: How to use parametric search
+      - generic [ref=f3e46]:
+        - button "Select category" [ref=f3e47] [cursor=pointer]
+        - separator [ref=f3e48]
+  - contentinfo [ref=f3e55]:
+    - generic [ref=f3e57]:
+      - list [ref=f3e59]:
+        - listitem [ref=f3e60]:
+          - link "PRIVACY POLICY" [ref=f3e61] [cursor=pointer]:
+            - /url: https://toshiba.semicon-storage.com/en_us/privacy-policy.html
+        - listitem [ref=f3e62]:
+          - link "TERMS AND CONDITIONS" [ref=f3e63] [cursor=pointer]:
+            - /url: https://toshiba.semicon-storage.com/en_us/terms.html
+        - listitem [ref=f3e64]:
+          - link "COOKIE SETTINGS" [ref=f3e65] [cursor=pointer]:
+            - /url: javascript:void(0);
+      - generic [ref=f3e66]: Copyright © 2026 TOSHIBA ELECTRONIC DEVICES & STORAGE CORPORATION, All Rights Reserved.

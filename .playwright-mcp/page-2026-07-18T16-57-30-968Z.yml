@@ -1,0 +1,331 @@
+- generic [ref=f7e1]:
+  - link [ref=f7e2] [cursor=pointer]: Skip to main content
+  - link [ref=f7e3] [cursor=pointer]:
+    - /url: https://support.google.com/websearch/answer/181196?hl=en-ES
+    - text: Accessibility help
+  - dialog "Before you continue to Google Search" [active]:
+    - generic [ref=f7e10]:
+      - generic [ref=f7e12]:
+        - img "Google" [ref=f7e13]
+        - generic [ref=f7e14]:
+          - 'button "Language: ‪English‬" [ref=f7e16] [cursor=pointer]':
+            - generic [ref=f7e17]: en
+          - link "Sign in" [ref=f7e19] [cursor=pointer]
+      - generic [ref=f7e20]:
+        - heading "Before you continue to Google" [level=1] [ref=f7e21]
+        - generic [ref=f7e22]:
+          - generic [ref=f7e23]:
+            - text: We use
+            - link "cookies" [ref=f7e24] [cursor=pointer]:
+              - /url: https://policies.google.com/technologies/cookies?utm_source=ucbs&hl=en-ES
+            - text: and data to
+            - list [ref=f7e25]:
+              - listitem [ref=f7e26]: Deliver and maintain Google services
+              - listitem [ref=f7e27]: Track outages and protect against spam, fraud and abuse
+              - listitem [ref=f7e28]: Measure audience engagement and site statistics to understand how our services are used and enhance the quality of those services
+          - generic [ref=f7e29]:
+            - text: If you choose to 'Accept all', we will also use cookies and data to
+            - list [ref=f7e30]:
+              - listitem [ref=f7e31]: Develop and improve new services
+              - listitem [ref=f7e32]: Deliver and measure the effectiveness of ads
+              - listitem [ref=f7e33]: Show personalised content, depending on your settings
+              - listitem [ref=f7e34]: Show personalised ads, depending on your settings
+            - generic [ref=f7e35]: If you choose to 'Reject all', we will not use cookies for these additional purposes.
+          - generic [ref=f7e36]: Non-personalised content is influenced by things like the content that you’re currently viewing, activity in your active Search session, and your location. Non-personalised ads are influenced by the content that you’re currently viewing and your general location. Personalised content and ads can also include more relevant results, recommendations and tailored ads based on past activity from this browser, like previous Google searches. We also use cookies and data to tailor the experience to be age-appropriate, if relevant.
+          - generic [ref=f7e37]: Select 'More options' to see additional information, including details about managing your privacy settings. You can also visit g.co/privacytools at any time.
+      - generic [ref=f7e38]:
+        - generic [ref=f7e39]:
+          - button "Reject all" [ref=f7e40] [cursor=pointer]
+          - button "Accept all" [ref=f7e41] [cursor=pointer]
+        - link "More options for personalisation settings and cookies" [ref=f7e43] [cursor=pointer]:
+          - generic "More options for personalisation settings and cookies" [ref=f7e44]: More options
+      - generic [ref=f7e45]:
+        - link "Privacy" [ref=f7e46] [cursor=pointer]:
+          - /url: https://policies.google.com/privacy?hl=en-ES&fg=1&utm_source=ucbs
+        - generic [ref=f7e47]: ·
+        - link "Terms" [ref=f7e48] [cursor=pointer]:
+          - /url: https://policies.google.com/terms?hl=en-ES&fg=1&utm_source=ucbs
+  - generic [ref=f7e53]:
+    - search [ref=f7e54]:
+      - generic [ref=f7e56]:
+        - link [ref=f7e58] [cursor=pointer]:
+          - /url: https://www.google.com/webhp?hl=en&ictx=2&sa=X&ved=0ahUKEwjszN2M2dyVAxUIgP0HHef5BL8QPQhr
+        - generic [ref=f7e60]:
+          - generic [ref=f7e61]:
+            - combobox [ref=f7e64]: maxongroup.com 499361 ENC 16 EASY 1024 datasheet maxongroup.com 499361 ENC 16 EASY 1024 datasheet
+            - generic [ref=f7e65]:
+              - button [ref=f7e67] [cursor=pointer]
+              - generic [ref=f7e72]:
+                - button [ref=f7e73] [cursor=pointer]
+                - button [ref=f7e76] [cursor=pointer]
+          - button [ref=f7e79] [cursor=pointer]
+    - generic [ref=f7e84]:
+      - button [ref=f7e86] [cursor=pointer]
+      - button [ref=f7e87] [cursor=pointer]
+      - generic [ref=f7e93]:
+        - button [ref=f7e95] [cursor=pointer]
+        - link [ref=f7e100] [cursor=pointer]:
+          - /url: https://accounts.google.com/ServiceLogin?hl=en&passive=true&continue=https://www.google.com/search%3Fq%3Dmaxongroup.com%2B499361%2BENC%2B16%2BEASY%2B1024%2Bdatasheet&ec=futura_srp_og_si_72236_p
+          - text: Sign in
+  - generic [ref=f7e102]:
+    - navigation [ref=f7e108]:
+      - list [ref=f7e111]:
+        - listitem [ref=f7e112]:
+          - link [ref=f7e115] [cursor=pointer]:
+            - /url: /search?q=maxongroup.com+499361+ENC+16+EASY+1024+datasheet&sca_esv=ff0f52d8df50e9c0&udm=50&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&aep=1&ntc=1&cs=0&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q2J8OegQIDhAD
+            - generic [ref=f7e116]: AI Mode
+        - listitem [ref=f7e119]:
+          - link [disabled] [ref=f7e120]:
+            - generic [ref=f7e121]: All
+        - listitem [ref=f7e123]:
+          - link [ref=f7e124] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=2&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=maxongroup.com+499361+ENC+16+EASY+1024+datasheet&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8QtKgLegQIFBAB
+            - generic [ref=f7e125]: Images
+        - listitem [ref=f7e127]:
+          - link [ref=f7e128] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=39&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=maxongroup.com+499361+ENC+16+EASY+1024+datasheet&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Qs6gLegQIFRAB
+            - generic [ref=f7e129]: Short videos
+        - listitem [ref=f7e131]:
+          - link [ref=f7e132] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=7&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=maxongroup.com+499361+ENC+16+EASY+1024+datasheet&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8QtKgLegQIExAB
+            - generic [ref=f7e133]: Videos
+        - listitem [ref=f7e135]:
+          - link [ref=f7e136] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&udm=18&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&q=maxongroup.com+499361+ENC+16+EASY+1024+datasheet&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Qs6gLegQIERAB
+            - generic [ref=f7e137]: Forums
+        - listitem [ref=f7e139]:
+          - link [ref=f7e140] [cursor=pointer]:
+            - /url: /search?sca_esv=ff0f52d8df50e9c0&q=maxongroup.com+499361+ENC+16+EASY+1024+datasheet&tbm=nws&source=lnms&fbs=ABfTbFVyMZGZf1hfvX9uKjN_-G8c4u0nXx4bEIpwm1lnNH832cY0rzciwbWdjW1sV3VNzLzR4RIindJxFrmQWQ1WCYgKdh4SxzhRaOVvt3n87StoAMoDgDvBnjZ4Njf4yAaLs3QhOmFAyDpw9_i3qcRrE3hq_HfYRuhUIW2IGakVmpMJ6tRNQeh__uTkxGdva2OaNUe00HhT&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q0pQJegQIEhAB
+            - generic [ref=f7e141]: News
+        - listitem [ref=f7e143]:
+          - button [ref=f7e144] [cursor=pointer]:
+            - generic [ref=f7e145]: More
+    - navigation [ref=f7e152]:
+      - navigation [ref=f7e155]:
+        - list [ref=f7e162]:
+          - listitem [ref=f7e163]:
+            - link [ref=f7e164] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+499361+enc+16+easy+1024+datasheet+pdf&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rLdz846PQee6KQGhqjpV1rIPQjrjEQ9nMcc0bLjLbrS4AyX4W0ZASquVmud7d9oOCNoLDZXEBqbsHxQAAIEE7yTMiYNxzNuHMMelbLlekCQtaeHts4z-kgy2tNEy_CaJtwz6KpJ1Ioy-pSByQukU0XST0bGr1EBa7zFFyqXrrKFfsFlyNTRaa2aMUL0cuDO905UlocGAev7u279WgSxOvrgTaCcCIr_ZkrmRp-ycd0wd-dRytz-0qJTlkL7CUuvONDicjmQ&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8QxKsJKAB6BAgWEAE&ictx=0
+              - generic [ref=f7e165]: Pdf
+          - listitem [ref=f7e167]:
+            - link [ref=f7e168] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+499361+enc+16+easy+1024+datasheet+manual&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4reGn0E1BlCMBfMmaVA0-hVeMk8fMJuteno_NY4UkDdITSuMlCRpMaDd2XSiQGBvqk9wzZC2QYUgAkIIFxktf2QsDGQACRFZkaDmwvM6zo3S6rqD-BDpbDLzaWyCYncvrD4NSlUzUaQhbYmNMdc92EZ_f9q3UrugJqmP4A_x_L_Mnvzt-2PeUw_qwFp2KL0M6K6u40AGKqsy6uPOxHDxG6cLtG5bLbhr0lWu5FgdaB1wgF9R3zbukiTzQuC4A51QEZg2qf5Q&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8QxKsJKAF6BAgaEAE&ictx=0
+              - generic [ref=f7e169]: Manual
+          - listitem [ref=f7e171]:
+            - link [ref=f7e172] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+499361+enc+16+easy+1024+datasheet+diagram&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rb9dCfs0wZA6hBkIJ7_yEy4Jg3_MIPsEtNMTGpMNc3LetWvULqA8EiYTmMcAVDmppQu5S7VHRerU0OLTvnuqhOTn42EIKFKT5bnPnGYS4hFkjiVD3E0Ms9jHGU-9bpHFf9wHssdCaIBgv5DX496Xqb4ZNLXshy7aUkykmI0H62twTDMQunELnqyqw-MDOqQvgmRtboxW0Si5_8MZ7GKRHYKFvnCrGXZCsq25n672n-bXEMGbltQPVoPfhnvmiw-1qdDTgkQ&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8QxKsJKAJ6BAgbEAE&ictx=0
+              - generic [ref=f7e173]: Diagram
+          - listitem [ref=f7e175]:
+            - link [ref=f7e176] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+499361+enc+16+easy+1024+datasheet+pin&uds=AJ5uw1_a2D0D09lxm8gpKKOTUn4rLdz846PQee6KQGhqjpV1rIPQjrjEQ9nMcc0bLjLbrS4AyX4W0ZASquVmud7d9oOCNoLDZXEBqbsHxQAAIEE7yWTkJAAMYXafD3TO_C4WCVkyykDe3Z4_CjVGclEZR8rw-9Pqf_7XRrr4yjMCvTxUT-msYUh2V4ocsCfiezoADbPM7ATRCbmM_dTzhNYftTXJOrJ_n0bgrEg4oRX07nXBJImELs4VAb4pxNcyKpZ4Cha4kQJouVW2YR_AEpp7HI0Y0EOcSg&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8QxKsJKAN6BAgYEAE&ictx=0
+              - generic [ref=f7e177]: Pin
+    - heading [level=1] [ref=f7e179]: Search Results
+    - main [ref=f7e185]:
+      - generic [ref=f7e189]:
+        - generic [ref=f7e192]:
+          - heading [level=2] [ref=f7e193]: Web results
+          - generic [ref=f7e194]:
+            - generic [ref=f7e197]:
+              - link [ref=f7e199] [cursor=pointer]:
+                - /url: https://www.maxongroup.com/medias/CMS_Downloads/DIVERSES/ENXEASY_EN.pdf
+                - heading [level=3] [ref=f7e200]: Encoders ENX 10/16 EASY / Product Information
+                - generic [ref=f7e206]:
+                  - generic [ref=f7e207]: maxon group
+                  - generic [ref=f7e209]: https://www.maxongroup.com › DIVERSES › E...
+              - generic [ref=f7e211]: PDF
+              - button [ref=f7e214] [cursor=pointer]
+            - generic [ref=f7e219]:
+              - generic [ref=f7e220]:
+                - generic [ref=f7e221]:
+                  - text: The ultra compact
+                  - emphasis [ref=f7e222]: maxon EASY encoders
+                  - text: use an interpolated Hall sensor angle measurement system to generate angle information of up to 4096 steps per turn.
+                - link [ref=f7e223] [cursor=pointer]:
+                  - /url: https://www.maxongroup.com/medias/CMS_Downloads/DIVERSES/ENXEASY_EN.pdf#:~:text=The%20ultra%20compact%20maxon%20EASY,to%204096%20steps%20per%20turn.
+                  - text: Read more
+              - generic [ref=f7e224]: 26 pages
+            - generic [ref=f7e225]: "Missing: 499361 ‎ENC"
+        - generic [ref=f7e237]:
+          - heading [level=2] [ref=f7e241]:
+            - generic [ref=f7e242]: Thinking
+          - progressbar [ref=f7e244]
+        - generic [ref=f7e248]:
+          - heading [level=2] [ref=f7e249]: Web results
+          - generic [ref=f7e250]:
+            - generic [ref=f7e253]:
+              - link [ref=f7e255] [cursor=pointer]:
+                - /url: https://www.maxongroup.co.uk/maxon/view/product/sensor/encoder/Magnetische-Encoder/ENCODER16EASY/499361
+                - heading [level=3] [ref=f7e256]: Encoder ENC 16 EASY, 1024 pulses - maxon group
+                - generic [ref=f7e262]:
+                  - generic [ref=f7e263]: Maxon Motor
+                  - generic [ref=f7e265]: https://www.maxongroup.co.uk › encoder › 499361
+              - button [ref=f7e269] [cursor=pointer]
+            - generic [ref=f7e275]:
+              - generic [ref=f7e276]:
+                - emphasis [ref=f7e277]: Specifications
+                - text: ; Counts per turn, 1024 ; Number of channels, 3 ; Line Driver, RS422 ; Max. length of encoder housing, 8.5 mm ; Max. electrical speed, 90000 rpm.
+              - link [ref=f7e278] [cursor=pointer]:
+                - /url: https://www.maxongroup.co.uk/maxon/view/product/sensor/encoder/Magnetische-Encoder/ENCODER16EASY/499361#:~:text=Specifications&text=Counts%20per%20turn,1024&text=Number%20of%20channels,3&text=Line%20Driver,RS422&text=Max.%20length%20of%20encoder%20housing,8.5%20mm&text=Max.%20electrical%20speed,90000%20rpm
+                - text: Read more
+        - generic [ref=f7e282]:
+          - generic [ref=f7e285]:
+            - link [ref=f7e287] [cursor=pointer]:
+              - /url: https://www.maxongroup.net.au/maxon/view/product/sensor/encoder/Magnetische-Encoder/ENX16EASY-INT/ENX16EASYINT01?download=show
+              - heading [level=3] [ref=f7e288]: Encoder ENX 16 EASY INT, 1-1024 counts per turn, 3 ... - Maxon
+              - generic [ref=f7e294]:
+                - generic [ref=f7e295]: Maxon Motor
+                - generic [ref=f7e297]: https://www.maxongroup.net.au › Magnetische-Encoder
+            - button [ref=f7e301] [cursor=pointer]
+          - generic [ref=f7e307]:
+            - generic [ref=f7e308]:
+              - emphasis [ref=f7e309]: Specifications
+              - text: ; Number of channels, 3 ; Line Driver, RS422 ; Max. length of encoder housing, -1 mm ; Max. electrical speed, 200000 rpm ; Max. mechanical speed ...
+            - link [ref=f7e310] [cursor=pointer]:
+              - /url: https://www.maxongroup.net.au/maxon/view/product/sensor/encoder/Magnetische-Encoder/ENX16EASY-INT/ENX16EASYINT01?download=show#:~:text=Specifications&text=Number%20of%20channels,3&text=Line%20Driver,RS422&text=Max.%20length%20of%20encoder%20housing,%2D1%20mm&text=Max.%20electrical%20speed,200000%20rpm&text=Max.%20mechanical%20speed
+              - text: Read more
+          - generic [ref=f7e312]:
+            - text: "Missing: 499361 ‎| Show results with:"
+            - link [ref=f7e313] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=maxongroup.com+%22499361%22+ENC+16+EASY+1024+datasheet&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q5t4CegQILhAB
+              - text: "499361"
+        - generic [ref=f7e317]:
+          - generic [ref=f7e320]:
+            - link [ref=f7e322] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/medias/sys_master/8831292899358.pdf
+              - heading [level=3] [ref=f7e323]: Encoder 16 EASY 128–1024 CPT, 3 Channels, with Line ...
+              - generic [ref=f7e329]:
+                - generic [ref=f7e330]: Maxon Motor
+                - generic [ref=f7e332]: https://www.maxongroup.com › sys_master
+            - generic [ref=f7e334]: PDF
+            - button [ref=f7e337] [cursor=pointer]
+          - generic [ref=f7e342]:
+            - generic [ref=f7e343]:
+              - generic [ref=f7e344]:
+                - emphasis [ref=f7e345]: Technical Data
+                - text: . Pin Allocation. Connection example. Supply voltage VCC. 5 V ± 10%. Typical current draw. 22 mA. Output signal. EIA Standard RS 422.
+              - link [ref=f7e346] [cursor=pointer]:
+                - /url: https://www.maxongroup.com/medias/sys_master/8831292899358.pdf#:~:text=Technical%20Data,EIA%20Standard%20RS%20422
+                - text: Read more
+            - generic [ref=f7e347]: 2 pages
+        - generic [ref=f7e351]:
+          - generic [ref=f7e354]:
+            - link [ref=f7e356] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/medias/sys_master/root/8846492303390/20-ES-451-452.pdf
+              - heading [level=3] [ref=f7e357]: Encoder 16 EASY XT 128–1024 Imp., 3 canales, con line ...
+              - generic [ref=f7e363]:
+                - generic [ref=f7e364]: Maxon Motor
+                - generic [ref=f7e366]: https://www.maxongroup.com › sys_master › root
+            - generic [ref=f7e368]: PDF
+            - button [ref=f7e371] [cursor=pointer]
+          - generic [ref=f7e376]:
+            - generic [ref=f7e377]:
+              - text: Datos técnicos. Conexión. Ejemplo de conexión. Tensión de alimentación VCC. 5 V ± 10%. Consumo de corriente nominal. 22 mA. Señal de salida.
+              - link [ref=f7e378] [cursor=pointer]:
+                - /url: https://www.maxongroup.com/medias/sys_master/root/8846492303390/20-ES-451-452.pdf#:~:text=Datos%20t%C3%A9cnicos,Se%C3%B1al%20de%20salida
+                - text: Read more
+            - generic [ref=f7e379]: 2 pages
+        - generic [ref=f7e383]:
+          - generic [ref=f7e386]:
+            - link [ref=f7e388] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/maxon/view/product/499361
+              - heading [level=3] [ref=f7e389]: Online shop for high precise drive systems by maxon
+              - generic [ref=f7e395]:
+                - generic [ref=f7e396]: Maxon Motor
+                - generic [ref=f7e398]: https://www.maxongroup.com › product › 499361
+            - button [ref=f7e402] [cursor=pointer]
+          - generic [ref=f7e409]:
+            - emphasis [ref=f7e410]: ENC 16 EASY, 1024 pulses
+            - text: Part number 499361 Encoder ENC. Number of channels 3 Line Driver RS422 Max. length of encoder housing 8.5 mm Max. electrical speed ...
+        - generic [ref=f7e414]:
+          - generic [ref=f7e417]:
+            - link [ref=f7e419] [cursor=pointer]:
+              - /url: https://www.maxongroup.com.cn/medias/sys_master/root/9407677825054/Cataloge-Page-EN-509.pdf
+              - heading [level=3] [ref=f7e420]: ENX 16 EASY Encoder 016 mm, 1…1024 CPT
+              - generic [ref=f7e426]:
+                - generic [ref=f7e427]: 苏州钧和伺服科技有限公司
+                - generic [ref=f7e429]: https://www.maxongroup.com.cn › medias › root
+            - generic [ref=f7e431]: PDF
+            - button [ref=f7e434] [cursor=pointer]
+          - generic [ref=f7e441]:
+            - emphasis [ref=f7e442]: 499360 499361 1...1024
+            - text: ". Compact and robust design High resolution. Output current per channel: ±20 mA … 16 counts per turn. technical details can be found in the ..."
+          - generic [ref=f7e444]:
+            - text: "Missing: ENC ‎| Show results with:"
+            - link [ref=f7e445] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=maxongroup.com+499361+%22ENC%22+16+EASY+1024+datasheet&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q5t4CegQIUBAB
+              - text: ENC
+        - generic [ref=f7e449]:
+          - generic [ref=f7e452]:
+            - link [ref=f7e454] [cursor=pointer]:
+              - /url: https://www.maxongroup.com/medias/sys_master/root/9131739971614/Productinformation-ENX-EASY-EN-1732580-09.pdf
+              - heading [level=3] [ref=f7e455]: Encoders ENX 10/16 EASY / Product Information
+              - generic [ref=f7e461]:
+                - generic [ref=f7e462]: Maxon Motor
+                - generic [ref=f7e464]: https://www.maxongroup.com › sys_master › root
+            - generic [ref=f7e466]: PDF
+            - button [ref=f7e469] [cursor=pointer]
+          - generic [ref=f7e474]:
+            - generic [ref=f7e475]:
+              - generic [ref=f7e476]:
+                - text: The ultra compact maxon
+                - emphasis [ref=f7e477]: EASY
+                - text: encoders use an interpolated Hall sensor angle measurement system to generate angle information of up to 4096 steps per turn.
+              - link [ref=f7e478] [cursor=pointer]:
+                - /url: https://www.maxongroup.com/medias/sys_master/root/9131739971614/Productinformation-ENX-EASY-EN-1732580-09.pdf#:~:text=The%20ultra%20compact%20maxon%20EASY,to%204096%20steps%20per%20turn.
+                - text: Read more
+            - generic [ref=f7e479]: 28 pages
+          - generic [ref=f7e481]:
+            - text: "Missing: 499361 ‎| Show results with:"
+            - link [ref=f7e482] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=maxongroup.com+%22499361%22+ENC+16+EASY+1024+datasheet&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q5t4CegQISxAB
+              - text: "499361"
+        - generic [ref=f7e486]:
+          - generic [ref=f7e489]:
+            - link [ref=f7e491] [cursor=pointer]:
+              - /url: https://datasheets.globalspec.com/ds/maxon-motor-ag/499361/4f08d2e9-1fa0-4376-8824-dd2cc4973123
+              - heading [level=3] [ref=f7e492]: maxon Encoder ENC 16 EASY, 1024 pulses 499361
+              - generic [ref=f7e498]:
+                - generic [ref=f7e499]: GlobalSpec
+                - generic [ref=f7e501]: https://datasheets.globalspec.com › maxon-motor-ag › 4...
+            - button [ref=f7e505] [cursor=pointer]
+          - generic [ref=f7e512]:
+            - emphasis [ref=f7e513]: "Encoder Technology: Mechanical"
+            - text: "; Encoder Type: Incremental; Output Signal: Current; Counts / Revolution: 1024 (counts/revolution); Shaft Speed: 30000 rpm; ..."
+          - generic [ref=f7e515]:
+            - text: "Missing: maxongroup. ‎| Show results with:"
+            - link [ref=f7e516] [cursor=pointer]:
+              - /url: /search?sca_esv=ff0f52d8df50e9c0&q=%22maxongroup.%22+com+499361+ENC+16+EASY+1024+datasheet&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q5t4CegQIRhAB
+              - text: maxongroup.
+      - generic [ref=f7e518]:
+        - generic [ref=f7e523]:
+          - heading [level=2] [ref=f7e525]: People also search for
+          - generic [ref=f7e527]:
+            - generic [ref=f7e528]:
+              - link [ref=f7e532] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+499361+enc+16+easy+1024+datasheet+pdf&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q1QJ6BAg_EAE
+                - generic [ref=f7e533]: Maxongroup com 499361 enc 16 easy 1024 datasheet pdf
+              - link [ref=f7e546] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+499361+enc+16+easy+1024+datasheet+manual&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q1QJ6BAhDEAE
+                - generic [ref=f7e547]: Maxongroup com 499361 enc 16 easy 1024 datasheet manual
+            - generic [ref=f7e557]:
+              - link [ref=f7e561] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+499361+enc+16+easy+1024+datasheet+diagram&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q1QJ6BAg-EAE
+                - generic [ref=f7e562]: Maxongroup com 499361 enc 16 easy 1024 datasheet diagram
+              - link [ref=f7e575] [cursor=pointer]:
+                - /url: /search?sca_esv=ff0f52d8df50e9c0&q=Maxongroup+com+499361+enc+16+easy+1024+datasheet+pin&sa=X&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q1QJ6BAg8EAE
+                - generic [ref=f7e576]: Maxongroup com 499361 enc 16 easy 1024 datasheet pin
+        - navigation [ref=f7e586]:
+          - heading [level=1] [ref=f7e587]: Page navigation
+          - text: "1"
+          - link [ref=f7e590] [cursor=pointer]:
+            - /url: /search?q=maxongroup.com+499361+ENC+16+EASY+1024+datasheet&sca_esv=ff0f52d8df50e9c0&ei=erBbauynF4iA9u8P5_OT-As&start=10&sa=N&sstk=AU9db-AFWECQc5jtvqUe80pA-kbunWs-vHZcydR9sV166vs_AbN-iDge-Vz5frxZeKj6Erj4O4S-J_6Ivy2z6M4fWj2HVMUMJBtoLw&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q8tMDegQIMRAE
+            - text: "2"
+          - link [ref=f7e592] [cursor=pointer]:
+            - /url: /search?q=maxongroup.com+499361+ENC+16+EASY+1024+datasheet&sca_esv=ff0f52d8df50e9c0&ei=erBbauynF4iA9u8P5_OT-As&start=20&sa=N&sstk=AU9db-AFWECQc5jtvqUe80pA-kbunWs-vHZcydR9sV166vs_AbN-iDge-Vz5frxZeKj6Erj4O4S-J_6Ivy2z6M4fWj2HVMUMJBtoLw&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q8tMDegQIMRAG
+            - text: "3"
+          - heading [level=2] [ref=f7e594]:
+            - link [ref=f7e595] [cursor=pointer]:
+              - /url: /search?q=maxongroup.com+499361+ENC+16+EASY+1024+datasheet&sca_esv=ff0f52d8df50e9c0&ei=erBbauynF4iA9u8P5_OT-As&start=10&sa=N&sstk=AU9db-AFWECQc5jtvqUe80pA-kbunWs-vHZcydR9sV166vs_AbN-iDge-Vz5frxZeKj6Erj4O4S-J_6Ivy2z6M4fWj2HVMUMJBtoLw&ved=2ahUKEwjszN2M2dyVAxUIgP0HHef5BL8Q8NMDegQIMRAI
+              - generic [ref=f7e597]: Next
+    - contentinfo [ref=f7e598]:
+      - heading [level=1] [ref=f7e599]: Footer links
