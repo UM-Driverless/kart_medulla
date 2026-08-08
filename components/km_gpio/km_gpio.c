@@ -331,37 +331,6 @@ esp_err_t KM_GPIO_Init(void)
     if (ret != ESP_OK) return ret;
 #endif
 
-#ifdef CONFIG_IDF_TARGET_ESP32S3
-    /* ---------- Throttle PWM (own timer: 12-bit, ~19.5 kHz) ---------- */
-    /* Timers 0 and 1 are taken by steering and the compressor, both 8-bit at
-     * low frequency. Throttle needs the opposite: a carrier fast enough that an
-     * RC filter leaves only millivolts of ripple, and enough duty resolution
-     * that the steps are invisible. Hence its own timer.
-     *
-     * duty = 0 here means 0 V after the filter, i.e. throttle closed, and that
-     * is what the pin holds until something calls KM_GPIO_WriteDAC(). */
-    ledc_timer_config_t throttle_timer = {
-        .speed_mode      = LEDC_HIGH_SPEED_MODE,
-        .duty_resolution = LEDC_TIMER_12_BIT,
-        .timer_num       = THROTTLE_PWM_TIMER,
-        .freq_hz         = THROTTLE_PWM_FREQ_HZ,
-        .clk_cfg         = LEDC_AUTO_CLK
-    };
-    ret = ledc_timer_config(&throttle_timer);
-    if (ret != ESP_OK) return ret;
-
-    ledc_channel_config_t throttle_channel = {
-        .gpio_num   = (gpio_num_t)PIN_CMD_ACC,
-        .speed_mode = LEDC_HIGH_SPEED_MODE,
-        .channel    = THROTTLE_PWM_CHANNEL,
-        .intr_type  = LEDC_INTR_DISABLE,
-        .timer_sel  = THROTTLE_PWM_TIMER,
-        .duty       = 0     // throttle closed until commanded
-    };
-    ret = ledc_channel_config(&throttle_channel);
-    if (ret != ESP_OK) return ret;
-#endif
-
     return ESP_OK;
 }
 
