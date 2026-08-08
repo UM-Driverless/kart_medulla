@@ -2081,3 +2081,17 @@ this repo pointed at the CN terminal assignments, only at `pinout-esp32-s3.md`, 
 CN8.2" had no answer here. kart-docs now republishes that same file as a page, pinned to
 dv-hardware commit `61f5a1c9`; this repo reads dv-hardware directly rather than through kart-docs,
 since it is a peer of the hardware repo and a hop through the docs site could only be staler.
+
+## 2026-08-08 — DAC bench test result: the MCP4922 is not latching at 3.3 V logic on its 5 V supply
+
+spi-test-50 running (50% chA, mux forced to DAC). Serial log confirms ~500 SPI writes/s
+(`chA val=127 code=2039 cmd=0x37F7`) plus the boot self-test stepping 0→1.25→2.51→3.76 V.
+Meter: CN10.1 ≈ 0 V with brief jumps to ~1.16 V; U13 pin 14 (DAC VOUTA) behaves the same,
+so the fault is at the DAC, not mux/wiring. Ruled out from the v1 sources (dv-hardware
+84d6dd0): SPI GPIOs 11/12/14 match the pinout doc; firmware SPI is mode 0, 1 MHz, hardware
+CS. Diagnosis: the failure history.md predicted on 2026-08-01 — v1 powers the MCP4922 from
++5V_REG, V_IH = 0.7×VDD = 3.5 V, above the ESP32's 3.3 V drive; this part only decodes an
+occasional transfer (the blips). Fix = the v2 change (dv-hardware 16a35fb): run U13 from
+3.3 V — on this board a bodge lifting VDD (pin 1) AND both VREFs (pins 11, 13) off +5V_REG
+onto 3.3 V, since VREF must not exceed VDD. Full scale then becomes 3.3 V and firmware
+voltage expectations rescale. Not yet done — decision pending.
