@@ -2162,3 +2162,15 @@ after the 2026-07-30 live tune, and an AS5600 centre value for a sensor retired 
 The local `feature/pedal-telemetry` branch could not be deleted — another session holds a worktree
 on it under `/private/tmp/claude-501/.../medulla-pedals`. The remote branch is gone; the local
 pointer is harmless and goes away once that worktree is removed.
+
+## 2026-08-08 — Pedal telemetry flashed; rest-position measurement
+
+- `feature/pedal-telemetry` (merged, then flashed to the kart together with `23ec8c8` which strips
+  the bench-only SPI_DIAG_LOGS flag): ESP_PEDALS 0x0E at 20 Hz carries
+  `[acc_mv, brake_mv, acc_effort, brake_effort]` from GPIO 4 / GPIO 5 (CN6.2 / CN6.1, 10k/10k
+  dividers halve the 0-5 V pedals).
+- Measured live on the kart: accel pedal released = ~410 mV at the pin. `PEDAL_MIN_MV=0` /
+  `PEDAL_MAX_MV=2500` in `main/main.c` are therefore wrong at both ends; calibrate with a
+  full-press measurement and update both constants. Brake input reads 0 mV — CN6.1 not wired yet.
+- The physical board is `~/repos/dv-hardware-v1` (v1), recorded in AGENTS.md the same day;
+  `~/repos/dv-hardware` is the next revision.
