@@ -607,6 +607,39 @@ dashboard.
   with a linear 12-bit/3.3 V model, which ignores the ESP32-S3 ADC nonlinearity. For an accurate
   reading, convert in firmware with `esp_adc_cal` (ESP-IDF) and send millivolts instead of raw ADC.
 
+### One-shot Orin commands are delivered blind, 100x, while an echo that could acknowledge them goes unused
+
+Opened 2026-08-10 (Rubén's question). `ORIN_STEER_PID` and the other one-shot commands are sent by
+`publish_steer_pid` in kart-brain `dashboard_node.py:527-553` as the same frame repeated **100 times
+at 100 Hz for one second**, because there is no acknowledgement and a single frame can be lost. The
+firmware meanwhile sends `ESP_STEER_PID` once a second carrying the gains actually in force. So a
+confirmation channel already exists — nothing acts on it automatically, and the two mechanisms were
+built without reference to each other.
+
+The burst is wasteful rather than harmful, and the bandwidth objection does not hold: it travels
+Orin -> ESP32, while the 87%-of-link steering telemetry travels ESP32 -> Orin, and UART is full
+duplex. 24 bytes x 100/s is ~24 kbit/s, about 21% of an otherwise near-idle RX direction. Note too
+that `pid_apply_override` re-reads the request every 2 ms, so any single frame of the 100 produces
+the identical result — the other 99 change nothing.
+
+**Why the echo is not already an acknowledgement:** it reports the *clamped* gains, not the request.
+Ask for `kp = 99` and the echo returns the ceiling, so a mismatch cannot distinguish
+arrived-and-clamped from never-arrived. Closing the loop on the current frame would require the Orin
+to replicate the firmware's clamp constants, which moves a duplicate across a repo boundary and puts
+the gear-protection limits somewhere they are not understood.
+
+**Proposed fix — a sequence number.** Add a counter to `ORIN_STEER_PID`; the firmware stores the one
+it last accepted and includes it in the `ESP_STEER_PID` echo. The Orin then sends once, waits for an
+echo carrying its number, and resends on timeout. A real acknowledgement, no clamp knowledge needed
+off-board, 100 frames down to typically one. Detection latency is up to 1 s (the echo rate), which is
+fine for human-paced tuning and would want reconsidering before using the same scheme for anything
+time-critical.
+
+Not urgent — the current scheme works. It is a protocol change across kart-medulla and kart-brain,
+so it needs both sides landed together and a drive to validate. Decide first whether to apply it to
+every one-shot command (`ORIN_STEER_MODE`, `ORIN_COMPRESSOR_DISABLE`, `ORIN_CALIBRATE_STEERING`) or
+only to the PID frame.
+
 ### kart-brain (Orin) side — needs an Orin build + has pre-existing test drift
 
 - **Build `kb_coms_micro` + `kb_dashboard` on the Orin.** The `ESP_PNEUMATIC` C++ publisher was
