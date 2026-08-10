@@ -11,15 +11,17 @@ this repo that means flashed *and* driven, per the branch workflow in `AGENTS.md
 
 ## TODO
 
-- [ ] **BLOCKER before any `dev` → `main` PR: `dev` commands 50% throttle unconditionally.**
-  `control_task()` in `main/main.c` carries the spi-test-50 bench block — it calls
-  `KM_GPIO_SetThrottleSource(true)`, sets throttle `0.5f`, and `return`s **above** the
-  comms-watchdog / manual-mode gate, so a `dev` build ignores the dashboard, comms loss and manual
-  mode, and never runs brake or steering. The SDC is decided above that return, so the kill
-  switches remain the only thing that stops the kart. `platformio.ini` also sets
-  `-D SPI_DIAG_LOGS=1`, leaving ESP_LOG on UART0 where it corrupts the Orin's binary protocol.
-  Merged deliberately on 2026-08-08 (Rubén) to consolidate branches while the DAC signal is still
-  being chased. **Delete the block and the flag before merging to `main` or driving a `dev` build.**
+- [x] **RESOLVED 2026-08-10 — the 50%-throttle bench hardcode is gone from `dev`.** The entry below
+  described `control_task()` calling `KM_GPIO_SetThrottleSource(true)`, forcing throttle to `0.5f`
+  and returning above the comms-watchdog / manual-mode gate. Commit `7bcd6eb` ("Remove the bench
+  hardcode: throttle follows the Orin's TARGET_THROTTLE again") reverted the test commits
+  (`ba35b75`, `12f8e05`), and that commit is in this branch's history. Verified against HEAD
+  `8516d3c`: `main/main.c:821` takes throttle from `TARGET_THROTTLE`, and
+  `KM_GPIO_SetThrottleSource(true)` at line 790 sits *below* the comms-stale / `MISSION_MANUAL`
+  early return at line 771, so a stale-comms or manual build hands the mux back to the pedal.
+  `-D SPI_DIAG_LOGS=1` is no longer in `platformio.ini`; `main.c:79` defaults it to 0. Rubén also
+  confirmed by behaviour: the kart accelerated on command under remote control, which a constant
+  0.5 f could not produce. No longer a blocker for a `dev` → `main` PR.
 
 - [ ] **`tasks.md` structure: the "Docs across kart-medulla, dv-hardware and kart-docs contradict
   the code and each other" section sits under `## Done` but holds open `- [ ]` items.** Found
@@ -1008,6 +1010,7 @@ soldering iron. Listed worst first.
 
 - [ ] **[v2 design only — not the physical board]** The amp stages in dv-hardware HEAD (throttle U1B gain 1+R37/R38 = 1.51, brake U1A gain 1+R19/R20 = 3) are matched to the MCP4922 having moved to +3V3 (dv-hardware `16a35fb`): 3.3 V × 1.51 ≈ 5 V, 3.3 V × 3 ≈ 10 V. On the physical v1 board (`84d6dd0`) none of this exists: throttle is U13.14 → U14.8 direct, MCP4922 at +5V_REG. Verify the gain/VREF pairing stays consistent when v2 is fabbed. (This entry originally claimed a live overrange bug — wrong: it mixed the HEAD schematic with the v1 board. Corrected 2026-08-08.)
 - [ ] **dev's `km_gpio.h` claims the GPIO 38 PWM+RC network is "wired by hand" to the throttle net; history.md (2026-07-31/08-01) records only the decision, never the soldering, and the spi-fix plan assumes the DAC path intact.** One of the two is wrong. Physically check the board: a flying wire from the U24 socket's GPIO 38 pin to the U14.8 area, and whether U13 pin 14 is lifted. Then correct the code comment (or history) to match.
-- [ ] **Flash dev tip `7bcd6eb` (bench hardcode removed, throttle back on TARGET_THROTTLE) to the S3.** Built clean on the Mac and pushed 2026-08-08; the Orin went unreachable over the tunnel right at the flash step, so the chip still runs the 50%-hardcode build. Then test throttle from the dashboard — mission must be non-manual and comms fresh, or the safety gate holds the mux on the pedal.
+- [ ] **Flash dev tip `7bcd6eb` (bench hardcode removed, throttle back on TARGET_THROTTLE) to the S3.** Built clean on the Mac and pushed 2026-08-08; the Orin went unreachable over the tunnel right at the flash step, so the chip may still run the 50%-hardcode build. Then test throttle from the dashboard — mission must be non-manual and comms fresh, or the safety gate holds the mux on the pedal.
+  **Probably already done**: Rubén reports (2026-08-10) the kart accelerated *on command* under remote control, which the hardcoded constant 0.5 f could not produce — so the chip was running `7bcd6eb` or later at that point. Confirm the running image the next time the Orin is reachable (`pio run -t upload` and check, or read the app description) and close this.
 - [ ] **Stale comment in `platformio.ini`** (S3 env, ~line 66): says "GPIO 18 / GPIO 15 not driven"; km_gpio.c has driven both since 2026-08-01/08-08. Fix the comment.
 - [ ] **The steering-fault latch survives everything except an ESP32 reboot, and nothing on the dashboard says how to clear it.** Today that cost hours: a stale latch from one bad boot looked like a live sensor/code failure. Either add a "reboot ESP32 to clear" hint to the dashboard STEER chip text, or add an explicit operator-initiated latch-clear (a reset command), or log the latch timestamp so a stale latch is distinguishable from a live fault.
