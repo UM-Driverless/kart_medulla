@@ -368,3 +368,30 @@ they come back ambiguous. The standing first three, all read-only and one SSH ca
 `systemctl is-active kart-brain`, `ls -l /dev/ttyACM*`, and the recent `journalctl -u kart-brain`.
 A stopped `kart-brain` is the single most likely cause of a dead dashboard in this repo, because
 every flash stops it and restarting is a manual step.
+
+## 2026-08-10 — Read `tasks.md` aloud as current fact without checking the code (Claude Opus 5)
+
+**What happened:** Asked "what tasks.md left?", the agent summarised the file's open items and
+presented one of them as a live bug: "`KM_GPIO_WriteDAC()` can't distinguish throttle from brake on
+S3 (both pins `GPIO_NUM_NC`)". Rubén pushed back. The claim was stale by ten days —
+`km_gpio.h:106-107` has given the two channels the distinct stand-in values 200 and 201 since
+2026-07-31, and `km_gpio.c:570-596` dispatches each to its own `mcp4922_write()` channel. The same
+summary repeated two more stale entries: "`KM_GPIO_WriteDAC()` is not ported to the MCP4922" and the
+open question of whether the MCP4922 was faulty, which Rubén had already answered on the bench.
+
+**Root cause:** A task board records what was true when each entry was written. Summarising one is
+therefore reporting *claims*, and the summary presented them as *findings* with no marker of which
+had been verified. The failure is the same shape as stating an unverified fact directly: the reader
+has no way to tell a checked line from an unchecked one, so every line inherits the agent's
+credibility.
+
+**A second, smaller error rode along with it.** Rubén's reply mentioned the dashboard showing both
+pedals correctly, which is unrelated — pedals are ADC *inputs* on GPIO 4 and 5, while the task was
+about the DAC *output* path. Answering the literal objection first, before the correction, would
+have separated the two; instead they had to be untangled afterwards.
+
+**Prevention:** When summarising `tasks.md`, `history.md` or any dated log, either spot-check the
+claims that name a specific file, symbol or constant, or mark the summary as unverified up front
+("as recorded, not rechecked"). Cheap in this repo: every stale entry found this session was one
+`grep` away. Prefer checking the items the user is most likely to act on, and the ones whose entry
+predates recent work in the same area.

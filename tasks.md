@@ -195,6 +195,10 @@ recoverable rather than needing to be rewritten.
 the green native suites, on push to `dev` and PRs to `main`. (`git log --all` showed no recoverable
 old workflow.) Awaiting Rubén's Done once a run is seen green on GitHub.
 
+**Runs are green as of 2026-08-10** — three consecutive successes on `dev` (latest 31367394130,
+39 s), each building the S3 image and running the native suites. The filter was dropped the same
+day, so CI now runs all four suites: 51/51 in the run itself, not only locally. Ready for your Done.
+
 ### ~~Native test drift: test_km_act fails and test_km_coms does not compile~~
 
 Found 2026-08-08 while wiring up CI. **Fixed 2026-08-10 — `pio test -e native` is now 51/51 green

@@ -2255,3 +2255,44 @@ reboot) was set during some earlier boot when the sensor didn't answer, and ever
 was the latch, not a live fault. Boot log also shows a harmless known "i2c driver install
 error" from the legacy AS5600 path. Stale comment noted by the reviewer: platformio.ini S3
 comment still claims GPIO 18/15 are not driven — filed in tasks.md.
+
+## 2026-08-10 — The two "drifted" native test suites were not drifted; both causes were misdiagnosed
+
+`tasks.md` had carried an entry since 2026-08-08 saying `pio test -e native` had two broken suites:
+`test_km_act` "asserts against the classic-ESP32 DAC fakes ... values that the S3 code path no
+longer produces", and `test_km_coms` "fails at the compile stage". CI was filtered to the two green
+suites because of it. Both causes turned out to be different from that description, and both fixes
+were small.
+
+**`test_km_coms` — one missing typedef.** `test/fakes/freertos/FreeRTOS.h` defined
+`SemaphoreHandle_t`, `TaskHandle_t` and `BaseType_t` but not `TickType_t`, which `km_coms.h:276`
+(`KM_COMS_GetLastCmdTick`) and `km_coms.c:73` (`last_cmd_tick`) both use for the comms-watchdog
+timestamp. Three compile errors, no test involvement at all. Added `typedef uint32_t TickType_t`
+(the firmware builds with `configUSE_16_BIT_TICKS = 0`, so 32-bit is the matching width) and gave
+`xTaskGetTickCount()` that return type. All 13 of its tests then passed unmodified — they cover CRC,
+framing, corrupted-CRC rejection and round-trips, i.e. the layer that stops the ESP32 acting on a
+garbled Orin command, and nobody had been able to run them.
+
+**`test_km_act` — an index-vs-pin mismatch, present since the tests were written.** The S3 DAC path
+was never involved: the native build takes the *classic* pin map from `test/fakes/km_gpio.h`
+(`PIN_CMD_ACC` = 25, `PIN_CMD_BRAKE` = 26). The real mismatch is that `ACT_Controller.dacChannel`
+holds a **pin identifier**, not a 0/1 channel index — `KM_ACT_Init` assigns `PIN_CMD_ACC` and
+`KM_GPIO_WriteDAC` dispatches by comparing against `PIN_CMD_ACC` / `PIN_CMD_BRAKE`. But the tests
+asserted `dacChannel == 0` / `== 1`, and the fake `KM_GPIO_WriteDAC` recorded a value only when
+`pin == 0` or `pin == 1`. So the fake matched neither channel, `fake_dac_value[]` stayed `{0, 0}`,
+and the two output tests read 0 against expected 127 and 191. The SIGILL was the fallout of the
+failed asserts, not a separate bug. Fixed by making both the fake and the assertions use the
+`PIN_CMD_*` identifiers, which keeps them correct whichever target's pin map the fake tracks.
+
+What made the field read as a channel index in the first place: `km_act.c` annotated the two
+assignments `// GPIO 25 (DAC1)` and `// GPIO 26 (DAC2)`, naming the classic pins with no hint that
+the value is a dispatch key that means something else on the S3. Those comments now say so.
+
+Result: 51/51 across all four suites, locally and in CI run 31367394130, and
+`.github/workflows/build.yml` runs `pio test -e native` unfiltered. The S3 image still builds.
+
+**Also settled this session (Rubén):** SPI → MCP4922 → analog output was seen working on the bench,
+so the long-open "is the MCP4922 actually dead, or just never written to?" question is answered — it
+was only ever unwritten, and the SPI write has been in `km_gpio.c` since 2026-07-31. And the
+**proportional braking valve is not wired yet**, so MCP4922 channel B is deliberately left unwritten;
+it costs no ESP32 pin, because `PIN_CMD_BRAKE` on the S3 is the stand-in value 201 rather than a GPIO.
