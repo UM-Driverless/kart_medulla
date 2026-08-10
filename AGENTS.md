@@ -54,6 +54,10 @@ Verify by unplugging the sensor and looking at the output — not by reading the
 - `tasks.md` (repo root) — **the repo's task board, the only one.** Read it before starting work.
   Only Rubén moves a task to Done; on this repo that gate means flashed *and* driven, per the branch
   workflow above. (Replaced the old `TODO.md` on 2026-07-16.)
+  **The board records what was true when each entry was written, so summarising it reports claims,
+  not findings.** Before repeating an entry that names a file, symbol or constant — especially an
+  alarming one — grep the code, or say up front that the summary is unrechecked. Two entries were
+  read aloud as current fact on 2026-08-10 alone; both were one grep from being settled.
 - `.agents/error-log.md` — **consult selectively** (grep for relevant entries before working on an area)
 - `history.md` (repo root, NOT `.agents/`) — **MANDATORY: All progress, issues encountered, how they were solved, and what was learned MUST be noted here** (append-only, newest at the end)
 - `.agents/adding-messages.md` — **reference** (read when adding new message types)
