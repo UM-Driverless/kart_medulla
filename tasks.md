@@ -1020,7 +1020,17 @@ soldering iron. Listed worst first.
   octal PSRAM, which consumes GPIO 33-37 — so which one is actually fitted determines whether those
   pins exist at all. Settle it by reading the can, and correct whichever doc is wrong.
 
-- [ ] **`KM_PID_GetTunings` is a second setter, not a getter** — Found 2026-07-30 while adding live PID
+- [x] **`KM_PID_GetTunings` is a second setter, not a getter** — **Fixed 2026-08-10.** It now takes
+  `const PID_Controller *` plus `float *kp, *ki, *kd`, writes through the pointers and skips any that
+  are NULL. All five mirrored globals in `main.c` (`g_pid_kp/ki/kd/pwm_limit/override`) are deleted:
+  `health_task` reads the gains via the getter, the PWM limit from `c->dir_act->outputLimit`, and the
+  override flag from the object store — each value now lives in exactly one place. `pid_apply_override`
+  compares the request against what the controller and actuator are actually running instead of
+  against a remembered copy, so its change-detection cannot go stale either. Four new tests pin the
+  getter down (reads back, does not modify, tracks SetTunings, NULL-safe); native suite 51 → 55, S3
+  image builds. Original entry follows.
+
+  Found 2026-07-30 while adding live PID
   tuning. `components/km_pid/km_pid.c:114` declares `void KM_PID_GetTunings(PID_Controller *controller,
   float kp, float ki, float kd)` and its body is byte-for-byte identical to `KM_PID_SetTunings` above it:
   it overwrites the gains. Taking the floats by value means it cannot return anything even in principle,

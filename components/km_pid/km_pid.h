@@ -12,6 +12,7 @@
 /******************************* INCLUDES *************************************/
 // Includes necesarios para la API pública
 #include <stdbool.h>
+#include <stddef.h>   // NULL, used by the pointer-out getters below
 #include <stdint.h>
 #include "esp_log.h" // Para log
 #include "esp_timer.h"
@@ -120,14 +121,17 @@ void KM_PID_SetIntegralLimits(PID_Controller *controller, float min, float max);
 void KM_PID_Reset(PID_Controller *controller);
 
 /**
- * @brief  Overwrite the controller gains from external values.
+ * @brief  Read the gains currently in force out of the controller.
  * @param  controller  Pointer to the PID controller state.
- * @param  kp          Proportional gain to set.
- * @param  ki          Integral gain to set.
- * @param  kd          Derivative gain to set.
- * @note   This function is identical to KM_PID_SetTunings().
+ * @param  kp          Written with the proportional gain; NULL to skip.
+ * @param  ki          Written with the integral gain; NULL to skip.
+ * @param  kd          Written with the derivative gain; NULL to skip.
+ * @note   The controller owns the gains. Read them from here rather than
+ *         keeping a second copy alongside whatever called KM_PID_SetTunings(),
+ *         because two copies can disagree and the readback is what an operator
+ *         tuning at the kart trusts.
  */
-void KM_PID_GetTunings(PID_Controller *controller, float kp, float ki, float kd);
+void KM_PID_GetTunings(const PID_Controller *controller, float *kp, float *ki, float *kd);
 
 /**
  * @brief  Return the current integral accumulator value.

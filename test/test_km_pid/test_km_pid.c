@@ -168,6 +168,47 @@ void test_set_tunings(void) {
     TEST_ASSERT_EQUAL_FLOAT(6.0f, pid.kd);
 }
 
+/* KM_PID_GetTunings used to take its floats by value with a body identical to
+ * SetTunings, so it silently overwrote the gains instead of reading them, and
+ * no caller could get them back out. These pin both halves of that down. */
+void test_get_tunings_reads_back(void) {
+    PID_Controller pid = KM_PID_Init(1.5f, 2.5f, 3.5f);
+    float kp = 0.0f, ki = 0.0f, kd = 0.0f;
+    KM_PID_GetTunings(&pid, &kp, &ki, &kd);
+    TEST_ASSERT_EQUAL_FLOAT(1.5f, kp);
+    TEST_ASSERT_EQUAL_FLOAT(2.5f, ki);
+    TEST_ASSERT_EQUAL_FLOAT(3.5f, kd);
+}
+
+void test_get_tunings_does_not_modify(void) {
+    PID_Controller pid = KM_PID_Init(1.5f, 2.5f, 3.5f);
+    float kp, ki, kd;
+    KM_PID_GetTunings(&pid, &kp, &ki, &kd);
+    TEST_ASSERT_EQUAL_FLOAT(1.5f, pid.kp);
+    TEST_ASSERT_EQUAL_FLOAT(2.5f, pid.ki);
+    TEST_ASSERT_EQUAL_FLOAT(3.5f, pid.kd);
+}
+
+void test_get_tunings_tracks_set_tunings(void) {
+    PID_Controller pid = KM_PID_Init(1.0f, 2.0f, 3.0f);
+    KM_PID_SetTunings(&pid, 4.0f, 5.0f, 6.0f);
+    float kp, ki, kd;
+    KM_PID_GetTunings(&pid, &kp, &ki, &kd);
+    TEST_ASSERT_EQUAL_FLOAT(4.0f, kp);
+    TEST_ASSERT_EQUAL_FLOAT(5.0f, ki);
+    TEST_ASSERT_EQUAL_FLOAT(6.0f, kd);
+}
+
+/* NULL outputs are skipped, so a caller wanting one gain need not invent
+ * throwaway variables for the other two. */
+void test_get_tunings_null_safe(void) {
+    PID_Controller pid = KM_PID_Init(1.0f, 2.0f, 3.0f);
+    float ki = 0.0f;
+    KM_PID_GetTunings(&pid, NULL, &ki, NULL);
+    TEST_ASSERT_EQUAL_FLOAT(2.0f, ki);
+    KM_PID_GetTunings(NULL, NULL, NULL, NULL);  /* must not crash */
+}
+
 void test_zero_setpoint_zero_measurement(void) {
     fake_esp_timer_us = 0;
     PID_Controller pid = KM_PID_Init(2.0f, 0.0f, 0.0f);
@@ -214,6 +255,10 @@ int main(void) {
     RUN_TEST(test_no_derivative_kick_after_reset);
     RUN_TEST(test_reset_clears_state);
     RUN_TEST(test_set_tunings);
+    RUN_TEST(test_get_tunings_reads_back);
+    RUN_TEST(test_get_tunings_does_not_modify);
+    RUN_TEST(test_get_tunings_tracks_set_tunings);
+    RUN_TEST(test_get_tunings_null_safe);
     RUN_TEST(test_zero_setpoint_zero_measurement);
     RUN_TEST(test_negative_error);
     RUN_TEST(test_small_dt_floor);

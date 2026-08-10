@@ -137,13 +137,13 @@ static volatile bool tank_pressure_ok = false;
 #define PID_REMOTE_MAX_KD     5.0f
 #define PID_REMOTE_MAX_LIMIT  0.60f  /* hard ceiling on remotely-set steering PWM */
 
-/* Gains currently in force, kept here so health_task can echo them without
- * reaching into the PID struct. Written only by control_task. */
-static volatile float g_pid_kp        = PID_DEFAULT_KP;
-static volatile float g_pid_ki        = PID_DEFAULT_KI;
-static volatile float g_pid_kd        = PID_DEFAULT_KD;
-static volatile float g_pid_pwm_limit = PID_DEFAULT_PWM_LIMIT;
-static volatile bool  g_pid_override  = false;
+/* The gains in force are NOT cached here. The PID controller owns kp/ki/kd and
+ * the steering actuator owns the PWM limit, so health_task reads them from
+ * those structs (it already holds both pointers) and the override flag from the
+ * object store. A local copy would be a second place for the same number to
+ * live, and the two can drift: anything that tunes the controller without also
+ * updating the copy leaves the dashboard echoing gains the kart is not using,
+ * which is precisely the readout an operator trusts while tuning at the kart. */
 
 /**
  * @brief   Clamp a remotely-supplied gain to a range the firmware will run.
@@ -197,20 +197,21 @@ static void pid_apply_override(PID_Controller *pid, ACT_Controller *act) {
         limit = PID_DEFAULT_PWM_LIMIT;
     }
 
-    if (kp == g_pid_kp && ki == g_pid_ki && kd == g_pid_kd &&
-        limit == g_pid_pwm_limit && override == g_pid_override) {
+    /* Compare the request against what the controller and actuator are actually
+     * running, rather than against a remembered copy of the last request. Same
+     * cost, one less place for the value to live, and it cannot go stale. The
+     * override flag is deliberately not part of this: if toggling it leaves all
+     * four numbers unchanged, there is nothing to apply and no reason to reset
+     * the integral. */
+    float cur_kp, cur_ki, cur_kd;
+    KM_PID_GetTunings(pid, &cur_kp, &cur_ki, &cur_kd);
+    if (kp == cur_kp && ki == cur_ki && kd == cur_kd && limit == act->outputLimit) {
         return;
     }
 
     KM_PID_SetTunings(pid, kp, ki, kd);
     KM_ACT_SetLimit(act, limit);
     KM_PID_Reset(pid);
-
-    g_pid_kp        = kp;
-    g_pid_ki        = ki;
-    g_pid_kd        = kd;
-    g_pid_pwm_limit = limit;
-    g_pid_override  = override;
 
     ESP_LOGW(TAG, "steering PID %s: kp=%.3f ki=%.3f kd=%.3f limit=%.2f",
              override ? "override" : "restored to firmware defaults", kp, ki, kd, limit);
@@ -964,12 +965,21 @@ void health_task(void *ctx) {
         // re-push the tuning afterwards. Without this frame the browser would go
         // on displaying the numbers someone typed twenty minutes ago while the
         // kart steered on entirely different ones.
+        //
+        // Read straight from the owners: the controller for the gains, the
+        // actuator for the PWM limit, the object store for the override flag.
+        // control_task may write these between the reads below, so a frame can
+        // in principle mix values from either side of one Apply — harmless at
+        // 1 Hz, and no worse than the cached copies this replaced, which were
+        // five separate unsynchronised writes.
+        float ech_kp, ech_ki, ech_kd;
+        KM_PID_GetTunings(c->dir_pid, &ech_kp, &ech_ki, &ech_kd);
         int32_t pid_payload[5] = {
-            g_pid_override ? 1 : 0,
-            (int32_t)(g_pid_kp * 1000.0f),
-            (int32_t)(g_pid_ki * 1000.0f),
-            (int32_t)(g_pid_kd * 1000.0f),
-            (int32_t)(g_pid_pwm_limit * 1000.0f)
+            (KM_OBJ_GetObjectValue(PID_OVERRIDE) == 1) ? 1 : 0,
+            (int32_t)(ech_kp * 1000.0f),
+            (int32_t)(ech_ki * 1000.0f),
+            (int32_t)(ech_kd * 1000.0f),
+            (int32_t)(c->dir_act->outputLimit * 1000.0f)
         };
         KM_COMS_SendMsg(ESP_STEER_PID, pid_payload, 5);
 

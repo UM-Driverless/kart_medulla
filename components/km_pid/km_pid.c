@@ -140,11 +140,12 @@ void KM_PID_Reset(PID_Controller *controller){
     controller->lastTime = esp_timer_get_time();
 }
 
-/** @brief Overwrite gains (identical to SetTunings). See km_pid.h note. */
-void KM_PID_GetTunings(PID_Controller *controller, float kp, float ki, float kd) {
-    controller->kp = kp;
-    controller->ki = ki;
-    controller->kd = kd;
+/** @brief Read the gains currently in force. See km_pid.h. */
+void KM_PID_GetTunings(const PID_Controller *controller, float *kp, float *ki, float *kd) {
+    if (controller == NULL) return;
+    if (kp != NULL) *kp = controller->kp;
+    if (ki != NULL) *ki = controller->ki;
+    if (kd != NULL) *kd = controller->kd;
 }
 
 /** @brief Return the current integral accumulator (for debugging). */
