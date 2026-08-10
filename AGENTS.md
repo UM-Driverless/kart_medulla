@@ -21,20 +21,13 @@ The AS5600 was retired on 2026-07-12 — it could not detect the kart's large sh
 
 ## Branch Workflow (READ THIS)
 
-!!! DEV CURRENTLY COMMANDS 50% THROTTLE UNCONDITIONALLY — DO NOT MERGE TO MAIN !!!
-
-`control_task()` in `main/main.c` carries the spi-test-50 bench block: it calls
-`KM_GPIO_SetThrottleSource(true)`, sets throttle to `0.5f`, and `return`s **above** the
-comms-watchdog / manual-mode gate. So a build of `dev` commands a constant 50% throttle
-forever and ignores the dashboard, comms loss, and manual mode; brake and steering never
-run. The SDC decision is computed above that return, so the kill switches still work —
-they are the only thing that stops the kart. `platformio.ini` also sets
-`-D SPI_DIAG_LOGS=1`, which leaves ESP_LOG on UART0 and corrupts the Orin's binary
-protocol.
-
-Merged deliberately on 2026-08-08 (Rubén) to consolidate branches while the DAC signal is
-still being chased — see history.md. **Delete that block and the build flag before any
-`dev` → `main` PR, and before driving the kart with a `dev` build.** Tracked in `tasks.md`.
+**Check for bench-only hardcodes and DIAG flags before flashing the kart.** `dev` has twice
+carried a bench block that commanded a constant throttle above the comms-watchdog / manual-mode
+gate, and a `-D SPI_DIAG_LOGS=1` that leaves ESP_LOG on UART0 where it corrupts the Orin's binary
+protocol. Both were removed by `7bcd6eb` on 2026-08-08 and `dev` is clean as of 2026-08-10, but the
+pattern recurs while a signal is being chased on the bench. What to look at: whether
+`control_task()` in `main/main.c` returns before the `comms_stale || mission == MISSION_MANUAL`
+gate, and whether `platformio.ini` sets any `*_DIAG_*` flag.
 
 **All day-to-day work happens on `dev`.** `main` is a protected release branch — it only receives merges from `dev` (or feature branches) *after* the change has been physically validated on the kart. Same convention as `kart-brain` and the other UM-Driverless repos.
 
