@@ -54,6 +54,9 @@ Verify by unplugging the sensor and looking at the output — not by reading the
 - `tasks.md` (repo root) — **the repo's task board, the only one.** Read it before starting work.
   Only Rubén moves a task to Done; on this repo that gate means flashed *and* driven, per the branch
   workflow above. (Replaced the old `TODO.md` on 2026-07-16.)
+  **Closed items live in `tasks/done-archive.md`, not on the board** (split 2026-08-10, same
+  convention as the partle repo) — move an item there with its date and closing note when it closes.
+  A done *step* of a still-open task stays put; a cluster moves whole once its last step closes.
   **The board records what was true when each entry was written, so summarising it reports claims,
   not findings.** Before repeating an entry that names a file, symbol or constant — especially an
   alarming one — grep the code, or say up front that the summary is unrechecked. Two entries were
