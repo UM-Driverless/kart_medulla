@@ -2354,3 +2354,25 @@ not, and it is the hop nobody can test on the Mac because there is no ROS2 here.
 
 Not verified on hardware — `kb_coms_micro` is C++ and needs `colcon build` on the Orin, which is an
 existing open task.
+
+## 2026-08-10 — Steering authority moved into the firmware
+
+The Orin sends a steering target continuously, in every state: `state_machine_node.py`'s mux
+publishes a zero Twist whenever it has nothing to say, and `cmd_vel_bridge_node.py` turns that into
+a steering frame at 100 Hz. A zero is not a "no command" — in PID angle mode it is a target of
+0 rad, "centre the wheels and hold them", so the motor is powered. Observed on the kart: selecting
+an autonomous mission on the dashboard moved the steering column with no Start pressed, and
+switching the steering algorithm between Geometric and None moved it and stopped it again.
+
+The protocol cannot express "no target": `TARGET_STEERING` is an int32 and every value in it is a
+valid angle, so no message the Orin sends can mean "do not drive". Options considered were a
+sentinel value or a tag byte in the steering frame (a protocol change on both sides), an explicit
+idle command using direct-PWM 0 (which means no drive only by accident of the existing code), and
+gating in the firmware. The last was chosen: `control_task` now refuses to drive `dir_act` unless
+the Orin reports `AS_DRIVING`, or the mission is remote control (7), where a human drives over the
+network and the Orin stays in `AS_OFF`. Stale comms and the manual mission already stop every
+actuator earlier in the same function.
+
+This makes the Orin's targets advisory. Any number of nodes may publish them — three can write the
+steering mode alone — and none of them can arm the motor. `AS_READY` is deliberately not enough:
+that is "mission selected, waiting for Start", the exact state that was moving the column.
