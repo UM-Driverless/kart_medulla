@@ -40,8 +40,9 @@
  *  ESP32-S3 — kart-medulla PCB (the real bench/kart hardware)
  *  Authoritative map: .agents/esp32s3-pinmap.md (from the schematic).
  *  Pin count/functions differ from the classic map below — this is a
- *  remap, not a renumber. Several functional gaps remain (see the
- *  GAP notes); the classic ESP32 build is still the one that runs today.
+ *  remap, not a renumber. THIS is the build that runs on the kart; the
+ *  classic block below is the previous board, kept for the esp32dev
+ *  target only. Remaining gaps are tracked in tasks.md, not here.
  * ============================================================ */
 
 /* ---------- UART0 (USB bridge / CH343) — debug console + Orin binary comms ---------- */
@@ -120,7 +121,9 @@
 /* ---------- SDC (Shutdown Circuit) — SAFETY ---------- */
 /* Gate of Q3 (IRLZ44N). HIGH = Q3 conducts = chain closed = NO emergency.
  * Held OFF at boot by R23 pulldown → kart sits in emergency until firmware
- * drives it HIGH. GAP: nothing drives it yet, so the kart cannot be armed. */
+ * drives it HIGH. control_task has driven it since 2026-07-26: it decides the
+ * SDC state every cycle, above the early return, so a stalled or returning
+ * control path cannot leave the chain closed by omission. */
 #define PIN_SDC_NOT_EMERGENCY   GPIO_NUM_18
 
 /* ---------- STATUS LED ---------- */

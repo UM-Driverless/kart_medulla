@@ -711,13 +711,15 @@ Try `spi-fix` first — it costs one flash and no solder.
 > wired yet (Rubén, 2026-08-10). Nothing in `main.c` writes brake, and channel B costs no ESP32 pin
 > — `PIN_CMD_BRAKE` is the stand-in value 201, not a GPIO. Leave it that way until the valve exists.
 
-- [ ] **GPIO 38 is now taken, and two documents still say otherwise.** `dev` assigns it to the
-      throttle PWM, leaving **GPIO 39 as the only unconstrained free pin on the board**. Stale
-      claims to correct before someone allocates 38 twice: `.agents/esp32s3-pinmap.md` lists both 38
-      and 39 under "Free", and kart-brain's `history.md` (the "Where the PWM lands on medulla" entry)
-      says "GPIO 38 is earmarked for the EBS compressor PWM" — which was never true either, the
-      compressor is on GPIO 3. That same entry recommends routing the steering sensor to GPIO 39;
-      that is superseded, it went to CN5.2 / GPIO 1.
+- [x] **~~GPIO 38 is now taken~~ — reverted, so 38 and 39 are both free again.** Checked 2026-08-10:
+      `GPIO_NUM_38` appears nowhere in `components/`, `main/` or `platformio.ini` on `dev`. Commit
+      `e12f6b5` ("drive the throttle from GPIO 38 as filtered PWM") is in `dev`'s history but a later
+      commit removed it, when the throttle went back to the MCP4922 — so
+      `.agents/esp32s3-pinmap.md` listing both under "Free" is correct after all, and `README.md`
+      now says the same. Still worth correcting, and unaffected by the revert: kart-brain's
+      `history.md` ("Where the PWM lands on medulla") says "GPIO 38 is earmarked for the EBS
+      compressor PWM", which was never true — the compressor is on GPIO 3. That same entry
+      recommends routing the steering sensor to GPIO 39; superseded, it went to CN5.2 / GPIO 1.
 - [x] **Bug found while investigating, independent of which route is taken:** on the S3 both
   `PIN_CMD_ACC` and `PIN_CMD_BRAKE` were `GPIO_NUM_NC` (-1), so the first `if` in
   `KM_GPIO_WriteDAC()` caught every call and the function could not distinguish throttle from brake.
@@ -891,12 +893,11 @@ settled: `control_task` is registered with a 2 ms period in `main/main.c` (`KM_C
 measured on the kart — `control_iters` advancing by exactly 25 between consecutive 20 Hz pneumatic
 frames. 500 Hz, confirmed. Two comments say otherwise:
 
-- [ ] **`main/main.c:949`, the `system_init` docstring, says "control (10 Hz)".** It is 500 Hz.
-  Fix the number.
-- [ ] **`main/main.c:1058` says the "I2C AS5600 read caps real rate".** That was true on the
-  classic-ESP32 path and is the stall `history.md` documents (~8.9 Hz in bursts). On the S3 the
-  angle comes from MCPWM capture of the MT6701's PWM output and never blocks. The real cap now is
-  the UART, so the comment points at the wrong bottleneck.
+- [x] **Both fixed on 2026-08-08, confirmed 2026-08-10.** The `system_init` docstring reads
+  "control (500 Hz)" (now `main.c:1016`), and the AS5600 remark (now `main.c:408`) is phrased as
+  history — it explains why the old send-then-read order *existed* and states that the PWM read
+  cannot block. Nothing left to change. The fix was already recorded under the `platformio.ini`
+  section above while these two boxes stayed open, which is how they survived.
 
 - [ ] **Decide whether the per-cycle steering frame should stay per-cycle.** `control_task` sends a
   20-byte `ESP_ACT_STEERING` frame every cycle (SOM + len + type + 4x int32 + CRC). At 8N1 that is
@@ -999,13 +1000,15 @@ confirmed by four independent sources and a 2026-07-12 bench check. What the aud
 pile of stale documentation, and one item of it is actively dangerous to someone holding a
 soldering iron. Listed worst first.
 
-- [ ] **`README.md` presents classic-ESP32 pin tables with nothing saying so.** The "Actuator
-  Outputs" and "Sensor Inputs (ADC)" tables (lines ~32-46) are pure classic map: Pressure 1 = GPIO
-  36, Pedal Acc = 35, Steering PWM = 18, DAC on 25/26. The repo's primary target is the S3, where
-  **GPIO 18 is Q3's shutdown-circuit gate** — so following this table can drive a safety output.
-  This is also the only place in the repo where "35" and a pressure table appear together, which is
-  the likely origin of the wrong-pad measurement. Either delete these tables or head them
-  "classic ESP32 — previous board, do not use for the S3".
+- [x] **`README.md` presents classic-ESP32 pin tables with nothing saying so.** The repo's primary
+  target is the S3, where **GPIO 18 is Q3's shutdown-circuit gate** — so following those tables could
+  drive a safety output. **Done 2026-08-10**: the S3 map from `km_gpio.h` is now the first thing under
+  "Pin Configuration", split into actuators / sensors / buses, with the SDC row called out as safety.
+  The classic tables survive inside a collapsed block headed "the previous board. Do not wire from
+  this", which names the two overlaps that make it dangerous rather than merely useless (GPIO 18 =
+  steering PWM there but the SDC gate on the S3; GPIO 13 = SDC there but SPI MISO on the S3). Also
+  corrected: the old "GPIO 6-11 reserved for SPI flash, do not use" restriction was presented as
+  general and is false on the S3, where 6 and 7 are the two pressure inputs.
 - [x] **`README.md` still calls the steering sensor an AS5600** (lines ~7 and ~22, the latter saying
   CN5.2 carries "the AS5600's PWM angle output"). It is an **MT6701** read over PWM; `AGENTS.md:20`
   already records the AS5600 as retired on 2026-07-12.
@@ -1040,9 +1043,15 @@ soldering iron. Listed worst first.
 - [ ] **Pressure channel count is wrong in kart-docs.** It says "3x Festo" and "the three
   pneumatic-pressure sensors", but the BOM has qty 2, the wire list defines only `press1`/`press2`,
   and only two ADC channels remain.
-- [ ] **Stale gap comments in `km_gpio.h`** (lines ~87-88, 101, 105): `WriteDAC` unported and
-  "nothing drives SDC / SELECT_THROTTLE". `control_task()` has driven the SDC pin since 2026-07-26.
-  The `platformio.ini` comment saying the S3 env "does NOT link yet" is stale for the same reason.
+- [x] **Stale gap comments in `km_gpio.h`** and `platformio.ini`. **Done 2026-08-10**: the S3 block's
+  header no longer claims "the classic ESP32 build is still the one that runs today" — it now says the
+  S3 block is what runs on the kart and points remaining gaps at `tasks.md` instead of listing them
+  inline. `platformio.ini`'s S3 comment no longer lists the three closed gaps (MCP4922 SPI write
+  landed 2026-07-31; GPIO 18 and GPIO 15 both driven since 2026-08-01/08-08). Neither file now carries
+  its own gap list, because a gap list in a build file goes stale without anyone reading it.
+  The per-pin `GAP:` note beside `PIN_SDC_NOT_EMERGENCY` was fixed in the same pass — it claimed
+  nothing drove the pin and the kart could not be armed, which has been false since 2026-07-26. The
+  one beside `PIN_STATUS_LED` (needs RMT, not plain GPIO) is still true and stays.
 - [ ] **Two latent ADC bugs in `km_gpio.c`, neither affecting pressure.** (a) On the S3,
   `PIN_HYDRAULIC_2` = GPIO 2 is an ADC1 pin but is handled inside the block commented "ADC2 pins",
   so its attenuation is never configured while `KM_GPIO_ReadADC` does have a case for it — a channel
@@ -1091,7 +1100,15 @@ soldering iron. Listed worst first.
   a table that is wrong about the encoding is worse than no table, because it reads as authoritative.
 
 - [ ] **[v2 design only — not the physical board]** The amp stages in dv-hardware HEAD (throttle U1B gain 1+R37/R38 = 1.51, brake U1A gain 1+R19/R20 = 3) are matched to the MCP4922 having moved to +3V3 (dv-hardware `16a35fb`): 3.3 V × 1.51 ≈ 5 V, 3.3 V × 3 ≈ 10 V. On the physical v1 board (`84d6dd0`) none of this exists: throttle is U13.14 → U14.8 direct, MCP4922 at +5V_REG. Verify the gain/VREF pairing stays consistent when v2 is fabbed. (This entry originally claimed a live overrange bug — wrong: it mixed the HEAD schematic with the v1 board. Corrected 2026-08-08.)
-- [ ] **dev's `km_gpio.h` claims the GPIO 38 PWM+RC network is "wired by hand" to the throttle net; history.md (2026-07-31/08-01) records only the decision, never the soldering, and the spi-fix plan assumes the DAC path intact.** One of the two is wrong. Physically check the board: a flying wire from the U24 socket's GPIO 38 pin to the U14.8 area, and whether U13 pin 14 is lifted. Then correct the code comment (or history) to match.
+- [ ] **AT THE KART: check the board for a leftover GPIO 38 flying wire.** Reframed 2026-08-10 — the
+      code half of this resolved itself. `dev`'s `km_gpio.h` no longer mentions GPIO 38 at all (the
+      filtered-PWM throttle route in `e12f6b5` was reverted when throttle went back to the MCP4922),
+      so there is no longer a code-vs-history contradiction to settle. What remains is purely
+      physical, and the revert makes it *more* worth checking rather than less: if someone did solder
+      a wire from the U24 socket's GPIO 38 pin toward U14.8, that wire is still there while no
+      firmware drives the pin, leaving an undriven input floating onto the throttle net. Look for the
+      wire, and check whether U13 pin 14 was lifted. `history.md` (2026-07-31/08-01) records the
+      decision to do this rework but never the soldering, so the board is the only source of truth.
 - [ ] **Flash dev tip `7bcd6eb` (bench hardcode removed, throttle back on TARGET_THROTTLE) to the S3.** Built clean on the Mac and pushed 2026-08-08; the Orin went unreachable over the tunnel right at the flash step, so the chip may still run the 50%-hardcode build. Then test throttle from the dashboard — mission must be non-manual and comms fresh, or the safety gate holds the mux on the pedal.
   **Probably already done**: Rubén reports (2026-08-10) the kart accelerated *on command* under remote control, which the hardcoded constant 0.5 f could not produce — so the chip was running `7bcd6eb` or later at that point. Confirm the running image the next time the Orin is reachable (`pio run -t upload` and check, or read the app description) and close this.
 - [ ] **Stale comment in `platformio.ini`** (S3 env, ~line 66): says "GPIO 18 / GPIO 15 not driven"; km_gpio.c has driven both since 2026-08-01/08-08. Fix the comment.

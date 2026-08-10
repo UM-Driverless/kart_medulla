@@ -49,50 +49,89 @@ Two nets on the actual kart-medulla PCB no longer do what their original name sa
 
 The firmware now supports the ESP32-S3 board natively via the `esp32-s3-devkitc-1` PlatformIO target, which automatically applies the correct pinmap from [`.agents/esp32s3-pinmap.md`](.agents/esp32s3-pinmap.md). (The classic ESP32-WROOM-32E pinmap is still available for legacy testing using `esp32dev`).
 
-### Actuator Outputs
+### ESP32-S3 — the board on the kart
 
-| Function | GPIO | Type | Description |
+This is the map that matters. Taken from `km_gpio.h`'s S3 block, checked 2026-08-10.
+
+**Actuator outputs**
+
+| Function | GPIO | Type | Notes |
 |---|---|---|---|
-| Throttle (CMD_ACC) | 25 | DAC1 | Analog throttle output (0-255) |
-| Brake (CMD_BRAKE) | 26 | DAC2 | Analog brake output (0-255) |
-| Steering PWM | 18 | LEDC PWM | Steering motor speed (0-255) |
-| Steering DIR | 19 | Digital | Steering motor direction |
+| Throttle (CMD_ACC) | — | MCP4922 ch. A | Not a GPIO. Over SPI to U13, then U14.8. The S3 has no built-in DAC |
+| Brake (CMD_BRAKE) | — | MCP4922 ch. B | Not a GPIO. Nothing writes it yet — the proportional braking valve is unwired |
+| Steering PWM | 40 | LEDC PWM | Cytron H-bridge |
+| Steering DIR | 17 | Digital | Cytron H-bridge direction |
+| EBS compressor | 3 | LEDC PWM | Ex-BUZZER net, terminal CN8.2 |
+| Throttle source select | 15 | Digital | MAX4660 mux. LOW = driver's pedal, HIGH = throttle from the DAC |
+| **SDC (not-emergency)** | **18** | **Digital — SAFETY** | **Gate of Q3. HIGH closes the shutdown chain. Driving this pin arms or kills the kart** |
+| Status LED | 48 | RMT | Addressable RGB; plain GPIO will not drive it |
 
-### Sensor Inputs (ADC)
-
-| Function | GPIO | ADC Channel | Notes |
-|---|---|---|---|
-| Pedal Brake | 32 | ADC1_CH4 | |
-| Pedal Acc | 35 | ADC1_CH7 | Input only |
-| Pressure 1 | 36 (VP) | ADC1_CH0 | Input only |
-| Pressure 2 | 39 (VN) | ADC1_CH3 | Input only |
-| Pressure 3 | 34 | ADC1_CH6 | Input only |
-| Hydraulic 1 | 27 | ADC2_CH7 | |
-| Hydraulic 2 | 14 | ADC2_CH6 | |
-
-### I2C (AS5600 Steering Encoder)
-
-| Function | GPIO |
-|---|---|
-| SDA | 21 |
-| SCL | 22 |
-
-### Other Pins
+**Sensor inputs**
 
 | Function | GPIO | Notes |
 |---|---|---|
-| USB UART TX (UART0) | 1 | Binary comms to Orin |
-| USB UART RX (UART0) | 3 | Binary comms from Orin |
-| UART2 TX | 17 | Conflicts with HALL1 on PCB - unused |
-| UART2 RX | 16 | Conflicts with HALL3 on PCB - unused |
+| Steering angle | 1 | MT6701 PWM output on CN5.2, read by MCPWM capture — **not** an ADC channel |
+| Hydraulic 2 | 2 | ADC1 |
+| Pedal Acc | 4 | ADC1 |
+| Pedal Brake | 5 | ADC1 |
+| Pressure 1 | 6 | ADC1, terminal CN7.1 — the tank sensor |
+| Pressure 2 | 7 | ADC1, terminal CN7.2 |
+| Hydraulic 1 | 10 | ADC1 |
+| Motor Hall 1 / 2 / 3 | 16 / 47 / 21 | Through the U5 level shifter; all three usable |
+
+**Buses**
+
+| Function | GPIO | Notes |
+|---|---|---|
+| UART0 TX / RX | 43 / 44 | Console *and* the Orin binary protocol, both on this one port |
+| I2C SDA / SCL | 8 / 9 | On-board PCF8574. The AS5600 is not the kart's steering sensor |
+| SPI MOSI / SCLK / MISO / CS | 11 / 12 / 13 / 14 | To the MCP4922. MISO goes nowhere — the chip has no data output |
+
+Free pins: **38 and 39**. GPIO 38 briefly carried a filtered-PWM throttle output on `dev` (commit
+`e12f6b5`) and was reverted when the throttle went back to the MCP4922; check the board for a leftover
+flying wire before reusing it.
+
+On the S3, ADC1 is GPIO 1-10 and ADC2 is unusable while WiFi is active. The classic ESP32's
+"GPIO 6-11 reserved for flash" and "GPIO 34-39 input only" rules do **not** apply here — 6 and 7 are
+the pressure inputs.
+
+<details>
+<summary><b>Classic ESP32-WROOM-32E — the previous board. Do not wire from this.</b></summary>
+
+Kept because `platformio.ini`'s `esp32dev` target still builds for it. **Every number below is wrong
+for the kart.** The overlaps are what make it dangerous rather than merely useless: GPIO 18 is
+steering PWM here and the *shutdown-circuit gate* on the S3, and GPIO 13 is the SDC line here but SPI
+MISO on the S3. Following this table on the S3 board can fire or disable the emergency brake.
+
+| Function | GPIO | Type |
+|---|---|---|
+| Throttle (CMD_ACC) | 25 | DAC1 |
+| Brake (CMD_BRAKE) | 26 | DAC2 |
+| Steering PWM | 18 | LEDC PWM |
+| Steering DIR | 19 | Digital |
+
+| Function | GPIO | ADC Channel |
+|---|---|---|
+| Pedal Brake | 32 | ADC1_CH4 |
+| Pedal Acc | 35 | ADC1_CH7 |
+| Pressure 1 | 36 (VP) | ADC1_CH0 |
+| Pressure 2 | 39 (VN) | ADC1_CH3 |
+| Pressure 3 | 34 | ADC1_CH6 |
+| Hydraulic 1 | 27 | ADC2_CH7 |
+| Hydraulic 2 | 14 | ADC2_CH6 |
+
+| Function | GPIO | Notes |
+|---|---|---|
+| I2C SDA / SCL | 21 / 22 | AS5600 steering encoder |
+| USB UART TX / RX (UART0) | 1 / 3 | Binary comms to Orin |
+| UART2 TX / RX | 17 / 16 | Conflicts with HALL1/HALL3 on the PCB — unused |
 | Motor Hall 2 | 33 | Hall 1/3 disabled (UART2 conflict) |
 | SDC Emergency | 13 | Shutdown circuit status |
 | Status LED | 2 | Keep LOW at boot (strap pin) |
 
-### GPIO Restrictions
+Restrictions that apply to *this* chip only: GPIO 6-11 reserved for SPI flash, GPIO 34-39 input only.
 
-- **GPIO 6-11:** Reserved for SPI flash - do not use
-- **GPIO 34-39:** Input only
+</details>
 
 ## Project Structure
 
