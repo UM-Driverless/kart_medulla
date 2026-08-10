@@ -7,16 +7,21 @@ Derived 2026-07-10 by exporting a fresh netlist from `dv-hardware/projects/kart-
 `dv-hardware/projects/kart-medulla/docs/pinout-esp32-s3.md`. All 44 module pins agreed. The
 schematic is authoritative; this file is a convenience for firmware work.
 
-**This is NOT the pin map the firmware currently uses.** `components/km_gpio/km_gpio.h` still holds
-the classic-ESP32 (WROOM-32E) map, which this repo builds. See `.agents/error-log.md` 2026-07-10 —
-most importantly, the classic map puts `PIN_STEER_PWM` on GPIO 18, which on the S3 board is the
-gate of Q3, the shutdown-circuit MOSFET.
+**This IS the pin map the firmware uses** (corrected 2026-08-10; it previously said the opposite).
+`components/km_gpio/km_gpio.h` carries this map under `CONFIG_IDF_TARGET_ESP32S3`, and
+`platformio.ini`'s `esp32-s3-devkitc-1` env is what builds and flashes. The classic-ESP32
+(WROOM-32E) map is still in the same header under the `#else`, for the `esp32dev` target only.
+
+The reason the distinction matters has not changed: the classic map puts `PIN_STEER_PWM` on
+GPIO 18, which on the S3 board is the gate of Q3, the shutdown-circuit MOSFET. Wiring or reasoning
+from the wrong branch can fire or disable the emergency brake. See `.agents/error-log.md`
+2026-07-10.
 
 ## Signals
 
 | Signal | GPIO | Notes |
 |---|---|---|
-| `PRESSURE_3` | 1 | analog in (ADC1) |
+| `PRESSURE_3` | 1 | **NOT an ADC input.** CN5.2 carries the MT6701's PWM angle output, read by MCPWM capture and deliberately excluded from ADC setup — see line 66 below and the 2026-08-08 correction |
 | `HYDRAULIC_2` | 2 | analog in (ADC1) |
 | `CMD_COMPRESSOR_PWM` (ex-`BUZZER`) | 3 | LEDC PWM out → compressor MOSFET gate. Strap pin (JTAG src select), not driven by firmware until `KM_GPIO_Init()` runs ~200 ms into boot — but the gate has a pulldown, so the MOSFET is held off through that window and the compressor cannot self-start on boot or on a firmware crash (same arrangement as R23 for Q3 on GPIO 18). Duty runs at **100%** — `COMPRESSOR_DUTY_RUN = 255` in `main/main.c`. This line used to say the duty was capped at 60% to keep a 7.5 V motor off a 12 V rail; that was true of the bare IRLZ44N whose gate came straight off the GPIO, and stopped being true when the gate moved to a 3D-printer hotbed MOSFET module that cannot hold a continuous PWM waveform. Average power is now limited by a slow on/off cycle instead: 15 s maximum burst, 15 s forced cooldown, with a 1 s soft-start ramp per burst for inrush. The reasoning is written out at the top of `main/main.c`. Also gated by `COMPRESSOR_DISABLED` (operator latch from the dashboard) |
 | `PEDAL_ACC` | 4 | analog in (ADC1) |
@@ -82,12 +87,17 @@ GPIO matrix (MCPWM/PCNT/RMT), so the choice of pin doesn't constrain the periphe
 
 ## Known firmware gaps against this hardware
 
-1. **The S3 build does not exist.** `platformio.ini` has only `esp32dev` and `native`. The
-   `CONFIG_IDF_TARGET_ESP32S3` branch in `km_gpio.c` references `SPI_MOSI_PIN` / `SPI_SCLK_PIN` /
-   `SPI_CS_PIN`, which are defined nowhere. Those are GPIO 11 / 12 / 14 (MISO 13) per the table above.
-2. **Nothing drives `SELECT_THROTTLE` (GPIO 15).** The schematic routes it to the MAX4660 mux with a
-   10 kΩ pulldown, so the default state is pedal pass-through (safe). Firmware must drive it HIGH to
-   hand throttle to the DAC.
+1. ~~**The S3 build does not exist.**~~ **Closed — it was already false when written, and stayed on
+   this list until 2026-08-10.** `platformio.ini` has an `esp32-s3-devkitc-1` env that builds, links
+   and flashes, and it is the primary target. The four SPI pins the original text called "defined
+   nowhere" are at `km_gpio.h:83-86` — GPIO 11 (MOSI) / 12 (SCLK) / 13 (MISO) / 14 (CS), matching the
+   table above. MISO is not wired to U13: the MCP4922 has no data output, so nothing the firmware
+   reads can confirm a write arrived.
+2. ~~**Nothing drives `SELECT_THROTTLE` (GPIO 15).**~~ **Closed 2026-08-01/08-08.** `control_task`
+   drives it every cycle: LOW (pedal pass-through) whenever comms are stale or the mission is manual,
+   HIGH (throttle from the DAC) only past that safety gate. It is re-asserted each cycle rather than
+   latched, so any path returning early leaves the driver's pedal in control. The schematic's 10 kΩ
+   pulldown still gives pedal pass-through before firmware runs.
 3. ~~**Nothing drives `SDC_NOT_EMERGENCY` (GPIO 18).**~~ **Closed 2026-07-26.** `control_task()` in
    `main/main.c` now decides the level on every cycle and is the only thing that drives it HIGH. It is
    a whitelist: the chain closes only while the Orin reports `AS_READY` or `AS_DRIVING`, comms are

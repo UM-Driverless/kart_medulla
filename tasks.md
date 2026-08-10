@@ -1014,15 +1014,15 @@ soldering iron. Listed worst first.
   already records the AS5600 as retired on 2026-07-12.
   **Done 2026-08-08** — both lines now say MT6701, with a pointer to the AGENTS.md section and a
   note that `km_sdir`'s AS5600 I²C driver is the classic-ESP32 fallback only.
-- [ ] **`.agents/esp32s3-pinmap.md` header and gap 1 are both false.** The header says "This is NOT
-  the pin map the firmware currently uses. `km_gpio.h` still holds the classic-ESP32 map"; gap 1
-  says "The S3 build does not exist. `platformio.ini` has only `esp32dev` and `native`" and that the
-  SPI pins are "defined nowhere". In fact `[env:esp32-s3-devkitc-1]` exists, links, and is what
-  flashes; the four SPI pins are defined at `km_gpio.h:83-86`. A previously-filed task about this
-  file's staleness could not be found in `tasks.md`, so it appears untracked — this entry replaces it.
-- [ ] **`.agents/esp32s3-pinmap.md:12` still lists `PRESSURE_3` on GPIO 1 as "analog in (ADC1)".**
-  GPIO 1 is now MCPWM capture for the MT6701's PWM output and is deliberately excluded from ADC
-  setup. The same file's line 66 already says so; line 12 was never updated.
+- [x] **`.agents/esp32s3-pinmap.md` header and gap 1 are both false.** **Done 2026-08-10.** The
+  header now says this IS the map the firmware uses, names `esp32-s3-devkitc-1` as the target that
+  builds and flashes, and keeps the reason the distinction matters (the classic map's GPIO 18 is the
+  S3's shutdown-circuit gate). Gap 1 is struck with a note that it was false when written; the four
+  SPI pins it called "defined nowhere" are at `km_gpio.h:83-86`. Gap 2 (`SELECT_THROTTLE` undriven)
+  was stale too and is struck as well — `control_task` has driven GPIO 15 since 2026-08-01/08-08.
+- [x] **`.agents/esp32s3-pinmap.md:12` still lists `PRESSURE_3` on GPIO 1 as "analog in (ADC1)".**
+  **Done 2026-08-10** — the row now says it is not an ADC input, that CN5.2 carries the MT6701 PWM
+  angle output read by MCPWM capture, and points at the 2026-08-08 correction further down.
 - [x] **Contradictory rework instruction for the ex-`PRESSURE_3` terminal (CN5.2).** kart-docs says
   "remove R10 only (keep R8 + R9)"; this repo's `.agents/esp32s3-pinmap.md:66` says "keep R8 series,
   remove R9+R10". **Do not solder CN5.2 until this is settled** — one of the two is wrong.
@@ -1058,10 +1058,10 @@ soldering iron. Listed worst first.
   read without being configured. (b) The `GPIO_NUM_1` attenuation branch can never execute, since
   `PIN_PRESSURE_3` is `#if`'d out of `adc1_pins[]`; harmless but it is the same "configured is not
   used" trap already logged at `.agents/error-log.md:181`.
-- [ ] **`km_gpio.h` never records the connector for `PRESSURE_1`/`PRESSURE_2`.** Only `PRESSURE_3`
-  carries a `// CN5.2` comment. The GPIO 6 <-> CN7.1 link exists only in `tasks.md:74` and
-  `history.md:526`, so the firmware alone cannot tell you which screw terminal a channel is. Add the
-  comments.
+- [x] **`km_gpio.h` never records the connector for `PRESSURE_1`/`PRESSURE_2`.** **Done 2026-08-10**
+  — `PIN_PRESSURE_1` now carries `// CN7.1` plus the sensor and its 1 V/bar scaling, and
+  `PIN_PRESSURE_2` carries `// CN7.2`. The GPIO 6 <-> CN7.1 link no longer lives only in `tasks.md`
+  and `history.md`.
 - [ ] **Module variant conflict.** dv-hardware records the fitted module as
   **ESP32-S3-WROOM-1-N16R8** ("verified on hardware 2026-07-10"); kart-docs says **N8R2**. R8 means
   octal PSRAM, which consumes GPIO 33-37 — so which one is actually fitted determines whether those

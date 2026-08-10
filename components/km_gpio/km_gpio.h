@@ -65,8 +65,8 @@
 #define PIN_HYDRAULIC_2         GPIO_NUM_2
 #define PIN_PEDAL_ACC           GPIO_NUM_4
 #define PIN_PEDAL_BRAKE         GPIO_NUM_5
-#define PIN_PRESSURE_1          GPIO_NUM_6
-#define PIN_PRESSURE_2          GPIO_NUM_7
+#define PIN_PRESSURE_1          GPIO_NUM_6   // CN7.1 — EBS tank, Festo SDE5-D10, 1 V/bar via divider
+#define PIN_PRESSURE_2          GPIO_NUM_7   // CN7.2
 #define PIN_HYDRAULIC_1         GPIO_NUM_10
 
 /* ---------- EBS compressor (ex-BUZZER net, CN8.2) ---------- */
