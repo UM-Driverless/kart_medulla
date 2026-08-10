@@ -604,8 +604,9 @@ dashboard.
 
 ### ESP32-S3 firmware gaps (from `km_gpio.h`; block running on the real board)
 
-- **`KM_GPIO_WriteDAC()` is not ported to the MCP4922.** It still calls the classic
-  `dac_output_voltage()`, which the S3 does not have — throttle and brake do nothing on the S3.
+- ~~**`KM_GPIO_WriteDAC()` is not ported to the MCP4922.**~~ **Done** — the S3 branch calls
+  `mcp4922_write()` per channel (`km_gpio.c:570-596`), and SPI → DAC → output was confirmed on the
+  bench (Rubén, 2026-08-10). Brake stays unwritten until the proportional valve is wired.
 - **Nothing drives `PIN_SDC_NOT_EMERGENCY` (GPIO 18).** R23's pulldown holds it off at boot, so the
   kart sits in emergency until firmware drives it HIGH. Until then it cannot be armed. **Safety —
   read the pin's note in `.agents/esp32s3-pinmap.md` before touching.**
@@ -646,6 +647,16 @@ merely unwritten.
 
 Try `spi-fix` first — it costs one flash and no solder.
 
+> **RESOLVED (Rubén, 2026-08-10): the MCP4922 is not dead — SPI → DAC → output was seen working on
+> the bench.** So the open question at the top of this section is answered: it was never a faulty
+> chip, only an unimplemented write. The SPI write is now in `km_gpio.c`. What remains open is only
+> the GPIO-38 PWM route on `dev` (whether it was ever soldered — see the separate task) and whether
+> that route is still wanted at all now that the DAC path works.
+>
+> **Brake (MCP4922 channel B) stays unwritten on purpose**: the proportional braking valve is not
+> wired yet (Rubén, 2026-08-10). Nothing in `main.c` writes brake, and channel B costs no ESP32 pin
+> — `PIN_CMD_BRAKE` is the stand-in value 201, not a GPIO. Leave it that way until the valve exists.
+
 - [ ] **GPIO 38 is now taken, and two documents still say otherwise.** `dev` assigns it to the
       throttle PWM, leaving **GPIO 39 as the only unconstrained free pin on the board**. Stale
       claims to correct before someone allocates 38 twice: `.agents/esp32s3-pinmap.md` lists both 38
@@ -653,11 +664,18 @@ Try `spi-fix` first — it costs one flash and no solder.
       says "GPIO 38 is earmarked for the EBS compressor PWM" — which was never true either, the
       compressor is on GPIO 3. That same entry recommends routing the steering sensor to GPIO 39;
       that is superseded, it went to CN5.2 / GPIO 1.
-- [ ] **Bug found while investigating, independent of which route is taken:** on the S3 both
-  `PIN_CMD_ACC` and `PIN_CMD_BRAKE` are `GPIO_NUM_NC` (-1), so the first `if` in
-  `KM_GPIO_WriteDAC()` (`components/km_gpio/km_gpio.c:348-368`) catches every call and the function
-  cannot distinguish throttle from brake. Anyone implementing the MCP4922 SPI write must change the
-  signature or the sentinels first.
+- [x] **Bug found while investigating, independent of which route is taken:** on the S3 both
+  `PIN_CMD_ACC` and `PIN_CMD_BRAKE` were `GPIO_NUM_NC` (-1), so the first `if` in
+  `KM_GPIO_WriteDAC()` caught every call and the function could not distinguish throttle from brake.
+  **Fixed 2026-07-31**: the two are now `((gpio_num_t)200)` and `((gpio_num_t)201)` in
+  `km_gpio.h:106-107` — distinct, above the S3's GPIO range so they cannot alias a real pin, and
+  below 256 so `km_act`'s `uint8_t` does not truncate them. `KM_GPIO_WriteDAC()`
+  (`components/km_gpio/km_gpio.c:570-596`) dispatches ACC to `mcp4922_write(MCP4922_CH_A, …)` and
+  BRAKE to channel B, and logs an error for anything else.
+
+- [ ] **Stale comment: `components/km_act/km_act.c:35`** sets `act.dacChannel = PIN_CMD_BRAKE` with
+  the trailing comment `// GPIO 26 (DAC2)`, which is the classic-ESP32 pin. On the S3 that value is
+  the MCP4922 channel-B stand-in, not a GPIO. Fix the comment.
 
 ### Decide how a manufactured PCB is identified, then state it in all three repos
 
