@@ -2319,3 +2319,38 @@ since.
 The lesson is logged in `.agents/error-log.md` under the same date: this is the second time in one
 day that a `tasks.md` entry was read aloud as current fact, and the prevention note from the first
 occurrence lives in a file that the task gave no reason to grep.
+
+## 2026-08-10 — Steering-latch trip age, and the health-frame fields that never left the Orin
+
+Rubén chose the timestamp option for the latch UX task over an operator reset command. The reasoning
+for rejecting the reset: a button that clears the latch lets an operator re-arm closed-loop steering
+after a safety trip, which is exactly what the latch was written to prevent. A timestamp changes no
+safety behaviour and still resolves the confusion, because the ambiguity was never "how do I clear
+this" — the chip already said "reboot ESP32" — but "is this fault happening now, or left over?"
+
+The two health bits are independent: bit 3 (`STEER_OK`) is whether the read is valid *right now*, bit
+4 (`STEER_TRIP`) is whether the latch is set. A sensor that failed once during an earlier boot and has
+worked ever since therefore shows both at once, indistinguishable from a live failure. That is what
+cost hours on 2026-08-08.
+
+Firmware: `esp_timer_get_time()` is stamped when the latch trips, deliberately *before* setting the
+flag so `health_task` can never observe a latched fault carrying a stale stamp. The age in seconds
+goes out as field 7 of `ESP_HEALTH_STATUS`, -1 while clear. Seconds, not milliseconds — the question
+is "just now or boots ago", and seconds still covers 68 years in an int32.
+
+**The larger find was on the Orin side.** `kb_coms_micro` splits the health frame into a flags topic
+and a data topic, and the data half was built from a three-element literal:
+`{payload[1], payload[2], payload[3]}`. Every field the firmware appended after those was silently
+discarded in the bridge. The steering frame counters — the ones the median-filter removal is riding
+on, and which an at-the-kart task says to watch while driving — have been sent by the firmware since
+they were added and have never once reached the dashboard. `steer_trip_age_s` would have vanished the
+same way. It now copies the whole tail after the flags word, so future appends need no change there.
+
+Worth noting the shape of the bug: the firmware's own comment says fields are "only ever APPENDED, so
+a consumer that reads the first N keeps working", which is true of a decoder and false of a *bridge*
+that re-emits a fixed-length subset. Append-compatibility has to hold at every hop, not just the last
+one. Both `protocol.py` decoders were already length-guarded and correct; the one non-Python hop was
+not, and it is the hop nobody can test on the Mac because there is no ROS2 here.
+
+Not verified on hardware — `kb_coms_micro` is C++ and needs `colcon build` on the Orin, which is an
+existing open task.

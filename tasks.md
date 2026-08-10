@@ -1013,6 +1013,26 @@ still open — the closed half of the section is now in `tasks/done-archive.md`.
 - [ ] **Flash dev tip `7bcd6eb` (bench hardcode removed, throttle back on TARGET_THROTTLE) to the S3.** Built clean on the Mac and pushed 2026-08-08; the Orin went unreachable over the tunnel right at the flash step, so the chip may still run the 50%-hardcode build. Then test throttle from the dashboard — mission must be non-manual and comms fresh, or the safety gate holds the mux on the pedal.
   **Probably already done**: Rubén reports (2026-08-10) the kart accelerated *on command* under remote control, which the hardcoded constant 0.5 f could not produce — so the chip was running `7bcd6eb` or later at that point. Confirm the running image the next time the Orin is reachable (`pio run -t upload` and check, or read the app description) and close this.
 - [ ] **Stale comment in `platformio.ini`** (S3 env, ~line 66): says "GPIO 18 / GPIO 15 not driven"; km_gpio.c has driven both since 2026-08-01/08-08. Fix the comment.
-- [ ] **The steering-fault latch survives everything except an ESP32 reboot, and nothing on the dashboard says how to clear it.** Today that cost hours: a stale latch from one bad boot looked like a live sensor/code failure. Either add a "reboot ESP32 to clear" hint to the dashboard STEER chip text, or add an explicit operator-initiated latch-clear (a reset command), or log the latch timestamp so a stale latch is distinguishable from a live fault.
+- [x] **The steering-fault latch survives everything except an ESP32 reboot, and nothing on the
+  dashboard says how to clear it.** A stale latch from one bad boot looked like a live sensor/code
+  failure and cost hours on 2026-08-08. **Built 2026-08-10** — Rubén chose the timestamp option over
+  an operator reset command, which would have let an operator re-arm closed-loop steering after a
+  safety trip, the thing the latch exists to prevent.
+
+  Firmware (`92a3248`): the trip time is stamped with `esp_timer_get_time()` before the flag is set,
+  and the age in seconds is appended as field 7 of `ESP_HEALTH_STATUS`, or -1 while clear.
+  kart-brain (`20db00f` + an uncommitted `index.html` change): the STEER chip now reads
+  `STEER SIGNAL LOST 14m 22s ago — signal OK now, reboot ESP32 to clear`, or `— still no signal`
+  when the sensor is genuinely down.
+
+  **Found while doing it, and the more consequential half:** `kb_coms_micro` was copying exactly
+  three numeric fields onto `/esp32/health/data`, so *every* appended field was discarded before
+  reaching the dashboard. The steering frame counters had been sent since they were added and never
+  arrived. It now forwards the whole tail.
+
+- [ ] **AT THE KART: verify the trip age end to end.** Nothing above has run on hardware. Needs the
+  Orin build below (`kb_coms_micro` is C++ and there is no ROS2 on the Mac). Unplug the steering lead
+  under closed-loop steering, confirm the chip shows a small age that counts up, plug it back in and
+  confirm it flips to "signal OK now" while still reading LOST. Then reboot and confirm it clears.
 
 ## In Progress
