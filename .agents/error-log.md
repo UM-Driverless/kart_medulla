@@ -422,3 +422,30 @@ the same one-grep distance the previous entry noted.
 
 **Prevention:** the fix belongs in `AGENTS.md`, not here, because that file is loaded for every task
 while this one is not. Proposed line is under "Files", beside the `tasks.md` bullet.
+
+## 2026-08-10 — Reported a protocol bug that was a stale flash (Claude Opus 5)
+
+**What happened:** asked where the steering reject counter lives, the agent noticed
+`/esp32/health/data` was carrying five fields where the firmware source builds seven, and reported
+it as a live bug: the steering trip age "never reaches the dashboard", defeating the fix deployed the
+same morning. It filed a task saying the loss was somewhere between `KM_COMS_SendMsg` and the C++
+handler, listing the C++ dispatch, `SerialDriver::MAX_PAYLOAD` and stale builds as ruled out.
+
+**Actual cause:** the chip was flashed before the feature existed. A raw dump off `/dev/ttyACM0`
+showed `LEN=24` — six int32, genuinely sent that way — so nothing downstream was dropping anything.
+`92a3248`, which adds `steer_trip_age_s`, is timestamped 10:58; the flash ran at about 10:45 from
+`be82616`, whose `main.c` has `int32_t payload[6]` and sends 6. The firmware was behaving exactly as
+written.
+
+**Root cause:** the agent compared a just-pulled working tree against a chip flashed thirteen minutes
+earlier, and read the difference as a protocol fault. It had itself run the flash, so "what is on the
+chip" felt settled — but Rubén committed the firmware side of the feature after that flash, and
+nothing prompted a re-check. The same shape as the stale-`tasks.md` error above: treating a stale
+snapshot as current, except here the snapshot was the flashed binary rather than a document.
+
+**Prevention:** when observed firmware behaviour disagrees with the source tree, check *which commit
+is on the chip* before theorising about the protocol. `git log -1 --format=%ci <commit>` against the
+flash time is one command and would have ended it immediately. Any long-running session should assume
+the human is committing concurrently — this repo's tip moved twice today while work was in progress.
+The raw-bytes measurement was the right instinct and settled it in one shot; it should have come
+before the task was filed, not after.
