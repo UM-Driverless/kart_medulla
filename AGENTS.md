@@ -156,7 +156,7 @@ as the classic board's CP2102 did. Uploading while `kart-brain` is running fails
 > enumerates as `/dev/cu.usbmodem*`, not `/dev/cu.SLAB_USBtoUART`. The board's two USB-C ports
 > are silkscreened `COM` (the bridge) and `USB` (native USB-OTG / USB-Serial-JTAG on GPIO 19/20).
 
-- **Upload baud depends on which board.** The classic board's CP2102 fails flashing above **115200**. The S3 board's bridge is a **CH343**, rated 50 bps – 6 Mbps, so it is not bound by that — `[env:esp32-s3-devkitc-1]` uses **921600** as of 2026-07-26 (untested on hardware at time of writing; fall back to 115200 in `platformio.ini` if a flash refuses to connect). The two envs deliberately carry different numbers; do not "unify" them.
+- **Upload baud depends on which board.** The classic board's CP2102 fails flashing above **115200**. The S3 board's bridge is a **CH343**, rated 50 bps – 6 Mbps, so it is not bound by that — `[env:esp32-s3-devkitc-1]` uses **921600** as of 2026-07-26, **confirmed on hardware** — flashed from the Orin on 2026-08-08 and again on 2026-08-10, the second writing 338 kB in 2.6 s at an effective ~1.05 Mbit/s with the hash verified. No fallback was needed; if one ever is, try 460800 before 115200. The two envs deliberately carry different numbers; do not "unify" them.
 - **Runtime UART baud is 115200**, set at `km_coms.c` KM_COMS_Init (`.baud_rate`). This line said 460800 until 2026-07-26 and was simply wrong — grep confirms 115200 is the only live baud in `components/` and `main/`; the `km_gpio.c` UART blocks that mention other values are commented out. `monitor_speed` in both envs matches it.
 - If flash hangs at "Connecting...", hold BOOT button, press EN, release BOOT
 - After flash, press EN to restart if needed
@@ -179,20 +179,22 @@ Frame format: `| SOF(0xAA) | LEN | TYPE | PAYLOAD... | CRC8 |`
 - UART2 — **not in use.** The ESP_LOG redirect to UART2 was removed (it caused crashes, and on the PCB those pins collide with MOTOR_HALL_1/3). ESP_LOG on UART0 is disabled so the binary protocol stays clean, which means the firmware is effectively silent on the console — do not wait for log output that cannot arrive
 - CRC8 poly 0x07 over LEN + TYPE + PAYLOAD
 
-**Message types (Orin → ESP32):**
-| Type | ID   | Payload |
-|------|------|---------|
-| ORIN_TARG_THROTTLE  | 0x20 | u8 [0-255] |
-| ORIN_TARG_BRAKING   | 0x21 | u8 [0-255] |
-| ORIN_TARG_STEERING  | 0x22 | int16 big-endian, radians × 1000 |
-| ORIN_HEARTBEAT      | 0x25 | (empty) |
-| ORIN_COMPLETE       | 0x27 | 7 bytes: throttle, brake, steering(2), mission, state, shutdown |
+**Message types: read `message_type_t` in `components/km_coms/km_coms.h`.** Its doc comments carry
+each frame's payload shape, and it is the definition the firmware actually compiles against.
 
-**Message types (ESP32 → Orin):**
-| Type | ID   | Payload |
-|------|------|---------|
-| ESP_ACT_STEERING | 0x04 | int16 big-endian, radians × 1000 (actual angle from AS5600) |
-| ESP_HEARTBEAT    | 0x08 | 4 bytes (0xDEADBEEF) |
+Two tables used to sit here and both were wrong in the same way, which is why they are gone rather
+than corrected: they described the pre-protobuf encoding — payloads as `u8 [0-255]`, `int16
+big-endian, radians × 1000`, and `ORIN_COMPLETE` as "7 bytes". **The wire format is arrays of
+int32**, and `ORIN_COMPLETE` is 6 int32 elements in `km_coms.c`, not 7 bytes. They were also missing
+every frame added since: `ORIN_CALIBRATE_STEERING` (0x28), `ORIN_STEER_MODE` (0x29),
+`ORIN_COMPRESSOR_DISABLE` (0x2A), `ORIN_STEER_PID` (0x2B), `ESP_HEALTH_STATUS` (0x0B),
+`ESP_PNEUMATIC` (0x0C), `ESP_STEER_PID` (0x0D), `ESP_PEDALS` (0x0E). A table that is wrong about the
+encoding is worse than no table, because it reads as authoritative — and a hand-maintained copy of
+an enum goes stale the moment someone adds a frame without looking here.
+
+Note `ESP_ACT_STEERING` (0x04) also grew a 4th int32: 1 when the angle is real, 0 when it is not,
+with `INT32_MIN` in the angle field when invalid. Any decoder must check it — see the Sensor
+Validity rule above.
 
 ### Steering Pipeline
 

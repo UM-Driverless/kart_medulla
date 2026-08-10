@@ -980,7 +980,16 @@ still open — the closed half of the section is now in `tasks/done-archive.md`.
 - [ ] **Pressure channel count is wrong in kart-docs.** It says "3x Festo" and "the three
   pneumatic-pressure sensors", but the BOM has qty 2, the wire list defines only `press1`/`press2`,
   and only two ADC channels remain.
-- [ ] **Two latent ADC bugs in `km_gpio.c`, neither affecting pressure.** (a) On the S3,
+- [x] **Fixed 2026-08-10 — two latent ADC bugs in `km_gpio.c`, neither affecting pressure.**
+  (a) `PIN_HYDRAULIC_2` (GPIO 2, ADC1_CH1 on the S3) was absent from `adc1_pins[]`, so its
+  attenuation was never configured while `KM_GPIO_ReadADC` did have a case reading
+  `ADC1_CHANNEL_1` — a channel read at whatever attenuation the driver defaulted to, not 11 dB,
+  silently compressing the top of its range. Added to the list under the S3 branch only, since on
+  the classic board it is GPIO 14 on ADC2. (b) The `GPIO_NUM_1` attenuation branch could never
+  execute, because `PIN_PRESSURE_3` is `#if`'d out of the list on the S3 — GPIO 1 is the MT6701's
+  PWM input read through MCPWM capture, not an ADC channel. Branch deleted with a comment saying
+  why, rather than "fixed" by adding the pin back. S3 builds, 55/55 native tests pass. Not yet
+  flashed — nothing reads hydraulic 2 today, so this changes no current behaviour. (a) On the S3,
   `PIN_HYDRAULIC_2` = GPIO 2 is an ADC1 pin but is handled inside the block commented "ADC2 pins",
   so its attenuation is never configured while `KM_GPIO_ReadADC` does have a case for it — a channel
   read without being configured. (b) The `GPIO_NUM_1` attenuation branch can never execute, since
@@ -990,7 +999,7 @@ still open — the closed half of the section is now in `tasks/done-archive.md`.
   **ESP32-S3-WROOM-1-N16R8** ("verified on hardware 2026-07-10"); kart-docs says **N8R2**. R8 means
   octal PSRAM, which consumes GPIO 33-37 — so which one is actually fitted determines whether those
   pins exist at all. Settle it by reading the can, and correct whichever doc is wrong.
-- [ ] **`AGENTS.md`'s UART protocol tables describe an encoding the firmware stopped using** — Noticed
+- [x] **Fixed 2026-08-10 — `AGENTS.md`'s UART protocol tables described an encoding the firmware stopped using.** Both tables deleted and replaced by a pointer to `message_type_t` in `components/km_coms/km_coms.h`, with a note recording what they got wrong (int32 arrays, not u8/int16; `ORIN_COMPLETE` is 6 int32 not 7 bytes) and the eight frames they were missing. Regenerating them was rejected: a hand-maintained copy of an enum goes stale the moment someone adds a frame without looking there.  ~~Original entry:~~ — Noticed
   2026-07-30. The two "Message types" tables at `AGENTS.md:153-165` give payloads as `u8 [0-255]`,
   `int16 big-endian, radians × 1000` and `ORIN_COMPLETE | 7 bytes`. The wire format is int32 arrays and
   has been since the protobuf migration — `ORIN_COMPLETE` is 6 int32 elements in `km_coms.c`, not 7

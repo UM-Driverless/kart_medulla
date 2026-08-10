@@ -112,7 +112,15 @@ esp_err_t KM_GPIO_Init(void)
     const gpio_num_t adc1_pins[] = {
         PIN_PEDAL_ACC, PIN_PEDAL_BRAKE, PIN_HYDRAULIC_1,
         PIN_PRESSURE_1, PIN_PRESSURE_2,
-#if !defined(CONFIG_IDF_TARGET_ESP32S3)
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+        /* On the S3 this is GPIO 2 = ADC1_CH1, and `KM_GPIO_ReadADC` has always had
+         * a case for it. It was missing from this list, so its attenuation was never
+         * configured while the read still happened — an ADC1 channel read at whatever
+         * attenuation the driver defaulted to, which is not 11 dB and silently
+         * compresses the top of the range. On the classic board HYDRAULIC_2 is GPIO 14
+         * on ADC2, so it belongs with the ADC2 pins there, not here. */
+        PIN_HYDRAULIC_2,
+#else
         PIN_PRESSURE_3,
 #endif
     };
@@ -135,8 +143,11 @@ esp_err_t KM_GPIO_Init(void)
         if (ret != ESP_OK) return ret;
         
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
-        if (adc1_pins[i] == GPIO_NUM_1) adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11);
-        else if (adc1_pins[i] == GPIO_NUM_2) adc1_config_channel_atten(ADC1_CHANNEL_1, ADC_ATTEN_DB_11);
+        /* No GPIO_NUM_1 branch: on the S3, GPIO 1 is the MT6701's PWM angle input read
+         * through MCPWM capture, not an ADC channel, so PRESSURE_3 is #if'd out of the
+         * list above and a branch for it could never execute. Adding one back would be
+         * the "configured but never used" trap in reverse — see .agents/error-log.md. */
+        if (adc1_pins[i] == GPIO_NUM_2) adc1_config_channel_atten(ADC1_CHANNEL_1, ADC_ATTEN_DB_11);
         else if (adc1_pins[i] == GPIO_NUM_4) adc1_config_channel_atten(ADC1_CHANNEL_3, ADC_ATTEN_DB_11);
         else if (adc1_pins[i] == GPIO_NUM_5) adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_11);
         else if (adc1_pins[i] == GPIO_NUM_6) adc1_config_channel_atten(ADC1_CHANNEL_5, ADC_ATTEN_DB_11); // PRESSURE_1
