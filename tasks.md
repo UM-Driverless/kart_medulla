@@ -195,14 +195,26 @@ recoverable rather than needing to be rewritten.
 the green native suites, on push to `dev` and PRs to `main`. (`git log --all` showed no recoverable
 old workflow.) Awaiting Rubén's Done once a run is seen green on GitHub.
 
-### Native test drift: test_km_act fails and test_km_coms does not compile
+### ~~Native test drift: test_km_act fails and test_km_coms does not compile~~
 
-Found 2026-08-08 while wiring up CI. `pio test -e native` without filters: 4 failures in
-`test_km_act` (asserts against the classic-ESP32 DAC fakes — e.g. expects channel 0/1 writes and
-127/191 DAC values that the S3 code path no longer produces, then dies SIGILL) and `test_km_coms`
-fails at the *compile* stage. `test_km_pid` and `test_km_objects` pass (21/21). The CI workflow
-filters to the two green suites; widen the filter in `.github/workflows/build.yml` when these are
-fixed.
+Found 2026-08-08 while wiring up CI. **Fixed 2026-08-10 — `pio test -e native` is now 51/51 green
+across all four suites, and `.github/workflows/build.yml` runs it unfiltered.**
+
+Neither cause was what the original entry guessed (it blamed the S3 DAC code path; that was not
+involved — the native build uses the classic pin map from `test/fakes/km_gpio.h`):
+
+- **`test_km_coms` did not compile**: `test/fakes/freertos/FreeRTOS.h` had no `TickType_t`, which
+  `km_coms.h:276` and `km_coms.c:73` both use. Added `typedef uint32_t TickType_t` (matching
+  `configUSE_16_BIT_TICKS = 0`) and gave `xTaskGetTickCount()` that return type. The 13 tests
+  themselves were fine and all passed once it built.
+- **`test_km_act`'s 4 failures were an index-vs-pin mismatch that had never been right.** The tests
+  asserted `dacChannel == 0` / `== 1`, and the fake `KM_GPIO_WriteDAC()` recorded only when
+  `pin == 0` or `pin == 1` — but `km_act` stores the *pin identifier* (`PIN_CMD_ACC` /
+  `PIN_CMD_BRAKE`), so the fake matched nothing and both DAC values read 0. Both now dispatch on the
+  `PIN_CMD_*` identifiers, which keeps them correct whichever target's pin map the fake tracks. The
+  SIGILL was the fallout of the failed asserts and went with them.
+- `km_act.c`'s `// GPIO 25 (DAC1)` / `// GPIO 26 (DAC2)` comments — which is what made the field
+  look like a channel index — now say what the value actually is on each target.
 
 ### Compressor MOSFET runs too hot — run the 250 Hz comparison next
 

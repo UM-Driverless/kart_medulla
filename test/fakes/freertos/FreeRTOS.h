@@ -7,6 +7,9 @@
 typedef void * SemaphoreHandle_t;
 typedef void * TaskHandle_t;
 typedef int BaseType_t;
+/* Matches the ESP-IDF configuration this firmware builds with:
+ * configUSE_16_BIT_TICKS is 0, so a tick count is a uint32_t. */
+typedef uint32_t TickType_t;
 
 #define pdTRUE  1
 #define pdFALSE 0
@@ -20,7 +23,7 @@ static inline SemaphoreHandle_t xSemaphoreCreateMutex(void) { return (void *)1; 
 static inline BaseType_t xSemaphoreTake(SemaphoreHandle_t s, uint32_t t) { (void)s;(void)t; return pdTRUE; }
 static inline BaseType_t xSemaphoreGive(SemaphoreHandle_t s) { (void)s; return pdTRUE; }
 
-static inline uint32_t xTaskGetTickCount(void) { return 0; }
+static inline TickType_t xTaskGetTickCount(void) { return 0; }
 #define vTaskDelay(x) (void)(x)
 
 #endif

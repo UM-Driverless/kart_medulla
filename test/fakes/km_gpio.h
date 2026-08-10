@@ -46,9 +46,12 @@ static inline esp_err_t KM_GPIO_WriteDigital(gpio_num_t pin, uint8_t level) {
 
 static inline uint16_t  KM_GPIO_ReadADC(gpio_num_t pin) { (void)pin; return 0; }
 
+/* km_act stores the pin identifier in dacChannel, not a 0/1 channel index, so
+ * dispatch on the same PIN_CMD_* values the real KM_GPIO_WriteDAC() compares
+ * against. Keying on a literal 0/1 here silently recorded nothing. */
 static inline esp_err_t KM_GPIO_WriteDAC(gpio_num_t pin, uint8_t value) {
-    if (pin == 0) fake_dac_value[0] = value;      /* channel A (accel) */
-    else if (pin == 1) fake_dac_value[1] = value;  /* channel B (brake) */
+    if (pin == PIN_CMD_ACC) fake_dac_value[0] = value;        /* channel A (accel) */
+    else if (pin == PIN_CMD_BRAKE) fake_dac_value[1] = value; /* channel B (brake) */
     return ESP_OK;
 }
 

@@ -33,8 +33,8 @@ jobs:
       - name: Build ESP32-S3 firmware
         run: pio run -e esp32-s3-devkitc-1
 
-      # Only the suites that pass as of 2026-08-08. test_km_act asserts against
-      # outdated DAC fakes and test_km_coms does not compile natively — tracked in
-      # tasks.md ("Native test drift"). Widen this filter when they are fixed.
+      # All four suites, unfiltered since 2026-08-10: test_km_coms was missing a
+      # TickType_t typedef in the FreeRTOS fake, and test_km_act asserted a 0/1
+      # channel index where km_act stores a pin identifier. Both fixed, 51/51 green.
       - name: Native unit tests
-        run: pio test -e native -f test_km_pid -f test_km_objects
+        run: pio test -e native

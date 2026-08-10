@@ -27,12 +27,17 @@ ACT_Controller KM_ACT_Init(ACT_Type type, float limit)
     switch (type)
     {
     case ACT_ACCEL:
-        act.dacChannel = PIN_CMD_ACC;   // GPIO 25 (DAC1)
+        // Not a 0/1 channel index: this is the identifier KM_GPIO_WriteDAC()
+        // dispatches on. Classic ESP32 = GPIO 25 (DAC1); S3 = the stand-in 200
+        // that selects MCP4922 channel A.
+        act.dacChannel = PIN_CMD_ACC;
         act.pwmChannel = 0;
         act.dirPin = 0;
         break;
     case ACT_BRAKE:
-        act.dacChannel = PIN_CMD_BRAKE; // GPIO 26 (DAC2)
+        // Classic ESP32 = GPIO 26 (DAC2); S3 = the stand-in 201 for MCP4922
+        // channel B. Nothing writes brake yet — the proportional valve is unwired.
+        act.dacChannel = PIN_CMD_BRAKE;
         act.pwmChannel = 0;
         act.dirPin = 0;
         break;

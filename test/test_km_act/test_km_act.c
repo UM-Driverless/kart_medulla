@@ -29,14 +29,16 @@ static void reset_fakes(void) {
 void test_init_accel(void) {
     ACT_Controller act = KM_ACT_Init(ACT_ACCEL, 0.5f);
     TEST_ASSERT_EQUAL(ACT_ACCEL, act.type);
-    TEST_ASSERT_EQUAL(0, act.dacChannel);
+    /* dacChannel holds the pin identifier KM_GPIO_WriteDAC() dispatches on,
+     * not a 0/1 channel index. */
+    TEST_ASSERT_EQUAL(PIN_CMD_ACC, act.dacChannel);
     TEST_ASSERT_FLOAT_WITHIN(0.001f, 0.5f, act.outputLimit);
 }
 
 void test_init_brake(void) {
     ACT_Controller act = KM_ACT_Init(ACT_BRAKE, 1.0f);
     TEST_ASSERT_EQUAL(ACT_BRAKE, act.type);
-    TEST_ASSERT_EQUAL(1, act.dacChannel);
+    TEST_ASSERT_EQUAL(PIN_CMD_BRAKE, act.dacChannel);
     TEST_ASSERT_FLOAT_WITHIN(0.001f, 1.0f, act.outputLimit);
 }
 
