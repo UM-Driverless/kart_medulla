@@ -23,6 +23,17 @@ finished, pushed and still sit here awaiting that confirmation; several do.
 
 ## TODO
 
+- [ ] **Flash the steering-authority gate and verify it on the kart** (added 2026-08-10). Commit `708f6da` on `dev` makes `control_task` in `main/main.c` refuse to drive `dir_act` unless the Orin reports `AS_DRIVING`, or the mission is remote control (7). It builds clean for `esp32-s3-devkitc-1` but has never run on hardware.
+
+  **Why it exists.** The Orin sends a steering target continuously, in every state — its mux publishes a zero Twist whenever it has nothing to say. In PID angle mode 0 rad is a real target, "centre the wheels and hold them", so the motor was powered as soon as a mission was selected on the dashboard, with no Start pressed; this was seen moving the steering column on the kart. The protocol cannot express "no target" (`TARGET_STEERING` is an int32, every value is a valid angle), so the authority to actuate was moved to the firmware instead, where it is one condition in front of the one call that turns the motor.
+
+  **Flash:** `cd ~/kart_medulla && ~/.local/bin/pio run -e esp32-s3-devkitc-1 -t upload --upload-port /dev/ttyACM0`, after `sudo systemctl stop kart-brain` — the running stack holds the serial port and the flash otherwise fails with "serial noise". Restart the service afterwards.
+
+  **Verify, hands clear of the wheel:** selecting AUTO must not move the column; Start must let it steer; Stop must stop it; toggling steering algorithm Geometric ↔ None must not move it in any state; remote control must still steer. The last one is the regression risk — remote control is the carve-out, and if the mission ID or the Orin's reported state ever differs from what this assumes, remote steering goes dead rather than dangerous.
+
+  The Orin side was independently fixed to stop sending drive-worthy zeros (kart-brain `ad7e49b`, `ff8db3e`, with an invariant test suite). The two are complementary: that stops the bad command being sent, this stops it being acted on. Keep both — the firmware gate is the one that also covers senders nobody has written yet.
+
+
 
 - [ ] **`tasks.md` structure: the "Docs across kart-medulla, dv-hardware and kart-docs contradict
   the code and each other" section sits under `## Done` but holds open `- [ ]` items.** Found
