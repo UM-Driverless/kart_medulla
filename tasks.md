@@ -609,6 +609,11 @@ dashboard.
 
 ### One-shot Orin commands are delivered blind, 100x, while an echo that could acknowledge them goes unused
 
+**LOW PRIORITY (Rubén, 2026-08-10)** — the current scheme works and the burst costs nothing
+measurable, so this waits behind anything that blocks driving the kart. Do not start it as filler
+work: it is a protocol change across two repos and needs both sides landed together plus a drive to
+validate, so picking it up cheaply is not an option.
+
 Opened 2026-08-10 (Rubén's question). `ORIN_STEER_PID` and the other one-shot commands are sent by
 `publish_steer_pid` in kart-brain `dashboard_node.py:527-553` as the same frame repeated **100 times
 at 100 Hz for one second**, because there is no acknowledgement and a single frame can be lost. The
