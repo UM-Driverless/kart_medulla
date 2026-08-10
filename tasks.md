@@ -967,19 +967,30 @@ drive to validate, not a quiet edit.
 Found 2026-07-30 during a three-repo audit. These sat under the board's `## Done` heading while
 still open — the closed half of the section is now in `tasks/done-archive.md`.
 
-- [ ] **dv-hardware's schematic and its fabricated PCB disagree on connector designators.** The
-  schematic and `output/netlist.net` put the pressure channels on `CN2.1`/`CN2.2`/`CN2.3`; the v1
-  silkscreen and PCB put them on `CN7.1`/`CN7.2`/`CN5.2`, where PCB `CN2` is HALL3/HALL2/+5V_REG.
-  Anyone wiring from a schematic printout lands on the wrong header. Trust the silkscreen. That
-  netlist export is dated 2026-05-07 and is already flagged stale in dv-hardware, but kart-docs
-  carries no warning about it.
-- [ ] **`PRESSURE_3` status conflict between repos.** kart-docs says the channel is retired and
-  repurposed to steering PWM; dv-hardware's `docs/pinout-esp32-s3.md:176` — which kart-docs names as
-  the tie-break authority — still lists it as "Pressure sensor 3 (input only)". The stated tie-break
-  rule therefore points at the stale file.
-- [ ] **Pressure channel count is wrong in kart-docs.** It says "3x Festo" and "the three
-  pneumatic-pressure sensors", but the BOM has qty 2, the wire list defines only `press1`/`press2`,
-  and only two ADC channels remain.
+- [x] **Fixed 2026-08-10 — connector-designator mismatch and the stale netlist behind it.**
+  dv-hardware's `output/netlist.net` was last exported 2026-08-01, before the 2026-08-08 schematic
+  edit that deleted R39; it still showed the dead `ACC_AMP_OUT` net and, per `pinout-cn-connectors.md`,
+  Q3/Q4's gates on no net. Re-exported with `kicad-cli sch export netlist` against the current
+  schematic (commit `e4a6e10`) — the pressure channels now show as `CN7.1`/`CN7.2`/`CN5.2` in the
+  netlist too, matching the v1 silkscreen and PCB (where PCB `CN2` is HALL3/HALL2/+5V_REG, not
+  pressure). Added an explicit warning in `pinout-cn-connectors.md` that an earlier schematic draft
+  had the pressure channels on `CN2`, and that anyone wiring the kart should read the silkscreen, not
+  a schematic printout, in case a future edit drifts again before a new revision is fabricated.
+  kart-docs' `pinout.md` (a generated mirror of that file) was re-synced.
+- [x] **Fixed 2026-08-10 — `PRESSURE_3` status conflict.** kart-docs was already correct (channel
+  retired, GPIO 1 repurposed to read the MT6701 steering-angle sensor's PWM via MCPWM capture — the
+  firmware confirms this: `PIN_PRESSURE_3` is `#if`'d out of `km_gpio.c`'s ADC1 list on the S3, and
+  `km_sdir_pwm.h` documents GPIO 1 / CN5.2 as its PWM capture input). dv-hardware's
+  `docs/pinout-esp32-s3.md` row 19 (the tie-break file kart-docs points to) was the stale side —
+  still labelled "Pressure sensor 3 (input only)" even though the same file's own "As-built pin use"
+  section, further down, already documented the repurpose correctly. Updated row 19 to match. The
+  CN5.2 row in `pinout-cn-connectors.md` had the same stale label and got the same fix. The
+  tie-break rule itself ("when this doc and the schematic disagree, the schematic wins") did not need
+  rewording — it was correct, just pointing at a file with one stale row.
+- [x] **Fixed 2026-08-10 — pressure channel count in kart-docs.** `wiring.md` said "three
+  pneumatic-pressure sensors"; corrected to two, matching the BOM (qty 2), the wire list
+  (`press1`/`press2` only), and the two remaining ADC channels. This was the only stale count —
+  `wiring.md`'s own next sentence, the BOM, and `kart-medulla/index.md` already said two.
 - [x] **Fixed 2026-08-10 — two latent ADC bugs in `km_gpio.c`, neither affecting pressure.**
   (a) `PIN_HYDRAULIC_2` (GPIO 2, ADC1_CH1 on the S3) was absent from `adc1_pins[]`, so its
   attenuation was never configured while `KM_GPIO_ReadADC` did have a case reading
@@ -995,10 +1006,14 @@ still open — the closed half of the section is now in `tasks/done-archive.md`.
   read without being configured. (b) The `GPIO_NUM_1` attenuation branch can never execute, since
   `PIN_PRESSURE_3` is `#if`'d out of `adc1_pins[]`; harmless but it is the same "configured is not
   used" trap already logged at `.agents/error-log.md:181`.
-- [ ] **Module variant conflict.** dv-hardware records the fitted module as
-  **ESP32-S3-WROOM-1-N16R8** ("verified on hardware 2026-07-10"); kart-docs says **N8R2**. R8 means
-  octal PSRAM, which consumes GPIO 33-37 — so which one is actually fitted determines whether those
-  pins exist at all. Settle it by reading the can, and correct whichever doc is wrong.
+- [x] **Checked 2026-08-10 — module variant conflict does not exist today; this item was stale.**
+  Both repos already agree the fitted module is **ESP32-S3-WROOM-1-N16R8**: dv-hardware's
+  `docs/pinout-esp32-s3.md` and `.agents/esp32s3-pinmap.md` in this repo, and kart-docs'
+  `kart-medulla/index.md`, all say N16R8. kart-docs' claim is the strongest evidence on file — it
+  cites `esptool` reading `Embedded PSRAM 8MB (AP_3v3)` off the physical board, not just a visual
+  check. N8R2 appears only as the originally-ordered part number in historical context (the supplier
+  shipped N16R8 instead; see dv-hardware `history.md` 2026-04-23 / 2026-04-29). No doc currently
+  asserts N8R2 is what's fitted, so there was nothing to reconcile.
 - [x] **Fixed 2026-08-10 — `AGENTS.md`'s UART protocol tables described an encoding the firmware stopped using.** Both tables deleted and replaced by a pointer to `message_type_t` in `components/km_coms/km_coms.h`, with a note recording what they got wrong (int32 arrays, not u8/int16; `ORIN_COMPLETE` is 6 int32 not 7 bytes) and the eight frames they were missing. Regenerating them was rejected: a hand-maintained copy of an enum goes stale the moment someone adds a frame without looking there.  ~~Original entry:~~ — Noticed
   2026-07-30. The two "Message types" tables at `AGENTS.md:153-165` give payloads as `u8 [0-255]`,
   `int16 big-endian, radians × 1000` and `ORIN_COMPLETE | 7 bytes`. The wire format is int32 arrays and
