@@ -395,3 +395,30 @@ claims that name a specific file, symbol or constant, or mark the summary as unv
 ("as recorded, not rechecked"). Cheap in this repo: every stale entry found this session was one
 `grep` away. Prefer checking the items the user is most likely to act on, and the ones whose entry
 predates recent work in the same area.
+
+## 2026-08-10 — Repeated the stale-`tasks.md` mistake within the same day (Claude Opus 5)
+
+**What happened:** Asked "what tasks.md left?", the agent summarised the board and led with a
+section headed "Safety blocker", stating that `dev` commands 50% throttle unconditionally and that
+the kill switches were the only thing that would stop the kart. Rubén's reply was "though i doubt
+it's true. last time we got it to accelerate on command in remote control. it was not hardcoded" —
+and he was right. Commit `7bcd6eb` had removed the bench hardcode on 2026-08-08, two days earlier,
+and it is in `dev`'s history. `main/main.c:821` takes throttle from `TARGET_THROTTLE`, and
+`KM_GPIO_SetThrottleSource(true)` at line 790 sits *below* the comms-stale / `MISSION_MANUAL` early
+return at line 771 — the opposite of what the entry claimed. `-D SPI_DIAG_LOGS=1` was likewise gone
+from `platformio.ini`. Nobody had updated `tasks.md` when the fix landed.
+
+**Root cause:** the same one already written up in the entry directly above this one, from earlier
+the same day, which ends with the prevention "either spot-check the claims that name a specific
+file, symbol or constant, or mark the summary as unverified up front". That prevention was not
+followed, and the reason is structural rather than a lapse of attention: `.agents/error-log.md` is
+consult-selectively, so it is grepped when working *in an area*, and "summarise the task board" does
+not feel like an area. The guidance existed in a file that the task in question gives no reason to
+open.
+
+**Two aggravating details.** The claim was the most alarming one on the board, which is exactly the
+kind a reader acts on immediately. And it was cheap to check — one `grep` of `main.c` settled it,
+the same one-grep distance the previous entry noted.
+
+**Prevention:** the fix belongs in `AGENTS.md`, not here, because that file is loaded for every task
+while this one is not. Proposed line is under "Files", beside the `tasks.md` bullet.

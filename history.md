@@ -2296,3 +2296,26 @@ so the long-open "is the MCP4922 actually dead, or just never written to?" quest
 was only ever unwritten, and the SPI write has been in `km_gpio.c` since 2026-07-31. And the
 **proportional braking valve is not wired yet**, so MCP4922 channel B is deliberately left unwritten;
 it costs no ESP32 pin, because `PIN_CMD_BRAKE` on the S3 is the stand-in value 201 rather than a GPIO.
+
+## 2026-08-10 — The 50%-throttle blocker was already fixed; `tasks.md` was the stale part
+
+`tasks.md` carried a "BLOCKER before any `dev` → `main` PR" saying `control_task()` forced throttle
+to `0.5f` and returned above the comms-watchdog / manual-mode gate, so a `dev` build would ignore the
+dashboard, comms loss and manual mode. Rubén doubted it from behaviour — the kart had accelerated
+*on command* under remote control, which a hardcoded constant cannot do.
+
+He was right. The bench hardcode was real (`ba35b75` "TEST: SELECT_THROTTLE back to constant high",
+and `12f8e05`), but `7bcd6eb` reverted it on 2026-08-08 and is in `dev`'s history. Verified against
+HEAD `8516d3c`: `main/main.c:821` reads `TARGET_THROTTLE`; `KM_GPIO_SetThrottleSource(true)` at line
+790 is *below* the `comms_stale || mission == MISSION_MANUAL` early return at line 771, so a stale or
+manual build hands the mux back to the pedal; `SPI_DIAG_LOGS` is no longer set in `platformio.ini`
+and `main.c:79` defaults it to 0. The board entry is now closed.
+
+What remains genuinely open is which image the S3 is *running*. The pending-flash task was written
+because the Orin dropped mid-flash on 2026-08-08. Rubén's remote-control test dates the running build
+as `7bcd6eb` or later at that moment, which is evidence but not proof nothing was flashed over it
+since.
+
+The lesson is logged in `.agents/error-log.md` under the same date: this is the second time in one
+day that a `tasks.md` entry was read aloud as current fact, and the prevention note from the first
+occurrence lives in a file that the task gave no reason to grep.
