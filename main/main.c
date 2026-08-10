@@ -95,6 +95,12 @@ static volatile bool tank_pressure_ok = false;
 #define MAX_ERROR_COUNT_SDIR 10
 #define COMMS_WATCHDOG_MS    1000  // Zero outputs if no command for this long
 #define MISSION_MANUAL       0     // Mission ID 0 = manual (no electronic actuation)
+/* Mission ID 7 = remote control: a human drives over the network, so the steering
+ * motor must follow their commands without the Orin's state machine ever reaching
+ * AS_DRIVING (it reports AS_OFF for every non-autonomous mission). This is the one
+ * carve-out in the steering-authority check below. Same source of truth as the
+ * states above: kart-brain's src/kb_dashboard/kb_dashboard/protocol.py, MISSIONS. */
+#define MISSION_REMOTE_CTRL  7
 
 /* Autonomous-system states as the Orin numbers them, arriving here in
  * MACHINE_STATE_ORIN via ORIN_MACHINE_STATE. Source of truth for these values is
@@ -839,6 +845,40 @@ void control_task(void *ctx) {
         KM_ACT_SetOutput(c->throttle_act, thr);
     }
     KM_ACT_SetOutput(c->brake_act, brk);
+
+    // --- Steering authority: who is allowed to drive the motor at all ---
+    //
+    // The Orin sends a steering target continuously, in every state — its mux
+    // publishes a zero Twist whenever it has nothing to say. A zero is not a
+    // "no command": in PID mode it is a target of 0 rad, i.e. "centre the wheels
+    // and hold them there", so acting on it powers the motor against whoever is
+    // touching the wheel. On 2026-08-10 that meant selecting an autonomous mission
+    // on the dashboard moved the column, with no Start pressed, and switching
+    // steering algorithm moved it and stopped it again (kart-brain tasks.md).
+    //
+    // The protocol has no way to say "no target" — the field is an int32 and every
+    // value in it is a valid angle — so this cannot be fixed by sending something
+    // different. It is fixed here instead, which is the only place that turns the
+    // motor: the target is a request, and authority to act on it is decided by the
+    // state, not by the sender. Any number of Orin nodes may publish targets; none
+    // of them can arm the steering.
+    //
+    // Allowed only when:
+    //   - AS_DRIVING: the Orin's state machine says the kart is driving. AS_READY
+    //     is NOT enough — that is "mission selected, waiting for Start", exactly
+    //     the state that used to move the column.
+    //   - remote control: a human is driving over the network, and the Orin stays
+    //     in AS_OFF for that mission, so it never reaches AS_DRIVING.
+    // Stale comms and manual mission are already handled by the watchdog above,
+    // which stops every actuator and returns before reaching this point.
+    bool steering_may_drive = (as_state == AS_DRIVING)
+                           || (mission == MISSION_REMOTE_CTRL);
+    if (!steering_may_drive) {
+        KM_ACT_Stop(c->dir_act);
+        KM_PID_Reset(c->dir_pid);
+        last_pid_out = 0.0f;
+        return;
+    }
 
     float steer_out;
     if (steer_mode == 1) {
