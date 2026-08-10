@@ -47,6 +47,18 @@ static int32_t g_gpio_init_err = -1;
  * latched EBS that nothing reports looks identical to a brake fault. */
 static volatile bool steer_fault_latched = false;
 
+/* Boot-relative microseconds at which the latch above tripped; meaningless while
+ * it is clear. Reported as an age in seconds in the health frame.
+ *
+ * WHY AN AGE AND NOT JUST THE FLAG. The flag alone cannot distinguish a sensor
+ * failing right now from one that failed once during an earlier boot and has
+ * worked ever since — the latch survives until reboot, so both render
+ * identically as "TRIPPED" while HEALTH_FLAG_STEER_OK simultaneously reads
+ * healthy. On 2026-08-08 that ambiguity cost hours: a stale latch was diagnosed
+ * as a live sensor or code failure (see .agents/error-log.md and history.md for
+ * that date). An age makes the stale case obvious at a glance. */
+static volatile int64_t steer_fault_us = 0;
+
 /* Set when a full-length compressor burst starting below PRESSURE_STALL_JUDGE_BELOW_BAR
  * fails to raise the tank pressure — a dead or stuck sensor, a compressor that is not
  * actually spinning, or a leak that outpaces it.
@@ -849,6 +861,9 @@ void control_task(void *ctx) {
         // autonomous steering the instant frames returned would be re-arming
         // itself after a safety trip, which is not the firmware's call to make.
         // How the trip should be cleared is open in tasks.md.
+        // Stamp the trip time before setting the flag, so health_task can never
+        // observe a latched fault carrying the previous stamp (or a zero one).
+        steer_fault_us = esp_timer_get_time();
         steer_fault_latched = true;
         KM_GPIO_SetEmergency(1);
         KM_ACT_Stop(c->throttle_act);
@@ -941,23 +956,38 @@ void health_task(void *ctx) {
         if (free_heap >= HEALTH_HEAP_MIN_BYTES) flags |= HEALTH_FLAG_HEAP_OK;
         uint16_t heap_kb = (uint16_t)(free_heap / 1024);
 
-        // Payload: [flags, agc, heap_kb, i2c_errors, steer_frames, steer_rejects].
-        // The last two were APPENDED — a consumer reading only the first four
-        // fields decodes this frame unchanged. They separate the two ways the
-        // steering read can be unhealthy, which the flag bit alone cannot:
-        // frames flat at zero means no edges are arriving at all (dead sensor,
-        // unplugged lead), while rejects climbing against flat frames means edges
-        // arrive but at the wrong rate (sensor reverted out of 994 Hz PWM mode,
-        // or the lead is picking up noise).
-        int32_t payload[6] = {
+        // Payload: [flags, agc, heap_kb, i2c_errors, steer_frames, steer_rejects,
+        //           steer_trip_age_s].
+        // Everything past the first four was APPENDED — a consumer reading only
+        // those four decodes this frame unchanged. Fields 5-6 separate the two
+        // ways the steering read can be unhealthy, which the flag bit alone
+        // cannot: frames flat at zero means no edges are arriving at all (dead
+        // sensor, unplugged lead), while rejects climbing against flat frames
+        // means edges arrive but at the wrong rate (sensor reverted out of
+        // 994 Hz PWM mode, or the lead is picking up noise).
+        //
+        // Field 7 is how long ago the steering fault latched, in seconds, or -1
+        // while it is clear. See steer_fault_us for why the flag alone is not
+        // enough. Seconds rather than milliseconds because the question it
+        // answers is "did this happen just now or boots ago", and seconds still
+        // covers 68 years in an int32.
+        int32_t steer_trip_age_s = -1;
+        if (steer_fault_latched) {
+            int64_t age_us = esp_timer_get_time() - steer_fault_us;
+            if (age_us < 0) age_us = 0;   // defensive: clocks should not go backwards
+            steer_trip_age_s = (int32_t)(age_us / 1000000);
+        }
+
+        int32_t payload[7] = {
             flags,
             (int32_t)agc,
             (int32_t)heap_kb,
             (int32_t)c->sdir->errorCount,
             (int32_t)KM_SDIR_PWM_GetFrameCount(),
-            (int32_t)KM_SDIR_PWM_GetRejectCount()
+            (int32_t)KM_SDIR_PWM_GetRejectCount(),
+            steer_trip_age_s
         };
-        KM_COMS_SendMsg(ESP_HEALTH_STATUS, payload, 6);
+        KM_COMS_SendMsg(ESP_HEALTH_STATUS, payload, 7);
 
         // Echo the steering gains actually in force. This is the only thing that
         // tells the dashboard the truth: an ESP32 reset clears the override and

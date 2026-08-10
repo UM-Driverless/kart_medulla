@@ -99,7 +99,15 @@ typedef enum
     ESP_HEARTBEAT           = 0x08, /**< ESP32 heartbeat message */
     ESP_COMPLETE            = 0x09, /**< Full telemetry message */
     ESP_DIAG_STEERING       = 0x0A, /**< AS5600 diagnostic registers (debug) */
-    ESP_HEALTH_STATUS       = 0x0B, /**< Periodic health: [flags, status, agc, heap_h, heap_l, err_cnt] */
+    ESP_HEALTH_STATUS       = 0x0B, /**< Periodic health, 1 Hz, 7 fields:
+                                         [flags, agc, heap_kb, i2c_errors, steer_frames,
+                                          steer_rejects, steer_trip_age_s].
+                                         flags: bit0 magnet_ok, bit1 i2c_ok, bit2 heap_ok,
+                                         bit3 steer_ok (read valid NOW), bit4 steer_trip (latched).
+                                         steer_trip_age_s is seconds since the latch tripped, or -1
+                                         while clear — bit4 alone cannot tell a live fault from one
+                                         latched during an earlier boot. Fields are only ever
+                                         APPENDED, so a consumer reading the first N keeps working. */
     ESP_PNEUMATIC           = 0x0C, /**< Pneumatics telemetry, 8 fields, ~20 Hz: [tank_adc, comp_duty,
                                          piston_adc, comp_state, control_iters, ledc_readback,
                                          gpio_init_err, sdc_level]. Fields are only ever APPENDED, so a
