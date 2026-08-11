@@ -2376,3 +2376,31 @@ actuator earlier in the same function.
 This makes the Orin's targets advisory. Any number of nodes may publish them — three can write the
 steering mode alone — and none of them can arm the motor. `AS_READY` is deliberately not enough:
 that is "mission selected, waiting for Start", the exact state that was moving the column.
+
+## 2026-08-11 — U5 (SN74LVC3G17) re-sourced from AliExpress after the Mouser order was cancelled
+
+U5 is the triple Schmitt-trigger buffer the three motor Hall terminals (CN2.1, CN2.2, CN7.3 → GPIO
+21, 47, 16) pass through: `SN74LVC3G17DCTR`, package **SSOP-8 (DCT), 2.95 × 4 mm**. Its inputs are
+over-voltage tolerant to 5.5 V regardless of VCC, so powered from 3V3 it takes the 5 V Hall signals
+down to 3V3 for the ESP32-S3. It is unidirectional, connector on A and ESP32 on Y — see the
+"simpler wiring: move the throttle wire instead of lifting U13 pin 14" entry above for why that
+makes the Hall terminals input-only.
+
+The part was ordered from Mouser on 2026-07-08. **That order was cancelled and the chip never
+arrived.** Mouser is not a viable route for it going forward, and the reason generalises past this
+part: Mouser's shipping cost only pays off spread across a large batch order, and this team does not
+place those. So single small ICs get bought from AliExpress instead, accepting the authenticity risk
+that carries on logic parts.
+
+Replacement now in the AliExpress cart: a 5-piece lot, 3,49 € total (0,698 €/unit), YUXINYUAN
+Official Store, https://es.aliexpress.com/item/1005009599009808.html
+
+**Ordering trap on that listing.** One page sells two different chips — `SN74LVC3G04` (triple
+inverter, die marking C04) and `SN74LVC3G17` (triple Schmitt buffer, die marking C17). The variant
+selected in the cart must read `74LVC3G17 C17`; the C04 is a different logic function and cannot
+serve as U5. The listing also calls the package "MSOP8", which is loose wording for the same SSOP-8
+(DCT) body — not a footprint mismatch.
+
+Inventory row (Notion, "AI Inventory"), updated to `To order` with the link, unit price and the
+above notes rather than duplicated:
+https://app.notion.com/p/SN74LVC3G17DCTR-triple-Schmitt-trigger-buffer-5V-tolerant-inputs-397787473143811094bac72aa77a8ee5

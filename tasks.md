@@ -35,6 +35,21 @@ finished, pushed and still sit here awaiting that confirmation; several do.
 
 
 
+- [ ] **Confirm whether U5 (`SN74LVC3G17DCTR`) is actually populated on the v1 PCB** (added
+  2026-08-11). A replacement chip was sourced on 2026-08-11 on the understanding that U5 was
+  "the chip we were missing" for reading the motor Hall signals — but nothing in this repo records
+  it as absent. `README.md` and `.agents/esp32s3-pinmap.md` both describe the Hall lines as reaching
+  GPIO 16/47/21 *through* U5, i.e. as a part that is there. Either the docs are describing the
+  schematic rather than the assembled board, or a specific physical board has an empty U5 pad.
+
+  **How to settle it:** look at the U5 footprint on the board in hand and read the die marking —
+  `C17` is the right part, `C04` is the `SN74LVC3G04` triple inverter. Then correct whichever of the
+  two records is wrong. Worth doing before the AliExpress lot arrives, because if U5 is populated
+  and working, the 3,49 € buy is a spare rather than a fix, and the real reason the Hall signals are
+  unread is that firmware never reads them (they appear only in a `printf` in `km_gpio.c`).
+
+  Sourcing background for the replacement is in `history.md` under 2026-08-11.
+
 - [ ] **`tasks.md` structure: the "Docs across kart-medulla, dv-hardware and kart-docs contradict
   the code and each other" section sits under `## Done` but holds open `- [ ]` items.** Found
   2026-08-08 while closing two of them. Either move the section back under TODO or split the
