@@ -8,7 +8,7 @@ Adapted from partle's tasks/archive_done.py. Two differences from that repo:
 """
 import re, sys
 
-TASKS = "/Users/rubenayla/repos/hardware/kart-medulla/tasks.md"
+TASKS = "/Users/rubenayla/repos/kart-medulla/tasks.md"
 lines = open(TASKS).read().split("\n")
 
 
@@ -147,7 +147,7 @@ for h, b in archived_from_board:
 
 out += ["", "## Previously under the board's `## Done` heading", ""] + archived_from_done + [""]
 
-with open("/Users/rubenayla/repos/hardware/kart-medulla/tasks/done-archive.md", "w") as f:
+with open("/Users/rubenayla/repos/kart-medulla/tasks/done-archive.md", "w") as f:
     f.write("\n".join(out).rstrip() + "\n")
 
 # --- rewrite the board -----------------------------------------------------

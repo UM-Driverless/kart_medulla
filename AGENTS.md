@@ -9,7 +9,7 @@
   - **Steering-sensor PWM angle output** is read on **GPIO 1** (the ex-`PRESSURE_3` terminal CN5.2). This pad belongs to MCPWM capture, so it is deliberately NOT set up as an ADC channel — nothing else may claim it.
   - **EBS compressor MOSFET** is on **GPIO 3** (the ex-`BUZZER` net, now `CMD_COMPRESSOR_PWM`, CN8.2).
 - **The physical board this firmware targets is dv-hardware commit `84d6dd0` (tag `kart-medulla-v1`), plus the rework listed in that repo's README under "Boards in existence".** dv-hardware `main` HEAD carries post-fab v2 design changes that do NOT exist on the physical board (throttle gain stage ×1.51, brake gain 3, MCP4922 moved to +3V3, WAGO connectors). Update this line when a new board is built. **Any electrical claim (pin wiring, part value, voltage range) must name the dv-hardware commit it was read from** — mixing HEAD with the physical board produced a string of wrong conclusions on 2026-08-08 (see history.md).
-- **The schematic and PCB live in a different repo, and the board physically on the kart is revision v1: `~/repos/hardware/dv-hardware-v1/projects/kart-medulla/`.** `~/repos/hardware/dv-hardware` is the evolving next revision — when asking "what is this pin wired to on the real kart", read v1, not it (Rubén, 2026-08-08). `kart-medulla.kicad_sch` (sheet `kart-medulla_P1.kicad_sch` holds the circuitry), `kart-medulla.kicad_pcb`, `docs/pinout-esp32-s3.md` (module pin → signal), `docs/pinout-cn-connectors.md` (**which signal is on which CN1–CN10 screw terminal** — read this when wiring or probing the outside world), `datasheets/`, `parts.md`. **The schematic is the authority on anything electrical** — what a pin physically connects to, part values, signal voltage ranges. When a question is "what is this pin wired to", export a fresh netlist and read it rather than trusting any table: `kicad-cli sch export netlist --format kicadxml -o /tmp/net.xml kart-medulla.kicad_sch`. The checked-in `output/netlist.net` is dated 2026-05-07 and is stale. Note the PCB silkscreen and the schematic disagree on some connector designators — trust the silkscreen for wiring (see `tasks.md`).
+- **The schematic and PCB live in a different repo, and the board physically on the kart is revision v1: `~/repos/archive/dv-hardware-v1/projects/kart-medulla/`.** `~/repos/dv-hardware` is the evolving next revision — when asking "what is this pin wired to on the real kart", read v1, not it (Rubén, 2026-08-08). `kart-medulla.kicad_sch` (sheet `kart-medulla_P1.kicad_sch` holds the circuitry), `kart-medulla.kicad_pcb`, `docs/pinout-esp32-s3.md` (module pin → signal), `docs/pinout-cn-connectors.md` (**which signal is on which CN1–CN10 screw terminal** — read this when wiring or probing the outside world), `datasheets/`, `parts.md`. **The schematic is the authority on anything electrical** — what a pin physically connects to, part values, signal voltage ranges. When a question is "what is this pin wired to", export a fresh netlist and read it rather than trusting any table: `kicad-cli sch export netlist --format kicadxml -o /tmp/net.xml kart-medulla.kicad_sch`. The checked-in `output/netlist.net` is dated 2026-05-07 and is stale. Note the PCB silkscreen and the schematic disagree on some connector designators — trust the silkscreen for wiring (see `tasks.md`).
 - **USB bridge is a WCH CH343** (VID 0x1A86 / PID 0x55D3) → shows up as `/dev/cu.usbmodem*`. This does NOT mean native-USB / does NOT tell you classic-vs-S3 on its own. Serial goes over UART0 through the bridge, so bench builds use **`ARDUINO_USB_CDC_ON_BOOT=0`** (see `history.md` / error-log on Mac bench flashing).
 
 ## The Steering Sensor Is an MT6701, Not an AS5600
@@ -131,7 +131,7 @@ as the classic board's CP2102 did. Uploading while `kart-brain` is running fails
 > too broad: it turns every build into a clean one (~100 s instead of ~30 s) to work around something that is
 > probably a one-time condition. Leading hypothesis, 2026-07-26 — **a moved build tree**. CMake and ninja bake
 > *absolute* paths into `build.ninja`, `.ninja_deps` and `CMakeCache.txt`, and this repo has moved more than
-> once (`~/Desktop/kart_medulla` → `~/repos/hardware/kart-medulla` on the Mac; the Orin workspace was renamed on
+> once (`~/Desktop/kart_medulla` → `~/repos/kart-medulla` on the Mac; the Orin workspace was renamed on
 > 2026-07-06). A build directory generated under the old path keeps checking the old path, so edits at the new
 > one are invisible — which matches every symptom, including `touch` doing nothing, and explains why deleting
 > the directory cures it permanently rather than temporarily. The component `CMakeLists.txt` files use explicit
@@ -146,7 +146,7 @@ as the classic board's CP2102 did. Uploading while `kart-brain` is running fails
 > task in `tasks.md`.
 
 > **Path/toolchain note (rechecked 2026-07-26):** this used to read `~/Desktop/kart-medulla`; the
-> repo lives at `~/repos/hardware/kart-medulla`. **PlatformIO IS now installed on the Mac**, at
+> repo lives at `~/repos/kart-medulla`. **PlatformIO IS now installed on the Mac**, at
 > `~/.platformio/penv/bin/pio` — not on `PATH`, so call it by full path. Verified by building both
 > `esp32-s3-devkitc-1` and `esp32dev` to a linked firmware.bin on 2026-07-26, which supersedes the
 > earlier "no toolchain on the Mac" note. The Mac can therefore compile-check a change before it
