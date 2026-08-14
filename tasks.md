@@ -120,7 +120,7 @@ verify fails, try 460800, then fall back to 115200 and record which worked here.
 `rm -rf .pio/build/...` before *every* build, which costs a full rebuild (~100 s vs ~30 s) forever.
 Leading hypothesis is a **moved build tree**: CMake/ninja bake absolute paths into `build.ninja`,
 `.ninja_deps` and `CMakeCache.txt`, and this repo has moved more than once (Mac
-`~/Desktop/kart_medulla` → `~/repos/kart-medulla`; the Orin workspace renamed 2026-07-06). A build dir
+`~/Desktop/kart_medulla` → `~/repos/hardware/kart-medulla`; the Orin workspace renamed 2026-07-06). A build dir
 generated at the old path keeps checking the old path — which matches every symptom, `touch` included,
 and explains why deleting it cures things permanently. Glob-staleness is ruled out: the component
 `CMakeLists.txt` use explicit `SRCS "<file>.c"`, not `SRC_DIRS`.
@@ -160,7 +160,7 @@ floating, and the Cytron drove the steering motor uncontrolled into the endstop 
 pulldowns for exactly this window; the steering pins do not.
 
 - [ ] Add pulldowns on the Cytron PWM/DIR inputs (hardware change — belongs in
-  `~/repos/dv-hardware/projects/kart-medulla/`, note it there too).
+  `~/repos/hardware/dv-hardware/projects/kart-medulla/`, note it there too).
 - [ ] Until then, the AGENTS.md flashing section now requires actuator power off (or manual mode)
   before any flash — procedure only, not protection.
 - [ ] Assess/repair the broken steering gear; check whether the motor or Cytron took damage too.
