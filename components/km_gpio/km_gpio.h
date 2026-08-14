@@ -31,8 +31,17 @@
 #endif
 
 /* ============================================================
- *  ESP32-DevKitC V4  (ESP32-WROOM-32E)
- *  Pin assignment - NO WiFi
+ *  PIN MAPS — two of them, selected by the build target.
+ *
+ *  esp32-s3-devkitc-1  -> the ESP32-S3 branch below. This is the
+ *                         kart's board and the image that runs on it.
+ *  esp32dev            -> the classic ESP32-WROOM-32E branch in the
+ *                         #else. Fallback only; not flashed to the kart.
+ *
+ *  The two overlap dangerously rather than merely differing: GPIO 18 is
+ *  steering PWM on the classic board and the gate of Q3, the
+ *  shutdown-circuit MOSFET, on the S3. Never read one branch while
+ *  working on the other.
  * ============================================================ */
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -129,7 +138,8 @@
 /* ---------- STATUS LED ---------- */
 #define PIN_STATUS_LED          GPIO_NUM_48  // dev-board addressable RGB. GAP: needs RMT, not plain GPIO
 
-#else  /* CONFIG_IDF_TARGET_ESP32 — classic ESP32-WROOM-32E (current build) */
+#else  /* CONFIG_IDF_TARGET_ESP32 — classic ESP32-WROOM-32E, the esp32dev fallback target.
+        * NOT the kart's board. Do not wire or reason from these numbers. */
 
 /* ---------- USB (UART0 - debug console) ---------- */
 #define PIN_USB_UART_TX         GPIO_NUM_1   // U0TXD

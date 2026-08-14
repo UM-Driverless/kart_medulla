@@ -47,7 +47,10 @@ Two nets on the actual kart-medulla PCB no longer do what their original name sa
 - **BUZZER (old name) → EBS compressor MOSFET.** The old buzzer output now drives the compressor gate (net renamed `CMD_COMPRESSOR_PWM`, terminal CN8.2). The buzzer itself was dropped. On the S3 board this is GPIO 3.
 - **PRESSURE_3 → steering-sensor PWM input.** The Pressure-3 terminal (CN5.2) now reads the **MT6701**'s single-wire PWM angle output (~994 Hz, angle in the duty cycle) instead of a pressure transducer. On the S3 board this is GPIO 1, decoded with MCPWM capture. **Rework: remove R10 only** — the pulldown to GND — keeping R8 + R9. The net is `CN5.2 —[R8 10k]— node —[R9 10k]— GPIO 1 —[R10 10k]— GND`, so R10 is the only shunt to ground; R8 + R9 remain as a 20 kΩ series into the pin, which is too high-impedance for the ADC and is why this pin is read as digital PWM rather than an analog voltage.
 
-The firmware now supports the ESP32-S3 board natively via the `esp32-s3-devkitc-1` PlatformIO target, which automatically applies the correct pinmap from [`.agents/esp32s3-pinmap.md`](.agents/esp32s3-pinmap.md). (The classic ESP32-WROOM-32E pinmap is still available for legacy testing using `esp32dev`).
+`km_gpio.h` carries both pin maps and picks between them at compile time on
+`CONFIG_IDF_TARGET_ESP32S3`. Building the `esp32-s3-devkitc-1` env takes the S3 branch — that is
+the image on the kart. The classic ESP32-WROOM-32E map sits in the `#else` and is only reachable
+through the `esp32dev` env, which is kept as a fallback and is not flashed to the kart.
 
 ### ESP32-S3 — the board on the kart
 
@@ -143,7 +146,7 @@ kart-medulla/
 │   ├── km_gpio/                   # GPIO hardware abstraction (pin definitions, ADC, DAC, PWM, I2C)
 │   ├── km_act/                    # Actuator controllers (steering, throttle, brake)
 │   ├── km_pid/                    # PID controller
-│   ├── km_sdir/                   # AS5600 steering encoder driver
+│   ├── km_sdir/                   # Steering encoder drivers: MT6701 PWM capture (the kart's), AS5600 I2C (classic-board fallback)
 │   ├── km_coms/                   # UART binary protocol (int32 encoding)
 │   ├── km_objects/                # Shared object store (targets, actuals)
 │   ├── km_rtos/                   # FreeRTOS task manager
@@ -167,12 +170,19 @@ kart-medulla/
 
 ## FreeRTOS Tasks
 
-| Task | Rate | Stack | Description |
-|---|---|---|---|
-| comms | 20 Hz | 4096 B | Receives/processes UART messages from Orin |
-| control | 10 Hz | 4096 B | Reads AS5600, runs steering PID, sets actuators |
-| heartbeat | 1 Hz | 2048 B | Sends uptime to Orin |
-| health | 1 Hz | 4096 B | Monitors magnet, I2C, heap; reports to Orin |
+Registered in `system_init()` at the bottom of `main/main.c`. The period argument to
+`KM_COMS_CreateTask()` is in **milliseconds**, not Hz.
+
+| Task | Period → rate | Stack | Priority | Description |
+|---|---|---|---|---|
+| comms | 10 ms → 100 Hz | 4096 B | 2 | Receives/processes UART frames from the Orin, sends telemetry |
+| control | 2 ms → 500 Hz | 4096 B | 1 | Reads the MT6701 steering angle, runs the PID, drives the actuators, decides the shutdown circuit, sends steering feedback |
+| heartbeat | 1000 ms → 1 Hz | 2048 B | 1 | Sends uptime to the Orin |
+| health | 1 Hz | 4096 B | 1 | Monitors sensor/I2C/heap and reports to the Orin. Started with its own `xTaskCreate`, not through the `KM_RTOS` periodic wrapper |
+
+500 Hz is the measured control rate on the kart, not just the target — the MT6701 is read through
+non-blocking MCPWM capture, so there is no blocking sensor call in the loop. What caps the rate is
+the UART: the per-cycle steering frame uses about 87 % of the 115200-baud link and TX is unbuffered.
 
 ## Steering Control
 
@@ -180,18 +190,23 @@ kart-medulla/
 
 - **Body frame:** X forward, Y left, Z up
 - **Positive steering** = left turn (matches ROS REP 103)
-- AS5600 natural frame matches this convention - no negation needed
+- The sensor's natural frame matches this convention — no negation needed
 
-### PID Configuration (current)
+### PID Configuration
+
+Compiled defaults, `PID_DEFAULT_*` at the top of `main/main.c`:
 
 | Parameter | Value |
 |---|---|
-| Kp | 0.15 |
+| Kp | 1.00 |
 | Ki | 0.0 |
-| Kd | 0.01 |
-| PWM limit | 0.15 (15%) |
+| Kd | 0.05 |
+| PWM limit | 0.50 (50%) |
 
-PWM limit is kept low to protect steering gears during testing. Increase gradually as PID is tuned.
+The PWM limit is held below 100 % to protect the steering gears during testing; raise it as the
+loop is validated. The Orin can override all four at runtime with the `ORIN_STEER_PID` (0x2B)
+frame, and the firmware reports what it is actually running back in `ESP_STEER_PID` (0x0D) — so
+what the dashboard shows is the live tuning, which may differ from the defaults above.
 
 ## Building and Flashing
 
@@ -209,9 +224,15 @@ pio device monitor
 pio test -e native
 ```
 
-**Upload speed:** 115200 baud (CP2102 USB-UART bridge limitation).
+**Port:** the S3 enumerates on the Orin as `/dev/ttyACM0` — its WCH CH343 bridge is a CDC-ACM
+device. It is *not* `/dev/ttyUSB0`; that was the classic board's CP2102.
 
-**Flash tip:** If ESP32 is in a crash loop, hold the **BOOT** button during flash.
+**Upload speed:** 921600 baud on the S3 (`upload_speed` in `platformio.ini`). The CH343 is rated to
+6 Mbps; the 115200 cap belongs to the classic board's CP2102 and applies only to the `esp32dev` env.
+
+**Flash tip:** if a flash hangs at `Connecting...`, hold **BOOT**, press **EN**, release **BOOT**;
+press **EN** afterwards to restart. If the write fails to connect or fails verification at 921600,
+drop to 460800, then 115200.
 
 ## Development Notes
 

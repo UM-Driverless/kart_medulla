@@ -82,7 +82,7 @@ kart-medulla/
 │   ├── km_objects/         # Shared variable store (thread-safe get/set)
 │   ├── km_pid/             # PID controller
 │   ├── km_rtos/            # FreeRTOS task manager
-│   ├── km_sdir/            # AS5600 steering angle sensor (I2C)
+│   ├── km_sdir/            # Steering angle sensor: km_sdir_pwm (MT6701 via MCPWM — the kart's), km_sdir (AS5600 I2C — classic fallback)
 │   ├── km_sta/             # State machine
 │   └── bluepad32/          # Gamepad library (used by sketch.cpp only)
 ├── platformio.ini          # Build config
@@ -163,13 +163,19 @@ as the classic board's CP2102 did. Uploading while `kart-brain` is running fails
 
 ## Architecture (main.c)
 
-Three FreeRTOS tasks:
+Four FreeRTOS tasks. The first three are registered with the `KM_RTOS` periodic wrapper, whose
+period argument is in **milliseconds**; `health` is a plain `xTaskCreate`.
 
 | Task        | Period | Priority | Function                                              |
 |-------------|--------|----------|-------------------------------------------------------|
 | comms       | 10ms (100 Hz) | 2 | UART RX/TX — receive commands from Orin, send telemetry |
-| control     | 10ms (100 Hz) | 1 | Read AS5600 sensor, run PID, drive actuators, send steering feedback |
+| control     | 2ms (500 Hz)  | 1 | Read the MT6701 angle, run PID, drive actuators, decide the SDC, send steering feedback |
 | heartbeat   | 1000ms (1 Hz) | 1 | Send heartbeat to Orin                                |
+| health      | 1 Hz          | 1 | Monitor sensor / I2C / heap, report to Orin           |
+
+500 Hz is measured on the kart, not only a target: the MT6701 is read through non-blocking MCPWM
+capture, so nothing in the loop blocks. The cap is the UART — the per-cycle steering frame uses
+~87 % of the 115200-baud link and TX is unbuffered.
 
 ### UART Protocol (`km_coms`)
 
@@ -200,53 +206,56 @@ Validity rule above.
 
 1. Orin sends `ORIN_TARG_STEERING` (target angle in radians × 1000)
 2. `control_task` reads target from `km_objects` store
-3. AS5600 sensor read via I2C (400kHz, 5ms timeout) → actual angle in radians
-4. PID computes output (Kp=0.03, Ki=0, Kd=0.0004) → [-1.0, 1.0]
+3. MT6701 angle read from its ~994 Hz PWM output on GPIO 1, captured in hardware by MCPWM
+   (`km_sdir_pwm`) → actual angle in radians. Non-blocking. The AS5600 I2C path in `km_sdir` is the
+   classic-board fallback and is not what the kart runs
+4. PID computes output → [-1.0, 1.0]. Compiled gains are `PID_DEFAULT_*` at the top of `main/main.c`
+   (Kp=1.00, Ki=0, Kd=0.05, output limit 0.50) and the Orin can override all four at runtime with
+   `ORIN_STEER_PID` (0x2B), reported back in `ESP_STEER_PID` (0x0D)
 5. `km_act` drives PWM (magnitude) + DIR pin (sign) on steering motor
 6. Actual angle sent back to Orin as `ESP_ACT_STEERING`
 
 ### Hardware
 
-> **The table below is the CLASSIC-ESP32 pin map (ESP32-WROOM-32E).**
-> The kart-medulla PCB now carries an ESP32-S3 (WROOM-1-N16R8), and the firmware fully supports it via the `esp32-s3-devkitc-1` environment in `platformio.ini`.
->
-> **When working on the S3 board, use the authoritative S3 pinout:**
-> `dv-hardware/projects/kart-medulla/docs/pinout-esp32-s3.md` (the schematic wins where they disagree).
->
-> *Note:* The S3 board assigns critical functions to different pins (e.g. `PIN_CMD_COMPRESSOR` is GPIO 3, whereas the classic map lacks this). Ensure you use the proper target environment.
+The kart-medulla PCB carries an **ESP32-S3** (WROOM-1-N16R8). Pin maps are not written out here,
+because a pin map is only correct relative to a schematic revision and this file cannot track one.
+In order of authority:
 
-| Actuator | GPIO | Type | Notes |
-|----------|------|------|-------|
-| Throttle | 26   | DAC2 | 0-255 output |
-| Brake    | 25   | DAC1 | 0-255 output |
-| Steering PWM | 27 | LEDC PWM | duty 0-255 |
-| Steering DIR | 14 | Digital | 1=positive, 0=negative |
-| AS5600 SDA | 21 | I2C | 400kHz, addr 0x36 |
-| AS5600 SCL | 22 | I2C | |
+1. `dv-hardware/projects/kart-medulla/kart-medulla.kicad_sch` — the schematic wins over everything.
+2. `dv-hardware/projects/kart-medulla/docs/pinout-esp32-s3.md` — the 44-row terminal → GPIO map.
+3. `.agents/esp32s3-pinmap.md` — the same map as a firmware-side convenience, with the per-signal
+   notes that matter when writing code.
+4. `components/km_gpio/km_gpio.h` — what the firmware actually compiles. Both maps live here,
+   selected on `CONFIG_IDF_TARGET_ESP32S3`; the `#else` branch is the classic ESP32-WROOM-32E and is
+   reachable only through the `esp32dev` env.
 
-### AS5600 Steering Sensor Wiring (2026-03)
-
-| Wire Color | Signal | ESP32 Pin |
-|------------|--------|-----------|
-| White | 3.3V (power) | 3V3 |
-| Black | GND | GND |
-| Green | SDA (I2C data) | GPIO 21 |
-| Blue | SCL (I2C clock) | GPIO 22 |
+The two maps overlap dangerously rather than merely differing: GPIO 18 is steering PWM on the
+classic board and the **gate of Q3, the shutdown-circuit MOSFET**, on the S3. Wiring or reasoning
+from the wrong branch can fire or disable the emergency brake.
 
 ### Safety
 
-- Steering motor limited to **40%** output (`KM_ACT_SetLimit(&dir_act, 0.4)`) for testing
-- Increase to 1.0 when system is validated
-- **Comms watchdog IS implemented** (`COMMS_WATCHDOG_MS = 1000`, `main/main.c:100-115`). This line
-  previously claimed it was not — corrected 2026-07-10. But note *what* it does: on stale comms or
-  `MISSION_MANUAL` it calls `KM_ACT_Stop()` on throttle, brake **and** steering, which zeroes the
-  brake command. It therefore **releases the brake and coasts** rather than braking.
-- **Still TODO: make loss-of-comms assert braking / drop the SDC chain**, rather than zeroing
-  outputs. On the S3 board the SDC is GPIO 18; firmware does not drive it at all yet, so the kart
-  currently cannot be armed *or* commanded to brake by the medulla.
+- Steering output limited to **50%** (`PID_DEFAULT_PWM_LIMIT` in `main/main.c`) to protect the
+  gears during testing. Raise it as the loop is validated.
+- **Comms watchdog** (`COMMS_WATCHDOG_MS = 1000`). On stale comms or `MISSION_MANUAL`,
+  `control_task` hands the throttle mux back to the driver's pedal and calls `KM_ACT_Stop()` on
+  throttle, brake **and** steering. Zeroing the brake command **releases the brake**, so the kart
+  **coasts** rather than stopping.
+- **The shutdown circuit is driven, but the gate is not wired.** `control_task` decides GPIO 18 on
+  every cycle as a whitelist — the chain closes only while the Orin reports `AS_READY` or
+  `AS_DRIVING`, comms are fresh, tank pressure is above `EBS_TANK_ARM_BAR`, the steering-fault latch
+  is clear and the operator has not disabled the compressor. Every other case, including states
+  nobody anticipated, leaves it open. Verify it through the pin readback in field 8 of
+  `ESP_PNEUMATIC`, or a meter on the pin — **not** by expecting the kart to brake, because Q3's gate
+  goes nowhere downstream yet.
+- **Still TODO: make loss of comms assert braking**, not just coast. `kart-brain`'s
+  `docs/ACTUATION_PROTOCOL.md` specifies "apply full brake, zero steering, zero throttle" on
+  timeout; this firmware does not do that. Anyone relying on that behaviour for safety has to fix
+  the firmware first.
 
 ## Debugging
 
 - **Debug logs**: there are none. The UART2 log redirect was removed and ESP_LOG on UART0 is off (see the UART Protocol section). Observe the firmware through the telemetry frames instead — `ESP_PNEUMATIC` in particular carries `control_iters`, the LEDC duty readback, the `KM_GPIO_Init()` error code and the SDC pin level precisely because there is no console to print to
-- **Protocol monitor**: `python3 monitor_serial.py` on /dev/ttyUSB0
+- **Protocol monitor**: `python3 monitor_serial.py` on `/dev/ttyACM0` (the S3's CH343 bridge is
+  CDC-ACM; `/dev/ttyUSB0` was the classic board's CP2102)
 - **ROS2 side**: `ros2 topic echo /esp32/steering` to see feedback from ESP32

@@ -1062,7 +1062,26 @@ still open — the closed half of the section is now in `tasks/done-archive.md`.
       decision to do this rework but never the soldering, so the board is the only source of truth.
 - [ ] **Flash dev tip `7bcd6eb` (bench hardcode removed, throttle back on TARGET_THROTTLE) to the S3.** Built clean on the Mac and pushed 2026-08-08; the Orin went unreachable over the tunnel right at the flash step, so the chip may still run the 50%-hardcode build. Then test throttle from the dashboard — mission must be non-manual and comms fresh, or the safety gate holds the mux on the pedal.
   **Probably already done**: Rubén reports (2026-08-10) the kart accelerated *on command* under remote control, which the hardcoded constant 0.5 f could not produce — so the chip was running `7bcd6eb` or later at that point. Confirm the running image the next time the Orin is reachable (`pio run -t upload` and check, or read the app description) and close this.
-- [ ] **Stale comment in `platformio.ini`** (S3 env, ~line 66): says "GPIO 18 / GPIO 15 not driven"; km_gpio.c has driven both since 2026-08-01/08-08. Fix the comment.
+- [x] **Fixed — stale comment in `platformio.ini`** (S3 env): it said "GPIO 18 / GPIO 15 not
+  driven" when km_gpio.c had driven both since 2026-08-01/08-08. The comment now says the three
+  gaps it used to list are closed and points at the "ESP32-S3 firmware gaps" task, because a list
+  of gaps inside a build file goes stale without anyone reading it. The `upload_speed = 921600`
+  annotation in the same file said "UNVERIFIED on hardware" long after the 2026-08-08 and
+  2026-08-10 flashes proved it; replaced with the measurement (338 kB in 2.6 s, hash verified).
+- [x] **Fixed 2026-08-14 — `README.md` and `AGENTS.md` described a firmware that no longer exists.**
+  Both were the reason kart-docs had been carrying "believe the code, not these repos" banners
+  instead of a fix. Corrected against `main/main.c`: the FreeRTOS table (README said comms 20 Hz /
+  control 10 Hz, AGENTS.md listed three tasks with control at 100 Hz; both are 100 Hz and 500 Hz,
+  with `health` as a fourth), the steering gains (README Kp 0.15 / Kd 0.01 / limit 0.15, AGENTS.md
+  Kp 0.03 / Kd 0.0004; the code is `PID_DEFAULT_*` = 1.00 / 0 / 0.05, limit 0.50, overridable at
+  runtime by `ORIN_STEER_PID`), the sensor (both said the loop reads an AS5600 over I2C; it reads
+  the MT6701's PWM through MCPWM capture), the upload speed (README quoted the classic board's
+  115200 CP2102 cap), the monitor port (`/dev/ttyUSB0` -> `/dev/ttyACM0`), and the "40% steering
+  limit" and "firmware does not drive the SDC at all" claims in AGENTS.md's Safety section.
+  AGENTS.md's classic-ESP32 pin table and AS5600 wiring table were deleted rather than corrected —
+  they described a board that is not on the kart, and their numbers did not even match README's
+  copy of the same classic map. Replaced by an ordered list of which file wins on a pin question.
+  `km_gpio.h`'s branch labels were fixed in the same pass; `esp32-s3-devkitc-1` rebuilt SUCCESS.
 - [x] **The steering-fault latch survives everything except an ESP32 reboot, and nothing on the
   dashboard says how to clear it.** A stale latch from one bad boot looked like a live sensor/code
   failure and cost hours on 2026-08-08. **Built 2026-08-10** — Rubén chose the timestamp option over

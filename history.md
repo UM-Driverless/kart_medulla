@@ -2404,3 +2404,53 @@ serve as U5. The listing also calls the package "MSOP8", which is loose wording 
 Inventory row (Notion, "AI Inventory"), updated to `To order` with the link, unit price and the
 above notes rather than duplicated:
 https://app.notion.com/p/SN74LVC3G17DCTR-triple-Schmitt-trigger-buffer-5V-tolerant-inputs-397787473143811094bac72aa77a8ee5
+
+## 2026-08-14 — Fixed the docs that made kart-docs carry "do not believe this repo" banners
+
+`kart-docs`' firmware page had three admonitions whose whole content was "the numbers in
+kart-medulla's README/AGENTS/platformio.ini are stale, trust the code instead". Ruben's point:
+that is a note about a problem, not a fix, and it makes both repos worse — the wrong numbers stay
+where a reader will find them, and the banner itself goes stale the moment someone does fix them
+(two of the three statements it warned about had already been corrected by 2026-08-10, so the
+banner was lying about the lie). Fixed the source instead and deleted the banners.
+
+Ground truth used, all read from `main/main.c` on the day:
+
+- Tasks: `comms` 10 ms/100 Hz, `control` 2 ms/500 Hz, `heartbeat` 1000 ms/1 Hz, `health` 1 Hz via
+  its own `xTaskCreate`. Four tasks, not three.
+- Gains: `PID_DEFAULT_KP` 1.00, `KI` 0.0, `KD` 0.05, `PWM_LIMIT` 0.50.
+- Steering angle comes from `KM_SDIR_PWM_*` (MT6701, MCPWM capture on GPIO 1), not the AS5600 I2C
+  path.
+- The SDC whitelist in `control_task` drives GPIO 18 every cycle; the gate is still unwired
+  downstream.
+
+What was wrong and is now corrected:
+
+- `README.md` — FreeRTOS table said comms 20 Hz / control 10 Hz. PID table said Kp 0.15, Kd 0.01,
+  limit 0.15. "Upload speed: 115200 baud (CP2102 limitation)" — that is the classic board's bridge,
+  the S3 flashes at 921600 over a CH343. `km_sdir` described as an AS5600 driver. The paragraph
+  under the repurposed-pins section claimed the S3 target "applies the correct pinmap from
+  .agents/esp32s3-pinmap.md", which is not how it works — `km_gpio.h` holds both maps and the
+  preprocessor picks.
+- `AGENTS.md` — Architecture table listed three tasks with control at 100 Hz and "Read AS5600".
+  Steering Pipeline gave Kp 0.03 / Kd 0.0004 and an I2C sensor read. The Hardware section carried a
+  classic-ESP32 pin table whose numbers (steering PWM on 27, DIR on 14) did not even match README's
+  copy of the same classic map, plus an AS5600 wiring table for a sensor retired 2026-07-12. Safety
+  section said the steering limit was 40% and that the firmware "does not drive [the SDC] at all
+  yet". Debugging pointed the serial monitor at `/dev/ttyUSB0`.
+  The two classic-board tables were deleted rather than corrected — they describe hardware that is
+  not on the kart, and keeping a corrected copy just recreates the drift. Replaced with an ordered
+  list of which file wins a pin question: schematic, then dv-hardware's pinout doc, then
+  `.agents/esp32s3-pinmap.md`, then `km_gpio.h`.
+- `platformio.ini` — the `upload_speed = 921600` comment still said "UNVERIFIED on hardware as of
+  2026-07-26" although AGENTS.md recorded it confirmed by the 2026-08-08 and 2026-08-10 flashes.
+  Replaced with the measurement.
+- `components/km_gpio/km_gpio.h` — the file's top banner named only "ESP32-DevKitC V4
+  (ESP32-WROOM-32E)" above a block that is actually the S3 map, and the `#else` was labelled
+  "(current build)". Both now say which env selects which branch, and why GPIO 18 makes mixing them
+  dangerous. Rebuilt `esp32-s3-devkitc-1` after the edit: SUCCESS, 337857 B flash.
+
+Not a new finding but worth stating once: the reason these tables kept drifting is that they are
+hand-copied values that the code owns. Where the value is tuned (the PID gains) the docs now give
+the constant's name and location plus a snapshot, and say the Orin can override it at runtime — so
+a reader who needs the exact number knows where to look rather than trusting a table.
