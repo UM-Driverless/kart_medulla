@@ -55,6 +55,28 @@ finished, pushed and still sit here awaiting that confirmation; several do.
   2026-08-08 while closing two of them. Either move the section back under TODO or split the
   closed items out — as it stands, open work is filed under Done and is easy to miss.
 
+### Loss of comms coasts instead of braking, and the two repos disagree about it
+
+`control_task` calls `KM_ACT_Stop()` on throttle, brake and steering when comms go stale or the
+mission is `MISSION_MANUAL`. Zeroing the brake command **releases** the brake, so the kart coasts.
+For a driverless kart, losing the link to the Orin should assert braking.
+
+**The two sides currently specify different behaviour.** `kart-brain`'s
+`docs/ACTUATION_PROTOCOL.md:26` says the actuator should "apply full brake, zero steering, zero
+throttle" on timeout. This firmware does not. Anyone reading only the kart-brain side would believe
+the kart brakes on link loss; it does not. One of the two has to move — either the firmware
+implements it, or the protocol doc stops promising it. That is a safety decision, so it is Ruben's,
+not something to settle by editing whichever file is easier.
+
+Note the SDC does already open on stale comms (the whitelist in `control_task` includes
+`!comms_stale`), so once Q3's gate is actually wired to the shutdown chain, loss of comms will drop
+the chain even without this change. That is not the same as commanding the proportional brake, and
+it does nothing today because the gate goes nowhere — see the "ESP32-S3 firmware gaps" cluster.
+
+Was recorded only as gap 5 in `.agents/esp32s3-pinmap.md`, which is a pin-map reference nobody
+reads when picking up work. Filed here 2026-08-14 so it sits where work is chosen from; kart-docs'
+firmware page points at this board for it.
+
 ### Pump-stall detector: watch it, then decide whether to arm it
 
 Added 2026-07-27, **reporting only**. A full-length compressor burst that starts below 4 bar and
