@@ -55,27 +55,27 @@ finished, pushed and still sit here awaiting that confirmation; several do.
   2026-08-08 while closing two of them. Either move the section back under TODO or split the
   closed items out — as it stands, open work is filed under Done and is easy to miss.
 
-### Loss of comms coasts instead of braking, and the two repos disagree about it
+### Loss of comms must brake, and today it coasts — waiting on the Q3 gate wire
 
 `control_task` calls `KM_ACT_Stop()` on throttle, brake and steering when comms go stale or the
-mission is `MISSION_MANUAL`. Zeroing the brake command **releases** the brake, so the kart coasts.
-For a driverless kart, losing the link to the Orin should assert braking.
+mission is `MISSION_MANUAL`. Zeroing the brake command *releases* the proportional valve, so on its
+own that is a coast.
 
-**The two sides currently specify different behaviour.** `kart-brain`'s
-`docs/ACTUATION_PROTOCOL.md:26` says the actuator should "apply full brake, zero steering, zero
-throttle" on timeout. This firmware does not. Anyone reading only the kart-brain side would believe
-the kart brakes on link loss; it does not. One of the two has to move — either the firmware
-implements it, or the protocol doc stops promising it. That is a safety decision, so it is Ruben's,
-not something to settle by editing whichever file is easier.
+**Decided 2026-08-14: the stop comes from the shutdown circuit, not from commanding a brake value.**
+`comms_stale` is already one of the conditions in `control_task`'s SDC whitelist, so the chain
+already opens on timeout — it fires nothing only because Q3's gate is not connected downstream.
+That path is preferred because it does not depend on the Orin still being able to talk, and it
+reuses the same route an emergency takes. **So no firmware change is owed here.** What is owed is
+the wire, tracked in kart-brain's `tasks.md` ("Verify the shutdown-circuit drive on the bench, then
+wire the Q3 gate") — step 3 of that item is what makes this true.
 
-Note the SDC does already open on stale comms (the whitelist in `control_task` includes
-`!comms_stale`), so once Q3's gate is actually wired to the shutdown chain, loss of comms will drop
-the chain even without this change. That is not the same as commanding the proportional brake, and
-it does nothing today because the gate goes nowhere — see the "ESP32-S3 firmware gaps" cluster.
+`kart-brain/docs/ACTUATION_PROTOCOL.md` promises "apply full brake, zero steering, zero throttle" on
+timeout. It now also records that the braking is delivered by the SDC rather than the `BRAKE` byte,
+and that the clause is not yet true on the kart. kart-docs' firmware page says the same. Until the
+gate is wired, none of the three should be relied on for safety.
 
-Was recorded only as gap 5 in `.agents/esp32s3-pinmap.md`, which is a pin-map reference nobody
-reads when picking up work. Filed here 2026-08-14 so it sits where work is chosen from; kart-docs'
-firmware page points at this board for it.
+Was recorded only as gap 5 in `.agents/esp32s3-pinmap.md`, a pin-map reference nobody reads when
+picking up work.
 
 ### Pump-stall detector: watch it, then decide whether to arm it
 
